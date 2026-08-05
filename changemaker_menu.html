@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changemaker Action Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        creativity: '#8b5cf6', // violet
+                        adaptive: '#3b82f6',   // blue
+                        collab: '#10b981',     // emerald
+                        comm: '#f59e0b',       // amber
+                        advocacy: '#ef4444'    // red
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
+        }
+        .modal-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .modal-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 200ms ease-in, transform 200ms ease-in;
+        }
+
+        /* Hide scrollbar for the grid container on mobile but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col font-sans overflow-hidden">
+
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex-shrink-0 shadow-sm z-10 relative">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-map text-indigo-600"></i> Changemaker Action Menu
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">Select concrete actions to learn skills, build your portfolio, and log evidence.</p>
+            </div>
+            <div class="flex items-center gap-3 bg-slate-100 p-1 rounded-lg">
+                <button id="btn-grid-view" onclick="toggleView('grid')" class="px-4 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-700 transition">Grid View</button>
+                <button id="btn-list-view" onclick="toggleView('list')" class="px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 transition">List View</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-hidden flex flex-col relative max-w-7xl mx-auto w-full">
+        <!-- Scrollable Grid Container -->
+        <div class="flex-1 overflow-auto p-4 md:p-6 no-scrollbar relative">
+            <div id="view-grid" class="min-w-[1000px] grid grid-cols-5 gap-4">
+                <!-- Columns Headers will be injected here -->
+                <!-- Grid Cells will be injected here -->
+            </div>
+            
+            <div id="view-list" class="hidden flex flex-col gap-8 max-w-4xl mx-auto pb-10">
+                <!-- List View Content injected here -->
+            </div>
+        </div>
+    </main>
+
+    <div id="focus-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300 overflow-hidden" id="modal-content-panel">
+            
+            <!-- Modal Header -->
+            <div id="modal-header" class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50">
+                <div>
+                    <span id="modal-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide">Domain</span>
+                    <h2 id="modal-title" class="text-2xl font-bold text-slate-900 mt-1">Level Title</h2>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition p-2 rounded-full hover:bg-slate-200/50">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Left Column: The Menu Items (Actions) -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-slate-400"></i> Menu Actions
+                            </h3>
+                            <p class="text-xs text-slate-500 mb-4">What you can do to prove this skill. Use these as evidence tags.</p>
+                            <ul id="modal-actions" class="space-y-3">
+                                <!-- Actions injected here -->
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-scale-balanced text-slate-400"></i> Official Rubric
+                            </h3>
+                            <p id="modal-rubric-text" class="text-sm text-slate-600 italic">
+                                <!-- Rubric text injected here -->
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: UDL Learning Resources -->
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <!-- UDL: Engagement (The Why) -->
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-pink-400">
+                            <h3 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-heart text-pink-500"></i> Engagement: The "Why"
+                            </h3>
+                            <p class="text-sm text-slate-600 mb-4">Connect with the material through choice, relevance, and self-reflection.</p>
+                            <div id="modal-engagement" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Engagement resources injected here -->
+                            </div>
+                        </div>
+
+                        <!-- UDL: Representation (The What) -->
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-blue-400">
+                            <h3 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-brain text-blue-500"></i> Representation: The "What"
+                            </h3>
+                            <p class="text-sm text-slate-600 mb-4">Learn this skill through different formats and media.</p>
+                            <div id="modal-representation" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Representation resources injected here -->
+                            </div>
+                        </div>
+
+                        <!-- UDL: Action & Expression (The How) -->
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-green-400">
+                            <h3 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-palette text-green-500"></i> Expression: The "How"
+                            </h3>
+                            <p class="text-sm text-slate-600 mb-4">Ways you might demonstrate your learning and log your evidence.</p>
+                            <div id="modal-expression" class="flex flex-wrap gap-2">
+                                <!-- Expression tags injected here -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Student Evidence Log Display (Injected if evidence exists) -->
+            <div id="modal-evidence-log" class="hidden bg-slate-100 px-6 py-4 border-t border-slate-200">
+                <h3 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-folder-open text-amber-500"></i> My Evidence Log</h3>
+                <ul id="evidence-list" class="space-y-2"></ul>
+            </div>
+
+            <!-- Evidence Entry Form -->
+            <div id="evidence-form-section" class="hidden p-6 bg-indigo-50 border-t border-indigo-100 transition-all">
+                <h4 class="font-bold text-indigo-900 mb-2 text-sm uppercase tracking-wide">Submit New Evidence</h4>
+                <textarea id="evidence-input" rows="3" class="w-full rounded-lg border-indigo-200 p-3 text-sm focus:ring-indigo-500 focus:border-indigo-500 shadow-sm mb-3" placeholder="Describe your action or paste a link to your artifact..."></textarea>
+                <div class="flex justify-end gap-2">
+                    <button onclick="toggleEvidenceForm()" class="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">Cancel</button>
+                    <button onclick="submitEvidence()" class="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm transition">Save Evidence</button>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 bg-white border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="closeModal()" class="px-5 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition">Close</button>
+                <button id="btn-open-evidence" onclick="toggleEvidenceForm()" class="px-5 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Log Evidence
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Complex data structure modeling the Proficiency Scale as a Menu + UDL Resources
+        const domains = [
+            { id: 'creativity', name: 'Creativity', color: 'creativity', icon: 'fa-lightbulb' },
+            { id: 'adaptive', name: 'Adaptive Thinking', color: 'adaptive', icon: 'fa-shuffle' },
+            { id: 'collab', name: 'Collaboration', color: 'collab', icon: 'fa-users' },
+            { id: 'comm', name: 'Communication', color: 'comm', icon: 'fa-comments' },
+            { id: 'advocacy', name: 'Advocacy & Action', color: 'advocacy', icon: 'fa-bullhorn' }
+        ];
+
+        const levels = [
+            { id: '4.0', name: '4.0: Innovating (Advanced)' },
+            { id: '3.0', name: '3.0: Applying (Target)' },
+            { id: '2.0', name: '2.0: Understanding (Foundational)' }
+        ];
+
+        // The core data matrix representing the rubric reframed as concrete actions and learning resources
+        const menuData = {
+            'creativity-4.0': {
+                rubricText: "Demonstrate in-depth synthesis and application... Produce a product that reflects a novel and useful idea/solution with exceptional originality. Shows evidence of multiple design cycles exploring possibilities based on stakeholder feedback.",
+                actions: [
+                    "I produced a highly original product that uniquely solves the problem.",
+                    "I documented multiple design cycles based on real stakeholder feedback.",
+                    "I synthesized multiple perspectives to explain why my product addresses the deep roots of the problem."
+                ],
+                engagement: [
+                    { type: 'Choice', title: 'Find a real-world problem you care about to solve', icon: 'fa-hand-pointer' },
+                    { type: 'Reflection', title: 'Self-Check: Whose feedback changed my design the most?', icon: 'fa-mirror' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'Case Study: IDEO\'s Design Thinking Process', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Article', title: 'How to synthesize conflicting feedback', icon: 'fa-file-lines', format: 'text' }
+                ],
+                expression: ['Prototype Presentation', 'Design Journal', 'Pitch Deck', 'Stakeholder Documentary']
+            },
+            'creativity-3.0': {
+                rubricText: "Produce a product that reflects both a novel and useful idea/solution. Independently generates, iterates and explores a range of ideas. Explain how a developed product demonstrates detailed understanding of the problem.",
+                actions: [
+                    "I produced a product that is both new and useful for the task.",
+                    "I independently brainstormed and explored multiple different ideas.",
+                    "I can explain exactly how my product solves the specific problem given."
+                ],
+                engagement: [
+                    { type: 'Challenge', title: 'Try the "Crazy 8s" brainstorming protocol', icon: 'fa-stopwatch' },
+                    { type: 'Relevance', title: 'Why usefulness matters as much as novelty', icon: 'fa-link' }
+                ],
+                representation: [
+                    { type: 'Interactive', title: 'Tool: Brainstorming Prompts Generator', icon: 'fa-laptop-code', format: 'interactive' },
+                    { type: 'Diagram', title: 'The Double Diamond Design Process', icon: 'fa-project-diagram', format: 'visual' }
+                ],
+                expression: ['Sketchbook scan', 'Feedback recording', 'Product Demonstration']
+            },
+            'creativity-2.0': {
+                rubricText: "Produce a product that reflects a useful idea/solution. Generates and explores ideas with teacher-directed tools. Select a product out of provided options and explain how it addresses the task.",
+                actions: [
+                    "I created a useful product to address the problem.",
+                    "I used the brainstorming tools provided by my teacher to generate ideas.",
+                    "I chose an option from a list and explained why it works."
+                ],
+                engagement: [
+                    { type: 'Scaffold', title: 'Use the provided templates to get started', icon: 'fa-puzzle-piece' },
+                    { type: 'Goal', title: 'Aim for 5 different ideas before choosing one', icon: 'fa-bullseye' }
+                ],
+                representation: [
+                    { type: 'Audio', title: 'Podcast mini: What is a "useful" solution?', icon: 'fa-headphones', format: 'audio' },
+                    { type: 'Checklist', title: 'Brainstorming step-by-step guide', icon: 'fa-list-check', format: 'text' }
+                ],
+                expression: ['Filled-out template', 'Verbal explanation', 'Short paragraph']
+            },
+
+            'adaptive-4.0': {
+                rubricText: "Anticipate potential challenges and adapt thinking proactively. Synthesize insights across systems to uncover interrelationships or inconsistencies. Employ adaptive reasoning to question assumptions and refine understanding in changing contexts.",
+                actions: [
+                    "I anticipated a challenge and changed my approach before it became a problem.",
+                    "I analyzed how different systems or perspectives interact and contradict each other.",
+                    "I questioned my own assumptions when I found conflicting information."
+                ],
+                engagement: [
+                    { type: 'Roleplay', title: 'Argue the opposite of your current stance', icon: 'fa-masks-theater' },
+                    { type: 'Connection', title: 'Find examples of this issue in a totally different industry', icon: 'fa-globe' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'Understanding Complex Systems & Feedback Loops', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Article', title: 'Cognitive Biases and How to Overcome Them', icon: 'fa-file-lines', format: 'text' }
+                ],
+                expression: ['Systems Map / Causal Loop Diagram', 'Debate Brief', 'Reflective Essay on Changing Mindsets']
+            },
+            'adaptive-3.0': {
+                rubricText: "Articulate multiple perspectives related to a complex problem. Select relevant evidence to defend claims. Use systems thinking tools (e.g., root cause analysis). Recognize incomplete or conflicting info.",
+                actions: [
+                    "I clearly explained at least two different perspectives on this problem.",
+                    "I used a tool like the 'Iceberg Model' or 'Root Cause Analysis'.",
+                    "I identified and discarded information that was irrelevant or biased."
+                ],
+                engagement: [
+                    { type: 'Choice', title: 'Choose which systems tool fits your problem best', icon: 'fa-hand-pointer' },
+                    { type: 'Why', title: 'Why surface-level solutions usually fail', icon: 'fa-question-circle' }
+                ],
+                representation: [
+                    { type: 'Diagram', title: 'The Iceberg Model Explained', icon: 'fa-image', format: 'visual' },
+                    { type: 'Video', title: 'How to perform a Root Cause Analysis', icon: 'fa-play-circle', format: 'visual' }
+                ],
+                expression: ['Root Cause Analysis Chart', 'Annotated Bibliography', 'Claim-Evidence-Reasoning Paragraph']
+            },
+            'adaptive-2.0': {
+                rubricText: "Identify a single perspective on a complex problem. Summarize key ideas from sources. Identify strengths/limitations of sources using the CRAAP Test. Use academic structure.",
+                actions: [
+                    "I described one specific group's perspective on this issue.",
+                    "I summarized the main points from three different articles.",
+                    "I evaluated a source's reliability using the CRAAP test criteria."
+                ],
+                engagement: [
+                    { type: 'Game', title: 'Play the "Spot the Fake News" game', icon: 'fa-gamepad' },
+                    { type: 'Tracker', title: 'Use the Source Evaluation Checklist', icon: 'fa-check-square' }
+                ],
+                representation: [
+                    { type: 'Infographic', title: 'The CRAAP Test for source evaluation', icon: 'fa-image', format: 'visual' },
+                    { type: 'Video', title: 'Difference between Claim, Evidence, and Reason', icon: 'fa-play-circle', format: 'visual' }
+                ],
+                expression: ['CRAAP Test Worksheet', 'Summary paragraph', 'Completed Graphic Organizer']
+            },
+
+            'collab-4.0': {
+                rubricText: "Apply and articulate the impact of collaborative practices specific to the context. Develop a strategy to create an efficient group based on strengths/weaknesses. Uses personal insight to know when to follow and when to lead.",
+                actions: [
+                    "I developed a custom check-in strategy for my team that improved our workflow.",
+                    "I analyzed my team's strengths/weaknesses and delegated tasks accordingly.",
+                    "I documented an instance where I intentionally stepped back to let a teammate lead."
+                ],
+                engagement: [
+                    { type: 'Leadership', title: 'Act as the project manager for a sprint', icon: 'fa-crown' },
+                    { type: 'Reflection', title: 'Journal: Navigating a difficult team dynamic', icon: 'fa-book-open' }
+                ],
+                representation: [
+                    { type: 'Podcast', title: 'Interview: Effective Leadership and Followership', icon: 'fa-headphones', format: 'audio' },
+                    { type: 'Article', title: 'Agile methodologies for student teams', icon: 'fa-file-lines', format: 'text' }
+                ],
+                expression: ['Team Workflow Strategy Document', 'Peer 360 Evaluation Analysis', 'Project Retrospective Video']
+            },
+            'collab-3.0': {
+                rubricText: "Communicate clearly/respectfully, take initiative, resolve conflicts, meet deadlines. Leverage individual members' skills. Give, reflect, and act upon constructive feedback.",
+                actions: [
+                    "I resolved a conflict within my group calmly and effectively.",
+                    "I gave specific, constructive feedback to a peer using a protocol.",
+                    "I received critical feedback, reflected on it, and changed my work."
+                ],
+                engagement: [
+                    { type: 'Protocol', title: 'Use the "Glow and Grow" feedback protocol', icon: 'fa-comments' },
+                    { type: 'Why', title: 'How psychological safety builds better projects', icon: 'fa-shield-heart' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'The art of giving and receiving feedback', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Chart', title: 'Conflict Resolution Strategies matrix', icon: 'fa-table', format: 'visual' }
+                ],
+                expression: ['Recorded Team Meeting Segment', 'Feedback Reflection Log', 'Gantt Chart of responsibilities']
+            },
+            'collab-2.0': {
+                rubricText: "Paraphrase and listen. Identify when a problem occurs. Describe conflict resolution strategies. Identify next steps. Write personal goals and team agreements.",
+                actions: [
+                    "I actively listened and paraphrased my teammate's ideas back to them.",
+                    "I helped write our team agreements and personal collaboration goals.",
+                    "I identified a problem our team was having and suggested a next step."
+                ],
+                engagement: [
+                    { type: 'Contract', title: 'Draft a Team Working Agreement', icon: 'fa-file-signature' },
+                    { type: 'Self-Check', title: 'Am I listening to understand, or listening to reply?', icon: 'fa-ear-listen' }
+                ],
+                representation: [
+                    { type: 'Audio', title: 'What is Active Listening?', icon: 'fa-headphones', format: 'audio' },
+                    { type: 'Template', title: 'Team Agreements Starter Template', icon: 'fa-file-word', format: 'text' }
+                ],
+                expression: ['Signed Team Contract', 'Exit Ticket: Daily contribution', 'List of next steps']
+            },
+
+            'comm-4.0': {
+                rubricText: "Adapt communication tools to meet the needs of diverse audiences. Apply a sophisticated level of craftsmanship. Extend quality by following, adapting or breaking conventions of a medium/style.",
+                actions: [
+                    "I adapted my presentation style drastically for two different audiences.",
+                    "I intentionally broke a standard convention of this medium to make a specific point.",
+                    "I produced a final product with professional-level craftsmanship."
+                ],
+                engagement: [
+                    { type: 'Challenge', title: 'Pitch your idea to an expert in the field', icon: 'fa-user-tie' },
+                    { type: 'Creative', title: 'Mix two different mediums to convey your message', icon: 'fa-blender' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'Masterclass: Storytelling for specific audiences', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Case Study', title: 'Ad campaigns that broke all the rules', icon: 'fa-lightbulb', format: 'text' }
+                ],
+                expression: ['Multi-platform Campaign', 'TED-style Talk', 'Interactive Media Experience']
+            },
+            'comm-3.0': {
+                rubricText: "Share information in an organized/engaging way. Use precise knowledge to enhance a message. Apply craftsmanship in following conventions of a medium.",
+                actions: [
+                    "I structured my presentation so it was engaging from beginning to end.",
+                    "I used highly specific vocabulary and concepts correctly to strengthen my point.",
+                    "I followed all the stylistic rules for the specific medium I chose (e.g., podcast format)."
+                ],
+                engagement: [
+                    { type: 'Choice', title: 'Select the best medium for your message (Video vs Essay)', icon: 'fa-hand-pointer' },
+                    { type: 'Hook', title: 'Draft three different ways to hook your audience', icon: 'fa-fish' }
+                ],
+                representation: [
+                    { type: 'Interactive', title: 'Anatomy of a compelling presentation', icon: 'fa-laptop-code', format: 'interactive' },
+                    { type: 'Guide', title: 'Discipline-specific vocabulary glossary', icon: 'fa-book', format: 'text' }
+                ],
+                expression: ['Polished Essay', 'Edited Podcast Episode', 'Well-designed Slide Deck']
+            },
+            'comm-2.0': {
+                rubricText: "Identify strategies to engage an audience. Plan organization. Show awareness of conventions (design, language, visual vs written).",
+                actions: [
+                    "I created an outline to plan the organization of my message.",
+                    "I identified who my audience is and chose one strategy to engage them.",
+                    "I made sure my visuals matched my spoken words."
+                ],
+                engagement: [
+                    { type: 'Outline', title: 'Use the Storyboard Template to plan', icon: 'fa-clapperboard' },
+                    { type: 'Why', title: 'Why reading off slides ruins a presentation', icon: 'fa-ban' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'Basic presentation design principles (CRAP)', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Checklist', title: 'Pre-flight check for clear writing', icon: 'fa-list-check', format: 'text' }
+                ],
+                expression: ['Speech Outline', 'Storyboard', 'Draft of an email/letter']
+            },
+
+            'advocacy-4.0': {
+                rubricText: "Complete a meaningful positive change that impacts the community OR plan for ongoing/sustainable impact. Impact leads to noticeable improvements, sustainability, relevance, stakeholder engagement, and adaptability.",
+                actions: [
+                    "I executed a project that resulted in a measurable, positive change in the community.",
+                    "I developed a hand-off plan to ensure my project continues after I am gone.",
+                    "I adapted my action plan mid-way based on unexpected community feedback."
+                ],
+                engagement: [
+                    { type: 'Legacy', title: 'How will your work survive when you leave?', icon: 'fa-seedling' },
+                    { type: 'Action', title: 'Partner with a local non-profit or government agency', icon: 'fa-handshake' }
+                ],
+                representation: [
+                    { type: 'Case Study', title: 'Designing for Sustainable Impact', icon: 'fa-earth-americas', format: 'visual' },
+                    { type: 'Article', title: 'Measuring Social Return on Investment (SROI)', icon: 'fa-chart-line', format: 'text' }
+                ],
+                expression: ['Impact Measurement Report', 'Sustainability/Hand-off Manual', 'Documentary of Change']
+            },
+            'advocacy-3.0': {
+                rubricText: "Build ongoing connections with communities connected to a project. Implement a solution based on multiple perspectives and feedback. Analyze the impact of the solution (successes and failures).",
+                actions: [
+                    "I established an ongoing relationship with a community stakeholder.",
+                    "I actually implemented my proposed solution in the real world.",
+                    "I wrote an honest analysis of what worked and what failed in my implementation."
+                ],
+                engagement: [
+                    { type: 'Connection', title: 'Conduct follow-up interviews post-implementation', icon: 'fa-comments' },
+                    { type: 'Growth', title: 'Why analyzing failure is more important than celebrating success', icon: 'fa-arrow-trend-up' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'How to pilot a social project', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Template', title: 'Post-Mortem Project Analysis Protocol', icon: 'fa-clipboard-list', format: 'text' }
+                ],
+                expression: ['Implementation Log', 'Failure Analysis Essay', 'Stakeholder Feedback Survey Results']
+            },
+            'advocacy-2.0': {
+                rubricText: "Plan and prepare for empathy chats. Capture perspectives that reflect complexity. Propose a change, service opportunity, or action plan based on needs.",
+                actions: [
+                    "I wrote open-ended questions and conducted an empathy interview with a stakeholder.",
+                    "I documented the complex needs of the community based on my research.",
+                    "I created a proposal for an action plan to address the identified needs."
+                ],
+                engagement: [
+                    { type: 'Empathy', title: 'Practice your interview questions with a peer first', icon: 'fa-user-group' },
+                    { type: 'Mindset', title: 'Designing WITH, not designing FOR', icon: 'fa-people-arrows' }
+                ],
+                representation: [
+                    { type: 'Video', title: 'How to conduct an Empathy Interview', icon: 'fa-play-circle', format: 'visual' },
+                    { type: 'Example', title: 'Examples of strong vs weak Action Proposals', icon: 'fa-file-signature', format: 'text' }
+                ],
+                expression: ['Empathy Interview Transcript', 'Action Plan Proposal', 'Stakeholder Persona Map']
+            }
+        };
+
+
+        const colorMap = {
+            'creativity': { bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-200', hover: 'hover:border-violet-400', badge: 'bg-violet-100 text-violet-800' },
+            'adaptive': { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', hover: 'hover:border-blue-400', badge: 'bg-blue-100 text-blue-800' },
+            'collab': { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', hover: 'hover:border-emerald-400', badge: 'bg-emerald-100 text-emerald-800' },
+            'comm': { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', hover: 'hover:border-amber-400', badge: 'bg-amber-100 text-amber-800' },
+            'advocacy': { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', hover: 'hover:border-red-400', badge: 'bg-red-100 text-red-800' }
+        };
+
+        // State for interactions and simulated database
+        let currentView = 'grid';
+        let studentEvidence = {}; 
+        let currentActiveCellId = null;
+        let currentDomainData = null;
+        let currentLevelData = null;
+
+        function renderGrid() {
+            const container = document.getElementById('view-grid');
+            container.innerHTML = ''; // clear to prevent duplicates on re-render
+            
+            // 1. Render Headers (Domains)
+            domains.forEach(domain => {
+                const header = document.createElement('div');
+                header.className = `p-4 rounded-xl mb-4 border ${colorMap[domain.color].bg} ${colorMap[domain.color].border} text-center sticky top-0 z-10 shadow-sm`;
+                header.innerHTML = `
+                    <i class="fa-solid ${domain.icon} ${colorMap[domain.color].text} text-xl mb-2"></i>
+                    <h2 class="font-bold text-slate-800 tracking-tight leading-tight">${domain.name}</h2>
+                `;
+                container.appendChild(header);
+            });
+
+            // 2. Render Grid Cells Row by Row
+            levels.forEach(level => {
+                domains.forEach(domain => {
+                    const cellId = `${domain.id}-${level.id}`;
+                    const data = menuData[cellId];
+                    const colors = colorMap[domain.color];
+                    
+                    const cell = document.createElement('div');
+                    cell.className = `bg-white rounded-xl p-5 border ${colors.border} shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md ${colors.hover} hover:-translate-y-1 flex flex-col h-full`;
+                    cell.onclick = () => openModal(domain, level, data);
+                    
+                    // Summarize actions for the card face
+                    let actionsHtml = '';
+                    if(data && data.actions) {
+                        // Just show first 2 actions for brevity on the menu
+                        const previewActions = data.actions.slice(0, 2);
+                        actionsHtml = previewActions.map(a => 
+                            `<li class="text-sm text-slate-600 flex items-start gap-2 mb-2 leading-snug">
+                                <i class="fa-regular fa-square-check mt-1 text-slate-300"></i>
+                                <span>${a}</span>
+                            </li>`
+                        ).join('');
+                        if(data.actions.length > 2) {
+                            actionsHtml += `<li class="text-xs text-slate-400 font-medium italic mt-2">+ ${data.actions.length - 2} more actions...</li>`;
+                        }
+                    } else {
+                        actionsHtml = `<p class="text-sm text-slate-400 italic">Content coming soon...</p>`;
+                    }
+
+                    // Check for logged evidence to show badge
+                    const hasEvidence = studentEvidence[cellId] && studentEvidence[cellId].length > 0;
+                    const evidenceBadge = hasEvidence ? 
+                        `<span class="text-[10px] uppercase font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1 border border-green-200"><i class="fa-solid fa-check"></i> ${studentEvidence[cellId].length} Logged</span>` : '';
+
+                    cell.innerHTML = `
+                        <div class="mb-3 flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">${level.id} Level</span>
+                            <button class="text-slate-300 hover:text-indigo-500 transition"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                        </div>
+                        <ul class="flex-1">${actionsHtml}</ul>
+                        <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center">
+                           <div class="flex gap-2">
+                               <span class="text-[10px] uppercase font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">📚 Learn</span>
+                           </div>
+                           ${evidenceBadge}
+                        </div>
+                    `;
+                    container.appendChild(cell);
+                });
+            });
+        }
+
+
+        function openModal(domain, level, data) {
+            const modal = document.getElementById('focus-modal');
+            const panel = document.getElementById('modal-content-panel');
+            
+            // Track state for evidence logging
+            currentActiveCellId = `${domain.id}-${level.id}`;
+            currentDomainData = domain;
+            currentLevelData = level;
+            
+            // Reset evidence form state
+            document.getElementById('evidence-form-section').classList.add('hidden');
+            document.getElementById('btn-open-evidence').classList.remove('hidden');
+            document.getElementById('evidence-input').value = '';
+            
+            // Render existing evidence
+            renderEvidenceLog();
+            
+            // Populate Modal Header
+            document.getElementById('modal-badge').className = `px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${colorMap[domain.color].badge}`;
+            document.getElementById('modal-badge').innerText = domain.name;
+            document.getElementById('modal-title').innerText = level.name;
+            document.getElementById('modal-header').className = `px-6 py-4 border-b border-slate-100 flex justify-between items-center ${colorMap[domain.color].bg}`;
+
+            if(data) {
+                // Populate Actions (Checklist style)
+                document.getElementById('modal-actions').innerHTML = data.actions.map(a => `
+                    <li class="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-lg transition group">
+                        <input type="checkbox" class="mt-1 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <span class="text-sm text-slate-700 font-medium group-hover:text-slate-900 cursor-pointer">${a}</span>
+                    </li>
+                `).join('');
+
+                // Populate Official Rubric Text
+                document.getElementById('modal-rubric-text').innerText = `"${data.rubricText}"`;
+
+                // Populate UDL Engagement
+                document.getElementById('modal-engagement').innerHTML = data.engagement.map(e => `
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 flex items-start gap-3 hover:border-pink-200 transition cursor-pointer">
+                        <div class="bg-white p-2 rounded-full shadow-sm"><i class="fa-solid ${e.icon} text-pink-500"></i></div>
+                        <div>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">${e.type}</span>
+                            <span class="block text-xs font-medium text-slate-700 leading-tight">${e.title}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Populate UDL Representation
+                document.getElementById('modal-representation').innerHTML = data.representation.map(r => `
+                    <a href="#" class="block bg-slate-50 p-3 rounded-lg border border-slate-100 flex items-start gap-3 hover:border-blue-200 transition group">
+                        <div class="bg-white p-2 rounded-full shadow-sm group-hover:bg-blue-50 transition"><i class="fa-solid ${r.icon} text-blue-500"></i></div>
+                        <div>
+                            <span class="block text-[10px] uppercase font-bold text-slate-400 mb-0.5">${r.type}</span>
+                            <span class="block text-xs font-medium text-slate-700 leading-tight group-hover:text-blue-700">${r.title}</span>
+                        </div>
+                    </a>
+                `).join('');
+
+                // Populate UDL Expression
+                document.getElementById('modal-expression').innerHTML = data.expression.map(ex => `
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200 cursor-pointer hover:bg-green-100 transition">
+                        <i class="fa-solid fa-plus text-[10px] mr-1.5"></i> ${ex}
+                    </span>
+                `).join('');
+            }
+
+            // Show Modal with Animation
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth; 
+            
+            modal.classList.add('opacity-100');
+            panel.classList.remove('scale-95');
+            panel.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('focus-modal');
+            const panel = document.getElementById('modal-content-panel');
+            
+            modal.classList.remove('opacity-100');
+            panel.classList.remove('scale-100');
+            panel.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // match duration
+        }
+
+        // Close modal on click outside
+        document.getElementById('focus-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // --- View Toggling Logic ---
+        function toggleView(view) {
+            currentView = view;
+            const btnGrid = document.getElementById('btn-grid-view');
+            const btnList = document.getElementById('btn-list-view');
+            const viewGrid = document.getElementById('view-grid');
+            const viewList = document.getElementById('view-list');
+
+            if (view === 'grid') {
+                btnGrid.className = "px-4 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-700 transition";
+                btnList.className = "px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 transition";
+                viewGrid.classList.remove('hidden');
+                viewList.classList.add('hidden');
+            } else {
+                btnList.className = "px-4 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-700 transition";
+                btnGrid.className = "px-4 py-2 text-sm font-medium rounded-md text-slate-600 hover:text-slate-900 transition";
+                viewList.classList.remove('hidden');
+                viewGrid.classList.add('hidden');
+            }
+        }
+
+        // --- List View Rendering ---
+        function renderList() {
+            const container = document.getElementById('view-list');
+            container.innerHTML = ''; 
+
+            domains.forEach(domain => {
+                const domainColors = colorMap[domain.color];
+                
+                const section = document.createElement('div');
+                section.className = "mb-8 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm";
+                
+                section.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6 border-b-2 ${domainColors.border} pb-4">
+                        <div class="${domainColors.bg} ${domainColors.text} p-3 rounded-xl"><i class="fa-solid ${domain.icon} text-2xl"></i></div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800 leading-tight">${domain.name}</h2>
+                            <p class="text-sm text-slate-500">Explore learning resources and log evidence across all levels.</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4" id="list-levels-${domain.id}"></div>
+                `;
+                container.appendChild(section);
+
+                const levelsContainer = section.querySelector(`#list-levels-${domain.id}`);
+
+                levels.forEach(level => {
+                    const cellId = `${domain.id}-${level.id}`;
+                    const data = menuData[cellId];
+                    
+                    const hasEvidence = studentEvidence[cellId] && studentEvidence[cellId].length > 0;
+                    const evidenceBadge = hasEvidence ? 
+                        `<span class="text-xs uppercase font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full flex items-center gap-1 border border-green-200"><i class="fa-solid fa-check"></i> ${studentEvidence[cellId].length} Logs</span>` : '';
+
+                    let actionsHtml = '<p class="text-sm text-slate-400 italic">Content coming soon...</p>';
+                    if(data && data.actions) {
+                        actionsHtml = data.actions.map(a => 
+                            `<li class="text-sm text-slate-600 flex items-start gap-2 mb-1">
+                                <i class="fa-regular fa-square-check mt-1 text-slate-300"></i>
+                                <span>${a}</span>
+                            </li>`
+                        ).join('');
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = `bg-slate-50 rounded-xl p-5 border border-slate-100 cursor-pointer transition-all duration-200 hover:shadow-md ${domainColors.hover}`;
+                    card.onclick = () => openModal(domain, level, data);
+                    
+                    card.innerHTML = `
+                        <div class="flex flex-col sm:flex-row justify-between items-start mb-3 gap-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">${level.name}</h3>
+                                <div class="flex gap-2 mt-2">
+                                    <span class="text-[10px] uppercase font-bold bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded">📚 Resources Available</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-2 w-full sm:w-auto">
+                                ${evidenceBadge}
+                                <button class="text-sm font-medium text-slate-500 hover:text-indigo-600 transition flex items-center gap-1 w-full justify-end">Explore <i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                        <ul class="pl-0 sm:pl-3 sm:border-l-2 ${domainColors.border} space-y-2 mt-4">
+                            ${actionsHtml}
+                        </ul>
+                    `;
+                    levelsContainer.appendChild(card);
+                });
+            });
+        }
+
+        // --- Evidence Logging Logic ---
+        function toggleEvidenceForm() {
+            const form = document.getElementById('evidence-form-section');
+            const btn = document.getElementById('btn-open-evidence');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                btn.classList.add('hidden');
+                document.getElementById('evidence-input').focus();
+            } else {
+                form.classList.add('hidden');
+                btn.classList.remove('hidden');
+                document.getElementById('evidence-input').value = ''; 
+            }
+        }
+
+        function submitEvidence() {
+            const input = document.getElementById('evidence-input').value.trim();
+            if (!input) return;
+
+            // Initialize array if this is the first piece of evidence for this cell
+            if (!studentEvidence[currentActiveCellId]) {
+                studentEvidence[currentActiveCellId] = [];
+            }
+            
+            const newLog = {
+                date: new Date().toLocaleDateString(),
+                text: input
+            };
+            
+            // Save to memory
+            studentEvidence[currentActiveCellId].push(newLog);
+            
+            // Re-render everything to update UI badges
+            renderGrid();
+            renderList();
+            renderEvidenceLog();
+            
+            // Hide form again
+            toggleEvidenceForm();
+        }
+
+        function renderEvidenceLog() {
+            const logContainer = document.getElementById('modal-evidence-log');
+            const list = document.getElementById('evidence-list');
+            const logs = studentEvidence[currentActiveCellId];
+            
+            if (logs && logs.length > 0) {
+                logContainer.classList.remove('hidden');
+                list.innerHTML = logs.map(log => `
+                    <li class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                        <span class="text-[10px] font-bold text-slate-400 block mb-1 uppercase tracking-wider">${log.date}</span>
+                        <p class="text-sm text-slate-700">${log.text}</p>
+                    </li>
+                `).join('');
+            } else {
+                logContainer.classList.add('hidden');
+                list.innerHTML = '';
+            }
+        }
+
+        window.onload = () => {
+            renderGrid();
+            renderList();
+        };
+
+    </script>
+</body>
+</html>
