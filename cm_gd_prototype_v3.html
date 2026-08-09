@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Changemakers Proficiency Dashboard - Google Docs</title>
+  <title>Changemakers Portfolio & Dashboard - Google Docs</title>
   <style>
     :root {
       --gdoc-bg: #f9fbfd;
@@ -14,6 +14,12 @@
       --tab-active-bg: #c2e7ff;
       --tab-active-text: #041e49;
       --primary-blue: #0b57d0;
+      
+      /* Scale Header Colors */
+      --lvl-1-color: #d93025;
+      --lvl-2-color: #b06000;
+      --lvl-3-color: #0b57d0;
+      --lvl-4-color: #137333;
     }
 
     * { box-sizing: border-box; font-family: Arial, sans-serif; }
@@ -59,24 +65,40 @@
 
     /* Main Workspace / Page Canvas */
     .doc-workspace { flex: 1; background: #f1f3f4; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
-    .page-canvas { background: #ffffff; width: 900px; min-height: 1100px; padding: 50px 56px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); border-radius: 2px; }
+    .page-canvas { background: #ffffff; width: 920px; min-height: 1100px; padding: 48px 52px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); border-radius: 2px; }
 
     /* --- DOCUMENT CONTENT TYPOGRAPHY & TABLES --- */
     .doc-h1 { font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 4px; color: #000000; }
-    .doc-subheading { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+    .doc-subheading { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
     .substrand-header { font-size: 14px; font-weight: bold; margin-top: 24px; margin-bottom: 6px; color: #111; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; }
     
     /* Callout Banner */
     .doc-action-menu { background: #f0f4f9; border-left: 3px solid var(--primary-blue); padding: 8px 12px; font-size: 11px; color: #1f1f1f; margin-bottom: 16px; line-height: 1.4; }
     .doc-action-menu strong { color: var(--primary-blue); }
 
-    /* Native Google Doc Table Style */
+    /* LEARNING PROGRESSIONS / PROFICIENCY SCALE CONTAINER */
+    .progression-card { background: #f8fafd; border: 1px solid #d2e3fc; border-radius: 6px; padding: 12px 14px; margin-bottom: 20px; }
+    .progression-summary { font-size: 13px; font-weight: bold; color: var(--primary-blue); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; }
+    .progression-summary:hover { text-decoration: underline; }
+    
+    table.scale-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; line-height: 1.35; background: #ffffff; }
+    table.scale-table th, table.scale-table td { border: 1px solid #d0d7de; padding: 8px; vertical-align: top; text-align: left; }
+    table.scale-table th { font-weight: bold; font-size: 12px; text-align: center; background-color: #fafafa; }
+    table.scale-table td.strand-title { font-weight: bold; background-color: #f6f8fa; width: 18%; color: #24292f; vertical-align: middle; }
+    
+    .lvl-1-hdr { color: var(--lvl-1-color); }
+    .lvl-2-hdr { color: var(--lvl-2-color); }
+    .lvl-3-hdr { color: var(--lvl-3-color); }
+    .lvl-4-hdr { color: var(--lvl-4-color); }
+
+    .scale-note-box { background: #ffffff; border: 1px solid #e1e4e8; border-radius: 4px; padding: 8px 12px; font-size: 11px; color: #57606a; margin-top: 8px; line-height: 1.4; }
+
+    /* Native Google Doc Artifact Table Style */
     table.gdoc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
     table.gdoc-table th, table.gdoc-table td { border: 1px solid #747775; padding: 8px; vertical-align: top; text-align: left; }
     table.gdoc-table th { background-color: #f8f9fa; font-weight: bold; font-size: 11px; text-transform: uppercase; color: #444; }
     
     .metacognition-box { background: #fff8e1; border: 1px dashed #ffe082; padding: 6px 8px; border-radius: 3px; font-style: italic; color: #5d4037; font-size: 11px; margin-top: 4px; }
-    
     .tag-pill { display: inline-block; background: #e8f0fe; color: #1967d2; border: 1px solid #aecbfa; border-radius: 12px; padding: 2px 8px; font-size: 10px; font-weight: bold; margin-top: 4px; }
     
     .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
@@ -195,8 +217,7 @@
               </tr>
             </thead>
             <tbody>
-
-              <!-- Entry 11: Dec 08 -->
+              <!-- Entry 11 -->
               <tr class="entry-row curated">
                 <td><strong>Dec 08, 2026</strong></td>
                 <td>
@@ -214,7 +235,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 10: Nov 28 -->
+              <!-- Entry 10 -->
               <tr class="entry-row curated">
                 <td><strong>Nov 28, 2026</strong></td>
                 <td>
@@ -228,7 +249,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 9: Nov 18 -->
+              <!-- Entry 9 -->
               <tr class="entry-row process">
                 <td><strong>Nov 18, 2026</strong></td>
                 <td>
@@ -242,7 +263,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 8: Nov 04 -->
+              <!-- Entry 8 -->
               <tr class="entry-row curated">
                 <td><strong>Nov 04, 2026</strong></td>
                 <td>
@@ -260,7 +281,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 7: Oct 22 -->
+              <!-- Entry 7 -->
               <tr class="entry-row curated">
                 <td><strong>Oct 22, 2026</strong></td>
                 <td>
@@ -278,7 +299,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 6: Oct 08 -->
+              <!-- Entry 6 -->
               <tr class="entry-row curated">
                 <td><strong>Oct 08, 2026</strong></td>
                 <td>
@@ -292,7 +313,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 5: Sep 29 -->
+              <!-- Entry 5 -->
               <tr class="entry-row process">
                 <td><strong>Sep 29, 2026</strong></td>
                 <td>
@@ -306,7 +327,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 4: Sep 18 -->
+              <!-- Entry 4 -->
               <tr class="entry-row curated">
                 <td><strong>Sep 18, 2026</strong></td>
                 <td>
@@ -324,7 +345,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 3: Sep 05 -->
+              <!-- Entry 3 -->
               <tr class="entry-row process">
                 <td><strong>Sep 05, 2026</strong></td>
                 <td>
@@ -338,7 +359,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 2: Aug 22 -->
+              <!-- Entry 2 -->
               <tr class="entry-row curated">
                 <td><strong>Aug 22, 2026</strong></td>
                 <td>
@@ -352,7 +373,7 @@
                 </td>
               </tr>
 
-              <!-- Entry 1: Aug 10 -->
+              <!-- Entry 1 -->
               <tr class="entry-row process">
                 <td><strong>Aug 10, 2026</strong></td>
                 <td>
@@ -365,17 +386,55 @@
                   <span class="badge badge-process">Journal Only</span>
                 </td>
               </tr>
-
             </tbody>
           </table>
         </div>
 
         <!-- TAB 1: COMMUNICATION -->
         <div id="tab-comm" class="tab-content">
-          <div class="doc-h1">Communication Process Journal</div>
-          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+          <div class="doc-h1">Communication</div>
+          <div class="doc-subheading">Verbal · Written · Visual</div>
 
-          <!-- Verbal -->
+          <!-- PROFICIENCY SCALE CARD -->
+          <details class="progression-card" open>
+            <summary class="progression-summary">▼ Learning progressions — Communication</summary>
+            <table class="scale-table">
+              <thead>
+                <tr>
+                  <th style="width: 18%;">Strand</th>
+                  <th style="width: 20.5%;" class="lvl-1-hdr">1.0</th>
+                  <th style="width: 20.5%;" class="lvl-2-hdr">2.0</th>
+                  <th style="width: 20.5%;" class="lvl-3-hdr">3.0</th>
+                  <th style="width: 20.5%;" class="lvl-4-hdr">4.0</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="strand-title">Verbal</td>
+                  <td>Spoken points are unclear or incomplete; relies heavily on prompts and struggles with pacing or volume.</td>
+                  <td>Delivers clear basic points with steady volume, though pacing, transitions, or audience engagement may be inconsistent.</td>
+                  <td>Expresses ideas fluently and confidently; adapts tone and structure to engage the intended audience effectively.</td>
+                  <td>Articulates complex ideas persuasively and eloquently; masterfully adapts tone, rhetoric, and pace for maximum impact.</td>
+                </tr>
+                <tr>
+                  <td class="strand-title">Written</td>
+                  <td>Drafts unfocused or fragmented text with frequent mechanical errors that disrupt readability.</td>
+                  <td>Writes coherent text with a clear main idea, though structure or mechanical consistency varies.</td>
+                  <td>Writes purposeful, well-structured text using precise vocabulary and strong mechanical control.</td>
+                  <td>Crafts compelling, highly polished text that seamlessly synthesizes complex ideas with stylistic control.</td>
+                </tr>
+                <tr>
+                  <td class="strand-title">Visual</td>
+                  <td>Includes visual elements that are decorative, cluttered, or loosely related to the core message.</td>
+                  <td>Uses simple visual elements that support the message, though layout or design choices remain basic.</td>
+                  <td>Designs clear, purposeful visual elements that enhance understanding and align with the message.</td>
+                  <td>Crafts high-impact visual designs that elegantly synthesize complex data and optimize viewer engagement.</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <!-- Verbal Strand -->
           <div class="substrand-header">Verbal Communication</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Summarized pitch verbally · Recorded team check-in · Presented strategy to audience · Led workshop discussion
@@ -402,12 +461,12 @@
                     "Growth Note: Replaced informal chatter with a clear 2-minute pitch outlining individual teammate responsibilities."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 1)</strong><br><small>Great improvement in pacing and clarity.</small></td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Level 3.0: Great improvement in pacing and clarity.</small></td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Written -->
+          <!-- Written Strand -->
           <div class="substrand-header">Written Communication</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Authored project proposal · Drafted stakeholder email · Summarized research source · Wrote synthesis reflection
@@ -435,7 +494,7 @@
             </tbody>
           </table>
 
-          <!-- Visual -->
+          <!-- Visual Strand -->
           <div class="substrand-header">Visual Communication</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Designed infographic · Created visual prototype mockup · Formatted data chart · Built slide visual hierarchy
@@ -462,7 +521,7 @@
                     "Demonstrates growth in visual hierarchy: Replaced messy text notes with color-coded wireframe components."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 1)</strong><br><small>Visual layout is intuitive and clean.</small></td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Level 3.0: Visual layout is intuitive and clean.</small></td>
               </tr>
             </tbody>
           </table>
@@ -470,11 +529,46 @@
 
         <!-- TAB 2: ANALYSIS -->
         <div id="tab-analysis" class="tab-content">
-          <div class="doc-h1">Analysis Process Journal</div>
-          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+          <div class="doc-h1">Analysis</div>
+          <div class="doc-subheading">Written Text · Visual Text</div>
 
-          <!-- Written Text -->
-          <div class="substrand-header">Written Text Analysis</div>
+          <!-- PROFICIENCY SCALE CARD -->
+          <details class="progression-card" open>
+            <summary class="progression-summary">▼ Learning progressions — Analysis</summary>
+            <table class="scale-table">
+              <thead>
+                <tr>
+                  <th style="width: 18%;">Strand</th>
+                  <th style="width: 20.5%;" class="lvl-1-hdr">1.0</th>
+                  <th style="width: 20.5%;" class="lvl-2-hdr">2.0</th>
+                  <th style="width: 20.5%;" class="lvl-3-hdr">3.0</th>
+                  <th style="width: 20.5%;" class="lvl-4-hdr">4.0</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="strand-title">Analysis of written text</td>
+                  <td>Summarizes literal content without identifying underlying patterns, arguments, or connections between texts.</td>
+                  <td>Identifies explicit themes and connections between texts, though deeper subtext or implications remain unexplored.</td>
+                  <td>Analyzes how written elements interact to construct meaning, arguments, and implicit themes.</td>
+                  <td>Evaluates complex intertextual nuances, critiquing subtle bias, rhetoric, and subtext across mediums.</td>
+                </tr>
+                <tr>
+                  <td class="strand-title">Analysis of visual text</td>
+                  <td>Describes what a visual shows without asking what it is doing or who made it.</td>
+                  <td>Identifies the choices a visual makes, such as colour, framing or omission, and names an obvious effect, without connecting them to purpose or audience.</td>
+                  <td>Analyses how visual choices construct meaning for a particular audience, including what has been left out.</td>
+                  <td>Critiques bias, rhetoric and framing across visual sources, comparing how different makers construct the same claim.</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="scale-note-box">
+              <strong>Half points:</strong> A student with a 3.5 can do what 3.0 describes consistently and some of what 4.0 describes. In this domain that usually means a reading that holds for one text but has not yet been extended across several.
+            </div>
+          </details>
+
+          <!-- Written Text Strand -->
+          <div class="substrand-header">Analysis of Written Text</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Deconstructed article argument · Annotated primary source · Compared two policy viewpoints
           </div>
@@ -501,8 +595,8 @@
             </tbody>
           </table>
 
-          <!-- Visual Text -->
-          <div class="substrand-header">Visual Text Analysis</div>
+          <!-- Visual Text Strand -->
+          <div class="substrand-header">Analysis of Visual Text</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Analyzed photojournalism set · Interpreted complex infographic · Evaluated documentary credibility
           </div>
@@ -532,11 +626,50 @@
 
         <!-- TAB 3: INQUIRY & DESIGN -->
         <div id="tab-inquiry" class="tab-content">
-          <div class="doc-h1">Inquiry & Design Process Journal</div>
-          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+          <div class="doc-h1">Inquiry & Design Processes</div>
+          <div class="doc-subheading">Gathers multiple perspectives · Honors iterative process · Reflects on efficacy of process stage</div>
 
-          <!-- Multiple Perspectives -->
-          <div class="substrand-header">Multiple Perspectives</div>
+          <!-- PROFICIENCY SCALE CARD -->
+          <details class="progression-card" open>
+            <summary class="progression-summary">▼ Learning progressions — Inquiry & Design Processes</summary>
+            <table class="scale-table">
+              <thead>
+                <tr>
+                  <th style="width: 18%;">Strand</th>
+                  <th style="width: 20.5%;" class="lvl-1-hdr">1.0</th>
+                  <th style="width: 20.5%;" class="lvl-2-hdr">2.0</th>
+                  <th style="width: 20.5%;" class="lvl-3-hdr">3.0</th>
+                  <th style="width: 20.5%;" class="lvl-4-hdr">4.0</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="strand-title">Gathers multiple perspectives</td>
+                  <td>Relies on a single source or familiar viewpoint, ignoring diverse or conflicting perspectives.</td>
+                  <td>Identifies a few contrasting viewpoints, though representation remains surface-level or unbalanced.</td>
+                  <td>Actively seeks and integrates diverse, credible viewpoints to build a balanced understanding.</td>
+                  <td>Critically compares and synthesizes complex, divergent perspectives to refine inquiry and challenge assumptions.</td>
+                </tr>
+                <tr>
+                  <td class="strand-title">Honors iterative process</td>
+                  <td>Completes a single draft or model with minimal effort to test, revise, or refine ideas.</td>
+                  <td>Makes superficial revisions when directed, treating iteration as a formal requirement rather than a learning tool.</td>
+                  <td>Embraces testing and critique to make meaningful, progressive improvements across multiple iterations.</td>
+                  <td>Drives continuous, self-directed refinement, treating setbacks as vital data points to innovate and transform design.</td>
+                </tr>
+                <tr>
+                  <td class="strand-title">Reflects on efficacy of process stage</td>
+                  <td>Offers brief or superficial statements about actions taken without assessing their effectiveness.</td>
+                  <td>Identifies basic strengths and weaknesses of a process stage with teacher prompting.</td>
+                  <td>Evaluates the effectiveness of specific process decisions and identifies actionable takeaways for growth.</td>
+                  <td>Metacognitively evaluates process choices, anticipating challenges and optimizing methodologies for future contexts.</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <!-- Multiple Perspectives Strand -->
+          <div class="substrand-header">Gathers Multiple Perspectives</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Conducted stakeholder interview · Synthesized opposing viewpoints · Documented empathy map
           </div>
@@ -562,13 +695,13 @@
                     "Synthesized conflicting feedback from facility staff and student users into an empathy map."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 1)</strong><br><small>Strong empathy mapping technique.</small></td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Level 3.0: Strong empathy mapping technique.</small></td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Iterative Design -->
-          <div class="substrand-header">Iterative Design</div>
+          <!-- Iterative Process Strand -->
+          <div class="substrand-header">Honors Iterative Process</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Documented feature revision · Logged user test results · Modified project scope based on feedback
           </div>
@@ -594,13 +727,13 @@
                     "Tested prototype v1 with 8 classmates and redesigned navigation based on usability bottlenecks."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 1)</strong><br><small>Clear evidence of iterative pivot.</small></td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Level 3.0: Clear evidence of iterative pivot.</small></td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Process Reflection -->
-          <div class="substrand-header">Process Reflection</div>
+          <!-- Process Reflection Strand -->
+          <div class="substrand-header">Reflects on Efficacy of Process Stage</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Evaluated personal contribution · Analyzed team failure/pivot · Drafted retrospective
           </div>
@@ -626,7 +759,7 @@
                     "Final synthesis reflecting on self-assessment accuracy across the whole semester."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 2)</strong><br><small>Accurate metacognitive calibration.</small></td>
+                <td><strong>Confirmed (Show Date 2)</strong><br><small>Level 3.5: Accurate metacognitive calibration.</small></td>
               </tr>
               <tr class="entry-row process">
                 <td>Sep 29, 2026</td>
@@ -644,11 +777,43 @@
 
         <!-- TAB 4: ACTION & IMPACT -->
         <div id="tab-action" class="tab-content">
-          <div class="doc-h1">Action & Impact Process Journal</div>
-          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+          <div class="doc-h1">Action / Impact</div>
+          <div class="doc-subheading">Refines prototypes based on feedback · Evaluates impact of action</div>
 
-          <!-- Refines Prototypes -->
-          <div class="substrand-header">Refines Prototypes</div>
+          <!-- PROFICIENCY SCALE CARD -->
+          <details class="progression-card" open>
+            <summary class="progression-summary">▼ Learning progressions — Action / Impact</summary>
+            <table class="scale-table">
+              <thead>
+                <tr>
+                  <th style="width: 18%;">Strand</th>
+                  <th style="width: 20.5%;" class="lvl-1-hdr">1.0</th>
+                  <th style="width: 20.5%;" class="lvl-2-hdr">2.0</th>
+                  <th style="width: 20.5%;" class="lvl-3-hdr">3.0</th>
+                  <th style="width: 20.5%;" class="lvl-4-hdr">4.0</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="strand-title">Refines prototypes based on feedback</td>
+                  <td>Ignores feedback or makes minor edits that do not address the core issues identified.</td>
+                  <td>Applies select feedback, though changes may be superficial or partially aligned with input.</td>
+                  <td>Systematically incorporates feedback and test data to resolve flaws and improve functionality or design.</td>
+                  <td>Dissects feedback deeply, discerning critical insights to elevate and transform prototype performance.</td>
+                </tr>
+                <tr>
+                  <td class="strand-title">Evaluates impact of action</td>
+                  <td>Describes the immediate outcome without assessing whether the project met its intended goals.</td>
+                  <td>Assesses basic success or failure using limited criteria or informal observation.</td>
+                  <td>Evaluates project impact against clear target criteria, supported by relevant evidence or user data.</td>
+                  <td>Conducts a rigorous, multifaceted evaluation of short- and long-term impact, identifying broader implications and future steps.</td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
+
+          <!-- Refines Prototypes Strand -->
+          <div class="substrand-header">Refines Prototypes Based on Feedback</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Applied physical/digital refinement · Integrated technical constraint · Upgraded design fidelity
           </div>
@@ -674,13 +839,13 @@
                     "Pivoted cardboard mockup into a CAD model with real solar array structural dimensions."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 2)</strong><br><small>Excellent technical refinement.</small></td>
+                <td><strong>Confirmed (Show Date 2)</strong><br><small>Level 3.0: Excellent technical refinement.</small></td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Evaluates Impact -->
-          <div class="substrand-header">Evaluates Impact</div>
+          <!-- Evaluates Impact Strand -->
+          <div class="substrand-header">Evaluates Impact of Action</div>
           <div class="doc-action-menu">
             <strong>Menu of Concrete Actions:</strong> Collected outcome survey data · Measured community reach · Analyzed campaign metrics
           </div>
@@ -706,7 +871,7 @@
                     "Gathered and visualized survey feedback from 52 pilot users to measure real campus impact."
                   </div>
                 </td>
-                <td><strong>Confirmed (Show Date 2)</strong><br><small>Solid quantitative data collection.</small></td>
+                <td><strong>Confirmed (Show Date 2)</strong><br><small>Level 3.0: Solid quantitative data collection.</small></td>
               </tr>
             </tbody>
           </table>
