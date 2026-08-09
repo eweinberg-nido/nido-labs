@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changemakers Proficiency Dashboard - Google Docs</title>
+  <style>
+    :root {
+      --gdoc-bg: #f9fbfd;
+      --toolbar-bg: #edf2fa;
+      --border-color: #c7c7c7;
+      --text-dark: #1f1f1f;
+      --text-muted: #444746;
+      --tab-active-bg: #c2e7ff;
+      --tab-active-text: #041e49;
+      --primary-blue: #0b57d0;
+    }
+
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { margin: 0; padding: 0; background-color: var(--gdoc-bg); color: var(--text-dark); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* --- TOP GOOGLE DOCS HEADER --- */
+    .gdoc-header { background: #ffffff; border-bottom: 1px solid #e0e0e0; padding: 8px 16px 4px 16px; flex-shrink: 0; }
+    .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .doc-title-area { display: flex; align-items: center; gap: 10px; }
+    .doc-icon { width: 20px; height: 26px; background: #2684fc; border-radius: 2px; display: inline-block; position: relative; }
+    .doc-icon::after { content: ''; position: absolute; right: 0; top: 0; border-width: 0 6px 6px 0; border-style: solid; border-color: #ffffff #ffffff var(--gdoc-bg) var(--gdoc-bg); }
+    .doc-title { font-size: 18px; font-weight: 400; color: #1f1f1f; border: none; padding: 2px 4px; border-radius: 3px; }
+    
+    .menu-bar { display: flex; gap: 14px; font-size: 13px; color: var(--text-muted); margin-left: 30px; }
+    .menu-item { cursor: pointer; }
+    .menu-item:hover { color: #000; }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-share { background: #c2e7ff; color: #041e49; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+    /* --- GOOGLE DOCS TOOLBAR --- */
+    .gdoc-toolbar { background: var(--toolbar-bg); border-radius: 24px; margin: 0 16px 8px 16px; padding: 4px 12px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); border: 1px solid #e0e6ed; }
+    .toolbar-group { display: flex; align-items: center; gap: 8px; border-right: 1px solid #d0d7de; padding-right: 10px; }
+    .view-toggle-btn { background: #ffffff; border: 1px solid #c7c7c7; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .view-toggle-btn.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+
+    /* --- MAIN LAYOUT (SIDEBAR + PAGE) --- */
+    .doc-body-container { display: flex; flex: 1; overflow: hidden; }
+
+    /* Left Sidebar ("Document tabs") */
+    .doc-tabs-sidebar { width: 250px; background: #f9fbfd; border-right: 1px solid #e0e0e0; padding: 12px 8px; flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar-header { font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 12px; padding-left: 8px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .sidebar-section-title { font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin: 12px 0 6px 8px; letter-spacing: 0.5px; }
+
+    .tab-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 20px; font-size: 13px; color: var(--text-dark); cursor: pointer; margin-bottom: 2px; text-decoration: none; }
+    .tab-item:hover { background: #eaeef4; }
+    .tab-item.active { background: var(--tab-active-bg); color: var(--tab-active-text); font-weight: bold; }
+    .tab-item.main-log-tab { background: #e8f0fe; border: 1px solid #d2e3fc; font-weight: bold; }
+    .tab-item.main-log-tab.active { background: #c2e7ff; border-color: #7fc1ff; color: #041e49; }
+
+    .sidebar-divider { height: 1px; background: #e0e0e0; margin: 8px 0; }
+
+    /* Main Workspace / Page Canvas */
+    .doc-workspace { flex: 1; background: #f1f3f4; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
+    .page-canvas { background: #ffffff; width: 900px; min-height: 1100px; padding: 50px 56px; box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); border-radius: 2px; }
+
+    /* --- DOCUMENT CONTENT TYPOGRAPHY & TABLES --- */
+    .doc-h1 { font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 4px; color: #000000; }
+    .doc-subheading { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+    .substrand-header { font-size: 14px; font-weight: bold; margin-top: 24px; margin-bottom: 6px; color: #111; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; }
+    
+    /* Callout Banner */
+    .doc-action-menu { background: #f0f4f9; border-left: 3px solid var(--primary-blue); padding: 8px 12px; font-size: 11px; color: #1f1f1f; margin-bottom: 16px; line-height: 1.4; }
+    .doc-action-menu strong { color: var(--primary-blue); }
+
+    /* Native Google Doc Table Style */
+    table.gdoc-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
+    table.gdoc-table th, table.gdoc-table td { border: 1px solid #747775; padding: 8px; vertical-align: top; text-align: left; }
+    table.gdoc-table th { background-color: #f8f9fa; font-weight: bold; font-size: 11px; text-transform: uppercase; color: #444; }
+    
+    .metacognition-box { background: #fff8e1; border: 1px dashed #ffe082; padding: 6px 8px; border-radius: 3px; font-style: italic; color: #5d4037; font-size: 11px; margin-top: 4px; }
+    
+    .tag-pill { display: inline-block; background: #e8f0fe; color: #1967d2; border: 1px solid #aecbfa; border-radius: 12px; padding: 2px 8px; font-size: 10px; font-weight: bold; margin-top: 4px; }
+    
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+    .badge-curated { background: #e6f4ea; color: #137333; }
+    .badge-process { background: #f1f3f4; color: #5f6368; }
+
+    /* Right Apps Sidebar simulation */
+    .gdoc-right-sidebar { width: 48px; background: #ffffff; border-left: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 20px; color: var(--text-muted); font-size: 16px; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Google Docs Navigation Header -->
+  <header class="gdoc-header">
+    <div class="top-row">
+      <div class="doc-title-area">
+        <div class="doc-icon"></div>
+        <span class="doc-title">Changemakers Portfolio & Journal (2026-2027)</span>
+        <span style="font-size: 12px; color: var(--text-muted);">📁 Shared Drive</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-share">🔒 Share</button>
+        <div style="width: 28px; height: 28px; background: #1a73e8; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">AR</div>
+      </div>
+    </div>
+    <div class="menu-bar">
+      <span class="menu-item">File</span>
+      <span class="menu-item">Edit</span>
+      <span class="menu-item">View</span>
+      <span class="menu-item">Insert</span>
+      <span class="menu-item">Format</span>
+      <span class="menu-item">Tools</span>
+      <span class="menu-item">Extensions</span>
+      <span class="menu-item">Help</span>
+    </div>
+  </header>
+
+  <!-- Google Docs Toolbar -->
+  <div class="gdoc-toolbar">
+    <div class="toolbar-group">
+      <span>100%</span> ▾
+      <span style="margin-left: 8px;">Normal text</span> ▾
+      <span style="margin-left: 8px; font-family: Arial;">Arial</span> ▾
+      <span>11</span>
+    </div>
+    <div class="toolbar-group">
+      <strong>B</strong> <em>I</em> <u>U</u> <span style="color:#d93025">A</span>
+    </div>
+    <div class="toolbar-group">
+      <span>Filter View:</span>
+      <button class="view-toggle-btn active" onclick="setFilter('all', this)">All Entries (Process Journal)</button>
+      <button class="view-toggle-btn" onclick="setFilter('curated', this)">Curated Evidence (Show Dates)</button>
+    </div>
+  </div>
+
+  <!-- Main Body Container -->
+  <div class="doc-body-container">
+
+    <!-- Left Sidebar: Document Tabs -->
+    <div class="doc-tabs-sidebar">
+      <div class="sidebar-header">
+        <span>Document tabs</span>
+        <span style="cursor:pointer;">+</span>
+      </div>
+
+      <!-- MAIN TOP TAB: Chronological Artifact Log -->
+      <div class="tab-item main-log-tab active" onclick="switchTab('log', this)">
+        <span class="tab-icon">📅</span>
+        <span>Running Process Journal</span>
+      </div>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-title">Competency Views</div>
+
+      <div class="tab-item" onclick="switchTab('comm', this)">
+        <span class="tab-icon">📄</span>
+        <span>1. Communication</span>
+      </div>
+      <div class="tab-item" onclick="switchTab('analysis', this)">
+        <span class="tab-icon">📄</span>
+        <span>2. Analysis</span>
+      </div>
+      <div class="tab-item" onclick="switchTab('inquiry', this)">
+        <span class="tab-icon">📄</span>
+        <span>3. Inquiry & Design</span>
+      </div>
+      <div class="tab-item" onclick="switchTab('action', this)">
+        <span class="tab-icon">📄</span>
+        <span>4. Action & Impact</span>
+      </div>
+    </div>
+
+    <!-- Center Document Canvas -->
+    <div class="doc-workspace">
+      <div class="page-canvas">
+
+        <!-- TAB 0: CHRONOLOGICAL RUNNING PROCESS JOURNAL (MAIN TAB) -->
+        <div id="tab-log" class="tab-content active">
+          <div class="doc-h1">Running Process Journal (Chronological Log)</div>
+          <div class="doc-subheading">Student: <strong>Alex Rivera</strong> &nbsp;|&nbsp; Semester Timeline: <strong>Aug 3 – Dec 15, 2026</strong></div>
+
+          <div class="doc-action-menu">
+            <strong>How to use this journal:</strong> Log daily reflections, work, and uploaded artifacts here chronologically. You don't need to overthink skill categories during class—just keep a running record of progress. Tag competencies as you go or during scheduled Show Dates.
+          </div>
+
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date</th>
+                <th style="width: 26%;">Artifact & Action</th>
+                <th style="width: 38%;">Process Reflection / Growth Rationale</th>
+                <th style="width: 22%;">Competency Tag / State</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Entry 11: Dec 08 -->
+              <tr class="entry-row curated">
+                <td><strong>Dec 08, 2026</strong></td>
+                <td>
+                  <a href="#">📓 Final_Portfolio_Synthesis.pdf</a><br>
+                  <small>Action: Mid-project retrospective</small>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Growth Reflection: Synthesized semester progress across all 4 competencies, demonstrating self-evaluation accuracy from Level 1 baseline to Level 3 strength."
+                  </div>
+                </td>
+                <td>
+                  <span class="tag-pill">Inquiry: Process Reflection</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 2)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 10: Nov 28 -->
+              <tr class="entry-row curated">
+                <td><strong>Nov 28, 2026</strong></td>
+                <td>
+                  <a href="#">📈 Survey_Impact_Analysis.xlsx</a><br>
+                  <small>Action: Collected outcome survey data</small>
+                </td>
+                <td>Analyzed responses from 52 pilot kiosk users. Created data visualizations showing an 84% positive reception among student peers.</td>
+                <td>
+                  <span class="tag-pill">Impact: Evaluates Impact</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 2)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 9: Nov 18 -->
+              <tr class="entry-row process">
+                <td><strong>Nov 18, 2026</strong></td>
+                <td>
+                  <a href="#">📊 Campus_Traffic_Infographic.png</a><br>
+                  <small>Action: Interpreted complex infographic</small>
+                </td>
+                <td>Extracted key pedestrian flow data to determine optimal physical placement for our solar kiosk prototype on campus.</td>
+                <td>
+                  <span class="tag-pill">Analysis: Visual Text</span><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+              </tr>
+
+              <!-- Entry 8: Nov 04 -->
+              <tr class="entry-row curated">
+                <td><strong>Nov 04, 2026</strong></td>
+                <td>
+                  <a href="#">⚙️ Prototype_v2.1_CAD.png</a><br>
+                  <small>Action: Upgraded design fidelity</small>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Metacognitive Growth: Moved from cardboard mockups to a CAD render addressing structural stability constraints."
+                  </div>
+                </td>
+                <td>
+                  <span class="tag-pill">Impact: Refines Prototypes</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 2)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 7: Oct 22 -->
+              <tr class="entry-row curated">
+                <td><strong>Oct 22, 2026</strong></td>
+                <td>
+                  <a href="#">🔄 Usability_Testing_Log.docx</a><br>
+                  <small>Action: Logged user test results</small>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Tested prototype v1 with 8 classmates and pivoted interface layout to reduce navigation friction."
+                  </div>
+                </td>
+                <td>
+                  <span class="tag-pill">Inquiry: Iterative Design</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 1)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 6: Oct 08 -->
+              <tr class="entry-row curated">
+                <td><strong>Oct 08, 2026</strong></td>
+                <td>
+                  <a href="#">🎨 Kiosk_Wireframe_Mockup.png</a><br>
+                  <small>Action: Created visual prototype mockup</small>
+                </td>
+                <td>Replaced plain text bullet points with a clear, visual layout walkthrough for stakeholders.</td>
+                <td>
+                  <span class="tag-pill">Comm: Visual</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 1)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 5: Sep 29 -->
+              <tr class="entry-row process">
+                <td><strong>Sep 29, 2026</strong></td>
+                <td>
+                  <a href="#">📝 Sprint1_Team_Retro.md</a><br>
+                  <small>Action: Analyzed team failure/pivot</small>
+                </td>
+                <td>Documented communication breakdown during week 7 and drafted a team check-in agreement to fix task distribution.</td>
+                <td>
+                  <span class="tag-pill">Inquiry: Process Reflection</span><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+              </tr>
+
+              <!-- Entry 4: Sep 18 -->
+              <tr class="entry-row curated">
+                <td><strong>Sep 18, 2026</strong></td>
+                <td>
+                  <a href="#">🎙️ Elevator_Pitch_v2.mp3</a><br>
+                  <small>Action: Recorded team check-in</small>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Growth Reflection: Instead of speaking off-the-cuff, recorded a structured 2-minute project pitch with clear deliverables."
+                  </div>
+                </td>
+                <td>
+                  <span class="tag-pill">Comm: Verbal</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 1)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 3: Sep 05 -->
+              <tr class="entry-row process">
+                <td><strong>Sep 05, 2026</strong></td>
+                <td>
+                  <a href="#">📄 Stakeholder_Outreach_Draft.docx</a><br>
+                  <small>Action: Drafted stakeholder email</small>
+                </td>
+                <td>First formal draft email sent to school facilities director seeking approval for solar testing site.</td>
+                <td>
+                  <span class="tag-pill">Comm: Written</span><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+              </tr>
+
+              <!-- Entry 2: Aug 22 -->
+              <tr class="entry-row curated">
+                <td><strong>Aug 22, 2026</strong></td>
+                <td>
+                  <a href="#">💡 Stakeholder_Empathy_Map.pdf</a><br>
+                  <small>Action: Conducted stakeholder interview</small>
+                </td>
+                <td>Synthesized interviews from 3 campus staff members to understand energy access needs on the school quad.</td>
+                <td>
+                  <span class="tag-pill">Inquiry: Multiple Perspectives</span><br>
+                  <span class="badge badge-curated">Curated (Show Date 1)</span>
+                </td>
+              </tr>
+
+              <!-- Entry 1: Aug 10 -->
+              <tr class="entry-row process">
+                <td><strong>Aug 10, 2026</strong></td>
+                <td>
+                  <a href="#">📝 Energy_Policy_Notes.pdf</a><br>
+                  <small>Action: Annotated primary source</small>
+                </td>
+                <td>Deconstructed 2 articles on municipal microgrid policies to build background knowledge during course launch.</td>
+                <td>
+                  <span class="tag-pill">Analysis: Written Text</span><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 1: COMMUNICATION -->
+        <div id="tab-comm" class="tab-content">
+          <div class="doc-h1">Communication Process Journal</div>
+          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+
+          <!-- Verbal -->
+          <div class="substrand-header">Verbal Communication</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Summarized pitch verbally · Recorded team check-in · Presented strategy to audience · Led workshop discussion
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Sep 18, 2026</td>
+                <td>
+                  <a href="#">🎙️ Elevator_Pitch_v2.mp3</a><br>
+                  <small><em>Action: Recorded team check-in</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Growth Note: Replaced informal chatter with a clear 2-minute pitch outlining individual teammate responsibilities."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Great improvement in pacing and clarity.</small></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Written -->
+          <div class="substrand-header">Written Communication</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Authored project proposal · Drafted stakeholder email · Summarized research source · Wrote synthesis reflection
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row process">
+                <td>Sep 05, 2026</td>
+                <td>
+                  <a href="#">📄 Stakeholder_Outreach_Draft.docx</a><br>
+                  <small><em>Action: Drafted stakeholder email</em></small><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+                <td>Drafted formal request email to facilities staff. Working on professional tone.</td>
+                <td>Pending Review</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Visual -->
+          <div class="substrand-header">Visual Communication</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Designed infographic · Created visual prototype mockup · Formatted data chart · Built slide visual hierarchy
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Oct 08, 2026</td>
+                <td>
+                  <a href="#">🎨 Kiosk_Wireframe_Mockup.png</a><br>
+                  <small><em>Action: Created visual mockup</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Demonstrates growth in visual hierarchy: Replaced messy text notes with color-coded wireframe components."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Visual layout is intuitive and clean.</small></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 2: ANALYSIS -->
+        <div id="tab-analysis" class="tab-content">
+          <div class="doc-h1">Analysis Process Journal</div>
+          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+
+          <!-- Written Text -->
+          <div class="substrand-header">Written Text Analysis</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Deconstructed article argument · Annotated primary source · Compared two policy viewpoints
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row process">
+                <td>Aug 10, 2026</td>
+                <td>
+                  <a href="#">📝 Energy_Policy_Notes.pdf</a><br>
+                  <small><em>Action: Annotated primary source</em></small><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+                <td>Annotated municipal microgrid policies to extract background context during initial course launch.</td>
+                <td>Pending Review</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Visual Text -->
+          <div class="substrand-header">Visual Text Analysis</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Analyzed photojournalism set · Interpreted complex infographic · Evaluated documentary credibility
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row process">
+                <td>Nov 18, 2026</td>
+                <td>
+                  <a href="#">📊 Campus_Traffic_Infographic.png</a><br>
+                  <small><em>Action: Interpreted infographic</em></small><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+                <td>Analyzed pedestrian flow heatmaps to justify optimal solar kiosk placement.</td>
+                <td>Pending Review</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 3: INQUIRY & DESIGN -->
+        <div id="tab-inquiry" class="tab-content">
+          <div class="doc-h1">Inquiry & Design Process Journal</div>
+          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+
+          <!-- Multiple Perspectives -->
+          <div class="substrand-header">Multiple Perspectives</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Conducted stakeholder interview · Synthesized opposing viewpoints · Documented empathy map
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Aug 22, 2026</td>
+                <td>
+                  <a href="#">💡 Stakeholder_Empathy_Map.pdf</a><br>
+                  <small><em>Action: Conducted stakeholder interview</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Synthesized conflicting feedback from facility staff and student users into an empathy map."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Strong empathy mapping technique.</small></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Iterative Design -->
+          <div class="substrand-header">Iterative Design</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Documented feature revision · Logged user test results · Modified project scope based on feedback
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Oct 22, 2026</td>
+                <td>
+                  <a href="#">🔄 Usability_Testing_Log.docx</a><br>
+                  <small><em>Action: Logged user test results</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Tested prototype v1 with 8 classmates and redesigned navigation based on usability bottlenecks."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 1)</strong><br><small>Clear evidence of iterative pivot.</small></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Process Reflection -->
+          <div class="substrand-header">Process Reflection</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Evaluated personal contribution · Analyzed team failure/pivot · Drafted retrospective
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Dec 08, 2026</td>
+                <td>
+                  <a href="#">📓 Final_Portfolio_Synthesis.pdf</a><br>
+                  <small><em>Action: Drafted retrospective</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Final synthesis reflecting on self-assessment accuracy across the whole semester."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 2)</strong><br><small>Accurate metacognitive calibration.</small></td>
+              </tr>
+              <tr class="entry-row process">
+                <td>Sep 29, 2026</td>
+                <td>
+                  <a href="#">📝 Sprint1_Team_Retro.md</a><br>
+                  <small><em>Action: Analyzed team failure/pivot</em></small><br>
+                  <span class="badge badge-process">Journal Only</span>
+                </td>
+                <td>Reflected on sprint 1 task delegation issues and established new check-in norms.</td>
+                <td>Pending Review</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 4: ACTION & IMPACT -->
+        <div id="tab-action" class="tab-content">
+          <div class="doc-h1">Action & Impact Process Journal</div>
+          <div class="doc-subheading">Competency Filter View & Show Date Confirmations</div>
+
+          <!-- Refines Prototypes -->
+          <div class="substrand-header">Refines Prototypes</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Applied physical/digital refinement · Integrated technical constraint · Upgraded design fidelity
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Nov 04, 2026</td>
+                <td>
+                  <a href="#">⚙️ Prototype_v2.1_CAD.png</a><br>
+                  <small><em>Action: Upgraded design fidelity</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Pivoted cardboard mockup into a CAD model with real solar array structural dimensions."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 2)</strong><br><small>Excellent technical refinement.</small></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Evaluates Impact -->
+          <div class="substrand-header">Evaluates Impact</div>
+          <div class="doc-action-menu">
+            <strong>Menu of Concrete Actions:</strong> Collected outcome survey data · Measured community reach · Analyzed campaign metrics
+          </div>
+          <table class="gdoc-table">
+            <thead>
+              <tr>
+                <th style="width: 14%;">Date Added</th>
+                <th style="width: 26%;">Artifact & Menu Action</th>
+                <th style="width: 38%;">Student Metacognition & Rationale</th>
+                <th style="width: 22%;">Teacher Confirmation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="entry-row curated">
+                <td>Nov 28, 2026</td>
+                <td>
+                  <a href="#">📈 Survey_Impact_Analysis.xlsx</a><br>
+                  <small><em>Action: Collected outcome survey data</em></small><br>
+                  <span class="badge badge-curated">Curated</span>
+                </td>
+                <td>
+                  <div class="metacognition-box">
+                    "Gathered and visualized survey feedback from 52 pilot users to measure real campus impact."
+                  </div>
+                </td>
+                <td><strong>Confirmed (Show Date 2)</strong><br><small>Solid quantitative data collection.</small></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Google Apps Panel -->
+    <div class="gdoc-right-sidebar">
+      <span>📅</span>
+      <span>💡</span>
+      <span>☑️</span>
+      <span>👤</span>
+    </div>
+
+  </div>
+
+  <!-- JavaScript for Tabs & Filtering -->
+  <script>
+    function switchTab(tabId, element) {
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    function setFilter(type, btn) {
+      document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.entry-row').forEach(row => {
+        if (type === 'curated') {
+          row.style.display = row.classList.contains('curated') ? 'table-row' : 'none';
+        } else {
+          row.style.display = 'table-row';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
