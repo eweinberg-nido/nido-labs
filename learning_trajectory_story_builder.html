@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Learning Trajectory Story Builder</title>
+<style>
+  :root{
+    --bg:#f7f7f5;
+    --panel:#ffffff;
+    --ink:#171717;
+    --muted:#6f6f6a;
+    --line:#5b5b58;
+    --border:#d9d9d4;
+    --gray:#8fa3ad;
+    --orange:#ff9d00;
+    --green:#19ef19;
+    --blue:#4285f4;
+    --shadow:0 8px 24px rgba(0,0,0,.07);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+  }
+  button,input,select{font:inherit}
+  button{
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--ink);
+    border-radius:10px;
+    padding:9px 12px;
+    cursor:pointer;
+  }
+  button:hover{background:#f2f2ef}
+  button.primary{background:#171717;color:#fff;border-color:#171717}
+  button.danger{color:#9b2c2c}
+  .app{max-width:1500px;margin:0 auto;padding:18px}
+  .topbar{
+    display:flex; gap:12px; align-items:center; justify-content:space-between;
+    margin-bottom:14px; flex-wrap:wrap;
+  }
+  .title-wrap{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .title-wrap h1{font-size:20px;margin:0}
+  #storyTitle{
+    width:min(520px,75vw);
+    padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;
+    font-weight:600;
+  }
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .layout{
+    display:grid;
+    grid-template-columns:300px minmax(0,1fr);
+    gap:14px;
+  }
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+  .sidebar{padding:14px;align-self:start;position:sticky;top:14px}
+  .sidebar h2{font-size:14px;margin:0 0 10px}
+  .sidebar p{font-size:12px;color:var(--muted);line-height:1.45;margin:6px 0 12px}
+  .legend{display:grid;grid-template-columns:28px 1fr;gap:8px 10px;align-items:center;margin-bottom:14px}
+  .swatch{
+    width:22px;height:22px;border-radius:50%;border:2px solid #5b5b58;
+  }
+  .gray{background:var(--gray)}
+  .orange{background:var(--orange)}
+  .green{background:var(--green)}
+  .blue{background:var(--blue)}
+  .half-og{background:linear-gradient(90deg,var(--orange) 0 50%,var(--green) 50% 100%)}
+  .half-gb{background:linear-gradient(90deg,var(--green) 0 50%,var(--blue) 50% 100%)}
+  .invisible{background:transparent;border-style:dashed;opacity:.35}
+  .learners{display:flex;flex-direction:column;gap:7px;margin:8px 0 12px}
+  .learner-row{display:grid;grid-template-columns:1fr auto;gap:6px}
+  .learner-row input{
+    min-width:0;padding:7px 9px;border:1px solid var(--border);border-radius:8px;
+  }
+  .learner-row button{padding:7px 9px}
+  .sidebar .wide{width:100%;margin-top:6px}
+  .canvas-panel{overflow:auto;padding:0}
+  .svg-wrap{min-width:980px}
+  #storySvg{display:block;width:100%;height:auto;background:#fff;border-radius:14px}
+  .hint{
+    padding:10px 14px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;
+  }
+  dialog{
+    border:none;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.25);
+    padding:0;max-width:520px;width:calc(100vw - 32px);
+  }
+  dialog::backdrop{background:rgba(0,0,0,.32)}
+  .dialog-body{padding:16px}
+  .dialog-body h3{margin:0 0 12px}
+  .dialog-body label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  .dialog-body input,.dialog-body select{
+    width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:#fff;
+  }
+  .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  .small-note{font-size:11px;color:var(--muted);line-height:1.4}
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:static}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="title-wrap">
+      <h1>Learning Trajectory Story Builder</h1>
+      <input id="storyTitle" value="A learner story over time" aria-label="Story title" />
+    </div>
+    <div class="actions">
+      <button id="addCheckpoint">+ Checkpoint</button>
+      <button id="saveJson">Save story</button>
+      <button id="loadJson">Load story</button>
+      <button class="primary" id="exportPng">Export PNG</button>
+      <input type="file" id="fileInput" accept=".json,application/json" hidden />
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="panel sidebar">
+      <h2>Click a learner dot to cycle evidence</h2>
+      <div class="legend">
+        <span class="swatch gray"></span><span>Not enough evidence</span>
+        <span class="swatch orange"></span><span>2.0 — foundational</span>
+        <span class="swatch half-og"></span><span>2.5</span>
+        <span class="swatch green"></span><span>3.0 — target</span>
+        <span class="swatch half-gb"></span><span>3.5</span>
+        <span class="swatch blue"></span><span>4.0 — extended</span>
+        <span class="swatch invisible"></span><span>Absent / no work</span>
+      </div>
+
+      <h2>Learners</h2>
+      <div id="learnerList" class="learners"></div>
+      <button class="wide" id="addLearner">+ Add learner</button>
+      <button class="wide" id="resetStates">Reset all evidence</button>
+
+      <p>
+        Checkpoint labels and PowerSchool status are editable. The large circle is the official level shown at that checkpoint; it can be different from the individual evidence dots.
+      </p>
+      <p class="small-note">
+        Tip: Shift-click a dot to cycle backward. Double-click a checkpoint heading or large level circle to edit it.
+      </p>
+    </aside>
+
+    <main class="panel canvas-panel">
+      <div class="svg-wrap">
+        <svg id="storySvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 650" role="img" aria-label="Learning trajectory story">
+          <defs>
+            <linearGradient id="halfOrangeGreen" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ff9d00"/>
+              <stop offset="50%" stop-color="#ff9d00"/>
+              <stop offset="50%" stop-color="#19ef19"/>
+              <stop offset="100%" stop-color="#19ef19"/>
+            </linearGradient>
+            <linearGradient id="halfGreenBlue" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#19ef19"/>
+              <stop offset="50%" stop-color="#19ef19"/>
+              <stop offset="50%" stop-color="#4285f4"/>
+              <stop offset="100%" stop-color="#4285f4"/>
+            </linearGradient>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b5b58"/>
+            </marker>
+          </defs>
+          <rect width="1400" height="650" fill="#fff"/>
+          <g id="drawing"></g>
+        </svg>
+      </div>
+      <div class="hint">The image itself is interactive. Click dots, double-click checkpoint labels/levels, then export when you have the story you want.</div>
+    </main>
+  </div>
+</div>
+
+<dialog id="checkpointDialog">
+  <form method="dialog" class="dialog-body" id="checkpointForm">
+    <h3>Edit checkpoint</h3>
+    <label for="cpLabel">Label</label>
+    <input id="cpLabel" />
+    <label for="cpLevel">Official level</label>
+    <select id="cpLevel">
+      <option value="2">2.0</option>
+      <option value="2.5">2.5</option>
+      <option value="3">3.0</option>
+      <option value="3.5">3.5</option>
+      <option value="4">4.0</option>
+      <option value="">No official level</option>
+    </select>
+    <label><input type="checkbox" id="cpPowerSchool" style="width:auto;margin-right:6px">Recorded in PowerSchool</label>
+    <div class="dialog-actions">
+      <button value="cancel">Cancel</button>
+      <button type="button" class="danger" id="deleteCheckpoint">Delete</button>
+      <button value="default" class="primary" id="applyCheckpoint">Apply</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  const states = ['gray','orange','halfOG','green','halfGB','blue','hidden'];
+  const stateLabel = {
+    gray:'Not enough evidence', orange:'2.0', halfOG:'2.5',
+    green:'3.0', halfGB:'3.5', blue:'4.0', hidden:'Absent / no work'
+  };
+
+  let model = {
+    title: 'A learner story over time',
+    learners: ['Student A','Student B','Student C','Student D'],
+    checkpoints: [
+      {label:'Early evidence', powerSchool:true, official:'2', states:['gray','gray','gray','gray']},
+      {label:'Practice / feedback', powerSchool:false, official:'2', states:['orange','gray','orange','hidden']},
+      {label:'Revised work', powerSchool:true, official:'2.5', states:['orange','orange','gray','hidden']},
+      {label:'Later evidence', powerSchool:true, official:'3', states:['green','halfOG','gray','green']},
+      {label:'New context', powerSchool:false, official:'', states:['hidden','hidden','gray','hidden']},
+      {label:'Final evidence', powerSchool:true, official:'4', states:['blue','green','green','blue']}
+    ]
+  };
+
+  const svg = document.getElementById('storySvg');
+  const drawing = document.getElementById('drawing');
+  const titleInput = document.getElementById('storyTitle');
+  const learnerList = document.getElementById('learnerList');
+  const dialog = document.getElementById('checkpointDialog');
+  const cpLabel = document.getElementById('cpLabel');
+  const cpLevel = document.getElementById('cpLevel');
+  const cpPowerSchool = document.getElementById('cpPowerSchool');
+  let editingCheckpoint = -1;
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function fillForState(state){
+    if(state==='gray') return '#8fa3ad';
+    if(state==='orange') return '#ff9d00';
+    if(state==='halfOG') return 'url(#halfOrangeGreen)';
+    if(state==='green') return '#19ef19';
+    if(state==='halfGB') return 'url(#halfGreenBlue)';
+    if(state==='blue') return '#4285f4';
+    return 'transparent';
+  }
+
+  function officialFill(level){
+    if(level==='2') return '#ff9d00';
+    if(level==='2.5') return 'url(#halfOrangeGreen)';
+    if(level==='3') return '#19ef19';
+    if(level==='3.5') return 'url(#halfGreenBlue)';
+    if(level==='4') return '#4285f4';
+    return '#ffffff';
+  }
+
+  function officialText(level){
+    if(!level) return '—';
+    return 'L' + level.replace('.0','');
+  }
+
+  function normalize(){
+    model.checkpoints.forEach(cp => {
+      while(cp.states.length < model.learners.length) cp.states.push('gray');
+      cp.states = cp.states.slice(0, model.learners.length);
+    });
+  }
+
+  function renderLearners(){
+    learnerList.innerHTML = '';
+    model.learners.forEach((name, i) => {
+      const row = document.createElement('div');
+      row.className='learner-row';
+      row.innerHTML = `<input value="${esc(name)}" aria-label="Learner ${i+1} name"><button title="Remove learner">×</button>`;
+      const input = row.querySelector('input');
+      input.addEventListener('input', e => { model.learners[i]=e.target.value; render(); });
+      row.querySelector('button').addEventListener('click', () => {
+        if(model.learners.length<=1) return;
+        model.learners.splice(i,1);
+        model.checkpoints.forEach(cp => cp.states.splice(i,1));
+        renderLearners(); render();
+      });
+      learnerList.appendChild(row);
+    });
+  }
+
+  function render(){
+    normalize();
+    model.title = titleInput.value;
+    const W = Math.max(1200, 230 + model.checkpoints.length * 185);
+    const H = Math.max(620, 370 + model.learners.length * 48);
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.querySelector('rect').setAttribute('width', W);
+    svg.querySelector('rect').setAttribute('height', H);
+
+    const left = 95;
+    const right = 70;
+    const lineY = 280;
+    const cpCount = model.checkpoints.length;
+    const usable = W-left-right;
+    const spacing = cpCount > 1 ? usable/(cpCount-1) : 0;
+    let out = '';
+
+    out += `<text x="${left}" y="42" font-size="25" font-weight="650" fill="#171717">${esc(model.title)}</text>`;
+    out += `<line x1="0" y1="${lineY-135}" x2="${W}" y2="${lineY-135}" stroke="#5b5b58" stroke-width="2"/>`;
+    out += `<line x1="0" y1="${lineY}" x2="${W}" y2="${lineY}" stroke="#5b5b58" stroke-width="2"/>`;
+    out += `<line x1="${left}" y1="${lineY-42}" x2="${W-right-25}" y2="${lineY-42}" stroke="#5b5b58" stroke-width="2" marker-end="url(#arrow)"/>`;
+
+    model.checkpoints.forEach((cp, ci) => {
+      const x = left + spacing*ci;
+
+      out += `<g class="checkpoint" data-ci="${ci}" style="cursor:pointer">`;
+      out += `<text x="${x}" y="${lineY-185}" text-anchor="middle" font-size="18" fill="#171717">${esc(cp.label)}</text>`;
+      if(cp.powerSchool){
+        out += `<text x="${x}" y="${lineY-148}" text-anchor="middle" font-size="24" fill="#171717">In PowerSchool</text>`;
+      } else {
+        out += `<text x="${x}" y="${lineY-148}" text-anchor="middle" font-size="18" fill="#888">Informal evidence</text>`;
+      }
+
+      const r = 46;
+      out += `<circle cx="${x}" cy="${lineY-92}" r="${r}" fill="${officialFill(cp.official)}" stroke="${cp.official ? '#171717':'#b9b9b4'}" stroke-width="2"/>`;
+      out += `<text x="${x}" y="${lineY-84}" text-anchor="middle" font-size="19" font-weight="700" fill="#111">${officialText(cp.official)}</text>`;
+      out += `</g>`;
+
+      cp.states.forEach((state, li) => {
+        const y = lineY + 45 + li*48;
+        if(state==='hidden'){
+          out += `<circle class="learner-dot" data-ci="${ci}" data-li="${li}" cx="${x}" cy="${y}" r="16" fill="transparent" stroke="transparent" stroke-width="2" style="cursor:pointer"><title>${esc(model.learners[li])}: ${stateLabel[state]}</title></circle>`;
+          out += `<circle cx="${x}" cy="${y}" r="7" fill="#deded9" opacity=".55" pointer-events="none"/>`;
+        } else {
+          out += `<circle class="learner-dot" data-ci="${ci}" data-li="${li}" cx="${x}" cy="${y}" r="16" fill="${fillForState(state)}" stroke="#5b5b58" stroke-width="2" style="cursor:pointer"><title>${esc(model.learners[li])}: ${stateLabel[state]}</title></circle>`;
+        }
+      });
+    });
+
+    const learnerX = 18;
+    model.learners.forEach((name, li) => {
+      const y = lineY + 50 + li*48;
+      out += `<text x="${learnerX}" y="${y+4}" font-size="11" fill="#8a8a85">${esc(name)}</text>`;
+    });
+
+    drawing.innerHTML = out;
+
+    drawing.querySelectorAll('.learner-dot').forEach(dot => {
+      dot.addEventListener('click', e => {
+        const ci = +dot.dataset.ci, li = +dot.dataset.li;
+        const current = model.checkpoints[ci].states[li];
+        let idx = states.indexOf(current);
+        idx = e.shiftKey ? (idx-1+states.length)%states.length : (idx+1)%states.length;
+        model.checkpoints[ci].states[li] = states[idx];
+        render();
+      });
+    });
+    drawing.querySelectorAll('.checkpoint').forEach(g => {
+      g.addEventListener('dblclick', () => openCheckpoint(+g.dataset.ci));
+    });
+  }
+
+  function openCheckpoint(i){
+    editingCheckpoint=i;
+    const cp=model.checkpoints[i];
+    cpLabel.value=cp.label;
+    cpLevel.value=cp.official;
+    cpPowerSchool.checked=cp.powerSchool;
+    dialog.showModal();
+  }
+
+  document.getElementById('applyCheckpoint').addEventListener('click', () => {
+    if(editingCheckpoint<0) return;
+    const cp=model.checkpoints[editingCheckpoint];
+    cp.label=cpLabel.value.trim() || `Checkpoint ${editingCheckpoint+1}`;
+    cp.official=cpLevel.value;
+    cp.powerSchool=cpPowerSchool.checked;
+    dialog.close();
+    render();
+  });
+
+  document.getElementById('deleteCheckpoint').addEventListener('click', () => {
+    if(model.checkpoints.length<=1) return;
+    model.checkpoints.splice(editingCheckpoint,1);
+    editingCheckpoint=-1;
+    dialog.close();
+    render();
+  });
+
+  document.getElementById('addLearner').addEventListener('click', () => {
+    const n = model.learners.length+1;
+    model.learners.push(`Student ${String.fromCharCode(64+n)}`);
+    model.checkpoints.forEach(cp => cp.states.push('gray'));
+    renderLearners(); render();
+  });
+
+  document.getElementById('resetStates').addEventListener('click', () => {
+    model.checkpoints.forEach(cp => cp.states = model.learners.map(()=> 'gray'));
+    render();
+  });
+
+  document.getElementById('addCheckpoint').addEventListener('click', () => {
+    model.checkpoints.push({
+      label:`Checkpoint ${model.checkpoints.length+1}`,
+      powerSchool:false,
+      official:'',
+      states:model.learners.map(()=> 'gray')
+    });
+    render();
+    openCheckpoint(model.checkpoints.length-1);
+  });
+
+  titleInput.addEventListener('input', render);
+
+  function download(filename, blob){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=filename;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+
+  document.getElementById('saveJson').addEventListener('click', () => {
+    model.title=titleInput.value;
+    download('learning-trajectory-story.json',
+      new Blob([JSON.stringify(model,null,2)],{type:'application/json'}));
+  });
+
+  document.getElementById('loadJson').addEventListener('click', () => document.getElementById('fileInput').click());
+  document.getElementById('fileInput').addEventListener('change', async e => {
+    const file=e.target.files[0]; if(!file) return;
+    try{
+      const loaded=JSON.parse(await file.text());
+      if(!Array.isArray(loaded.learners) || !Array.isArray(loaded.checkpoints)) throw new Error();
+      model=loaded;
+      titleInput.value=model.title || 'Learning trajectory';
+      normalize();
+      renderLearners(); render();
+    }catch{
+      alert('That file does not look like a saved trajectory story.');
+    }
+    e.target.value='';
+  });
+
+  document.getElementById('exportPng').addEventListener('click', () => {
+    model.title=titleInput.value;
+    render();
+
+    const clone=svg.cloneNode(true);
+    const bbox=svg.viewBox.baseVal;
+    clone.setAttribute('width', bbox.width);
+    clone.setAttribute('height', bbox.height);
+
+    const serializer=new XMLSerializer();
+    const svgText=serializer.serializeToString(clone);
+    const svgBlob=new Blob([svgText],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(svgBlob);
+    const img=new Image();
+
+    img.onload=() => {
+      const scale=2;
+      const canvas=document.createElement('canvas');
+      canvas.width=bbox.width*scale;
+      canvas.height=bbox.height*scale;
+      const ctx=canvas.getContext('2d');
+      ctx.scale(scale,scale);
+      ctx.fillStyle='#fff';
+      ctx.fillRect(0,0,bbox.width,bbox.height);
+      ctx.drawImage(img,0,0,bbox.width,bbox.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => download('learning-trajectory.png', blob), 'image/png');
+    };
+    img.src=url;
+  });
+
+  renderLearners();
+  render();
+})();
+</script>
+</body>
+</html>
