@@ -2340,7 +2340,11 @@
                     try {
                         const { doc, updateDoc } = window.FirebaseSDK;
                         await updateDoc(doc(firebaseDb, 'opportunities', id), { status: 'approved', reviewNotes: '' });
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error('Error approving:', e);
+                        showToast('Error approving: ' + e.message, 'error');
+                        return; // Stop local update if DB failed
+                    }
                 }
                 setOpportunities(prev => prev.map(o => o.id === id ? { ...o, status: 'approved', reviewNotes: '' } : o));
                 showToast('Opportunity approved and published live!', 'success');
@@ -2351,7 +2355,11 @@
                     try {
                         const { doc, updateDoc } = window.FirebaseSDK;
                         await updateDoc(doc(firebaseDb, 'opportunities', id), { status: 'rejected', reviewNotes: note });
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error('Error rejecting:', e);
+                        showToast('Error rejecting: ' + e.message, 'error');
+                        return;
+                    }
                 }
                 setOpportunities(prev => prev.map(o => o.id === id ? { ...o, status: 'rejected', reviewNotes: note } : o));
                 showToast('Feedback sent to author for revision.');
