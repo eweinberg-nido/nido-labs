@@ -2177,7 +2177,7 @@
                     unsubscribeOpps();
                     unsubscribeUsers();
                 };
-            }, [firebaseDb, currentUser.role]);
+            }, [firebaseDb, currentUser?.role]);
 
             // Google Sign In
             const handleGoogleSignIn = async () => {
@@ -2381,7 +2381,7 @@
                                     Propose Nidoship
                                 </button>
 
-                                {(currentUser.role === 'adult_contributor' || currentUser.role === 'admin') && (
+                                {currentUser && (currentUser.role === 'adult_contributor' || currentUser.role === 'admin') && (
                                     <button 
                                         onClick={() => setActiveTab('my-postings')}
                                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -2392,7 +2392,7 @@
                                     </button>
                                 )}
 
-                                {currentUser.role === 'admin' && (
+                                {currentUser?.role === 'admin' && (
                                     <button 
                                         onClick={() => setActiveTab('admin')}
                                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all relative ${
@@ -2435,7 +2435,7 @@
 
 
                                 {/* Google Sign In / User Profile */}
-                                {currentUser.email && isFirebaseConnected && currentUser.uid !== 'demo-student' ? (
+                                {currentUser?.email && isFirebaseConnected && currentUser.uid !== 'demo-student' ? (
                                     <div className="flex items-center gap-2">
                                         <div className="text-right hidden sm:block">
                                             <div className="text-xs font-bold text-slate-900 leading-tight">{currentUser.displayName}</div>
@@ -2466,10 +2466,10 @@
                         <div className="md:hidden border-t border-slate-100 px-4 py-2 flex justify-around bg-slate-50 text-xs font-bold">
                             <button onClick={() => setActiveTab('browse')} className={activeTab === 'browse' ? 'text-brand-600' : 'text-slate-500'}>Browse</button>
                             <button onClick={() => setActiveTab('submit')} className={activeTab === 'submit' ? 'text-brand-600' : 'text-slate-500'}>Propose</button>
-                            {(currentUser.role === 'adult_contributor' || currentUser.role === 'admin') && (
+                            {currentUser && (currentUser.role === 'adult_contributor' || currentUser.role === 'admin') && (
                                 <button onClick={() => setActiveTab('my-postings')} className={activeTab === 'my-postings' ? 'text-brand-600' : 'text-slate-500'}>My Posts</button>
                             )}
-                            {currentUser.role === 'admin' && (
+                            {currentUser?.role === 'admin' && (
                                 <button onClick={() => setActiveTab('admin')} className={activeTab === 'admin' ? 'text-brand-600' : 'text-slate-500'}>Admin ({pendingCount})</button>
                             )}
                         </div>
