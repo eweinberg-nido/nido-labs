@@ -1,0 +1,88 @@
+/* 
+ * The International School Nido de Aguilas
+ * Brand Style Guide CSS Variables & Utilities 
+ * 
+ * Includes primary colors, font stacks, and essential utility classes
+ * based on the official branding cheat sheet.
+ */
+
+/* Import fallback font (Open Sans) */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+:root {
+  /* Brand Colors */
+  --nido-blue: #002365;
+  --nido-red: #8A1621;
+  --nido-dark-gray: #333333;
+  --nido-white: #FFFFFF;
+
+  /* Typography */
+  --font-gotham: 'Gotham', 'Open Sans', sans-serif;
+  --font-open-sans: 'Open Sans', sans-serif;
+}
+
+/* Base Styles */
+body {
+  font-family: var(--font-gotham);
+  color: var(--nido-dark-gray);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-gotham);
+}
+
+/* 
+ * Utility Classes 
+ */
+
+/* Text Colors */
+.text-nido-blue { color: var(--nido-blue); }
+.text-nido-red { color: var(--nido-red); }
+.text-nido-dark { color: var(--nido-dark-gray); }
+.text-white { color: var(--nido-white); }
+
+/* Background Colors */
+.bg-nido-blue { background-color: var(--nido-blue); }
+.bg-nido-red { background-color: var(--nido-red); }
+.bg-nido-dark { background-color: var(--nido-dark-gray); }
+.bg-white { background-color: var(--nido-white); }
+
+/* Buttons */
+.btn-nido-blue {
+  background-color: var(--nido-blue);
+  color: var(--nido-white);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-gotham);
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-nido-blue:hover {
+  opacity: 0.9;
+}
+
+.btn-nido-red {
+  background-color: var(--nido-red);
+  color: var(--nido-white);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: var(--font-gotham);
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-nido-red:hover {
+  opacity: 0.9;
+}
+
+/* Font Weights for Gotham / Open Sans */
+.font-light { font-weight: 300; }
+.font-book { font-weight: 400; }  /* Default 'Regular' */
+.font-medium { font-weight: 500; } /* Gotham Medium / Open Sans Semibold */
+.font-bold { font-weight: 700; }
+.font-black { font-weight: 900; } /* Gotham Black / Open Sans Extrabold */
