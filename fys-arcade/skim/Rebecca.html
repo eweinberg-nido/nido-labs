@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Starship Abduction v2</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #030509;
+            color: #e0f2fe;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #020408;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            display: block;
+            background: #030712;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.1);
+        }
+
+        /* Sci-Fi Glassmorphism HUD Panels */
+        .hud-panel {
+            position: absolute;
+            padding: 12px 20px;
+            background: rgba(8, 15, 30, 0.75);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.1);
+            pointer-events: none;
+            color: #38bdf8;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        #top-left-hud {
+            top: 18px;
+            left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        #top-right-hud {
+            top: 18px;
+            right: 18px;
+            min-width: 250px;
+            border-color: rgba(234, 179, 8, 0.45);
+            background: rgba(22, 18, 10, 0.75);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(234, 179, 8, 0.1);
+        }
+
+        #bottom-left-hud {
+            bottom: 18px;
+            left: 18px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .bar-container {
+            width: 170px;
+            height: 12px;
+            background: #0f172a;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.2s ease-out;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        #health-bar { background: linear-gradient(90deg, #ef4444, #f97316); color: #ef4444; }
+
+        .stat-value {
+            color: #f0fdf4;
+            font-weight: 800;
+            font-size: 15px;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+        }
+
+        .coin-val {
+            color: #facc15;
+            text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+        }
+
+        .obj-title {
+            color: #fbbf24;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+            padding-bottom: 3px;
+        }
+
+        /* Modal Overlays */
+        .modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.88);
+            backdrop-filter: blur(14px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            border-radius: 16px;
+            padding: 35px 45px;
+            max-width: 620px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(56, 189, 248, 0.2), inset 0 0 20px rgba(56, 189, 248, 0.05);
+        }
+
+        h1 {
+            font-size: 34px;
+            color: #38bdf8;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 900;
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 22px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 800;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+            margin: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 25px rgba(56, 189, 248, 0.7);
+            filter: brightness(1.2);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Armory Grid */
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .shop-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.6);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s;
+        }
+
+        .shop-card.active {
+            border-color: #38bdf8;
+            background: rgba(14, 116, 144, 0.25);
+            box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.2);
+        }
+
+        .shop-card h3 {
+            color: #f1f5f9;
+            font-size: 15px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .shop-card p {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .shop-card .price {
+            color: #facc15;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .btn-shop {
+            padding: 10px 14px;
+            font-size: 12px;
+            width: 100%;
+            margin: 0;
+        }
+
+        .btn-shop:disabled {
+            background: #334155;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .controls-hint {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .key {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 3px 7px;
+            border-radius: 5px;
+            border: 1px solid #475569;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="canvas"></canvas>
+
+    <!-- Top Left HUD -->
+    <div id="top-left-hud" class="hud-panel">
+        <div>SECTOR: <span id="hud-sector" class="stat-value">1</span></div>
+        <div>ALIENS KILLED: <span id="hud-kills" class="stat-value">0</span></div>
+        <div>HIGH SCORE: <span id="hud-highscore" class="stat-value">0</span></div>
+    </div>
+
+    <!-- Top Right HUD -->
+    <div id="top-right-hud" class="hud-panel">
+        <div class="obj-title">Current Objective</div>
+        <div id="hud-objective-desc" style="margin-bottom: 6px; color: #f8fafc; font-size: 12px;">Purge Sector Security</div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="bar-container" style="width: 140px; height: 10px;">
+                <div id="obj-bar" class="bar-fill" style="width: 0%; background: #f59e0b;"></div>
+            </div>
+            <span id="obj-progress-text" style="font-size: 12px; color: #facc15; font-weight: 800;">0/10</span>
+        </div>
+    </div>
+
+    <!-- Bottom Left HUD -->
+    <div id="bottom-left-hud" class="hud-panel">
+        <div>
+            <div style="font-size: 10px; color: #64748b; margin-bottom: 3px;">SUIT INTEGRITY</div>
+            <div class="bar-container">
+                <div id="health-bar" class="bar-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 10px; color: #64748b; margin-bottom: 3px;">CURRENT WEAPON</div>
+            <div id="hud-weapon" style="color: #38bdf8; font-weight: 800;">PULSE LAZER</div>
+        </div>
+        <div>
+            <div style="font-size: 10px; color: #64748b; margin-bottom: 3px;">ALIEN COINS</div>
+            <div class="coin-val" style="font-weight: 800; font-size: 18px;">🪙 <span id="hud-coins">0</span></div>
+        </div>
+    </div>
+
+    <!-- Start / Title Screen -->
+    <div id="start-screen" class="modal">
+        <div class="modal-card">
+            <h1>ABDUCTED v2</h1>
+            <p>You have been tractor-beamed into a massive alien mothership! Fight off bio-mutant hordes, harvest plasma coins, upgrade your alien weaponry, and complete sector breach objectives to escape.</p>
+            <button id="start-btn" class="btn">Initiate Breach</button>
+            <div class="controls-hint">
+                <span><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Move</span>
+                <span><span class="key">Mouse</span> Aim & Shoot</span>
+                <span><span class="key">B</span> Open Armory</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Armory / Shop Screen -->
+    <div id="shop-screen" class="modal hidden">
+        <div class="modal-card" style="max-width: 680px;">
+            <h1 style="color: #facc15; text-shadow: 0 0 15px rgba(250, 204, 21, 0.6);">Mothership Armory</h1>
+            <p style="margin-bottom: 10px;">Repurpose harvested alien energy coins into heavy suit upgrades and weapons.</p>
+            <div style="color: #facc15; font-weight: 800; font-size: 18px; margin-bottom: 15px;">
+                Collected Energy: 🪙 <span id="shop-coin-count">0</span>
+            </div>
+
+            <div class="shop-items" id="shop-items-container">
+                <!-- Injected via JS -->
+            </div>
+
+            <button id="close-shop-btn" class="btn">Return to Battle</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="modal hidden">
+        <div class="modal-card">
+            <h1 style="color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.8);">SUIT COMPROMISED</h1>
+            <p>The alien bio-hazard defeated your shield matrix.</p>
+            <div style="margin: 20px 0; font-size: 17px; line-height: 1.8;">
+                Aliens Eradicated: <span id="go-kills" class="stat-value">0</span><br>
+                Sectors Cleared: <span id="go-sectors" class="stat-value">0</span><br>
+                High Score: <span id="go-highscore" class="stat-value" style="color: #facc15;">0</span>
+            </div>
+            <button id="restart-btn" class="btn">Deploy New Suit</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * ABDUCTED - ALIEN STARSHIP ESCAPE (v2)
+ * Enhanced Engine with Open Arena Generation, Bio-Alien Visuals, and Fixed Spawner
+ */
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let CANVAS_WIDTH = 1200;
+let CANVAS_HEIGHT = 800;
+
+function resizeCanvas() {
+    CANVAS_WIDTH = window.innerWidth;
+    CANVAS_HEIGHT = window.innerHeight;
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
+}
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    if (gameState === 'PLAYING' || gameState === 'SHOP') {
+        buildSectorMap();
+    }
+});
+resizeCanvas();
+
+// --- Input Manager ---
+const keys = {};
+const mouse = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2, down: false };
+
+window.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+    keys[e.key.toLowerCase()] = true;
+    if ((e.code === 'KeyB' || e.key.toLowerCase() === 'b') && gameState === 'PLAYING') {
+        toggleShop();
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    keys[e.code] = false;
+    keys[e.key.toLowerCase()] = false;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+});
+
+canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) mouse.down = true;
+});
+
+window.addEventListener('mouseup', (e) => {
+    if (e.button === 0) mouse.down = false;
+});
+
+// --- Weapons Database ---
+const WEAPONS = {
+    pulse: {
+        id: 'pulse',
+        name: 'Pulse Lazer',
+        damage: 28,
+        fireRate: 180,
+        speed: 18,
+        spread: 0.04,
+        color: '#38bdf8',
+        size: 5,
+        cost: 0,
+        owned: true,
+        desc: 'Precision energy beam with rapid cooling.'
+    },
+    scatter: {
+        id: 'scatter',
+        name: 'Plasma Shotgun',
+        damage: 20,
+        bulletsPerShot: 6,
+        fireRate: 480,
+        speed: 15,
+        spread: 0.38,
+        color: '#f59e0b',
+        size: 4,
+        cost: 60,
+        owned: false,
+        desc: 'Spreads multiple high-impact plasma pellets.'
+    },
+    repeater: {
+        id: 'repeater',
+        name: 'Void Gatling',
+        damage: 18,
+        fireRate: 80,
+        speed: 20,
+        spread: 0.1,
+        color: '#ec4899',
+        size: 4,
+        cost: 140,
+        owned: false,
+        desc: 'Rapid fire stream of destabilized antimatter.'
+    },
+    beam: {
+        id: 'beam',
+        name: 'Quantum Ray',
+        damage: 140,
+        fireRate: 700,
+        speed: 25,
+        spread: 0.01,
+        color: '#a855f7',
+        size: 8,
+        cost: 280,
+        owned: false,
+        desc: 'Concentrated beam that disintegrates multiple targets.'
+    }
+};
+
+// --- Game State Variables ---
+let gameState = 'START';
+let currentSector = 1;
+let totalKills = 0;
+let highScore = parseInt(localStorage.getItem('alien_abduction_v2_highscore') || '0', 10);
+let coins = 0;
+let lastFireTime = 0;
+let currentWeapon = WEAPONS.pulse;
+
+let currentObjective = null;
+
+// Game Entities
+let player;
+let obstacles = [];
+let aliens = [];
+let bullets = [];
+let alienBullets = [];
+let drops = [];
+let particles = [];
+let stars = [];
+
+// Init background space stars
+function initStars() {
+    stars = [];
+    for (let i = 0; i < 120; i++) {
+        stars.push({
+            x: Math.random() * CANVAS_WIDTH,
+            y: Math.random() * CANVAS_HEIGHT,
+            size: Math.random() * 2 + 0.5,
+            alpha: Math.random() * 0.8 + 0.2,
+            speed: Math.random() * 0.2 + 0.05
+        });
+    }
+}
+initStars();
+
+// --- Sector & Alien Appearance Customization ---
+let mapTheme = {
+    floorColor: '#050a14',
+    gridColor: '#0f172a',
+    wallColor: '#1e293b',
+    glowColor: '#38bdf8'
+};
+
+let alienTheme = {
+    skinColor: '#10b981',
+    coreColor: '#34d399',
+    eyeColor: '#ef4444',
+    namePrefix: 'Xeno'
+};
+
+function generateRandomTheme() {
+    const floorColors = ['#040814', '#0c0514', '#04140c', '#140f04', '#080c10'];
+    const gridColors = ['#0e1b38', '#260e38', '#0e3820', '#382b0e', '#132133'];
+    const wallColors = ['#1a294d', '#391a4d', '#1a4d2e', '#4d3b1a', '#1e2e42'];
+    const glowColors = ['#38bdf8', '#f43f5e', '#10b981', '#fbbf24', '#c084fc'];
+
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    mapTheme = {
+        floorColor: pick(floorColors),
+        gridColor: pick(gridColors),
+        wallColor: pick(wallColors),
+        glowColor: pick(glowColors)
+    };
+
+    const skinPairs = [
+        ['#10b981', '#34d399'], // Bio Green
+        ['#ec4899', '#f472b6'], // Crimson Magenta
+        ['#a855f7', '#c084fc'], // Void Purple
+        ['#f59e0b', '#fbbf24'], // Solar Amber
+        ['#06b6d4', '#22d3ee']  // Cryo Cyan
+    ];
+    const eyeColors = ['#ef4444', '#facc15', '#22c55e', '#ffffff', '#ec4899'];
+    const prefixes = ['Vortex', 'Krypton', 'Biological', 'Void', 'Nebula', 'Gorgon'];
+
+    const pair = pick(skinPairs);
+    alienTheme = {
+        skinColor: pair[0],
+        coreColor: pair[1],
+        eyeColor: pick(eyeColors),
+        namePrefix: pick(prefixes)
+    };
+}
+
+function generateRandomObjective() {
+    const types = ['KILL_COUNT', 'COLLECT_COINS', 'SURVIVE_TIME'];
+    const type = types[Math.floor(Math.random() * types.length)];
+
+    if (type === 'KILL_COUNT') {
+        const required = 8 + currentSector * 4;
+        currentObjective = {
+            type: 'KILL_COUNT',
+            target: required,
+            desc: `Exterminate ${required} ${alienTheme.namePrefix} Mutants`,
+            progress: 0
+        };
+    } else if (type === 'COLLECT_COINS') {
+        const required = 12 + currentSector * 6;
+        currentObjective = {
+            type: 'COLLECT_COINS',
+            target: required,
+            desc: `Harvest ${required} Energy Gems`,
+            progress: 0
+        };
+    } else if (type === 'SURVIVE_TIME') {
+        const seconds = 18 + currentSector * 4;
+        currentObjective = {
+            type: 'SURVIVE_TIME',
+            target: seconds,
+            desc: `Survive for ${seconds} seconds`,
+            progress: 0,
+            timer: 0
+        };
+    }
+    updateObjectiveHUD();
+}
+
+function buildSectorMap() {
+    obstacles = [];
+
+    const margin = 70;
+    const innerW = CANVAS_WIDTH - margin * 2;
+    const innerH = CANVAS_HEIGHT - margin * 2;
+    const centerX = CANVAS_WIDTH / 2;
+    const centerY = CANVAS_HEIGHT / 2;
+    const playerSafeRadius = 180; // Keep spawn completely open
+
+    // Generate balanced, well-spaced alien bio-tech pillars/pods
+    const numObstacles = 5 + Math.floor(Math.random() * 4);
+    let attempts = 0;
+
+    while (obstacles.length < numObstacles && attempts < 120) {
+        attempts++;
+        const type = Math.random() < 0.4 ? 'pod' : (Math.random() < 0.7 ? 'pillar' : 'rectifier');
+        const w = type === 'pod' ? 50 + Math.random() * 20 : (type === 'pillar' ? 55 + Math.random() * 25 : 60 + Math.random() * 30);
+        const h = type === 'pod' ? 50 + Math.random() * 20 : (type === 'pillar' ? 55 + Math.random() * 25 : 60 + Math.random() * 30);
+
+        const x = margin + 40 + Math.random() * (innerW - 80 - w);
+        const y = margin + 40 + Math.random() * (innerH - 80 - h);
+
+        // Verify distance from center (player spawn)
+        const obsCenterX = x + w / 2;
+        const obsCenterY = y + h / 2;
+        if (Math.hypot(obsCenterX - centerX, obsCenterY - centerY) < playerSafeRadius) continue;
+
+        // Verify spacing between obstacles so player doesn't get trapped
+        let overlap = false;
+        for (let obs of obstacles) {
+            if (x < obs.x + obs.w + 60 && x + w + 60 > obs.x &&
+                y < obs.y + obs.h + 60 && y + h + 60 > obs.y) {
+                overlap = true;
+                break;
+            }
+        }
+
+        if (!overlap) {
+            obstacles.push({
+                x, y, w, h,
+                type,
+                pulseOffset: Math.random() * Math.PI * 2
+            });
+        }
+    }
+}
+
+class Player {
+    constructor() {
+        this.x = CANVAS_WIDTH / 2;
+        this.y = CANVAS_HEIGHT / 2;
+        this.radius = 18;
+        this.speed = 5.0;
+        this.maxHealth = 100;
+        this.health = 100;
+        this.angle = 0;
+    }
+
+    update() {
+        let dx = 0;
+        let dy = 0;
+
+        if (keys['KeyW'] || keys['w'] || keys['ArrowUp']) dy -= 1;
+        if (keys['KeyS'] || keys['s'] || keys['ArrowDown']) dy += 1;
+        if (keys['KeyA'] || keys['a'] || keys['ArrowLeft']) dx -= 1;
+        if (keys['KeyD'] || keys['d'] || keys['ArrowRight']) dx += 1;
+
+        if (dx !== 0 && dy !== 0) {
+            dx *= 0.7071;
+            dy *= 0.7071;
+        }
+
+        let newX = this.x + dx * this.speed;
+        let newY = this.y + dy * this.speed;
+
+        // Map Boundary Collisions
+        const margin = 70;
+        newX = Math.max(margin + this.radius, Math.min(CANVAS_WIDTH - margin - this.radius, newX));
+        newY = Math.max(margin + this.radius, Math.min(CANVAS_HEIGHT - margin - this.radius, newY));
+
+        // Obstacle Collisions
+        for (let obs of obstacles) {
+            if (circleBoxCollision(newX, this.y, this.radius, obs)) newX = this.x;
+            if (circleBoxCollision(this.x, newY, this.radius, obs)) newY = this.y;
+        }
+
+        this.x = newX;
+        this.y = newY;
+
+        // Aim angle to cursor
+        this.angle = Math.atan2(mouse.y - this.y, mouse.x - this.x);
+
+        // Thruster particles
+        if (dx !== 0 || dy !== 0) {
+            if (Math.random() < 0.6) {
+                particles.push({
+                    x: this.x - Math.cos(this.angle) * 12,
+                    y: this.y - Math.sin(this.angle) * 12,
+                    vx: -Math.cos(this.angle) * 2 + (Math.random() - 0.5),
+                    vy: -Math.sin(this.angle) * 2 + (Math.random() - 0.5),
+                    radius: 2 + Math.random() * 2,
+                    color: '#38bdf8',
+                    life: 12
+                });
+            }
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+
+        // Weapon
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(8, 3, 18, 6);
+        ctx.fillStyle = currentWeapon.color;
+        ctx.fillRect(20, 4, 6, 4);
+
+        // Abductee Space Helmet / Suit
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Visor
+        ctx.fillStyle = '#020617';
+        ctx.beginPath();
+        ctx.arc(4, 0, 9, -Math.PI / 2, Math.PI / 2);
+        ctx.fill();
+
+        // Visor Light Reflection
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(6, -3, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    takeDamage(amount) {
+        this.health -= amount;
+        createImpactParticles(this.x, this.y, '#ef4444', 12);
+        if (this.health <= 0) {
+            this.health = 0;
+            endGame();
+        }
+        updateHUD();
+    }
+}
+
+class Alien {
+    constructor(x, y, type = 'runner') {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.radius = type === 'tank' ? 26 : (type === 'shooter' ? 18 : 15);
+        this.speed = type === 'runner' ? 3.0 : (type === 'shooter' ? 1.9 : 1.2);
+        this.maxHealth = type === 'tank' ? 130 : (type === 'shooter' ? 50 : 35);
+        this.health = this.maxHealth;
+
+        this.color = alienTheme.skinColor;
+        this.coreColor = alienTheme.coreColor;
+        this.eyeColor = alienTheme.eyeColor;
+
+        this.lastShot = 0;
+        this.shootInterval = 1700 + Math.random() * 600;
+        this.animPhase = Math.random() * Math.PI * 2;
+    }
+
+    update() {
+        this.animPhase += 0.08;
+
+        // Pursuit
+        const angle = Math.atan2(player.y - this.y, player.x - this.x);
+        let dx = Math.cos(angle) * this.speed;
+        let dy = Math.sin(angle) * this.speed;
+
+        let newX = this.x + dx;
+        let newY = this.y + dy;
+
+        // Obstacle avoidance
+        for (let obs of obstacles) {
+            if (circleBoxCollision(newX, this.y, this.radius, obs)) newX = this.x;
+            if (circleBoxCollision(this.x, newY, this.radius, obs)) newY = this.y;
+        }
+
+        this.x = newX;
+        this.y = newY;
+
+        // Shooter AI
+        if (this.type === 'shooter') {
+            const now = Date.now();
+            if (now - this.lastShot > this.shootInterval) {
+                this.shootAtPlayer();
+                this.lastShot = now;
+            }
+        }
+
+        // Touch damage
+        const dist = Math.hypot(player.x - this.x, player.y - this.y);
+        if (dist < this.radius + player.radius) {
+            player.takeDamage(this.type === 'tank' ? 0.9 : 0.4);
+        }
+    }
+
+    shootAtPlayer() {
+        const angle = Math.atan2(player.y - this.y, player.x - this.x);
+        alienBullets.push({
+            x: this.x,
+            y: this.y,
+            vx: Math.cos(angle) * 7.5,
+            vy: Math.sin(angle) * 7.5,
+            radius: 5,
+            color: '#f43f5e'
+        });
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        const pulseScale = 1 + Math.sin(this.animPhase) * 0.08;
+        const angle = Math.atan2(player.y - this.y, player.x - this.x);
+
+        ctx.rotate(angle);
+
+        // Bio Tentacles
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 3;
+        for (let i = -2; i <= 2; i += 2) {
+            ctx.beginPath();
+            ctx.moveTo(-this.radius * 0.5, i * 4);
+            const w = Math.sin(this.animPhase + i) * 6;
+            ctx.quadraticCurveTo(-this.radius * 1.3, i * 6 + w, -this.radius * 1.6, i * 8);
+            ctx.stroke();
+        }
+
+        // Main Bio Body
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.coreColor;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius * pulseScale, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pulsing Bio Core
+        ctx.fillStyle = this.coreColor;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius * 0.5 * pulseScale, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Glowing Alien Eyes
+        ctx.fillStyle = this.eyeColor;
+        ctx.beginPath();
+        if (this.type === 'tank') {
+            // Cyclops eye
+            ctx.arc(this.radius * 0.4, 0, 6, 0, Math.PI * 2);
+        } else {
+            // Twin eyes
+            ctx.arc(this.radius * 0.3, -5, 3.5, 0, Math.PI * 2);
+            ctx.arc(this.radius * 0.3, 5, 3.5, 0, Math.PI * 2);
+        }
+        ctx.fill();
+
+        // Health Bar
+        if (this.health < this.maxHealth) {
+            ctx.rotate(-angle); // Reset rotation for health bar
+            const barW = this.radius * 2;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-this.radius, -this.radius - 12, barW, 4);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(-this.radius, -this.radius - 12, barW * (this.health / this.maxHealth), 4);
+        }
+
+        ctx.restore();
+    }
+
+    takeDamage(amount) {
+        this.health -= amount;
+        createImpactParticles(this.x, this.y, this.color, 6);
+
+        if (this.health <= 0) {
+            // Drop Alien Energy Coins
+            const coinCount = Math.floor(2 + Math.random() * 3) * (this.type === 'tank' ? 3 : 1);
+            for (let i = 0; i < coinCount; i++) {
+                drops.push({
+                    x: this.x + (Math.random() - 0.5) * 24,
+                    y: this.y + (Math.random() - 0.5) * 24,
+                    value: 1,
+                    radius: 7,
+                    floatPhase: Math.random() * Math.PI * 2
+                });
+            }
+
+            if (currentObjective && currentObjective.type === 'KILL_COUNT') {
+                currentObjective.progress++;
+                updateObjectiveHUD();
+            }
+
+            totalKills++;
+            if (totalKills > highScore) {
+                highScore = totalKills;
+                localStorage.setItem('alien_abduction_v2_highscore', highScore.toString());
+            }
+
+            updateHUD();
+            return true;
+        }
+        return false;
+    }
+}
+
+function circleBoxCollision(cx, cy, cr, box) {
+    const closestX = Math.max(box.x, Math.min(cx, box.x + box.w));
+    const closestY = Math.max(box.y, Math.min(cy, box.y + box.h));
+
+    const distX = cx - closestX;
+    const distY = cy - closestY;
+    return (distX * distX + distY * distY) < (cr * cr);
+}
+
+function createImpactParticles(x, y, color, count = 8) {
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.5 + Math.random() * 4.5;
+        particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 2 + Math.random() * 3,
+            color,
+            life: 18 + Math.random() * 14
+        });
+    }
+}
+
+function fireWeapon() {
+    const now = Date.now();
+    if (now - lastFireTime < currentWeapon.fireRate) return;
+    lastFireTime = now;
+
+    const bulletsToShoot = currentWeapon.bulletsPerShot || 1;
+
+    for (let i = 0; i < bulletsToShoot; i++) {
+        const spreadAngle = (Math.random() - 0.5) * currentWeapon.spread;
+        const angle = player.angle + spreadAngle;
+
+        bullets.push({
+            x: player.x + Math.cos(player.angle) * 20,
+            y: player.y + Math.sin(player.angle) * 20,
+            vx: Math.cos(angle) * currentWeapon.speed,
+            vy: Math.sin(angle) * currentWeapon.speed,
+            damage: currentWeapon.damage,
+            color: currentWeapon.color,
+            radius: currentWeapon.size,
+            penetration: currentWeapon.id === 'beam' ? 3 : 1
+        });
+    }
+}
+
+function updateSpawns() {
+    const maxAliens = 4 + currentSector * 2;
+    if (aliens.length < maxAliens && Math.random() < 0.035) {
+        const margin = 90;
+        let x, y;
+        let valid = false;
+        let attempts = 0;
+
+        // Ensure aliens spawn strictly INSIDE playable map, away from player, and clear of obstacles
+        while (!valid && attempts < 40) {
+            attempts++;
+            x = margin + Math.random() * (CANVAS_WIDTH - margin * 2);
+            y = margin + Math.random() * (CANVAS_HEIGHT - margin * 2);
+
+            // Must spawn at least 260px away from player
+            if (Math.hypot(player.x - x, player.y - y) < 260) continue;
+
+            // Must not overlap obstacles
+            let hitObs = false;
+            for (let obs of obstacles) {
+                if (circleBoxCollision(x, y, 25, obs)) {
+                    hitObs = true;
+                    break;
+                }
+            }
+            if (!hitObs) valid = true;
+        }
+
+        if (valid) {
+            const r = Math.random();
+            let type = 'runner';
+            if (r > 0.5) type = 'shooter';
+            if (r > 0.82) type = 'tank';
+            aliens.push(new Alien(x, y, type));
+        }
+    }
+}
+
+function startNewSector() {
+    currentSector++;
+    generateRandomTheme();
+    generateRandomObjective();
+    buildSectorMap();
+
+    aliens = [];
+    bullets = [];
+    alienBullets = [];
+    drops = [];
+
+    // Reset player position safely at center
+    player.x = CANVAS_WIDTH / 2;
+    player.y = CANVAS_HEIGHT / 2;
+
+    updateHUD();
+}
+
+function checkObjectiveProgress() {
+    if (!currentObjective) return;
+
+    if (currentObjective.type === 'SURVIVE_TIME') {
+        currentObjective.timer += 1 / 60;
+        currentObjective.progress = Math.min(currentObjective.target, Math.floor(currentObjective.timer));
+        updateObjectiveHUD();
+    }
+
+    if (currentObjective.progress >= currentObjective.target) {
+        startNewSector();
+    }
+}
+
+function updateHUD() {
+    document.getElementById('hud-sector').innerText = currentSector;
+    document.getElementById('hud-kills').innerText = totalKills;
+    document.getElementById('hud-highscore').innerText = highScore;
+    document.getElementById('hud-coins').innerText = coins;
+    document.getElementById('hud-weapon').innerText = currentWeapon.name;
+
+    const healthPct = Math.max(0, (player.health / player.maxHealth) * 100);
+    document.getElementById('health-bar').style.width = healthPct + '%';
+}
+
+function updateObjectiveHUD() {
+    if (!currentObjective) return;
+    document.getElementById('hud-objective-desc').innerText = currentObjective.desc;
+    document.getElementById('obj-progress-text').innerText = `${currentObjective.progress}/${currentObjective.target}`;
+
+    const pct = Math.min(100, (currentObjective.progress / currentObjective.target) * 100);
+    document.getElementById('obj-bar').style.width = pct + '%';
+}
+
+function toggleShop() {
+    if (gameState === 'PLAYING') {
+        gameState = 'SHOP';
+        document.getElementById('shop-coin-count').innerText = coins;
+        renderShop();
+        document.getElementById('shop-screen').classList.remove('hidden');
+    } else if (gameState === 'SHOP') {
+        gameState = 'PLAYING';
+        document.getElementById('shop-screen').classList.add('hidden');
+    }
+}
+
+function renderShop() {
+    const container = document.getElementById('shop-items-container');
+    container.innerHTML = '';
+
+    Object.values(WEAPONS).forEach(w => {
+        const card = document.createElement('div');
+        card.className = `shop-card ${currentWeapon.id === w.id ? 'active' : ''}`;
+
+        let buttonText = 'Equip';
+        let disabled = false;
+
+        if (!w.owned) {
+            buttonText = `Unlock (${w.cost} Coins)`;
+            if (coins < w.cost) disabled = true;
+        } else if (currentWeapon.id === w.id) {
+            buttonText = 'Equipped';
+            disabled = true;
+        }
+
+        card.innerHTML = `
+            <div>
+                <h3>${w.name}</h3>
+                <p>${w.desc}</p>
+            </div>
+            <div>
+                <div class="price">${w.owned ? 'UNLOCKED' : '🪙 ' + w.cost}</div>
+                <button class="btn btn-shop" ${disabled ? 'disabled' : ''} onclick="buyOrEquipWeapon('${w.id}')">${buttonText}</button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+window.buyOrEquipWeapon = function(weaponId) {
+    const w = WEAPONS[weaponId];
+    if (!w.owned && coins >= w.cost) {
+        coins -= w.cost;
+        w.owned = true;
+        currentWeapon = w;
+    } else if (w.owned) {
+        currentWeapon = w;
+    }
+    updateHUD();
+    renderShop();
+};
+
+function renderEnvironment() {
+    // Deep Space Starfield Background
+    ctx.fillStyle = mapTheme.floorColor;
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    // Drifting background stars
+    ctx.fillStyle = '#ffffff';
+    for (let s of stars) {
+        ctx.globalAlpha = s.alpha;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        s.y += s.speed;
+        if (s.y > CANVAS_HEIGHT) s.y = 0;
+    }
+    ctx.globalAlpha = 1.0;
+
+    // Sci-Fi Metallic Grid Floor
+    ctx.strokeStyle = mapTheme.gridColor;
+    ctx.lineWidth = 1;
+    const gridSize = 60;
+    for (let x = 0; x < CANVAS_WIDTH; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, CANVAS_HEIGHT);
+        ctx.stroke();
+    }
+    for (let y = 0; y < CANVAS_HEIGHT; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(CANVAS_WIDTH, y);
+        ctx.stroke();
+    }
+
+    // Glowing Sector Shield Perimeter Wall
+    const margin = 70;
+    ctx.strokeStyle = mapTheme.glowColor;
+    ctx.shadowColor = mapTheme.glowColor;
+    ctx.shadowBlur = 15;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(margin, margin, CANVAS_WIDTH - margin * 2, CANVAS_HEIGHT - margin * 2);
+
+    // Corner Energy Pylons
+    const corners = [
+        [margin, margin],
+        [CANVAS_WIDTH - margin, margin],
+        [margin, CANVAS_HEIGHT - margin],
+        [CANVAS_WIDTH - margin, CANVAS_HEIGHT - margin]
+    ];
+    for (let [cx, cy] of corners) {
+        ctx.fillStyle = mapTheme.glowColor;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Alien Bio-Tech Obstacles
+    const now = Date.now();
+    for (let obs of obstacles) {
+        ctx.save();
+
+        const pulse = Math.sin(now * 0.003 + obs.pulseOffset) * 0.5 + 0.5;
+
+        // Base structure
+        ctx.fillStyle = mapTheme.wallColor;
+        ctx.strokeStyle = mapTheme.glowColor;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = mapTheme.glowColor;
+        ctx.shadowBlur = 8 + pulse * 6;
+
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+
+        // Bio Pod glowing core details inside obstacles
+        if (obs.type === 'pod') {
+            ctx.fillStyle = mapTheme.glowColor;
+            ctx.beginPath();
+            ctx.arc(obs.x + obs.w / 2, obs.y + obs.h / 2, 10 + pulse * 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.strokeStyle = mapTheme.glowColor;
+            ctx.beginPath();
+            ctx.moveTo(obs.x + 8, obs.y + obs.h / 2);
+            ctx.lineTo(obs.x + obs.w - 8, obs.y + obs.h / 2);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    if (gameState === 'PLAYING') {
+        updateSpawns();
+        checkObjectiveProgress();
+
+        if (mouse.down) fireWeapon();
+
+        player.update();
+
+        // Player Bullets
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx;
+            b.y += b.vy;
+
+            // Obstacle collision
+            let hitObs = false;
+            for (let obs of obstacles) {
+                if (b.x >= obs.x && b.x <= obs.x + obs.w && b.y >= obs.y && b.y <= obs.y + obs.h) {
+                    hitObs = true;
+                    break;
+                }
+            }
+
+            const margin = 70;
+            if (hitObs || b.x < margin || b.x > CANVAS_WIDTH - margin || b.y < margin || b.y > CANVAS_HEIGHT - margin) {
+                createImpactParticles(b.x, b.y, b.color, 4);
+                bullets.splice(i, 1);
+                continue;
+            }
+
+            // Bullet vs Aliens
+            for (let j = aliens.length - 1; j >= 0; j--) {
+                let a = aliens[j];
+                const dist = Math.hypot(a.x - b.x, a.y - b.y);
+                if (dist < a.radius + b.radius) {
+                    const dead = a.takeDamage(b.damage);
+                    if (dead) aliens.splice(j, 1);
+
+                    b.penetration--;
+                    if (b.penetration <= 0) {
+                        bullets.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Alien Bullets
+        for (let i = alienBullets.length - 1; i >= 0; i--) {
+            let ab = alienBullets[i];
+            ab.x += ab.vx;
+            ab.y += ab.vy;
+
+            const dist = Math.hypot(player.x - ab.x, player.y - ab.y);
+            if (dist < player.radius + ab.radius) {
+                player.takeDamage(12);
+                alienBullets.splice(i, 1);
+                continue;
+            }
+
+            if (ab.x < 0 || ab.x > CANVAS_WIDTH || ab.y < 0 || ab.y > CANVAS_HEIGHT) {
+                alienBullets.splice(i, 1);
+            }
+        }
+
+        // Aliens
+        for (let a of aliens) {
+            a.update();
+        }
+
+        // Energy Coin Collection
+        for (let i = drops.length - 1; i >= 0; i--) {
+            let d = drops[i];
+            d.floatPhase += 0.05;
+            const dist = Math.hypot(player.x - d.x, player.y - d.y);
+
+            // Vacuum pull towards player
+            if (dist < 100) {
+                d.x += (player.x - d.x) * 0.08;
+                d.y += (player.y - d.y) * 0.08;
+            }
+
+            if (dist < player.radius + 15) {
+                coins += d.value;
+                if (currentObjective && currentObjective.type === 'COLLECT_COINS') {
+                    currentObjective.progress++;
+                    updateObjectiveHUD();
+                }
+                updateHUD();
+                drops.splice(i, 1);
+            }
+        }
+
+        // Particle updates
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+            if (p.life <= 0) particles.splice(i, 1);
+        }
+    }
+
+    // --- RENDER PASS ---
+    renderEnvironment();
+
+    // Draw Drops (Floating Alien Coins)
+    const now = Date.now();
+    for (let d of drops) {
+        ctx.save();
+        const offsetY = Math.sin(d.floatPhase) * 3;
+        ctx.fillStyle = '#facc15';
+        ctx.shadowColor = '#facc15';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y + offsetY, d.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(d.x - 2, d.y + offsetY - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // Draw Bullets
+    for (let b of bullets) {
+        ctx.save();
+        ctx.fillStyle = b.color;
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    for (let ab of alienBullets) {
+        ctx.save();
+        ctx.fillStyle = ab.color;
+        ctx.shadowColor = ab.color;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(ab.x, ab.y, ab.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // Draw Aliens
+    for (let a of aliens) {
+        a.draw();
+    }
+
+    // Draw Player
+    if (gameState === 'PLAYING' || gameState === 'SHOP') {
+        player.draw();
+    }
+
+    // Draw Particles
+    for (let p of particles) {
+        ctx.save();
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 25;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+function initGame() {
+    currentSector = 1;
+    totalKills = 0;
+    coins = 0;
+
+    WEAPONS.pulse.owned = true;
+    WEAPONS.scatter.owned = false;
+    WEAPONS.repeater.owned = false;
+    WEAPONS.beam.owned = false;
+    currentWeapon = WEAPONS.pulse;
+
+    player = new Player();
+    generateRandomTheme();
+    generateRandomObjective();
+    buildSectorMap();
+
+    aliens = [];
+    bullets = [];
+    alienBullets = [];
+    drops = [];
+    particles = [];
+
+    updateHUD();
+}
+
+function endGame() {
+    gameState = 'GAMEOVER';
+    document.getElementById('go-kills').innerText = totalKills;
+    document.getElementById('go-sectors').innerText = currentSector;
+    document.getElementById('go-highscore').innerText = highScore;
+    document.getElementById('gameover-screen').classList.remove('hidden');
+}
+
+// Modal Buttons
+document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('start-screen').classList.add('hidden');
+    initGame();
+    gameState = 'PLAYING';
+});
+
+document.getElementById('close-shop-btn').addEventListener('click', () => {
+    toggleShop();
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+    document.getElementById('gameover-screen').classList.add('hidden');
+    initGame();
+    gameState = 'PLAYING';
+});
+
+// Launch loop
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>

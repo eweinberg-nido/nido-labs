@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EA Sports FIFA 26 - Retro Ultimate Legends v1</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0b0e14;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 900px;
+            margin-bottom: 12px;
+            padding: 0 10px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #00ffcc, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+        }
+
+        .version-badge {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        #game-wrapper {
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 255, 204, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        canvas {
+            display: block;
+            background: #1b5e20;
+        }
+
+        .controls-card {
+            width: 900px;
+            margin-top: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .key-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: monospace;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .legend-tag {
+            color: #ffd700;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">EA SPORTS FIFA 26 <span style="font-size: 14px; color: #fff;">LEGENDS EDITION</span></div>
+        <div class="version-badge">VERSION v1</div>
+    </header>
+
+    <div id="game-wrapper">
+        <canvas id="pitch" width="900" height="550"></canvas>
+    </div>
+
+    <div class="controls-card">
+        <div>
+            <strong>Move Active Player:</strong> <span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> / <span class="key-badge">ARROWS</span>
+        </div>
+        <div>
+            <strong>Pass / Shoot:</strong> <span class="key-badge">SPACE</span>
+        </div>
+        <div>
+            <strong>Switch Player:</strong> <span class="key-badge">SHIFT</span>
+        </div>
+        <div>
+            <strong>Reset Match:</strong> <span class="key-badge">R</span>
+        </div>
+    </div>
+
+<script>
+const canvas = document.getElementById('pitch');
+const ctx = canvas.getContext('2d');
+
+// Input Handling
+const keys = {};
+window.addEventListener('keydown', e => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key === ' ' || e.key === 'Shift') e.preventDefault();
+});
+window.addEventListener('keyup', e => {
+    keys[e.key.toLowerCase()] = false;
+});
+
+// Game State
+let scoreHome = 0;
+let scoreAway = 0;
+let matchTime = 0; // seconds
+let isPaused = false;
+
+// Match Timer
+setInterval(() => {
+    if (!isPaused) matchTime++;
+}, 1000);
+
+// Ball Object
+const ball = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    vx: 0,
+    vy: 0,
+    radius: 7,
+    friction: 0.982,
+    lastKickedBy: null,
+
+    draw() {
+        // Shadow
+        ctx.beginPath();
+        ctx.arc(this.x + 3, this.y + 3, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fill();
+
+        // Ball Body
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#111111';
+        ctx.stroke();
+
+        // Ball pattern detail
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#222222';
+        ctx.fill();
+    },
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+
+        // Top/Bottom Pitch Bounds
+        if (this.y - this.radius < 25) {
+            this.y = 25 + this.radius;
+            this.vy *= -0.8;
+        }
+        if (this.y + this.radius > canvas.height - 25) {
+            this.y = canvas.height - 25 - this.radius;
+            this.vy *= -0.8;
+        }
+
+        // Left/Right Pitch Bounds (Goals check)
+        const inGoalY = this.y > canvas.height / 2 - 60 && this.y < canvas.height / 2 + 60;
+
+        if (!inGoalY) {
+            if (this.x - this.radius < 25) {
+                this.x = 25 + this.radius;
+                this.vx *= -0.8;
+            }
+            if (this.x + this.radius > canvas.width - 25) {
+                this.x = canvas.width - 25 - this.radius;
+                this.vx *= -0.8;
+            }
+        } else {
+            // Goal Scored!
+            if (this.x < 15) {
+                scoreAway++;
+                triggerGoal("AWAY SCORED!");
+            } else if (this.x > canvas.width - 15) {
+                scoreHome++;
+                triggerGoal("HOME SCORED!");
+            }
+        }
+    }
+};
+
+let goalText = "";
+let goalTimer = 0;
+
+function triggerGoal(msg) {
+    goalText = msg;
+    goalTimer = 120; // 2 seconds at 60fps
+    resetPositions();
+}
+
+// Player Class
+class Player {
+    constructor(name, x, y, team, isLegend = false, number = 10) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.startX = x;
+        this.startY = y;
+        this.team = team; // 'home' or 'away'
+        this.isLegend = isLegend;
+        this.number = number;
+        this.radius = 14;
+        
+        // Base Attributes (Legends get a stat boost!)
+        this.speed = isLegend ? 3.6 : 2.8;
+        this.shotPower = isLegend ? 13 : 9.5;
+        this.color = team === 'home' ? '#00e5ff' : '#ff1744';
+        this.isControlled = false;
+    }
+
+    draw() {
+        // Selection Marker (Active Player)
+        if (this.isControlled) {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y - this.radius - 14);
+            ctx.lineTo(this.x - 6, this.y - this.radius - 22);
+            ctx.lineTo(this.x + 6, this.y - this.radius - 22);
+            ctx.closePath();
+            ctx.fillStyle = '#00ffcc';
+            ctx.fill();
+        }
+
+        // Legend Aura Glow
+        if (this.isLegend) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.25)';
+            ctx.fill();
+        }
+
+        // Player Circle
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.lineWidth = this.isLegend ? 3 : 1.5;
+        ctx.strokeStyle = this.isLegend ? '#ffd700' : '#ffffff';
+        ctx.stroke();
+
+        // Player Shirt Number
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.number, this.x, this.y);
+
+        // Player Name Tag
+        ctx.font = this.isLegend ? 'bold 11px sans-serif' : '10px sans-serif';
+        ctx.fillStyle = this.isLegend ? '#ffd700' : '#ffffff';
+        ctx.fillText(this.isLegend ? `★ ${this.name}` : this.name, this.x, this.y - this.radius - 5);
+    }
+
+    update() {
+        if (this.isControlled) {
+            // User Controls
+            let dx = 0, dy = 0;
+            if (keys['w'] || keys['arrowup']) dy -= 1;
+            if (keys['s'] || keys['arrowdown']) dy += 1;
+            if (keys['a'] || keys['arrowleft']) dx -= 1;
+            if (keys['d'] || keys['arrowright']) dx += 1;
+
+            // Normalize diagonal speed
+            if (dx !== 0 && dy !== 0) {
+                dx *= 0.7071;
+                dy *= 0.7071;
+            }
+
+            this.x += dx * this.speed;
+            this.y += dy * this.speed;
+
+            // Kick / Shoot
+            if (keys[' ']) {
+                const distToBall = Math.hypot(ball.x - this.x, ball.y - this.y);
+                if (distToBall < this.radius + ball.radius + 10) {
+                    const angle = Math.atan2(ball.y - this.y, ball.x - this.x);
+                    ball.vx = Math.cos(angle) * this.shotPower;
+                    ball.vy = Math.sin(angle) * this.shotPower;
+                    ball.lastKickedBy = this;
+                }
+            }
+        } else {
+            // Simple AI Logic for Non-controlled players
+            const distToBall = Math.hypot(ball.x - this.x, ball.y - this.y);
+
+            // Move towards ball if near default area
+            if (distToBall < 180) {
+                const angle = Math.atan2(ball.y - this.y, ball.x - this.x);
+                this.x += Math.cos(angle) * (this.speed * 0.65);
+                this.y += Math.sin(angle) * (this.speed * 0.65);
+            } else {
+                // Return slowly to home formation spot
+                this.x += (this.startX - this.x) * 0.02;
+                this.y += (this.startY - this.y) * 0.02;
+            }
+
+            // AI Shoot / Clear
+            if (distToBall < this.radius + ball.radius + 4) {
+                const targetX = this.team === 'home' ? canvas.width : 0;
+                const angle = Math.atan2(canvas.height / 2 - this.y, targetX - this.x);
+                ball.vx = Math.cos(angle) * (this.shotPower * 0.8);
+                ball.vy = Math.sin(angle) * (this.shotPower * 0.8);
+            }
+        }
+
+        // Keep inside field borders
+        this.x = Math.max(25 + this.radius, Math.min(canvas.width - 25 - this.radius, this.x));
+        this.y = Math.max(25 + this.radius, Math.min(canvas.height - 25 - this.radius, this.y));
+
+        // Push ball if physically touching
+        const dist = Math.hypot(ball.x - this.x, ball.y - this.y);
+        if (dist < this.radius + ball.radius) {
+            const angle = Math.atan2(ball.y - this.y, ball.x - this.x);
+            const overlap = (this.radius + ball.radius) - dist;
+            ball.x += Math.cos(angle) * overlap;
+            ball.y += Math.sin(angle) * overlap;
+        }
+    }
+
+    reset() {
+        this.x = this.startX;
+        this.y = this.startY;
+    }
+}
+
+// Squad Setup (Mixing Legends & Modern Superstars)
+const homeTeam = [
+    new Player('Pelé', 320, 275, 'home', true, 10),       // LEGEND
+    new Player('Zidane', 220, 180, 'home', true, 5),      // LEGEND
+    new Player('Mbappé', 220, 370, 'home', false, 7),     // Current
+    new Player('Bellingham', 120, 275, 'home', false, 5)  // Current
+];
+
+const awayTeam = [
+    new Player('Ronaldo R9', 580, 275, 'away', true, 9),  // LEGEND
+    new Player('Ronaldinho', 680, 180, 'away', true, 10), // LEGEND
+    new Player('Haaland', 680, 370, 'away', false, 9),    // Current
+    new Player('Vini Jr', 780, 275, 'away', false, 7)     // Current
+];
+
+let activeHomePlayerIndex = 0;
+homeTeam[activeHomePlayerIndex].isControlled = true;
+
+// Player switching logic
+let shiftPressed = false;
+function handlePlayerSwitch() {
+    if (keys['shift'] && !shiftPressed) {
+        shiftPressed = true;
+        homeTeam[activeHomePlayerIndex].isControlled = false;
+        
+        // Switch to player closest to ball
+        let closestDist = Infinity;
+        let newIndex = 0;
+        
+        homeTeam.forEach((p, idx) => {
+            const dist = Math.hypot(ball.x - p.x, ball.y - p.y);
+            if (dist < closestDist) {
+                closestDist = dist;
+                newIndex = idx;
+            }
+        });
+
+        activeHomePlayerIndex = newIndex;
+        homeTeam[activeHomePlayerIndex].isControlled = true;
+    }
+    if (!keys['shift']) shiftPressed = false;
+}
+
+function resetPositions() {
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height / 2;
+    ball.vx = 0;
+    ball.vy = 0;
+    homeTeam.forEach(p => p.reset());
+    awayTeam.forEach(p => p.reset());
+}
+
+// Rendering Pitch
+function drawPitch() {
+    // Pitch Grass Stripes
+    ctx.fillStyle = '#2e7d32';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#266d29';
+    const stripeWidth = (canvas.width - 50) / 10;
+    for (let i = 0; i < 10; i += 2) {
+        ctx.fillRect(25 + i * stripeWidth, 25, stripeWidth, canvas.height - 50);
+    }
+
+    // Lines & Markings
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.lineWidth = 2.5;
+
+    // Pitch Perimeter
+    ctx.strokeRect(25, 25, canvas.width - 50, canvas.height - 50);
+
+    // Halfway Line
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 25);
+    ctx.lineTo(canvas.width / 2, canvas.height - 25);
+    ctx.stroke();
+
+    // Center Circle
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 65, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Center Spot
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    // Left Goal & Box
+    ctx.strokeRect(25, canvas.height / 2 - 90, 110, 180);
+    ctx.strokeRect(25, canvas.height / 2 - 45, 40, 90);
+    ctx.strokeRect(5, canvas.height / 2 - 60, 20, 120); // Net
+
+    // Right Goal & Box
+    ctx.strokeRect(canvas.width - 135, canvas.height / 2 - 90, 110, 180);
+    ctx.strokeRect(canvas.width - 65, canvas.height / 2 - 45, 40, 90);
+    ctx.strokeRect(canvas.width - 25, canvas.height / 2 - 60, 20, 120); // Net
+}
+
+// HUD & Scoreboard
+function drawHUD() {
+    // Scoreboard Container
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(canvas.width / 2 - 130, 0, 260, 38);
+    ctx.strokeStyle = '#00ffcc';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(canvas.width / 2 - 130, 0, 260, 38);
+
+    // Score & Teams Text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`LEGENDS  ${scoreHome} - ${scoreAway}  STARS`, canvas.width / 2, 18);
+
+    // Format Time (00:00 style)
+    const mins = Math.floor(matchTime / 60).toString().padStart(2, '0');
+    const secs = (matchTime % 60).toString().padStart(2, '0');
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#00ffcc';
+    ctx.fillText(`TIME: ${mins}:${secs}`, canvas.width / 2, 32);
+
+    // Goal Splash Banner
+    if (goalTimer > 0) {
+        goalTimer--;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(0, canvas.height / 2 - 40, canvas.width, 80);
+
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(goalText, canvas.width / 2, canvas.height / 2 + 12);
+    }
+}
+
+// Game Loop
+function gameLoop() {
+    // Reset Key
+    if (keys['r']) {
+        scoreHome = 0;
+        scoreAway = 0;
+        matchTime = 0;
+        resetPositions();
+    }
+
+    handlePlayerSwitch();
+
+    // Logic Updates
+    ball.update();
+    homeTeam.forEach(p => p.update());
+    awayTeam.forEach(p => p.update());
+
+    // Render Scene
+    drawPitch();
+    ball.draw();
+    homeTeam.forEach(p => p.draw());
+    awayTeam.forEach(p => p.draw());
+    drawHUD();
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Start Game Engine
+gameLoop();
+</script>
+</body>
+</html>

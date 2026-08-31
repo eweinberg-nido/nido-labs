@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splatoon Ink Racers v2</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            background-color: #0b0c10;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 1000px;
+            height: 600px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 10px rgba(255,0,85,0.3);
+            border: 4px solid #222;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+        .controls-hint {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 15, 20, 0.85);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #ddd;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            z-index: 5;
+        }
+        #start-screen, #win-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 18, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        .title {
+            font-size: 52px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-shadow: 4px 4px 0px #ff0055, -4px -4px 0px #00e5ff;
+            letter-spacing: 3px;
+            font-style: italic;
+        }
+        .subtitle {
+            font-size: 15px;
+            color: #aaa;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #ff0055, #ff5500);
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 20px;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.4);
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 20px rgba(255, 0, 85, 0.6);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .player-card {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: #161820;
+            padding: 18px;
+            border-radius: 12px;
+            border: 2px solid #2a2d3d;
+            width: 250px;
+            text-align: left;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .card h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .p1-color { color: #ff0055; }
+        .p2-color { color: #00e5ff; }
+        .card p {
+            margin: 6px 0;
+            font-size: 13px;
+            color: #ccc;
+        }
+        .key {
+            display: inline-block;
+            background: #2a2e3d;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            border: 1px solid #444b60;
+            color: #fff;
+            font-weight: bold;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+
+        <div id="start-screen">
+            <h1 class="title">SQUID SPRINT v2</h1>
+            <div class="subtitle">2-Player Split-Screen Ink Grand Prix</div>
+            
+            <div class="player-card">
+                <div class="card">
+                    <h3 class="p1-color">🦑 Player 1 (Inkling)</h3>
+                    <p><span class="key">D</span> : Move Forward</p>
+                    <p><span class="key">A</span> : Move Backward</p>
+                    <p><span class="key">W</span> : Jump</p>
+                    <p><span class="key">S</span> : Submerge (Squid)</p>
+                    <p><span class="key">SPACE</span> : Shoot Ink Cannon</p>
+                </div>
+                <div class="card">
+                    <h3 class="p2-color">🐙 Player 2 (Octoling)</h3>
+                    <p><span class="key">→</span> : Move Forward</p>
+                    <p><span class="key">←</span> : Move Backward</p>
+                    <p><span class="key">↑</span> : Jump</p>
+                    <p><span class="key">↓</span> : Submerge (Octopus)</p>
+                    <p><span class="key">ENTER</span> : Shoot Ink Cannon</p>
+                </div>
+            </div>
+
+            <button class="btn" id="start-btn">READY & RACE!</button>
+        </div>
+
+        <div id="win-screen" class="hidden">
+            <h1 class="title" id="win-title">PLAYER 1 WINS!</h1>
+            <p class="subtitle" id="win-subtitle">Superior Inking Skills!</p>
+            <button class="btn" id="restart-btn">PLAY AGAIN</button>
+        </div>
+
+        <div class="controls-hint">
+            Shoot ink ahead, then hold <span style="color:#ff0055; font-weight:bold;">S</span> or <span style="color:#00e5ff; font-weight:bold;">↓</span> in your ink to submerge & swim super fast!
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game World Setup
+        const WORLD_WIDTH = 5200;
+        const TRACK_HEIGHT = 300;
+        const GRAVITY = 0.52;
+
+        const P1_COLOR = '#ff0055'; // Neon Pink
+        const P1_ACCENT = '#ff9900'; // Orange Accent
+        const P2_COLOR = '#00e5ff'; // Neon Cyan
+        const P2_ACCENT = '#00ff66'; // Lime Accent
+
+        const P1_INK_ID = 1;
+        const P2_INK_ID = 2;
+
+        // Keys tracking
+        const keys = {};
+
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('keyup', e => {
+            keys[e.code] = false;
+        });
+
+        // Grid Ink System
+        class InkTrack {
+            constructor(width) {
+                this.width = width;
+                this.cellSize = 8;
+                this.cols = Math.ceil(width / this.cellSize);
+                this.lane1 = new Uint8Array(this.cols);
+                this.lane2 = new Uint8Array(this.cols);
+            }
+
+            paint(laneNum, x, radius, inkId) {
+                const lane = laneNum === 1 ? this.lane1 : this.lane2;
+                const startCol = Math.max(0, Math.floor((x - radius) / this.cellSize));
+                const endCol = Math.min(this.cols - 1, Math.floor((x + radius) / this.cellSize));
+
+                for (let i = startCol; i <= endCol; i++) {
+                    lane[i] = inkId;
+                }
+            }
+
+            getInkAt(laneNum, x) {
+                const lane = laneNum === 1 ? this.lane1 : this.lane2;
+                const col = Math.floor(x / this.cellSize);
+                if (col >= 0 && col < this.cols) {
+                    return lane[col];
+                }
+                return 0;
+            }
+
+            reset() {
+                this.lane1.fill(0);
+                this.lane2.fill(0);
+            }
+        }
+
+        const trackInk = new InkTrack(WORLD_WIDTH);
+
+        // Projectiles
+        class Projectile {
+            constructor(x, y, vx, vy, inkId, lane) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.inkId = inkId;
+                this.lane = lane;
+                this.radius = 7;
+                this.active = true;
+            }
+
+            update() {
+                if (!this.active) return;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += GRAVITY * 0.5;
+
+                const groundY = TRACK_HEIGHT - 32;
+                if (this.y >= groundY) {
+                    this.y = groundY;
+                    this.active = false;
+                    trackInk.paint(this.lane, this.x, 30, this.inkId);
+                    createSplatParticles(this.x, groundY, this.inkId === P1_INK_ID ? P1_COLOR : P2_COLOR);
+                }
+
+                if (this.x < 0 || this.x > WORLD_WIDTH) {
+                    this.active = false;
+                }
+            }
+
+            draw(context, cameraX) {
+                if (!this.active) return;
+                context.fillStyle = this.inkId === P1_INK_ID ? P1_COLOR : P2_COLOR;
+                context.beginPath();
+                context.arc(this.x - cameraX, this.y, this.radius, 0, Math.PI * 2);
+                context.fill();
+
+                // Highlight gloss on droplet
+                context.fillStyle = '#ffffff';
+                context.fillRect(this.x - cameraX - 2, this.y - 3, 3, 3);
+            }
+        }
+
+        // Splat Particles
+        const particles = [];
+        function createSplatParticles(x, y, color) {
+            for (let i = 0; i < 9; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 7,
+                    vy: -Math.random() * 5 - 1.5,
+                    radius: Math.random() * 4 + 2,
+                    color: color,
+                    life: 22
+                });
+            }
+        }
+
+        function updateAndDrawParticles(context, cameraX) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += GRAVITY * 0.35;
+                p.life--;
+
+                context.fillStyle = p.color;
+                context.beginPath();
+                context.arc(p.x - cameraX, p.y, p.radius, 0, Math.PI * 2);
+                context.fill();
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // Detailed Character Class
+        class Player {
+            constructor(id, name, lane, mainColor, accentColor, inkId) {
+                this.id = id;
+                this.name = name;
+                this.lane = lane;
+                this.color = mainColor;
+                this.accentColor = accentColor;
+                this.inkId = inkId;
+
+                this.width = 28;
+                this.height = 44;
+                this.reset();
+            }
+
+            reset() {
+                this.x = 90;
+                this.y = TRACK_HEIGHT - 32 - this.height;
+                this.vx = 0;
+                this.vy = 0;
+                this.isGrounded = false;
+                this.isSubmerged = false;
+                this.facingRight = true;
+                this.shootCooldown = 0;
+                this.animTimer = 0;
+                this.hasFinished = false;
+            }
+
+            update(controls) {
+                if (gameState !== 'PLAYING') return;
+
+                if (this.shootCooldown > 0) this.shootCooldown--;
+
+                const currentGroundInk = trackInk.getInkAt(this.lane, this.x + this.width / 2);
+                const isOwnInk = (currentGroundInk === this.inkId);
+                const isEnemyInk = (currentGroundInk !== 0 && currentGroundInk !== this.inkId);
+
+                // Submerge logic
+                const wantsSubmerge = controls.submerge && this.isGrounded && isOwnInk;
+                this.isSubmerged = wantsSubmerge;
+
+                let moveSpeed = 3.5;
+                let jumpPower = -11.0;
+
+                if (this.isSubmerged) {
+                    moveSpeed = 8.2; // Fast swim speed!
+                    jumpPower = -13.5; // High ink-jump
+                    this.height = 18;
+                } else {
+                    this.height = 44;
+                    if (isEnemyInk) {
+                        moveSpeed = 1.3; // Slower in rival ink!
+                    }
+                }
+
+                // Horizontal movement mapping
+                if (controls.forward) { // Move Forward (Right)
+                    this.vx = moveSpeed;
+                    this.facingRight = true;
+                } else if (controls.back) { // Move Backward (Left)
+                    this.vx = -moveSpeed;
+                    this.facingRight = false;
+                } else {
+                    this.vx *= 0.72; // Friction
+                }
+
+                // Jump Mapping
+                if (controls.jump && this.isGrounded) {
+                    this.vy = jumpPower;
+                    this.isGrounded = false;
+                }
+
+                // Shoot Mapping
+                if (controls.shoot && this.shootCooldown === 0 && !this.isSubmerged) {
+                    this.shoot();
+                    this.shootCooldown = 11;
+                }
+
+                // Physics
+                this.vy += GRAVITY;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 10) this.x = 10;
+                if (this.x > WORLD_WIDTH - 120) {
+                    if (!this.hasFinished) {
+                        this.hasFinished = true;
+                        handlePlayerFinish(this);
+                    }
+                }
+
+                const groundY = TRACK_HEIGHT - 32 - this.height;
+                if (this.y >= groundY) {
+                    this.y = groundY;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                }
+
+                this.animTimer++;
+            }
+
+            shoot() {
+                const dir = this.facingRight ? 1 : -1;
+                const startX = this.x + (this.facingRight ? this.width + 6 : -6);
+                const startY = this.y + 14;
+
+                for (let i = 0; i < 2; i++) {
+                    const vx = dir * (11 + Math.random() * 3);
+                    const vy = -1.8 - Math.random() * 2.5;
+                    projectiles.push(new Projectile(startX, startY, vx, vy, this.inkId, this.lane));
+                }
+            }
+
+            draw(context, cameraX, isWinner, isLoser) {
+                const drawX = Math.floor(this.x - cameraX);
+                const drawY = Math.floor(this.y);
+
+                context.save();
+
+                if (!this.facingRight) {
+                    context.translate(drawX + this.width / 2, drawY + this.height / 2);
+                    context.scale(-1, 1);
+                    context.translate(-(drawX + this.width / 2), -(drawY + this.height / 2));
+                }
+
+                if (gameState === 'GAMEOVER') {
+                    if (isWinner) {
+                        this.drawCelebrate(context, drawX, drawY);
+                    } else {
+                        this.drawAngry(context, drawX, drawY);
+                    }
+                } else if (this.isSubmerged) {
+                    this.drawSquidOctoForm(context, drawX, drawY);
+                } else {
+                    this.drawDetailedHumanoid(context, drawX, drawY);
+                }
+
+                context.restore();
+            }
+
+            // High-detail Pixel Art Kid Form
+            drawDetailedHumanoid(ctx, x, y) {
+                const isP1 = (this.id === 1);
+                const legAnim = Math.sin(this.animTimer * 0.3) * (Math.abs(this.vx) > 0.2 ? 5 : 0);
+
+                // --- 1. BACK TENTACLES / HAIR ---
+                ctx.fillStyle = this.color;
+                if (isP1) {
+                    // Inkling long dual tentacles
+                    ctx.fillRect(x + 1, y + 8, 8, 22);
+                    ctx.fillRect(x + 4, y + 4, 16, 8);
+                    // Dark tentacle tips
+                    ctx.fillStyle = '#990033';
+                    ctx.fillRect(x + 1, y + 24, 8, 6);
+                } else {
+                    // Octoling suction tentacles
+                    ctx.fillRect(x + 3, y + 4, 18, 9);
+                    ctx.fillRect(x + 16, y + 10, 8, 18);
+                    // Suction Cup Detail
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x + 20, y + 14, 3, 3);
+                    ctx.fillRect(x + 20, y + 20, 3, 3);
+                }
+
+                // --- 2. INK TANK ON BACK ---
+                ctx.fillStyle = '#333b4d';
+                ctx.fillRect(x - 2, y + 16, 6, 16);
+                ctx.fillStyle = '#7888a6';
+                ctx.fillRect(x - 1, y + 15, 4, 2);
+                // Glass Ink level
+                ctx.fillStyle = this.color;
+                ctx.fillRect(x - 1, y + 20, 4, 10);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x, y + 20, 1, 10); // Glass glare
+
+                // --- 3. HEAD & FACE ---
+                ctx.fillStyle = '#fce2c4'; // Warm skin tone
+                ctx.fillRect(x + 7, y + 10, 14, 11);
+
+                // Black Eye Mask (Splatoon signature)
+                ctx.fillStyle = '#111318';
+                if (isP1) {
+                    ctx.fillRect(x + 9, y + 12, 12, 5); // Connected mask
+                } else {
+                    ctx.fillRect(x + 10, y + 12, 5, 5); // Octo separate eye mask
+                    ctx.fillRect(x + 16, y + 12, 5, 5);
+                }
+
+                // Eyes & Pupil
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x + (this.facingRight ? 14 : 10), y + 13, 4, 3);
+                ctx.fillStyle = this.accentColor;
+                ctx.fillRect(x + (this.facingRight ? 16 : 10), y + 13, 2, 3);
+
+                // Headphones / Cap Accessory
+                if (isP1) {
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(x + 5, y + 11, 4, 8); // Headphone cup
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.fillRect(x + 6, y + 13, 2, 4);
+                } else {
+                    ctx.fillStyle = '#1a1a2e';
+                    ctx.fillRect(x + 7, y + 2, 14, 4); // Cool Cap
+                    ctx.fillRect(x + 15, y + 6, 8, 2); // Cap visor
+                }
+
+                // --- 4. CLOTHING (Streetwear Style) ---
+                ctx.fillStyle = '#1e222d'; // Dark Tee
+                ctx.fillRect(x + 6, y + 21, 14, 12);
+
+                // Graphic Print on Shirt
+                ctx.fillStyle = this.accentColor;
+                ctx.fillRect(x + 10, y + 24, 6, 5);
+
+                // Shorts
+                ctx.fillStyle = '#2d3345';
+                ctx.fillRect(x + 7, y + 32, 12, 5);
+
+                // --- 5. LEGS & SNEAKERS ---
+                ctx.fillStyle = '#fce2c4'; // Skin legs
+                ctx.fillRect(x + 8, y + 36, 4, 5 + legAnim);
+                ctx.fillRect(x + 15, y + 36, 4, 5 - legAnim);
+
+                // Cool High-top Sneakers
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x + 6, y + 40 + legAnim, 7, 4);
+                ctx.fillRect(x + 14, y + 40 - legAnim, 7, 4);
+                ctx.fillStyle = this.color; // Colored Sole
+                ctx.fillRect(x + 6, y + 43 + legAnim, 7, 1);
+                ctx.fillRect(x + 14, y + 43 - legAnim, 7, 1);
+
+                // --- 6. SPLATTERSHOT WEAPON ---
+                ctx.fillStyle = '#444';
+                ctx.fillRect(x + 14, y + 23, 12, 5); // Gun Body
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillRect(x + 22, y + 21, 5, 3); // Front nozzle
+                ctx.fillStyle = this.color;
+                ctx.fillRect(x + 16, y + 18, 5, 5); // Ink canister top
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(x + 17, y + 19, 1, 3); // Glare on canister
+            }
+
+            // High-detail Squid & Octopus Forms
+            drawSquidOctoForm(ctx, x, y) {
+                ctx.fillStyle = this.color;
+                const isP1 = (this.id === 1);
+
+                if (isP1) {
+                    // Arrowhead Squid Form
+                    ctx.beginPath();
+                    ctx.moveTo(x + 22, y + 9);
+                    ctx.lineTo(x + 4, y + 1);
+                    ctx.lineTo(x + 4, y + 17);
+                    ctx.fill();
+
+                    // Big Expressive Eyes
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x + 10, y + 4, 5, 5);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(x + 12, y + 5, 2, 3);
+
+                    // Trailing Swimming Tentacles
+                    ctx.fillStyle = this.color;
+                    const ripple = Math.sin(this.animTimer * 0.4) * 2;
+                    ctx.fillRect(x - 6, y + 3 + ripple, 10, 4);
+                    ctx.fillRect(x - 6, y + 11 - ripple, 10, 4);
+                } else {
+                    // Rounded Octo Form
+                    ctx.beginPath();
+                    ctx.arc(x + 12, y + 9, 9, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Distinct Octo Eye Mask
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(x + 10, y + 4, 8, 6);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x + 12, y + 5, 4, 4);
+                    ctx.fillStyle = this.accentColor;
+                    ctx.fillRect(x + 14, y + 6, 2, 2);
+
+                    // Snout & Suction Tentacles
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(x - 4, y + 7, 8, 5);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x - 2, y + 8, 2, 2);
+                }
+            }
+
+            // End Victory Celebration
+            drawCelebrate(ctx, x, y) {
+                const bounceY = Math.abs(Math.sin(Date.now() / 120)) * 14;
+                this.drawDetailedHumanoid(ctx, x, y - bounceY);
+
+                // Sparkles around winner
+                ctx.fillStyle = '#ffe600';
+                ctx.fillRect(x + 2, y - bounceY - 18, 5, 5);
+                ctx.fillRect(x + 22, y - bounceY - 24, 7, 7);
+                ctx.fillRect(x - 8, y - bounceY - 10, 4, 4);
+            }
+
+            // End Defeat Angry Stance
+            drawAngry(ctx, x, y) {
+                this.drawDetailedHumanoid(ctx, x, y);
+
+                // Overwrite Face with Angry Expression (>_<)
+                ctx.fillStyle = '#fce2c4';
+                ctx.fillRect(x + 7, y + 10, 14, 11);
+
+                ctx.fillStyle = '#111';
+                // Slanted eyebrows
+                ctx.beginPath();
+                ctx.moveTo(x + 8, y + 11);
+                ctx.lineTo(x + 18, y + 15);
+                ctx.lineTo(x + 8, y + 16);
+                ctx.fill();
+
+                // Pulsing Red Anger Symbol
+                if (Math.floor(Date.now() / 250) % 2 === 0) {
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fillRect(x + 20, y - 10, 3, 10);
+                    ctx.fillRect(x + 16, y - 6, 11, 3);
+                }
+
+                // Crossed Arms Over Shirt
+                ctx.fillStyle = '#1e222d';
+                ctx.fillRect(x + 5, y + 23, 16, 7);
+                ctx.fillStyle = '#fce2c4'; // Hands folded
+                ctx.fillRect(x + 4, y + 25, 4, 4);
+                ctx.fillRect(x + 18, y + 25, 4, 4);
+            }
+        }
+
+        // Initialize Players
+        const p1 = new Player(1, "Player 1", 1, P1_COLOR, P1_ACCENT, P1_INK_ID);
+        const p2 = new Player(2, "Player 2", 2, P2_COLOR, P2_ACCENT, P2_INK_ID);
+        let projectiles = [];
+
+        let gameState = 'START';
+        let winner = null;
+
+        // UI Handlers
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('restart-btn').addEventListener('click', startGame);
+
+        function startGame() {
+            trackInk.reset();
+            projectiles = [];
+            particles.length = 0;
+            p1.reset();
+            p2.reset();
+            winner = null;
+            gameState = 'PLAYING';
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('win-screen').classList.add('hidden');
+        }
+
+        function handlePlayerFinish(player) {
+            if (gameState === 'GAMEOVER') return;
+            gameState = 'GAMEOVER';
+            winner = player;
+
+            const winTitle = document.getElementById('win-title');
+            const winSub = document.getElementById('win-subtitle');
+            
+            winTitle.textContent = `${player.name.toUpperCase()} WINS!`;
+            winTitle.style.color = player.color;
+            winSub.textContent = player.id === 1 ? "Incredible Inkling Victory!" : "Outstanding Octoling Victory!";
+
+            setTimeout(() => {
+                document.getElementById('win-screen').classList.remove('hidden');
+            }, 1800);
+        }
+
+        // Environment Graphics
+        function drawTrackEnvironment(ctx, cameraX, laneY) {
+            // Track Floor Base
+            ctx.fillStyle = '#1c1f26';
+            ctx.fillRect(0, laneY + TRACK_HEIGHT - 32, canvas.width, 32);
+
+            // Metal Safety Border
+            ctx.fillStyle = '#323846';
+            ctx.fillRect(0, laneY + TRACK_HEIGHT - 32, canvas.width, 4);
+
+            // Neon Side Lights
+            const lightOffset = -(cameraX % 80);
+            for (let x = lightOffset; x < canvas.width; x += 80) {
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillRect(x, laneY + TRACK_HEIGHT - 28, 12, 3);
+            }
+
+            // Finish Line (at x = WORLD_WIDTH - 120)
+            const finishX = (WORLD_WIDTH - 120) - cameraX;
+            if (finishX > -60 && finishX < canvas.width + 60) {
+                const checkSize = 12;
+                for (let cy = laneY + 30; cy < laneY + TRACK_HEIGHT - 32; cy += checkSize) {
+                    for (let cx = 0; cx < 24; cx += checkSize) {
+                        const isWhite = ((cy / checkSize) + (cx / checkSize)) % 2 === 0;
+                        ctx.fillStyle = isWhite ? '#ffffff' : '#111111';
+                        ctx.fillRect(finishX + cx, cy, checkSize, checkSize);
+                    }
+                }
+                // Finish Posts
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillRect(finishX - 4, laneY + 10, 8, TRACK_HEIGHT - 42);
+            }
+        }
+
+        // Ink Painting Renderer
+        function drawInk(ctx, laneNum, cameraX, laneY) {
+            const lane = laneNum === 1 ? trackInk.lane1 : trackInk.lane2;
+            const startCol = Math.max(0, Math.floor(cameraX / trackInk.cellSize));
+            const endCol = Math.min(trackInk.cols - 1, Math.floor((cameraX + canvas.width) / trackInk.cellSize));
+
+            const groundY = laneY + TRACK_HEIGHT - 32;
+
+            for (let i = startCol; i <= endCol; i++) {
+                const inkVal = lane[i];
+                if (inkVal !== 0) {
+                    ctx.fillStyle = (inkVal === P1_INK_ID) ? P1_COLOR : P2_COLOR;
+                    const screenX = (i * trackInk.cellSize) - cameraX;
+                    
+                    ctx.fillRect(screenX, groundY - 5, trackInk.cellSize + 1, 8);
+                    if (i % 2 === 0) {
+                        ctx.fillRect(screenX + 1, groundY - 8, trackInk.cellSize - 2, 3);
+                    }
+                }
+            }
+        }
+
+        // Minimap Indicator
+        function drawMinimap(ctx) {
+            const mapWidth = 320;
+            const mapHeight = 16;
+            const mapX = (canvas.width - mapWidth) / 2;
+            const mapY = (canvas.height / 2) - (mapHeight / 2);
+
+            ctx.fillStyle = 'rgba(10, 12, 18, 0.85)';
+            ctx.fillRect(mapX - 6, mapY - 6, mapWidth + 12, mapHeight + 12);
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.strokeRect(mapX - 6, mapY - 6, mapWidth + 12, mapHeight + 12);
+
+            ctx.fillStyle = '#222633';
+            ctx.fillRect(mapX, mapY, mapWidth, mapHeight);
+
+            // Progress Indicators
+            const p1Prog = Math.min(1, p1.x / (WORLD_WIDTH - 120));
+            ctx.fillStyle = P1_COLOR;
+            ctx.fillRect(mapX + (p1Prog * (mapWidth - 10)), mapY, 10, 8);
+
+            const p2Prog = Math.min(1, p2.x / (WORLD_WIDTH - 120));
+            ctx.fillStyle = P2_COLOR;
+            ctx.fillRect(mapX + (p2Prog * (mapWidth - 10)), mapY + 8, 10, 8);
+
+            // Checkered Finish Flag Indicator
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(mapX + mapWidth - 4, mapY, 4, mapHeight);
+        }
+
+        // Main Loop
+        function gameLoop() {
+            if (gameState === 'PLAYING' || gameState === 'GAMEOVER') {
+                // Controls Definition
+                const p1Controls = {
+                    forward: keys['KeyD'],      // Move Forward (Right)
+                    back: keys['KeyA'],         // Move Backward (Left)
+                    jump: keys['KeyW'],         // Jump
+                    submerge: keys['KeyS'],     // Submerge Octopus/Squid
+                    shoot: keys['Space']        // Shoot Ink
+                };
+
+                const p2Controls = {
+                    forward: keys['ArrowRight'],// Move Forward (Right)
+                    back: keys['ArrowLeft'],   // Move Backward (Left)
+                    jump: keys['ArrowUp'],      // Jump
+                    submerge: keys['ArrowDown'],// Submerge Octopus/Squid
+                    shoot: keys['Enter'] || keys['Numpad0'] // Shoot Ink
+                };
+
+                p1.update(p1Controls);
+                p2.update(p2Controls);
+
+                for (let i = projectiles.length - 1; i >= 0; i--) {
+                    const p = projectiles[i];
+                    p.update();
+                    if (!p.active) projectiles.splice(i, 1);
+                }
+            }
+
+            // Render Split Viewports
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const camera1X = Math.max(0, Math.min(p1.x - 220, WORLD_WIDTH - canvas.width));
+            const camera2X = Math.max(0, Math.min(p2.x - 220, WORLD_WIDTH - canvas.width));
+
+            // --- VIEWPORT 1 (TOP: P1) ---
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, canvas.width, 298);
+            ctx.clip();
+
+            ctx.fillStyle = '#0b0d12';
+            ctx.fillRect(0, 0, canvas.width, 300);
+            drawTrackEnvironment(ctx, camera1X, 0);
+            drawInk(ctx, 1, camera1X, 0);
+
+            projectiles.filter(p => p.lane === 1).forEach(p => p.draw(ctx, camera1X));
+            updateAndDrawParticles(ctx, camera1X);
+
+            const p1Win = (winner && winner.id === 1);
+            const p1Lose = (winner && winner.id !== 1);
+            p1.draw(ctx, camera1X, p1Win, p1Lose);
+
+            ctx.fillStyle = P1_COLOR;
+            ctx.font = 'bold 15px Segoe UI, sans-serif';
+            ctx.fillText('P1: INKLING LANE', 18, 28);
+
+            ctx.restore();
+
+            // Center Divider Bar
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 296, canvas.width, 8);
+            ctx.fillStyle = P1_COLOR;
+            ctx.fillRect(0, 299, canvas.width / 2, 2);
+            ctx.fillStyle = P2_COLOR;
+            ctx.fillRect(canvas.width / 2, 299, canvas.width / 2, 2);
+
+            // --- VIEWPORT 2 (BOTTOM: P2) ---
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 304, canvas.width, 296);
+            ctx.clip();
+            ctx.translate(0, 304);
+
+            ctx.fillStyle = '#0b0d12';
+            ctx.fillRect(0, 0, canvas.width, 300);
+            drawTrackEnvironment(ctx, camera2X, 0);
+            drawInk(ctx, 2, camera2X, 0);
+
+            projectiles.filter(p => p.lane === 2).forEach(p => p.draw(ctx, camera2X));
+
+            const p2Win = (winner && winner.id === 2);
+            const p2Lose = (winner && winner.id !== 2);
+            p2.draw(ctx, camera2X, p2Win, p2Lose);
+
+            ctx.fillStyle = P2_COLOR;
+            ctx.font = 'bold 15px Segoe UI, sans-serif';
+            ctx.fillText('P2: OCTOLING LANE', 18, 28);
+
+            ctx.restore();
+
+            if (gameState === 'PLAYING' || gameState === 'GAMEOVER') {
+                drawMinimap(ctx);
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = function() {
+            gameLoop();
+        };
+    </script>
+</body>
+</html>

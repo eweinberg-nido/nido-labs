@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Rhythm Dash - v1</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0d0e15;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #fff;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #1a1c29 0%, #08090d 100%);
+    }
+
+    canvas {
+      display: block;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+      border-radius: 8px;
+      touch-action: none;
+    }
+
+    /* UI Overlay */
+    .ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .progress-container {
+      flex: 1;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 7px;
+      margin: 0 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00f0ff, #7000ff);
+      box-shadow: 0 0 10px #00f0ff;
+      transition: width 0.1s linear;
+    }
+
+    .stat-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+    }
+
+    /* Menus & Dialogs */
+    .modal-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 11, 16, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    h1 {
+      font-size: 52px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-style: italic;
+      background: linear-gradient(45deg, #00f0ff, #ff0055, #ffe600);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #a0a5c0;
+      margin-bottom: 25px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .menu-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #00f0ff 0%, #0072ff 100%);
+      color: #fff;
+      border: none;
+      padding: 14px 24px;
+      font-size: 18px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-file {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ff0077 0%, #7000ff 100%);
+      box-shadow: 0 4px 15px rgba(255, 0, 119, 0.3);
+    }
+
+    .btn-file input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .track-select {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .track-select label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #8a8fb0;
+      font-weight: 700;
+    }
+
+    select {
+      background: #151722;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .version-tag {
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      font-size: 12px;
+      color: #555a75;
+      font-weight: 700;
+    }
+
+    .hint-text {
+      font-size: 13px;
+      color: #8e94b8;
+      text-align: center;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* Controls overlay during play */
+    .controls-hint {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 1px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="canvas"></canvas>
+
+    <!-- UI Overlay during play -->
+    <div class="ui-overlay">
+      <div class="top-bar">
+        <span id="attempt-txt" class="stat-text">ATTEMPT 1</span>
+        <div class="progress-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <span id="percent-txt" class="stat-text">0%</span>
+      </div>
+      <div class="controls-hint">SPACE / UP / CLICK / TAP TO JUMP</div>
+    </div>
+
+    <!-- Main Menu Screen -->
+    <div id="main-menu" class="modal-screen">
+      <h1>Rhythm Dash</h1>
+      <div class="subtitle">v1 - Rhythm Action Runner</div>
+
+      <div class="menu-card">
+        <button id="start-btn" class="btn">
+          ▶ Play Game
+        </button>
+
+        <div class="track-select">
+          <label for="song-select">Choose Music Track</label>
+          <select id="song-select">
+            <option value="preset_cyber">Cyber Pulse (130 BPM)</option>
+            <option value="preset_electro">Electro Rush (145 BPM)</option>
+            <option value="preset_synthwave">Synth Overdrive (160 BPM)</option>
+          </select>
+        </div>
+
+        <div class="btn btn-file">
+          🎵 Upload Your Popular Song (MP3)
+          <input type="file" id="audio-file" accept="audio/*">
+        </div>
+
+        <p class="hint-text">
+          <strong>Tip:</strong> Upload your favorite song MP3! The game automatically syncs jump obstacles to the beat of your music.
+        </p>
+      </div>
+
+      <div class="version-tag">Version v1</div>
+    </div>
+
+    <!-- Game Over / Victory Modal -->
+    <div id="game-over-menu" class="modal-screen hidden">
+      <h1 id="over-title">CRASHED!</h1>
+      <div class="subtitle" id="over-sub">Progress: 45%</div>
+
+      <div class="menu-card">
+        <button id="retry-btn" class="btn">
+          🔄 Try Again
+        </button>
+        <button id="menu-btn" class="btn btn-secondary">
+          🏠 Main Menu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- AUDIO SYSTEM (Web Audio Synthesizer & Custom File Player) ---
+    class AudioManager {
+      constructor() {
+        this.ctx = null;
+        this.currentTrack = 'preset_cyber';
+        this.customBuffer = null;
+        this.sourceNode = null;
+        this.analyser = null;
+        this.bpm = 135;
+        this.isPlaying = false;
+        this.startTime = 0;
+        this.audioElement = null;
+
+        // Dynamic synth melody sequence generators
+        this.timer = null;
+        this.step = 0;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      play(trackType, onEndedCallback) {
+        this.init();
+        this.stop();
+        this.isPlaying = true;
+
+        if (trackType === 'custom' && this.customBuffer) {
+          this.sourceNode = this.ctx.createBufferSource();
+          this.sourceNode.buffer = this.customBuffer;
+          this.analyser = this.ctx.createAnalyser();
+          this.analyser.fftSize = 64;
+
+          this.sourceNode.connect(this.analyser);
+          this.analyser.connect(this.ctx.destination);
+
+          this.sourceNode.onended = () => {
+            if (onEndedCallback) onEndedCallback();
+          };
+
+          this.sourceNode.start(0);
+          this.startTime = this.ctx.currentTime;
+        } else {
+          // Play preset synth music loop
+          if (trackType === 'preset_cyber') this.bpm = 130;
+          if (trackType === 'preset_electro') this.bpm = 145;
+          if (trackType === 'preset_synthwave') this.bpm = 160;
+
+          this.step = 0;
+          const interval = (60 / this.bpm) / 4 * 1000; // 16th notes
+          this.timer = setInterval(() => this.playSynthStep(), interval);
+          this.startTime = this.ctx.currentTime;
+        }
+      }
+
+      playSynthStep() {
+        if (!this.isPlaying || !this.ctx) return;
+
+        const t = this.ctx.currentTime;
+        const s = this.step % 16;
+
+        // Kick Drum (beats 0, 4, 8, 12)
+        if (s % 4 === 0) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.frequency.setValueAtTime(150, t);
+          osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.15);
+          gain.gain.setValueAtTime(0.8, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.15);
+        }
+
+        // Snare/Clap (beats 4, 12)
+        if (s === 4 || s === 12) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(250, t);
+          gain.gain.setValueAtTime(0.4, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.12);
+        }
+
+        // Bassline Synth
+        const bassNotes = [110, 110, 130, 110, 98, 98, 110, 146];
+        const freq = bassNotes[Math.floor(this.step / 2) % bassNotes.length];
+        if (s % 2 === 0) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.18);
+        }
+
+        // Arpeggiated Lead Melody
+        const leadNotes = [330, 392, 440, 523, 440, 392, 587, 523];
+        if (s % 2 === 1) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(leadNotes[this.step % leadNotes.length], t);
+          gain.gain.setValueAtTime(0.15, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.1);
+        }
+
+        this.step++;
+      }
+
+      playJumpSound() {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(220, t);
+        osc.frequency.exponentialRampToValueAtTime(600, t + 0.12);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.12);
+      }
+
+      playCrashSound() {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, t);
+        osc.frequency.exponentialRampToValueAtTime(20, t + 0.3);
+        gain.gain.setValueAtTime(0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.3);
+      }
+
+      stop() {
+        this.isPlaying = false;
+        if (this.timer) {
+          clearInterval(this.timer);
+          this.timer = null;
+        }
+        if (this.sourceNode) {
+          try { this.sourceNode.stop(); } catch(e){}
+          this.sourceNode = null;
+        }
+      }
+
+      async loadCustomAudio(file) {
+        this.init();
+        const arrayBuffer = await file.arrayBuffer();
+        this.customBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+      }
+    }
+
+    // --- GAME ENGINE ---
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const audio = new AudioManager();
+
+    // Responsive Canvas
+    let width = 850;
+    let height = 450;
+    
+    function resizeCanvas() {
+      const maxW = Math.min(window.innerWidth - 20, 900);
+      const aspect = 850 / 450;
+      width = maxW;
+      height = maxW / aspect;
+      canvas.width = width;
+      canvas.height = height;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Constants & Game Scale
+    const GROUND_Y = 360;
+    const CUBE_SIZE = 36;
+    const GRAVITY = 0.85;
+    const JUMP_FORCE = -13.5;
+
+    let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
+    let attemptCount = 1;
+    let scoreProgress = 0; // 0 to 100%
+
+    // Player Object
+    const player = {
+      x: 120,
+      y: GROUND_Y - CUBE_SIZE,
+      vy: 0,
+      rotation: 0,
+      isGrounded: true,
+      color: '#00f0ff',
+      trail: []
+    };
+
+    // Level Objects & Particles
+    let obstacles = [];
+    let particles = [];
+    let levelLength = 6000; // total distance
+    let cameraX = 0;
+    let speed = 7.5;
+    let holdJump = false;
+
+    // Generate Rhythmic Level Layout
+    function generateLevel() {
+      obstacles = [];
+      const types = ['spike', 'double_spike', 'block', 'pad', 'orb', 'high_block'];
+      
+      let x = 700;
+      let step = 280;
+
+      while (x < levelLength) {
+        const rand = Math.random();
+
+        if (rand < 0.35) {
+          // Single Spike
+          obstacles.push({ type: 'spike', x: x, y: GROUND_Y - 36, w: 36, h: 36 });
+        } else if (rand < 0.55) {
+          // Double Spike
+          obstacles.push({ type: 'spike', x: x, y: GROUND_Y - 36, w: 36, h: 36 });
+          obstacles.push({ type: 'spike', x: x + 36, y: GROUND_Y - 36, w: 36, h: 36 });
+        } else if (rand < 0.75) {
+          // Block with spike top or pad
+          obstacles.push({ type: 'block', x: x, y: GROUND_Y - 36, w: 36, h: 36 });
+          if (Math.random() > 0.5) {
+            obstacles.push({ type: 'pad', x: x - 80, y: GROUND_Y - 10, w: 36, h: 10 });
+          }
+        } else if (rand < 0.90) {
+          // Jump Orb in mid-air
+          obstacles.push({ type: 'spike', x: x, y: GROUND_Y - 36, w: 36, h: 36 });
+          obstacles.push({ type: 'orb', x: x, y: GROUND_Y - 110, r: 18, hit: false });
+        } else {
+          // High Platform Structure
+          obstacles.push({ type: 'block', x: x, y: GROUND_Y - 36, w: 36, h: 36 });
+          obstacles.push({ type: 'block', x: x + 36, y: GROUND_Y - 72, w: 36, h: 72 });
+          obstacles.push({ type: 'spike', x: x + 36, y: GROUND_Y - 108, w: 36, h: 36 });
+        }
+
+        x += step + Math.random() * 120;
+      }
+
+      // Finish Portal at level end
+      obstacles.push({ type: 'finish', x: levelLength, y: GROUND_Y - 120, w: 40, h: 120 });
+    }
+
+    // Restart/Init Game
+    function resetGame() {
+      player.x = 120;
+      player.y = GROUND_Y - CUBE_SIZE;
+      player.vy = 0;
+      player.rotation = 0;
+      player.isGrounded = true;
+      player.trail = [];
+      cameraX = 0;
+      particles = [];
+      generateLevel();
+      scoreProgress = 0;
+    }
+
+    // Spawn Explosive Death Particles
+    function spawnDeathParticles(px, py) {
+      for (let i = 0; i < 40; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = Math.random() * 8 + 2;
+        particles.push({
+          x: px + CUBE_SIZE / 2,
+          y: py + CUBE_SIZE / 2,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          size: Math.random() * 6 + 3,
+          color: ['#00f0ff', '#ff0055', '#ffe600', '#ffffff'][Math.floor(Math.random() * 4)],
+          life: 1.0
+        });
+      }
+    }
+
+    // Player Jump Logic
+    function triggerJump() {
+      if (gameState !== 'PLAYING') return;
+
+      // Check ground jump
+      if (player.isGrounded) {
+        player.vy = JUMP_FORCE;
+        player.isGrounded = false;
+        audio.playJumpSound();
+        return;
+      }
+
+      // Check Jump Orbs collision
+      obstacles.forEach(obs => {
+        if (obs.type === 'orb' && !obs.hit) {
+          const dx = (player.x + CUBE_SIZE / 2) - obs.x;
+          const dy = (player.y + CUBE_SIZE / 2) - obs.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 45) {
+            player.vy = JUMP_FORCE * 1.05;
+            obs.hit = true;
+            audio.playJumpSound();
+            // Orb flash effect
+            for (let i = 0; i < 12; i++) {
+              particles.push({
+                x: obs.x, y: obs.y,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                size: 4, color: '#ffe600', life: 0.8
+              });
+            }
+          }
+        }
+      });
+    }
+
+    // Collision Helper (AABB)
+    function checkAABB(a, b) {
+      return a.x < b.x + b.w &&
+             a.x + a.w > b.x &&
+             a.y < b.y + b.h &&
+             a.y + a.h > b.y;
+    }
+
+    // Spike Triangle Collision
+    function checkSpikeCollision(px, py, pw, ph, sx, sy, sw, sh) {
+      // Simple inset box collision for fair gameplay precision
+      const inset = 6;
+      return checkAABB(
+        { x: px + inset, y: py + inset, w: pw - inset * 2, h: ph - inset * 2 },
+        { x: sx + inset, y: sy + inset, w: sw - inset * 2, h: sh - inset * 2 }
+      );
+    }
+
+    // Handle Crash
+    function handleCrash() {
+      if (gameState === 'GAMEOVER') return;
+      gameState = 'GAMEOVER';
+      audio.playCrashSound();
+      spawnDeathParticles(player.x, player.y);
+
+      setTimeout(() => {
+        document.getElementById('over-title').innerText = "CRASHED!";
+        document.getElementById('over-title').style.background = "linear-gradient(45deg, #ff0055, #ffe600)";
+        document.getElementById('over-title').style.webkitBackgroundClip = "text";
+        document.getElementById('over-sub').innerText = `Progress: ${Math.floor(scoreProgress)}%`;
+        document.getElementById('game-over-menu').classList.remove('hidden');
+      }, 700);
+    }
+
+    // Handle Level Victory
+    function handleVictory() {
+      gameState = 'GAMEOVER';
+      setTimeout(() => {
+        document.getElementById('over-title').innerText = "VICTORY!";
+        document.getElementById('over-title').style.background = "linear-gradient(45deg, #00f0ff, #00ff88)";
+        document.getElementById('over-title').style.webkitBackgroundClip = "text";
+        document.getElementById('over-sub').innerText = `Level Completed 100%!`;
+        document.getElementById('game-over-menu').classList.remove('hidden');
+      }, 500);
+    }
+
+    // --- MAIN GAME LOOP ---
+    function update() {
+      if (gameState === 'PLAYING') {
+        // Continuous input check for hold-jumping
+        if (holdJump && player.isGrounded) {
+          triggerJump();
+        }
+
+        // Apply Movement & Physics
+        player.x += speed;
+        cameraX = player.x - 120;
+
+        player.vy += GRAVITY;
+        player.y += player.vy;
+
+        // Player trail
+        player.trail.push({ x: player.x, y: player.y, rotation: player.rotation });
+        if (player.trail.length > 10) player.trail.shift();
+
+        // Floor Collision
+        if (player.y >= GROUND_Y - CUBE_SIZE) {
+          player.y = GROUND_Y - CUBE_SIZE;
+          player.vy = 0;
+          player.isGrounded = true;
+          // Snap rotation to nearest 90 deg when landing
+          player.rotation = Math.round(player.rotation / (Math.PI / 2)) * (Math.PI / 2);
+        } else {
+          player.isGrounded = false;
+          player.rotation += 0.15; // Air spin
+        }
+
+        // Obstacles interaction
+        obstacles.forEach(obs => {
+          // Jump Pads
+          if (obs.type === 'pad') {
+            if (checkAABB({ x: player.x, y: player.y, w: CUBE_SIZE, h: CUBE_SIZE }, obs)) {
+              player.vy = JUMP_FORCE * 1.35; // Super Jump Boost!
+              audio.playJumpSound();
+            }
+          }
+
+          // Blocks
+          if (obs.type === 'block') {
+            const pBox = { x: player.x, y: player.y, w: CUBE_SIZE, h: CUBE_SIZE };
+            if (checkAABB(pBox, obs)) {
+              // Check landing on top of block
+              if (player.vy > 0 && player.y + CUBE_SIZE - player.vy <= obs.y + 8) {
+                player.y = obs.y - CUBE_SIZE;
+                player.vy = 0;
+                player.isGrounded = true;
+                player.rotation = Math.round(player.rotation / (Math.PI / 2)) * (Math.PI / 2);
+              } else {
+                // Side wall crash!
+                handleCrash();
+              }
+            }
+          }
+
+          // Spikes
+          if (obs.type === 'spike') {
+            if (checkSpikeCollision(player.x, player.y, CUBE_SIZE, CUBE_SIZE, obs.x, obs.y, obs.w, obs.h)) {
+              handleCrash();
+            }
+          }
+
+          // Finish Line
+          if (obs.type === 'finish') {
+            if (player.x >= obs.x) {
+              handleVictory();
+            }
+          }
+        });
+
+        // Update progress percentage
+        scoreProgress = Math.min(100, Math.max(0, (player.x / levelLength) * 100));
+        document.getElementById('progress-bar').style.width = `${scoreProgress}%`;
+        document.getElementById('percent-txt').innerText = `${Math.floor(scoreProgress)}%`;
+      }
+
+      // Particles Update
+      particles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.025;
+        if (p.life <= 0) particles.splice(index, 1);
+      });
+    }
+
+    // --- RENDER FUNCTION ---
+    function render() {
+      // Scale Canvas to view frame
+      const scaleX = width / 850;
+      const scaleY = height / 450;
+
+      ctx.save();
+      ctx.scale(scaleX, scaleY);
+
+      // Background Gradient Pulse
+      const bgHue = (cameraX * 0.05) % 360;
+      ctx.fillStyle = `hsl(${bgHue}, 40%, 8%)`;
+      ctx.fillRect(0, 0, 850, 450);
+
+      // Grid Pattern
+      ctx.strokeStyle = `hsl(${bgHue}, 50%, 15%)`;
+      ctx.lineWidth = 1;
+      const gridOffset = cameraX % 40;
+      for (let x = -gridOffset; x < 850; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, 450);
+        ctx.stroke();
+      }
+
+      ctx.save();
+      ctx.translate(-cameraX, 0);
+
+      // Draw Ground
+      ctx.fillStyle = '#121420';
+      ctx.fillRect(cameraX - 100, GROUND_Y, 850 + 200, 450 - GROUND_Y);
+
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cameraX - 100, GROUND_Y);
+      ctx.lineTo(cameraX + 950, GROUND_Y);
+      ctx.stroke();
+
+      // Ground glowing edge
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0; // reset
+
+      // Draw Obstacles
+      obstacles.forEach(obs => {
+        // Draw only visible obstacles
+        if (obs.x + 100 < cameraX || obs.x - 100 > cameraX + 850) return;
+
+        if (obs.type === 'spike') {
+          ctx.fillStyle = '#ff0055';
+          ctx.shadowColor = '#ff0055';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(obs.x, obs.y + obs.h);
+          ctx.lineTo(obs.x + obs.w / 2, obs.y);
+          ctx.lineTo(obs.x + obs.w, obs.y + obs.h);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        } else if (obs.type === 'block') {
+          ctx.fillStyle = '#1d2136';
+          ctx.strokeStyle = '#7000ff';
+          ctx.lineWidth = 2;
+          ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+        } else if (obs.type === 'pad') {
+          ctx.fillStyle = '#ffe600';
+          ctx.shadowColor = '#ffe600';
+          ctx.shadowBlur = 8;
+          ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.shadowBlur = 0;
+        } else if (obs.type === 'orb') {
+          ctx.strokeStyle = obs.hit ? '#555' : '#ffe600';
+          ctx.shadowColor = obs.hit ? 'transparent' : '#ffe600';
+          ctx.shadowBlur = 12;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(obs.x, obs.y, obs.r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } else if (obs.type === 'finish') {
+          ctx.fillStyle = '#00ff88';
+          ctx.shadowColor = '#00ff88';
+          ctx.shadowBlur = 15;
+          ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+          ctx.shadowBlur = 0;
+        }
+      });
+
+      // Draw Player Trail
+      player.trail.forEach((t, idx) => {
+        const alpha = (idx / player.trail.length) * 0.4;
+        ctx.save();
+        ctx.translate(t.x + CUBE_SIZE / 2, t.y + CUBE_SIZE / 2);
+        ctx.rotate(t.rotation);
+        ctx.fillStyle = `rgba(0, 240, 255, ${alpha})`;
+        ctx.fillRect(-CUBE_SIZE / 2, -CUBE_SIZE / 2, CUBE_SIZE, CUBE_SIZE);
+        ctx.restore();
+      });
+
+      // Draw Player Cube
+      if (gameState === 'PLAYING') {
+        ctx.save();
+        ctx.translate(player.x + CUBE_SIZE / 2, player.y + CUBE_SIZE / 2);
+        ctx.rotate(player.rotation);
+
+        // Cube Body
+        ctx.fillStyle = player.color;
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 15;
+        ctx.fillRect(-CUBE_SIZE / 2, -CUBE_SIZE / 2, CUBE_SIZE, CUBE_SIZE);
+
+        // Inner Face Details
+        ctx.fillStyle = '#08090d';
+        ctx.fillRect(-CUBE_SIZE / 4, -CUBE_SIZE / 4, CUBE_SIZE / 2, CUBE_SIZE / 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(-CUBE_SIZE / 6, -CUBE_SIZE / 6, CUBE_SIZE / 3, CUBE_SIZE / 3);
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+
+      // Draw Particles
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.globalAlpha = 1.0;
+      });
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    // Animation Loop
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
+
+    // --- USER CONTROLS & EVENT LISTENERS ---
+    function onJumpPress(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+      holdJump = true;
+      triggerJump();
+    }
+
+    function onJumpRelease() {
+      holdJump = false;
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        onJumpPress(e);
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        onJumpRelease();
+      }
+    });
+
+    canvas.addEventListener('pointerdown', onJumpPress);
+    window.addEventListener('pointerup', onJumpRelease);
+
+    // --- UI INTERACTION HANDLERS ---
+    const mainMenu = document.getElementById('main-menu');
+    const gameOverMenu = document.getElementById('game-over-menu');
+    const startBtn = document.getElementById('start-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const menuBtn = document.getElementById('menu-btn');
+    const songSelect = document.getElementById('song-select');
+    const audioFileInput = document.getElementById('audio-file');
+
+    startBtn.addEventListener('click', () => {
+      mainMenu.classList.add('hidden');
+      resetGame();
+      gameState = 'PLAYING';
+      const selectedTrack = songSelect.value;
+      audio.play(selectedTrack, () => {
+        // Track ended
+      });
+    });
+
+    retryBtn.addEventListener('click', () => {
+      gameOverMenu.classList.add('hidden');
+      attemptCount++;
+      document.getElementById('attempt-txt').innerText = `ATTEMPT ${attemptCount}`;
+      resetGame();
+      gameState = 'PLAYING';
+      audio.play(songSelect.value);
+    });
+
+    menuBtn.addEventListener('click', () => {
+      gameOverMenu.classList.add('hidden');
+      mainMenu.classList.remove('hidden');
+      audio.stop();
+      gameState = 'MENU';
+    });
+
+    // Custom MP3 File Selection
+    audioFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        startBtn.innerText = "⏳ Loading Song...";
+        await audio.loadCustomAudio(file);
+        
+        // Add custom option to select dropdown
+        const opt = document.createElement('option');
+        opt.value = 'custom';
+        opt.innerText = `🎵 ${file.name.substring(0, 20)}...`;
+        songSelect.appendChild(opt);
+        songSelect.value = 'custom';
+
+        startBtn.innerText = "▶ Play Custom Song";
+      }
+    });
+  </script>
+</body>
+</html>

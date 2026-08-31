@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Slalom Skiing Championship - v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            display: block;
+            background-color: #f8fafc;
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden select-none">
+
+    <!-- Top Info Bar -->
+    <header class="w-full max-w-4xl flex items-center justify-between mb-2 px-2 text-slate-300">
+        <div class="flex items-center space-x-2">
+            <span class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">v2</span>
+            <h1 class="text-xl font-extrabold text-white tracking-wide hidden sm:block">Alpine Slalom Challenge</h1>
+        </div>
+        <div class="text-sm font-medium text-slate-400">
+            Use <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-slate-200 border border-slate-700">←</kbd> <kbd class="bg-slate-800 px-1.5 py-0.5 rounded text-slate-200 border border-slate-700">→</kbd> to carve
+        </div>
+    </header>
+
+    <!-- Canvas Container -->
+    <div class="relative w-full max-w-4xl bg-slate-800 rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 aspect-[4/5] sm:aspect-[16/10] flex items-center justify-center">
+        
+        <canvas id="gameCanvas" class="w-full h-full cursor-pointer"></canvas>
+
+        <!-- UI Overlay: Start Screen -->
+        <div id="startScreen" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+            <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mb-4 border border-blue-500/30">
+                <i class="fa-solid fa-person-skiing text-4xl text-blue-400"></i>
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-black mb-2 text-white tracking-tight">SLALOM SKIING <span class="text-blue-500">v2</span></h2>
+            <p class="text-slate-400 max-w-md text-sm sm:text-base mb-6">
+                Carve through the slalom gates! Watch out—gates get <span class="text-amber-400 font-semibold">narrower</span> and speeds get <span class="text-emerald-400 font-semibold">faster</span> as you go down the mountain!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
+                <button id="startBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>START SKIING</span>
+                </button>
+            </div>
+            <div class="mt-6 text-xs text-slate-500">
+                <span class="mr-3"><i class="fa-solid fa-keyboard mr-1"></i> Arrow Keys / A & D</span>
+                <span><i class="fa-solid fa-hand-pointer mr-1"></i> Touch Controls</span>
+            </div>
+        </div>
+
+        <!-- UI Overlay: Game Over Screen -->
+        <div id="gameOverScreen" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+            <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-3 border border-red-500/30">
+                <i class="fa-solid fa-circle-xmark text-3xl text-red-500"></i>
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-black text-white mb-1">RUN COMPLETE!</h2>
+            <p class="text-red-400 text-sm mb-6 font-medium" id="failReason">You missed the slalom gate.</p>
+
+            <!-- Stats Box -->
+            <div class="grid grid-cols-2 gap-4 w-full max-w-sm mb-6 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                <div class="text-left">
+                    <div class="text-xs text-slate-500 uppercase font-semibold">Score</div>
+                    <div class="text-2xl font-black text-blue-400" id="finalScore">0</div>
+                </div>
+                <div class="text-left">
+                    <div class="text-xs text-slate-500 uppercase font-semibold">Gates Cleared</div>
+                    <div class="text-2xl font-black text-emerald-400" id="finalGates">0</div>
+                </div>
+                <div class="text-left">
+                    <div class="text-xs text-slate-500 uppercase font-semibold">Max Speed</div>
+                    <div class="text-xl font-bold text-amber-400" id="finalSpeed">0 km/h</div>
+                </div>
+                <div class="text-left">
+                    <div class="text-xs text-slate-500 uppercase font-semibold">Best Score</div>
+                    <div class="text-xl font-bold text-purple-400" id="bestScore">0</div>
+                </div>
+            </div>
+
+            <button id="restartBtn" class="w-full max-w-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>TRY AGAIN</span>
+            </button>
+        </div>
+
+        <!-- HUD Overlay during gameplay -->
+        <div id="hud" class="hidden absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none z-10">
+            <!-- Score & Gates -->
+            <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-3 px-4 flex items-center space-x-4">
+                <div>
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">SCORE</div>
+                    <div class="text-2xl font-black text-white glow-text leading-tight" id="scoreDisplay">0</div>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">GATES</div>
+                    <div class="text-2xl font-black text-emerald-400 leading-tight" id="gatesDisplay">0</div>
+                </div>
+            </div>
+
+            <!-- Speedometer & Multiplier -->
+            <div class="flex flex-col items-end space-y-2">
+                <div id="speedBadge" class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-slate-200 font-bold text-xs px-3 py-1.5 rounded-xl flex items-center space-x-1.5">
+                    <i class="fa-solid fa-gauge-high text-blue-400"></i>
+                    <span id="speedDisplay">45 km/h</span>
+                </div>
+                <div id="comboBadge" class="bg-amber-500/20 border border-amber-500/40 text-amber-300 font-extrabold text-xs px-3 py-1 rounded-lg flex items-center space-x-1 opacity-0 transition-opacity duration-200">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span id="comboDisplay">1x COMBO</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Touch Controls for Mobile Devices -->
+        <div id="touchControls" class="absolute bottom-4 left-4 right-4 flex justify-between pointer-events-auto sm:hidden z-10">
+            <button id="btnLeft" class="w-20 h-20 bg-slate-800/80 active:bg-blue-600/80 border border-slate-600/60 rounded-full flex items-center justify-center text-2xl text-white shadow-lg backdrop-blur-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <button id="btnRight" class="w-20 h-20 bg-slate-800/80 active:bg-blue-600/80 border border-slate-600/60 rounded-full flex items-center justify-center text-2xl text-white shadow-lg backdrop-blur-sm">
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer info -->
+    <footer class="mt-3 text-xs text-slate-500 text-center">
+        Slalom Ski Game Engine • Built with HTML5 Canvas • Version <span class="text-slate-400 font-bold">v2</span>
+    </footer>
+
+    <script>
+        // --- Web Audio Synthesizer (Zero External Dependencies) ---
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+            }
+
+            playPassGate() {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, this.ctx.currentTime); // D5
+                    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.12); // A5
+
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.12);
+                } catch (e) {}
+            }
+
+            playPoleHit() {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(140, this.ctx.currentTime + 0.15);
+
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.15);
+                } catch (e) {}
+            }
+
+            playFail() {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(240, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.45);
+
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.45);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.45);
+                } catch (e) {}
+            }
+
+            playCarve() {
+                if (!this.ctx) return;
+                try {
+                    const bufferSize = this.ctx.sampleRate * 0.04;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 900;
+                    filter.Q.value = 2.5;
+
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    noise.start();
+                } catch (e) {}
+            }
+        }
+
+        const sounds = new SoundSystem();
+
+        // --- Game Setup ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI elements
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const hud = document.getElementById('hud');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const gatesDisplay = document.getElementById('gatesDisplay');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const comboBadge = document.getElementById('comboBadge');
+        const comboDisplay = document.getElementById('comboDisplay');
+        const finalScore = document.getElementById('finalScore');
+        const finalGates = document.getElementById('finalGates');
+        const finalSpeed = document.getElementById('finalSpeed');
+        const bestScoreDisplay = document.getElementById('bestScore');
+        const failReason = document.getElementById('failReason');
+
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+
+        let animationFrameId;
+        let lastTime = 0;
+        let highScore = 0;
+
+        // Viewport scaling
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- Controls State ---
+        const keys = { left: false, right: false, up: false, down: false };
+
+        window.addEventListener('keydown', (e) => {
+            sounds.init();
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.up = true;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.down = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.up = false;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.down = false;
+        });
+
+        const setupTouchButton = (btn, keyProp) => {
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                sounds.init();
+                keys[keyProp] = true;
+            });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[keyProp] = false;
+            });
+            btn.addEventListener('mousedown', () => {
+                sounds.init();
+                keys[keyProp] = true;
+            });
+            btn.addEventListener('mouseup', () => keys[keyProp] = false);
+            btn.addEventListener('mouseleave', () => keys[keyProp] = false);
+        };
+        setupTouchButton(btnLeft, 'left');
+        setupTouchButton(btnRight, 'right');
+
+        // --- Game State & Skier Definition ---
+        let gameState = 'START';
+
+        const skier = {
+            x: 0,
+            y: 0,
+            width: 26,
+            height: 40,
+            vx: 0,
+            maxVx: 7.5,
+            turnSpeed: 0.65,
+            friction: 0.91,
+            angle: 0,
+            targetAngle: 0,
+            trail: []
+        };
+
+        let distanceSkied = 0;
+        let baseForwardSpeed = 4.5;
+        let forwardSpeed = 4.5;
+        let maxRecordedSpeed = 0;
+        let score = 0;
+        let gatesCleared = 0;
+        let combo = 1;
+        let maxCombo = 1;
+
+        let gates = [];
+        let particles = [];
+        let scenery = [];
+
+        const RED_GATE_COLOR = '#ef4444';
+        const BLUE_GATE_COLOR = '#3b82f6';
+
+        // Reset/Start New Game Session
+        function initGame() {
+            skier.x = canvas.width / 2;
+            skier.y = canvas.height * 0.25;
+            skier.vx = 0;
+            skier.angle = 0;
+            skier.trail = [];
+
+            distanceSkied = 0;
+            baseForwardSpeed = 4.5;
+            forwardSpeed = 4.5;
+            maxRecordedSpeed = 45;
+            score = 0;
+            gatesCleared = 0;
+            combo = 1;
+            maxCombo = 1;
+
+            gates = [];
+            particles = [];
+            scenery = [];
+
+            // Background trees & rocks
+            for (let i = 0; i < 22; i++) {
+                scenery.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 2 - canvas.height,
+                    type: Math.random() > 0.35 ? 'tree' : 'rock',
+                    scale: 0.7 + Math.random() * 0.5
+                });
+            }
+
+            // Initial Gate Queue
+            let currentY = canvas.height * 0.7;
+            for (let i = 0; i < 5; i++) {
+                spawnGate(currentY);
+                currentY += 280;
+            }
+
+            updateHUD();
+        }
+
+        // --- Dynamic Gate Spawner (Gates narrow down as gates cleared increases!) ---
+        function spawnGate(yPos) {
+            // Calculate gate width: Starts wide (~135px) and narrows to (~75px) based on progress
+            const startingWidth = Math.min(145, canvas.width * 0.32);
+            const minGateWidth = 72;
+            const gateWidth = Math.max(minGateWidth, startingWidth - (gatesCleared * 2.2));
+
+            const margin = 70;
+            const lastGate = gates[gates.length - 1];
+            let leftPoleX;
+            
+            if (lastGate) {
+                // Alternating shift left and right to enforce slalom slalom pattern
+                const minShift = 100;
+                const maxShift = 170;
+                const shiftDir = (gates.length % 2 === 0) ? 1 : -1;
+                const shift = shiftDir * (minShift + Math.random() * (maxShift - minShift));
+                
+                leftPoleX = lastGate.leftX + shift;
+                leftPoleX = Math.max(margin, Math.min(canvas.width - margin - gateWidth, leftPoleX));
+            } else {
+                leftPoleX = (canvas.width / 2) - (gateWidth / 2);
+            }
+
+            const color = (gates.length % 2 === 0) ? RED_GATE_COLOR : BLUE_GATE_COLOR;
+            const flagType = (gates.length % 2 === 0) ? 'RED' : 'BLUE';
+
+            gates.push({
+                y: yPos,
+                leftX: leftPoleX,
+                rightX: leftPoleX + gateWidth,
+                width: gateWidth,
+                color: color,
+                flagType: flagType,
+                passed: false,
+                passedSuccessfully: false,
+
+                // Spring Physics for wobbling poles on collision/pass
+                leftPoleBend: 0,
+                leftPoleVel: 0,
+                rightPoleBend: 0,
+                rightPoleVel: 0
+            });
+        }
+
+        // --- Particles & Effects ---
+        function addSnowParticles(x, y, count = 3, forceX = 0) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x + (Math.random() * 12 - 6),
+                    y: y + (Math.random() * 8 - 4),
+                    vx: (Math.random() - 0.5) * 2.5 + forceX * 0.4,
+                    vy: -Math.random() * 2 - (forwardSpeed * 0.3),
+                    radius: Math.random() * 3.5 + 1.5,
+                    alpha: 0.9,
+                    color: '#ffffff'
+                });
+            }
+        }
+
+        function addPassedSparkles(x, y, color) {
+            for (let i = 0; i < 18; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 7,
+                    vy: (Math.random() - 0.5) * 7,
+                    radius: Math.random() * 4 + 2,
+                    alpha: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        // --- Physics & Game Loop Logic ---
+        function update(dt) {
+            if (gameState !== 'PLAYING') return;
+
+            // Progressive Acceleration over time/distance
+            // Base downhill speed increases as gates cleared goes up
+            baseForwardSpeed = 4.5 + Math.min(6.0, gatesCleared * 0.12 + distanceSkied * 0.00015);
+
+            // Controls & Steering
+            if (keys.left) {
+                skier.vx -= skier.turnSpeed;
+                skier.targetAngle = -0.65; // Lean left
+                if (Math.random() < 0.6) sounds.playCarve();
+            } else if (keys.right) {
+                skier.vx += skier.turnSpeed;
+                skier.targetAngle = 0.65; // Lean right
+                if (Math.random() < 0.6) sounds.playCarve();
+            } else {
+                skier.targetAngle = 0;
+            }
+
+            // Up/Down Arrow Speed Modifiers
+            if (keys.up) {
+                forwardSpeed = Math.min(baseForwardSpeed * 1.35, forwardSpeed + 0.08);
+            } else if (keys.down) {
+                forwardSpeed = Math.max(baseForwardSpeed * 0.55, forwardSpeed - 0.1);
+            } else {
+                forwardSpeed += (baseForwardSpeed - forwardSpeed) * 0.03;
+            }
+
+            // Calculate current display speed in km/h
+            const currentKmH = Math.round(forwardSpeed * 11);
+            if (currentKmH > maxRecordedSpeed) maxRecordedSpeed = currentKmH;
+
+            // Velocity damping & positioning
+            skier.vx *= skier.friction;
+            skier.vx = Math.max(-skier.maxVx, Math.min(skier.maxVx, skier.vx));
+            skier.x += skier.vx;
+            
+            // Smooth lean rotation transition
+            skier.angle += (skier.targetAngle - skier.angle) * 0.16;
+
+            // Screen Bounds Guard
+            const borderMargin = 32;
+            if (skier.x < borderMargin) {
+                skier.x = borderMargin;
+                skier.vx = 0;
+            } else if (skier.x > canvas.width - borderMargin) {
+                skier.x = canvas.width - borderMargin;
+                skier.vx = 0;
+            }
+
+            // Ski Trail Tracking
+            skier.trail.push({ x: skier.x, y: skier.y, alpha: 0.6, angle: skier.angle });
+            if (skier.trail.length > 35) skier.trail.shift();
+
+            // Snow carving powder effect on sharp turns
+            if (Math.abs(skier.vx) > 1.6) {
+                addSnowParticles(skier.x, skier.y + 12, 3, -skier.vx);
+            }
+
+            // Scroll world down
+            const currentSpeed = forwardSpeed;
+            distanceSkied += currentSpeed;
+
+            // Scroll Ski Trails
+            skier.trail.forEach(t => t.y -= currentSpeed);
+
+            // Scroll Scenery
+            scenery.forEach(s => {
+                s.y -= currentSpeed;
+                if (s.y < -50) {
+                    s.y = canvas.height + 60;
+                    s.x = Math.random() * canvas.width;
+                }
+            });
+
+            // Update Gates & Check Collisions / Hits
+            for (let i = gates.length - 1; i >= 0; i--) {
+                const gate = gates[i];
+                gate.y -= currentSpeed;
+
+                // --- Pole Physics Update (Spring Damping for Wobbling Poles) ---
+                const springK = 0.08;
+                const damping = 0.88;
+
+                // Left Pole Spring physics
+                gate.leftPoleVel += -springK * gate.leftPoleBend;
+                gate.leftPoleVel *= damping;
+                gate.leftPoleBend += gate.leftPoleVel;
+
+                // Right Pole Spring physics
+                gate.rightPoleVel += -springK * gate.rightPoleBend;
+                gate.rightPoleVel *= damping;
+                gate.rightPoleBend += gate.rightPoleVel;
+
+                // --- Check Collision/Proximity with Left & Right Poles (Make them wobble if hit) ---
+                const poleHitRadius = 18;
+                const distToLeftPole = Math.hypot(skier.x - gate.leftX, skier.y - gate.y);
+                const distToRightPole = Math.hypot(skier.x - gate.rightX, skier.y - gate.y);
+
+                if (distToLeftPole < poleHitRadius && Math.abs(gate.leftPoleBend) < 0.2) {
+                    const hitDirection = skier.vx >= 0 ? 1 : -1;
+                    gate.leftPoleVel = hitDirection * (0.8 + Math.abs(skier.vx) * 0.15);
+                    sounds.playPoleHit();
+                }
+
+                if (distToRightPole < poleHitRadius && Math.abs(gate.rightPoleBend) < 0.2) {
+                    const hitDirection = skier.vx >= 0 ? 1 : -1;
+                    gate.rightPoleVel = hitDirection * (0.8 + Math.abs(skier.vx) * 0.15);
+                    sounds.playPoleHit();
+                }
+
+                // --- Check Slalom Pass Gate Line ---
+                if (!gate.passed && gate.y <= skier.y) {
+                    gate.passed = true;
+
+                    // Skier must pass between leftX and rightX
+                    if (skier.x >= gate.leftX && skier.x <= gate.rightX) {
+                        // SUCCESSFUL TURN!
+                        gate.passedSuccessfully = true;
+                        gatesCleared++;
+                        combo++;
+                        if (combo > maxCombo) maxCombo = combo;
+
+                        const pts = 100 * combo + Math.round(forwardSpeed * 10);
+                        score += pts;
+
+                        sounds.playPassGate();
+                        addPassedSparkles((gate.leftX + gate.rightX) / 2, skier.y, gate.color);
+                        updateHUD();
+                    } else {
+                        // MISSED GATE -> GAME OVER
+                        sounds.playFail();
+                        triggerGameOver(`You missed the ${gate.flagType} slalom gate!`);
+                        return;
+                    }
+                }
+
+                // Remove gates that scroll off screen
+                if (gate.y < -120) {
+                    gates.splice(i, 1);
+                }
+            }
+
+            // Spawn next gates
+            const lastGate = gates[gates.length - 1];
+            if (!lastGate || lastGate.y < canvas.height - 200) {
+                const spawnY = lastGate ? lastGate.y + 270 + Math.random() * 30 : canvas.height + 100;
+                spawnGate(spawnY);
+            }
+
+            // Update Snow Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy - (currentSpeed * 0.2);
+                p.alpha -= 0.025;
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+
+            updateHUD();
+        }
+
+        // --- Render Engine ---
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw Snow Slope Background
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Slope dynamic lines
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const gridOffset = (distanceSkied * 0.6) % 90;
+            for (let y = -gridOffset; y < canvas.height; y += 90) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y + 25);
+            }
+            ctx.stroke();
+
+            // 2. Draw Ski Trails
+            if (skier.trail.length > 1) {
+                ctx.lineWidth = 3.5;
+                for (let i = 1; i < skier.trail.length; i++) {
+                    const p1 = skier.trail[i - 1];
+                    const p2 = skier.trail[i];
+                    ctx.strokeStyle = `rgba(186, 201, 222, ${p2.alpha})`;
+                    
+                    // Left ski path
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x - 7, p1.y);
+                    ctx.lineTo(p2.x - 7, p2.y);
+                    ctx.stroke();
+
+                    // Right ski path
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x + 7, p1.y);
+                    ctx.lineTo(p2.x + 7, p2.y);
+                    ctx.stroke();
+                }
+            }
+
+            // 3. Draw Scenery (Trees & Rocks)
+            scenery.forEach(s => {
+                ctx.save();
+                ctx.translate(s.x, s.y);
+                ctx.scale(s.scale, s.scale);
+
+                if (s.type === 'tree') {
+                    // Tree shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 8, 16, 6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Tree Trunk
+                    ctx.fillStyle = '#64748b';
+                    ctx.fillRect(-3.5, 0, 7, 10);
+
+                    // Pine Layers (Detailed gradients/layers)
+                    ctx.fillStyle = '#0f766e';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -32);
+                    ctx.lineTo(15, -12);
+                    ctx.lineTo(-15, -12);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.fillStyle = '#047857';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -20);
+                    ctx.lineTo(19, 2);
+                    ctx.lineTo(-19, 2);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Snow cap
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -32);
+                    ctx.lineTo(7, -22);
+                    ctx.lineTo(-7, -22);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Rock
+                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+                    ctx.beginPath();
+                    ctx.ellipse(2, 4, 10, 5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#64748b';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.beginPath();
+                    ctx.arc(-2, -3, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            // 4. Draw Slalom Gates (with Wobbling Poles!)
+            gates.forEach(gate => {
+                // Draw Pass Target Line (Dotted guide)
+                ctx.strokeStyle = gate.passed ? (gate.passedSuccessfully ? 'rgba(34, 197, 94, 0.45)' : 'rgba(239, 68, 68, 0.45)') : 'rgba(148, 163, 184, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(gate.leftX, gate.y);
+                ctx.lineTo(gate.rightX, gate.y);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset line dash
+
+                // Left Pole (with bend)
+                drawSlalomPole(gate.leftX, gate.y, gate.color, true, gate.leftPoleBend);
+
+                // Right Pole (with bend)
+                drawSlalomPole(gate.rightX, gate.y, gate.color, false, gate.rightPoleBend);
+            });
+
+            // 5. Draw Snow Particles
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // 6. Draw High-Detail Realistic Skier
+            drawSkier(skier.x, skier.y, skier.angle, skier.vx);
+        }
+
+        // --- Render Wobbling Slalom Pole ---
+        function drawSlalomPole(x, y, color, isLeft, bendAngle) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Pole Shadow at Base
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(0, 2, 7, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Flexible Hinge at Base
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-4, -4, 8, 6);
+
+            // Rotate top of pole for wobble/bend effect when hit
+            ctx.rotate(bendAngle);
+
+            // Pole Shaft
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 4.5;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -32);
+            ctx.stroke();
+
+            // Inner colored strip on shaft
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -2);
+            ctx.lineTo(0, -30);
+            ctx.stroke();
+
+            // Top Knob
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(0, -32, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Flag Cloth Banner
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            if (isLeft) {
+                ctx.moveTo(0, -30);
+                ctx.lineTo(-18, -23);
+                ctx.lineTo(0, -16);
+            } else {
+                ctx.moveTo(0, -30);
+                ctx.lineTo(18, -23);
+                ctx.lineTo(0, -16);
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // --- Render Realistic Skier ---
+        function drawSkier(x, y, angle, vx) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Dynamic leaning skew based on turning velocity
+            const turnLean = vx * 0.08;
+            ctx.rotate(angle + turnLean);
+
+            // 1. Skier Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(0, 8, 16, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. Skis (Realistic dual skis with curved tips & bindings)
+            const skiColor = '#dc2626';
+            const tipColor = '#991b1b';
+
+            // Left Ski
+            ctx.fillStyle = skiColor;
+            ctx.beginPath();
+            ctx.roundRect(-9, -22, 4.5, 42, 2);
+            ctx.fill();
+            // Left Ski Tip
+            ctx.fillStyle = tipColor;
+            ctx.beginPath();
+            ctx.arc(-6.75, -22, 2.25, Math.PI, 0);
+            ctx.fill();
+
+            // Right Ski
+            ctx.fillStyle = skiColor;
+            ctx.beginPath();
+            ctx.roundRect(4.5, -22, 4.5, 42, 2);
+            ctx.fill();
+            // Right Ski Tip
+            ctx.fillStyle = tipColor;
+            ctx.beginPath();
+            ctx.arc(6.75, -22, 2.25, Math.PI, 0);
+            ctx.fill();
+
+            // Ski Bindings (Center of skis)
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-9.5, -3, 5.5, 6);
+            ctx.fillRect(4, -3, 5.5, 6);
+
+            // 3. Legs / Boots Stance (Skier crouch stance)
+            ctx.fillStyle = '#0f172a'; // Black ski pants
+            ctx.beginPath();
+            ctx.roundRect(-8, -8, 6, 14, 2);
+            ctx.roundRect(2, -8, 6, 14, 2);
+            ctx.fill();
+
+            // 4. Skier Torso & Speed Jacket
+            ctx.fillStyle = '#2563eb'; // Pro Blue Racing Suit
+            ctx.beginPath();
+            ctx.roundRect(-10, -13, 20, 22, 5);
+            ctx.fill();
+
+            // Racing Jacket Stripe Detail
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(-10, -5, 20, 3);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-2, -13, 4, 22);
+
+            // 5. Arms & Ski Poles
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            
+            // Left Arm & Pole
+            ctx.beginPath();
+            ctx.moveTo(-10, -8);
+            ctx.lineTo(-16, 2);
+            ctx.lineTo(-18, 14); // Pole extends back
+            ctx.stroke();
+            // Left Pole Ring Basket
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-18, 14, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right Arm & Pole
+            ctx.beginPath();
+            ctx.moveTo(10, -8);
+            ctx.lineTo(16, 2);
+            ctx.lineTo(18, 14); // Pole extends back
+            ctx.stroke();
+            // Right Pole Ring Basket
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(18, 14, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 6. Helmet & Head
+            ctx.fillStyle = '#f59e0b'; // Bright yellow helmet
+            ctx.beginPath();
+            ctx.arc(0, -6, 7.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Goggles (Reflective mirror visor)
+            ctx.fillStyle = '#0284c7';
+            ctx.beginPath();
+            ctx.roundRect(-5, -8, 10, 4, 2);
+            ctx.fill();
+            
+            // Visor Reflection Highlight
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-3, -8, 3, 1.5);
+
+            ctx.restore();
+        }
+
+        // --- HUD & Score Updates ---
+        function updateHUD() {
+            scoreDisplay.textContent = score;
+            gatesDisplay.textContent = gatesCleared;
+            
+            const speedKmH = Math.round(forwardSpeed * 11);
+            speedDisplay.textContent = `${speedKmH} km/h`;
+
+            if (combo > 1) {
+                comboDisplay.textContent = `${combo}x COMBO`;
+                comboBadge.classList.remove('opacity-0');
+            } else {
+                comboBadge.classList.add('opacity-0');
+            }
+        }
+
+        function triggerGameOver(reason) {
+            gameState = 'GAMEOVER';
+            if (score > highScore) {
+                highScore = score;
+            }
+
+            failReason.textContent = reason;
+            finalScore.textContent = score;
+            finalGates.textContent = gatesCleared;
+            finalSpeed.textContent = `${maxRecordedSpeed} km/h`;
+            bestScoreDisplay.textContent = highScore;
+
+            hud.classList.add('hidden');
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // --- Main Game Loop ---
+        function gameLoop(timestamp) {
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            update(dt);
+            render();
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Handlers ---
+        startBtn.addEventListener('click', () => {
+            sounds.init();
+            startScreen.classList.add('hidden');
+            hud.classList.remove('hidden');
+            initGame();
+            gameState = 'PLAYING';
+        });
+
+        restartBtn.addEventListener('click', () => {
+            sounds.init();
+            gameOverScreen.classList.add('hidden');
+            hud.classList.remove('hidden');
+            initGame();
+            gameState = 'PLAYING';
+        });
+
+        // Start Animation Frame Loop
+        animationFrameId = requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1v1 Soccer Game - v1</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1000px;
+            width: 95vw;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: #1e293b;
+            padding: 12px 24px;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            border: 1px solid #334155;
+            border-bottom: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .team-score {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.25rem;
+        }
+
+        .team-badge {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .blue-badge { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; }
+        .red-badge { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+        .score-board {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: #0f172a;
+            padding: 4px 20px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            color: #fbbf24;
+        }
+
+        .timer-box {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-mono: monospace;
+            color: #94a3b8;
+            background: #0f172a;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        canvas {
+            background: #15803d;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            cursor: default;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 12px;
+            padding: 8px 4px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            background: #334155;
+            color: #f8fafc;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #2563eb;
+        }
+
+        .btn-primary:hover {
+            background: #3b82f6;
+        }
+
+        select.btn {
+            outline: none;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            gap: 16px;
+        }
+
+        .overlay h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #60a5fa, #f87171);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .overlay p {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .instructions {
+            background: #1e293b;
+            padding: 16px 24px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            text-align: left;
+            margin-bottom: 8px;
+        }
+
+        .key {
+            background: #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #fbbf24;
+            font-size: 0.9em;
+        }
+
+        .version-tag {
+            position: absolute;
+            bottom: -28px;
+            right: 0;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- Header HUD -->
+        <div class="header">
+            <div class="team-score">
+                <span class="team-badge blue-badge"></span>
+                <span style="color: #60a5fa;">YOU (BLUE)</span>
+            </div>
+            
+            <div class="score-board">
+                <span id="score-blue">0</span> - <span id="score-red">0</span>
+            </div>
+
+            <div class="timer-box" id="timer">02:00</div>
+
+            <div class="team-score">
+                <span style="color: #f87171;">AI (RED)</span>
+                <span class="team-badge red-badge"></span>
+            </div>
+        </div>
+
+        <!-- Canvas Game Field -->
+        <canvas id="gameCanvas" width="1000" height="580"></canvas>
+
+        <!-- Bottom Controls Bar -->
+        <div class="controls-bar">
+            <div>
+                Controls: <span class="key">WASD</span> or <span class="key">ARROWS</span> to move | <span class="key">SPACE</span> / <span class="key">K</span> to Power Kick
+            </div>
+            <div class="btn-group">
+                <select id="difficultySelect" class="btn">
+                    <option value="easy">Easy AI</option>
+                    <option value="medium" selected>Medium AI</option>
+                    <option value="hard">Hard AI</option>
+                </select>
+                <button id="pauseBtn" class="btn">Pause</button>
+                <button id="restartBtn" class="btn">Restart</button>
+            </div>
+        </div>
+
+        <!-- Start / Game Over Overlay -->
+        <div id="overlay" class="overlay">
+            <h1 id="overlayTitle">1v1 SOCCER</h1>
+            <p id="overlaySub">Blue vs Red • 1v1 Human vs AI Match</p>
+
+            <div class="instructions">
+                <div>
+                    <h4 style="color:#60a5fa; margin-bottom: 6px;">Movement</h4>
+                    <p><span class="key">W A S D</span> or <span class="key">↑ ← ↓ →</span></p>
+                </div>
+                <div>
+                    <h4 style="color:#fbbf24; margin-bottom: 6px;">Kick / Kick Boost</h4>
+                    <p><span class="key">SPACE</span> or <span class="key">K</span></p>
+                </div>
+            </div>
+
+            <button id="startBtn" class="btn btn-primary" style="font-size: 1.2rem; padding: 12px 36px;">Kick Off!</button>
+        </div>
+
+        <div class="version-tag">Version: v1</div>
+    </div>
+
+    <script>
+        // Game Engine and Logic
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI Elements
+        const scoreBlueElem = document.getElementById('score-blue');
+        const scoreRedElem = document.getElementById('score-red');
+        const timerElem = document.getElementById('timer');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlaySub = document.getElementById('overlaySub');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const difficultySelect = document.getElementById('difficultySelect');
+
+        // Web Audio API Synth Sound System
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playKick() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            playBounce() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playWhistle() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1800, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(2200, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+
+            playGoal() {
+                if (!this.ctx) return;
+                for(let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(300 + i * 150, this.ctx.currentTime);
+                        osc.frequency.exponentialRampToValueAtTime(600 + i * 200, this.ctx.currentTime + 0.3);
+                        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + 0.4);
+                    }, i * 120);
+                }
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // Game Configuration
+        const PITCH = {
+            width: 1000,
+            height: 580,
+            padding: 40,
+            goalHeight: 180,
+            goalWidth: 45
+        };
+
+        // State variables
+        let keys = {};
+        let scoreBlue = 0;
+        let scoreRed = 0;
+        let matchTime = 120; // 2 minutes
+        let timerInterval = null;
+        let isPaused = false;
+        let isGameOver = false;
+        let isGoalScored = false;
+        let goalTextTimer = 0;
+        let goalScorer = '';
+
+        // Physics Constants
+        const FRICTION = 0.985;
+        const BALL_FRICTION = 0.988;
+
+        // Player & AI Constructor
+        class Player {
+            constructor(x, y, color, isAI = false) {
+                this.startX = x;
+                this.startY = y;
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.radius = 24;
+                this.color = color;
+                this.speed = 0.7;
+                this.maxSpeed = 6.2;
+                this.isAI = isAI;
+                this.kickCooldown = 0;
+                this.isKicking = false;
+            }
+
+            reset() {
+                this.x = this.startX;
+                this.y = this.startY;
+                this.vx = 0;
+                this.vy = 0;
+                this.kickCooldown = 0;
+            }
+
+            update(ball) {
+                if (this.kickCooldown > 0) this.kickCooldown--;
+
+                if (!this.isAI) {
+                    this.handleInput();
+                } else {
+                    this.handleAI(ball);
+                }
+
+                // Apply velocity & friction
+                this.vx *= FRICTION;
+                this.vy *= FRICTION;
+
+                // Speed cap
+                const speed = Math.hypot(this.vx, this.vy);
+                if (speed > this.maxSpeed) {
+                    this.vx = (this.vx / speed) * this.maxSpeed;
+                    this.vy = (this.vy / speed) * this.maxSpeed;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Field boundaries
+                const top = PITCH.padding + this.radius;
+                const bottom = PITCH.height - PITCH.padding - this.radius;
+                const left = PITCH.padding + this.radius;
+                const right = PITCH.width - PITCH.padding - this.radius;
+
+                // Keep inside top/bottom walls
+                if (this.y < top) { this.y = top; this.vy *= -0.5; }
+                if (this.y > bottom) { this.y = bottom; this.vy *= -0.5; }
+
+                // Side walls handling (account for goal mouth opening)
+                const goalTop = PITCH.height / 2 - PITCH.goalHeight / 2;
+                const goalBottom = PITCH.height / 2 + PITCH.goalHeight / 2;
+
+                if (this.x < left) {
+                    if (this.y < goalTop || this.y > goalBottom) {
+                        this.x = left;
+                        this.vx *= -0.5;
+                    } else if (this.x < PITCH.padding - PITCH.goalWidth + this.radius) {
+                        // Goal back wall limit
+                        this.x = PITCH.padding - PITCH.goalWidth + this.radius;
+                        this.vx *= -0.5;
+                    }
+                }
+
+                if (this.x > right) {
+                    if (this.y < goalTop || this.y > goalBottom) {
+                        this.x = right;
+                        this.vx *= -0.5;
+                    } else if (this.x > PITCH.width - PITCH.padding + PITCH.goalWidth - this.radius) {
+                        // Goal back wall limit
+                        this.x = PITCH.width - PITCH.padding + PITCH.goalWidth - this.radius;
+                        this.vx *= -0.5;
+                    }
+                }
+            }
+
+            handleInput() {
+                let dx = 0;
+                let dy = 0;
+
+                if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+                if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+                if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+                if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+
+                // Normalize movement vector
+                if (dx !== 0 && dy !== 0) {
+                    dx *= 0.7071;
+                    dy *= 0.7071;
+                }
+
+                this.vx += dx * this.speed;
+                this.vy += dy * this.speed;
+
+                // Kick mechanic
+                this.isKicking = (keys['Space'] || keys['KeyK']) && this.kickCooldown === 0;
+            }
+
+            handleAI(ball) {
+                const diff = difficultySelect.value;
+                let reactionSpeed = 0.5;
+                let errorMargin = 0;
+
+                if (diff === 'easy') {
+                    reactionSpeed = 0.38;
+                    errorMargin = 40;
+                } else if (diff === 'medium') {
+                    reactionSpeed = 0.55;
+                    errorMargin = 15;
+                } else if (diff === 'hard') {
+                    reactionSpeed = 0.72;
+                    errorMargin = 0;
+                }
+
+                let targetX = ball.x;
+                let targetY = ball.y;
+
+                // Defensive positioning if ball is on Blue side
+                if (ball.x < PITCH.width * 0.45) {
+                    targetX = PITCH.width * 0.7;
+                    targetY = PITCH.height / 2 + (ball.y - PITCH.height / 2) * 0.6;
+                } else {
+                    // Attack ball with offset aiming toward Blue Goal (Left side)
+                    targetX = ball.x + 10;
+                    targetY = ball.y;
+                }
+
+                targetY += Math.sin(Date.now() / 300) * errorMargin;
+
+                const angle = Math.atan2(targetY - this.y, targetX - this.x);
+                this.vx += Math.cos(angle) * this.speed * reactionSpeed;
+                this.vy += Math.sin(angle) * this.speed * reactionSpeed;
+
+                // AI Kicks when near ball
+                const distToBall = Math.hypot(ball.x - this.x, ball.y - this.y);
+                if (distToBall < this.radius + ball.radius + 15 && this.kickCooldown === 0) {
+                    this.isKicking = true;
+                } else {
+                    this.isKicking = false;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 4;
+
+                // Kick Ring / Impulse
+                if (this.isKicking) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 10, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                }
+
+                // Outer Player Body
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Inner detail circle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fill();
+
+                // Direction line indicator
+                const dirAngle = Math.atan2(this.vy, this.vx);
+                if (Math.hypot(this.vx, this.vy) > 0.5) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(this.x + Math.cos(dirAngle) * (this.radius + 6), this.y + Math.sin(dirAngle) * (this.radius + 6));
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Ball Constructor
+        class Ball {
+            constructor(x, y) {
+                this.startX = x;
+                this.startY = y;
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.radius = 14;
+                this.rotation = 0;
+            }
+
+            reset() {
+                this.x = this.startX;
+                this.y = this.startY;
+                this.vx = 0;
+                this.vy = 0;
+            }
+
+            update() {
+                this.vx *= BALL_FRICTION;
+                this.vy *= BALL_FRICTION;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.rotation += (this.vx + this.vy) * 0.05;
+
+                // Pitch Boundaries & Collisions
+                const top = PITCH.padding + this.radius;
+                const bottom = PITCH.height - PITCH.padding - this.radius;
+                const left = PITCH.padding + this.radius;
+                const right = PITCH.width - PITCH.padding - this.radius;
+
+                const goalTop = PITCH.height / 2 - PITCH.goalHeight / 2;
+                const goalBottom = PITCH.height / 2 + PITCH.goalHeight / 2;
+
+                // Bounce off top and bottom
+                if (this.y < top) {
+                    this.y = top;
+                    this.vy *= -0.8;
+                    sfx.playBounce();
+                }
+                if (this.y > bottom) {
+                    this.y = bottom;
+                    this.vy *= -0.8;
+                    sfx.playBounce();
+                }
+
+                // Bounce off left side pitch wall except inside Goal
+                if (this.x < left) {
+                    if (this.y < goalTop || this.y > goalBottom) {
+                        this.x = left;
+                        this.vx *= -0.8;
+                        sfx.playBounce();
+                    } else {
+                        // Goal Post collision check
+                        this.checkPostCollision(PITCH.padding, goalTop, PITCH.padding, goalBottom);
+
+                        // Goal Detection (Red Scores!)
+                        if (this.x < PITCH.padding - this.radius) {
+                            handleGoal('RED');
+                        }
+                    }
+                }
+
+                // Bounce off right side pitch wall except inside Goal
+                if (this.x > right) {
+                    if (this.y < goalTop || this.y > goalBottom) {
+                        this.x = right;
+                        this.vx *= -0.8;
+                        sfx.playBounce();
+                    } else {
+                        // Goal Post collision check
+                        this.checkPostCollision(PITCH.width - PITCH.padding, goalTop, PITCH.width - PITCH.padding, goalBottom);
+
+                        // Goal Detection (Blue Scores!)
+                        if (this.x > PITCH.width - PITCH.padding + this.radius) {
+                            handleGoal('BLUE');
+                        }
+                    }
+                }
+
+                // Goal back netting limits
+                if (this.x < PITCH.padding - PITCH.goalWidth + this.radius) {
+                    this.x = PITCH.padding - PITCH.goalWidth + this.radius;
+                    this.vx *= -0.3;
+                }
+                if (this.x > PITCH.width - PITCH.padding + PITCH.goalWidth - this.radius) {
+                    this.x = PITCH.width - PITCH.padding + PITCH.goalWidth - this.radius;
+                    this.vx *= -0.3;
+                }
+            }
+
+            checkPostCollision(post1X, post1Y, post2X, post2Y) {
+                const postRadius = 6;
+                
+                // Top post
+                let dist1 = Math.hypot(this.x - post1X, this.y - post1Y);
+                if (dist1 < this.radius + postRadius) {
+                    let angle = Math.atan2(this.y - post1Y, this.x - post1X);
+                    let speed = Math.hypot(this.vx, this.vy);
+                    this.vx = Math.cos(angle) * Math.max(speed, 4);
+                    this.vy = Math.sin(angle) * Math.max(speed, 4);
+                    sfx.playBounce();
+                }
+
+                // Bottom post
+                let dist2 = Math.hypot(this.x - post2X, this.y - post2Y);
+                if (dist2 < this.radius + postRadius) {
+                    let angle = Math.atan2(this.y - post2Y, this.x - post2X);
+                    let speed = Math.hypot(this.vx, this.vy);
+                    this.vx = Math.cos(angle) * Math.max(speed, 4);
+                    this.vy = Math.sin(angle) * Math.max(speed, 4);
+                    sfx.playBounce();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Ball Shadow
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+                ctx.shadowBlur = 6;
+                ctx.shadowOffsetY = 3;
+
+                // Base Ball
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+
+                // Soccer Ball Pattern (Pentagon center & markings)
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius * 0.35, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * Math.PI * 2) / 5;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(angle) * (this.radius * 0.35), Math.sin(angle) * (this.radius * 0.35));
+                    ctx.lineTo(Math.cos(angle) * (this.radius * 0.85), Math.sin(angle) * (this.radius * 0.85));
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Initialize Entities
+        const player = new Player(PITCH.width * 0.25, PITCH.height / 2, '#3b82f6', false);
+        const ai = new Player(PITCH.width * 0.75, PITCH.height / 2, '#ef4444', true);
+        const ball = new Ball(PITCH.width / 2, PITCH.height / 2);
+
+        // Physics Collisions Handler
+        function resolveCircleCollision(c1, c2, isBall = false) {
+            const dx = c2.x - c1.x;
+            const dy = c2.y - c1.y;
+            const dist = Math.hypot(dx, dy);
+            const minDist = c1.radius + c2.radius;
+
+            if (dist < minDist) {
+                const overlap = minDist - dist;
+                const nx = dx / (dist || 1);
+                const ny = dy / (dist || 1);
+
+                // Push apart
+                const pushRatio = isBall ? 1.0 : 0.5;
+                if (isBall) {
+                    c2.x += nx * overlap;
+                    c2.y += ny * overlap;
+                } else {
+                    c1.x -= nx * overlap * 0.5;
+                    c1.y -= ny * overlap * 0.5;
+                    c2.x += nx * overlap * 0.5;
+                    c2.y += ny * overlap * 0.5;
+                }
+
+                // Elastic collision momentum transfer
+                const kx = c1.vx - c2.vx;
+                const ky = c1.vy - c2.vy;
+                const p = 2 * (nx * kx + ny * ky) / 2;
+
+                c1.vx -= p * nx;
+                c1.vy -= p * ny;
+                c2.vx += p * nx;
+                c2.vy += p * ny;
+
+                // Apply Kick Power if player/AI is kicking
+                if (isBall && c1.isKicking) {
+                    const kickPower = 12;
+                    c2.vx += nx * kickPower;
+                    c2.vy += ny * kickPower;
+                    c1.kickCooldown = 25; // Cooldown frames
+                    c1.isKicking = false;
+                    sfx.playKick();
+                } else {
+                    sfx.playBounce();
+                }
+            }
+        }
+
+        // Goal Scoring Function
+        function handleGoal(scorer) {
+            if (isGoalScored) return;
+
+            isGoalScored = true;
+            goalScorer = scorer;
+            goalTextTimer = 120; // 2 seconds at 60fps
+
+            if (scorer === 'BLUE') {
+                scoreBlue++;
+                scoreBlueElem.textContent = scoreBlue;
+            } else {
+                scoreRed++;
+                scoreRedElem.textContent = scoreRed;
+            }
+
+            sfx.playGoal();
+        }
+
+        function resetPositions() {
+            player.reset();
+            ai.reset();
+            ball.reset();
+            isGoalScored = false;
+        }
+
+        // Draw Soccer Field Canvas Layout
+        function drawField() {
+            const p = PITCH;
+
+            // Grass Gradient Background
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(0, 0, p.width, p.height);
+
+            // Grass Stripes
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+            const stripeWidth = (p.width - p.padding * 2) / 10;
+            for (let i = 0; i < 10; i += 2) {
+                ctx.fillRect(p.padding + i * stripeWidth, p.padding, stripeWidth, p.height - p.padding * 2);
+            }
+
+            // Pitch Outer Lines & Markings
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+
+            // Pitch Boundary
+            ctx.strokeRect(p.padding, p.padding, p.width - p.padding * 2, p.height - p.padding * 2);
+
+            // Halfway Line
+            ctx.beginPath();
+            ctx.moveTo(p.width / 2, p.padding);
+            ctx.lineTo(p.width / 2, p.height - p.padding);
+            ctx.stroke();
+
+            // Center Circle & Spot
+            ctx.beginPath();
+            ctx.arc(p.width / 2, p.height / 2, 70, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(p.width / 2, p.height / 2, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Goal Areas & Boxes
+            const boxHeight = 260;
+            const boxWidth = 110;
+            const goalTop = p.height / 2 - p.goalHeight / 2;
+
+            // Left Penalty Box
+            ctx.strokeRect(p.padding, p.height / 2 - boxHeight / 2, boxWidth, boxHeight);
+            // Right Penalty Box
+            ctx.strokeRect(p.width - p.padding - boxWidth, p.height / 2 - boxHeight / 2, boxWidth, boxHeight);
+
+            // Left Netting & Goal Posts
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fillRect(p.padding - p.goalWidth, goalTop, p.goalWidth, p.goalHeight);
+            ctx.strokeRect(p.padding - p.goalWidth, goalTop, p.goalWidth, p.goalHeight);
+
+            // Right Netting & Goal Posts
+            ctx.fillRect(p.width - p.padding, goalTop, p.goalWidth, p.goalHeight);
+            ctx.strokeRect(p.width - p.padding, goalTop, p.goalWidth, p.goalHeight);
+
+            // Draw Post Caps
+            ctx.fillStyle = '#f8fafc';
+            ctx.beginPath();
+            ctx.arc(p.padding, goalTop, 6, 0, Math.PI * 2);
+            ctx.arc(p.padding, goalTop + p.goalHeight, 6, 0, Math.PI * 2);
+            ctx.arc(p.width - p.padding, goalTop, 6, 0, Math.PI * 2);
+            ctx.arc(p.width - p.padding, goalTop + p.goalHeight, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Format Timer Display
+        function updateTimerDisplay() {
+            const mins = Math.floor(matchTime / 60).toString().padStart(2, '0');
+            const secs = (matchTime % 60).toString().padStart(2, '0');
+            timerElem.textContent = `${mins}:${secs}`;
+        }
+
+        // Start Match
+        function startMatch() {
+            sfx.init();
+            sfx.playWhistle();
+
+            scoreBlue = 0;
+            scoreRed = 0;
+            matchTime = 120;
+            isGameOver = false;
+            isPaused = false;
+
+            scoreBlueElem.textContent = '0';
+            scoreRedElem.textContent = '0';
+            updateTimerDisplay();
+
+            resetPositions();
+            overlay.classList.add('hidden');
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPaused && !isGameOver) {
+                    matchTime--;
+                    updateTimerDisplay();
+
+                    if (matchTime <= 0) {
+                        endMatch();
+                    }
+                }
+            }, 1000);
+        }
+
+        // End Match
+        function endMatch() {
+            isGameOver = true;
+            clearInterval(timerInterval);
+            sfx.playWhistle();
+
+            overlay.classList.remove('hidden');
+            if (scoreBlue > scoreRed) {
+                overlayTitle.textContent = 'VICTORY!';
+                overlayTitle.style.background = 'linear-gradient(to right, #60a5fa, #3b82f6)';
+                overlaySub.textContent = `You beat the AI ${scoreBlue} - ${scoreRed}! Great match!`;
+            } else if (scoreRed > scoreBlue) {
+                overlayTitle.textContent = 'DEFEAT!';
+                overlayTitle.style.background = 'linear-gradient(to right, #f87171, #ef4444)';
+                overlaySub.textContent = `The AI won ${scoreRed} - ${scoreBlue}. Better luck next time!`;
+            } else {
+                overlayTitle.textContent = 'DRAW!';
+                overlayTitle.style.background = 'linear-gradient(to right, #fbbf24, #f59e0b)';
+                overlaySub.textContent = `It was a tie match ${scoreBlue} - ${scoreBlue}!`;
+            }
+            startBtn.textContent = 'Play Again';
+        }
+
+        // Game Loop
+        function gameLoop() {
+            if (!isPaused && !isGameOver) {
+                // Update Physics
+                player.update(ball);
+                ai.update(ball);
+                ball.update();
+
+                // Player vs AI Collision
+                resolveCircleCollision(player, ai, false);
+
+                // Player vs Ball Collision
+                resolveCircleCollision(player, ball, true);
+
+                // AI vs Ball Collision
+                resolveCircleCollision(ai, ball, true);
+
+                // Goal animation timer
+                if (isGoalScored) {
+                    goalTextTimer--;
+                    if (goalTextTimer <= 0) {
+                        resetPositions();
+                    }
+                }
+            }
+
+            // Render
+            drawField();
+            player.draw();
+            ai.draw();
+            ball.draw();
+
+            // Render Goal Scored Overlay Text
+            if (isGoalScored) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                ctx.fillRect(0, PITCH.height / 2 - 50, PITCH.width, 100);
+
+                ctx.font = '900 48px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = goalScorer === 'BLUE' ? '#60a5fa' : '#f87171';
+                ctx.fillText(`GOAL FOR ${goalScorer}!`, PITCH.width / 2, PITCH.height / 2);
+                ctx.restore();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event Listeners
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            // Prevent scrolling with arrows/spacebar
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        startBtn.addEventListener('click', startMatch);
+
+        pauseBtn.addEventListener('click', () => {
+            if (isGameOver) return;
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+        });
+
+        restartBtn.addEventListener('click', startMatch);
+
+        // Initial render
+        drawField();
+        player.draw();
+        ai.draw();
+        ball.draw();
+
+        // Start Game Loop
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

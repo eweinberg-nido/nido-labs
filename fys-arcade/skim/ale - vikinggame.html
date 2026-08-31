@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viking Tug-of-Dash (v2)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1a0f1d;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* Game Container */
+    #game-wrapper {
+      position: relative;
+      width: 900px;
+      max-width: 95vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 4px solid #d4a359;
+    }
+
+    /* Top Control Bar */
+    #control-bar {
+      width: 100%;
+      background: #2b1704;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 4px solid #d4a359;
+      z-index: 10;
+    }
+
+    .score-board {
+      display: flex;
+      gap: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      text-shadow: 2px 2px 0px #000;
+    }
+
+    .score-box {
+      background: #110802;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 2px solid #634320;
+    }
+
+    .p1-color { color: #55ffff; }
+    .p2-color { color: #ff5555; }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+    }
+
+    /* Big Red GO Button */
+    #go-btn {
+      background: linear-gradient(135deg, #ff4d4d, #cc0000);
+      color: white;
+      font-size: 24px;
+      font-weight: 900;
+      padding: 12px 36px;
+      border: 3px solid #ff9999;
+      border-bottom: 6px solid #800000;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+      transition: all 0.1s ease;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    #go-btn:hover {
+      background: linear-gradient(135deg, #ff6666, #e60000);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
+    }
+
+    #go-btn:active {
+      transform: translateY(3px);
+      border-bottom-width: 3px;
+      box-shadow: 0 2px 5px rgba(255, 0, 0, 0.4);
+    }
+
+    /* Reset Button */
+    #reset-btn {
+      background: linear-gradient(135deg, #e69d00, #b37700);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 12px 20px;
+      border: 2px solid #ffc266;
+      border-bottom: 4px solid #664400;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      text-transform: uppercase;
+    }
+
+    #reset-btn:hover {
+      background: linear-gradient(135deg, #ffa800, #cc8800);
+      transform: translateY(-2px);
+    }
+
+    #reset-btn:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+
+    /* Canvas / Playing Field */
+    #canvas-container {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background-color: #f4a460;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Controls Instruction Bar */
+    #instructions {
+      width: 100%;
+      background: #110802;
+      color: #ccc;
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      border-top: 2px solid #442a15;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .key-badge {
+      background: #333;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #777;
+      font-weight: bold;
+    }
+
+    /* Status Banner Overlay */
+    #status-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.85);
+      border: 4px solid #ffd700;
+      color: #ffd700;
+      padding: 20px 40px;
+      border-radius: 12px;
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none;
+      display: none;
+      box-shadow: 0 0 30px rgba(0,0,0,0.9);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-wrapper">
+    <!-- Top Control Bar -->
+    <div id="control-bar">
+      <div class="score-board">
+        <div class="score-box p1-color">Viking A: <span id="p1-score">0</span></div>
+        <div class="score-box p2-color">Viking L: <span id="p2-score">0</span></div>
+      </div>
+
+      <div class="btn-group">
+        <button id="go-btn">GO !</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div id="canvas-container">
+      <canvas id="gameCanvas" width="900" height="480"></canvas>
+      <div id="status-overlay"></div>
+    </div>
+
+    <!-- Instructions Bar -->
+    <div id="instructions">
+      <div><span class="p1-color">LEFT VIKING</span>: Mash <span class="key-badge">A</span> to dash RIGHT</div>
+      <div>Press <span class="key-badge" style="background:#cc0000; color:#fff;">GO</span> to start!</div>
+      <div><span class="p2-color">RIGHT VIKING</span>: Mash <span class="key-badge">L</span> to dash LEFT</div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const goBtn = document.getElementById('go-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const p1ScoreEl = document.getElementById('p1-score');
+    const p2ScoreEl = document.getElementById('p2-score');
+    const statusOverlay = document.getElementById('status-overlay');
+
+    // Game States
+    const STATE_WAITING = 'WAITING'; // Needs GO press
+    const STATE_READY = 'READY';     // Countdown / Get ready
+    const STATE_PLAYING = 'PLAYING'; // Active game
+    const STATE_ENDED = 'ENDED';     // Someone crossed center
+
+    let gameState = STATE_WAITING;
+    let p1Score = 0;
+    let p2Score = 0;
+
+    // Viking Objects
+    const vikingWidth = 60;
+    const vikingHeight = 70;
+    const centerY = 340;
+
+    let p1 = {
+      x: 100,
+      y: centerY,
+      vx: 0,
+      color: '#00d2d3',
+      direction: 1, // Facing Right
+      swing: 0,
+      isLegOut: false
+    };
+
+    let p2 = {
+      x: 740,
+      y: centerY,
+      vx: 0,
+      color: '#ff4757',
+      direction: -1, // Facing Left
+      swing: 0,
+      isLegOut: false
+    };
+
+    // Retro Desert Background Elements
+    const pyramids = [
+      { x: 150, size: 180, color: '#d97724' },
+      { x: 380, size: 240, color: '#b85e14' },
+      { x: 700, size: 160, color: '#e0832d' }
+    ];
+
+    const cacti = [
+      { x: 80, y: 310, scale: 0.8 },
+      { x: 320, y: 315, scale: 0.6 },
+      { x: 580, y: 305, scale: 0.7 },
+      { x: 830, y: 310, scale: 0.9 }
+    ];
+
+    // Reset character positions (for next round)
+    function resetPositions() {
+      p1.x = 100;
+      p1.vx = 0;
+      p1.swing = 0;
+
+      p2.x = 740;
+      p2.vx = 0;
+      p2.swing = 0;
+
+      gameState = STATE_WAITING;
+      hideStatus();
+      draw();
+    }
+
+    // Full Reset: resets positions and wipes player scores
+    function resetGame() {
+      p1Score = 0;
+      p2Score = 0;
+      p1ScoreEl.innerText = p1Score;
+      p2ScoreEl.innerText = p2Score;
+      resetPositions();
+    }
+
+    function showStatus(text) {
+      statusOverlay.innerText = text;
+      statusOverlay.style.display = 'block';
+    }
+
+    function hideStatus() {
+      statusOverlay.style.display = 'none';
+    }
+
+    // Key Listeners
+    window.addEventListener('keydown', (e) => {
+      if (gameState !== STATE_PLAYING) return;
+
+      const key = e.key.toLowerCase();
+
+      // P1 Action
+      if (key === 'a') {
+        p1.x += 18; // Step forward (right)
+        p1.swing = 10;
+        p1.isLegOut = !p1.isLegOut;
+        checkWinCondition();
+      }
+
+      // P2 Action
+      if (key === 'l') {
+        p2.x -= 18; // Step forward (left)
+        p2.swing = 10;
+        p2.isLegOut = !p2.isLegOut;
+        checkWinCondition();
+      }
+    });
+
+    // Check who crosses center line first
+    const finishLineX = canvas.width / 2;
+
+    function checkWinCondition() {
+      // P1 wins if their front crosses the middle line to the right
+      if (p1.x + vikingWidth / 2 >= finishLineX) {
+        p1Score++;
+        p1ScoreEl.innerText = p1Score;
+        gameState = STATE_ENDED;
+        showStatus('VIKING A WINS THE DUEL! ⚔️');
+      } 
+      // P2 wins if their front crosses the middle line to the left
+      else if (p2.x - vikingWidth / 2 <= finishLineX) {
+        p2Score++;
+        p2ScoreEl.innerText = p2Score;
+        gameState = STATE_ENDED;
+        showStatus('VIKING L WINS THE DUEL! ⚔️');
+      }
+    }
+
+    // GO Button Click
+    goBtn.addEventListener('click', () => {
+      if (gameState === STATE_PLAYING) return;
+
+      resetPositions();
+      gameState = STATE_READY;
+
+      let count = 3;
+      showStatus(`GET READY!\n${count}`);
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          showStatus(`GET READY!\n${count}`);
+        } else if (count === 0) {
+          showStatus('CHARGE! ⚔️');
+        } else {
+          clearInterval(timer);
+          hideStatus();
+          gameState = STATE_PLAYING;
+        }
+      }, 700);
+    });
+
+    // Reset Button Click - Clears scores and resets positions
+    resetBtn.addEventListener('click', () => {
+      resetGame();
+    });
+
+    // --- DRAWING FUNCTIONS ---
+
+    function drawRetroDesert() {
+      // Retro Sunset Sky (Gradient)
+      let skyGradient = ctx.createLinearGradient(0, 0, 0, 320);
+      skyGradient.addColorStop(0, '#2d112c');
+      skyGradient.addColorStop(0.4, '#530031');
+      skyGradient.addColorStop(0.7, '#a32c28');
+      skyGradient.addColorStop(1, '#ff793f');
+      ctx.fillStyle = skyGradient;
+      ctx.fillRect(0, 0, canvas.width, 320);
+
+      // Retro Sun
+      const sunX = canvas.width / 2;
+      const sunY = 180;
+      const sunRadius = 70;
+
+      let sunGradient = ctx.createLinearGradient(0, sunY - sunRadius, 0, sunY + sunRadius);
+      sunGradient.addColorStop(0, '#f1c40f');
+      sunGradient.addColorStop(1, '#e67e22');
+      ctx.fillStyle = sunGradient;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sun stripes (retro synthwave effect)
+      ctx.fillStyle = '#a32c28';
+      for (let i = 0; i < 5; i++) {
+        ctx.fillRect(sunX - sunRadius - 10, sunY + (i * 10), sunRadius * 2 + 20, 3 + i);
+      }
+
+      // Pyramids / Mountains
+      pyramids.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.moveTo(p.x - p.size, 320);
+        ctx.lineTo(p.x, 320 - p.size * 0.7);
+        ctx.lineTo(p.x + p.size, 320);
+        ctx.closePath();
+        ctx.fill();
+
+        // Pyramid Shadow Side
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.beginPath();
+        ctx.moveTo(p.x, 320 - p.size * 0.7);
+        ctx.lineTo(p.x + p.size, 320);
+        ctx.lineTo(p.x, 320);
+        ctx.closePath();
+        ctx.fill();
+      });
+
+      // Desert Ground
+      ctx.fillStyle = '#e67e22';
+      ctx.fillRect(0, 320, canvas.width, canvas.height - 320);
+
+      // Ground Lines (Perspective Retro lines)
+      ctx.strokeStyle = '#d35400';
+      ctx.lineWidth = 3;
+
+      // Horizontal ground lines
+      for (let y = 335; y < canvas.height; y += 25) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // Cacti
+      cacti.forEach(c => drawCactus(c.x, c.y, c.scale));
+
+      // Middle Finish/Battle Line
+      ctx.strokeStyle = '#f1c40f';
+      ctx.lineWidth = 4;
+      ctx.setLineDash([12, 12]);
+      ctx.beginPath();
+      ctx.moveTo(finishLineX, 320);
+      ctx.lineTo(finishLineX, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset dash
+
+      // Middle Marker Flag
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath();
+      ctx.moveTo(finishLineX, 300);
+      ctx.lineTo(finishLineX + 25, 310);
+      ctx.lineTo(finishLineX, 320);
+      ctx.fill();
+
+      ctx.strokeStyle = '#7f8c8d';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(finishLineX, 300);
+      ctx.lineTo(finishLineX, 330);
+      ctx.stroke();
+    }
+
+    function drawCactus(x, y, scale) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#27ae60';
+
+      // Main trunk
+      ctx.fillRect(-8, -40, 16, 50);
+      // Left arm
+      ctx.fillRect(-22, -25, 14, 8);
+      ctx.fillRect(-22, -35, 8, 18);
+      // Right arm
+      ctx.fillRect(8, -18, 14, 8);
+      ctx.fillRect(14, -28, 8, 18);
+
+      ctx.restore();
+    }
+
+    function drawViking(v, isPlayerOne) {
+      ctx.save();
+      ctx.translate(v.x, v.y);
+
+      // Direction flip if Player 2
+      if (v.direction === -1) {
+        ctx.scale(-1, 1);
+      }
+
+      // Decrement weapon swing animation
+      if (v.swing > 0) v.swing--;
+
+      // Legs / Walking animation
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      if (v.isLegOut) {
+        ctx.moveTo(-10, 0); ctx.lineTo(-18, 20);
+        ctx.moveTo(10, 0);  ctx.lineTo(18, 20);
+      } else {
+        ctx.moveTo(-10, 0); ctx.lineTo(-5, 20);
+        ctx.moveTo(10, 0);  ctx.lineTo(5, 20);
+      }
+      ctx.stroke();
+
+      // Boots
+      ctx.fillStyle = '#54381e';
+      if (v.isLegOut) {
+        ctx.fillRect(-22, 18, 10, 6);
+        ctx.fillRect(14, 18, 10, 6);
+      } else {
+        ctx.fillRect(-9, 18, 10, 6);
+        ctx.fillRect(1, 18, 10, 6);
+      }
+
+      // Tunic / Body
+      ctx.fillStyle = v.color;
+      ctx.fillRect(-20, -45, 40, 45);
+
+      // Belt & Buckle
+      ctx.fillStyle = '#3a2312';
+      ctx.fillRect(-20, -22, 40, 8);
+      ctx.fillStyle = '#f1c40f';
+      ctx.fillRect(-6, -23, 12, 10);
+
+      // Head / Face
+      ctx.fillStyle = '#ffdbac';
+      ctx.fillRect(-14, -65, 28, 22);
+
+      // Big Viking Beard
+      ctx.fillStyle = isPlayerOne ? '#e67e22' : '#f39c12';
+      ctx.beginPath();
+      ctx.moveTo(-16, -52);
+      ctx.lineTo(0, -32);
+      ctx.lineTo(16, -52);
+      ctx.closePath();
+      ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = '#000';
+      ctx.fillRect(4, -58, 4, 4);
+
+      // Helmet
+      ctx.fillStyle = '#bdc3c7';
+      ctx.beginPath();
+      ctx.arc(0, -63, 16, Math.PI, 0);
+      ctx.fill();
+      ctx.fillRect(-16, -65, 32, 4);
+
+      // Horns
+      ctx.fillStyle = '#ecf0f1';
+      // Left Horn
+      ctx.beginPath();
+      ctx.moveTo(-14, -65);
+      ctx.quadraticCurveTo(-25, -75, -20, -85);
+      ctx.quadraticCurveTo(-12, -75, -10, -65);
+      ctx.fill();
+      // Right Horn
+      ctx.beginPath();
+      ctx.moveTo(10, -65);
+      ctx.quadraticCurveTo(12, -75, 20, -85);
+      ctx.quadraticCurveTo(25, -75, 14, -65);
+      ctx.fill();
+
+      // Shield (On back hand)
+      ctx.fillStyle = '#7f8c8d';
+      ctx.beginPath();
+      ctx.arc(-18, -35, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f1c40f';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Sword & Arm (Attacking forward)
+      ctx.save();
+      ctx.translate(10, -35); // Shoulder point
+      const angle = (v.swing / 10) * (Math.PI / 3); // Swing rot
+      ctx.rotate(angle);
+
+      // Arm
+      ctx.fillStyle = '#ffdbac';
+      ctx.fillRect(0, -4, 15, 8);
+
+      // Sword Hilt & Crossguard
+      ctx.fillStyle = '#f1c40f';
+      ctx.fillRect(15, -10, 4, 20);
+
+      // Sword Blade
+      ctx.fillStyle = '#ecf0f1';
+      ctx.beginPath();
+      ctx.moveTo(19, -6);
+      ctx.lineTo(50, -3);
+      ctx.lineTo(58, 0);
+      ctx.lineTo(50, 3);
+      ctx.lineTo(19, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#95a5a6';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.restore(); // Restore arm rotation
+
+      ctx.restore(); // Restore total flip/trans
+    }
+
+    // Main Render Loop
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background
+      drawRetroDesert();
+
+      // Vikings
+      drawViking(p1, true);
+      drawViking(p2, false);
+
+      requestAnimationFrame(draw);
+    }
+
+    // Initial Start
+    resetPositions();
+    draw();
+  </script>
+</body>
+</html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Among Us: Jungle Flight</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b1d0e;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            height: 100vh;
+            max-height: 720px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #152e18;
+            border: 3px solid #2d5a32;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-hint {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #6da373;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .music-upload-btn {
+            margin-top: 6px;
+            font-size: 12px;
+            background: #2d6a4f;
+            color: #d8f3dc;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid #52b788;
+            transition: background 0.2s;
+        }
+
+        .music-upload-btn:hover {
+            background: #40916c;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        @media (max-height: 740px) {
+            #game-wrapper {
+                max-height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+            .controls-hint, .music-upload-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <canvas id="gameCanvas"></canvas>
+</div>
+<div class="controls-hint">PRESS SPACEBAR OR TAP TO JUMP</div>
+<label for="file-input" class="music-upload-btn">🎵 Load Custom "Después de la 1" MP3</label>
+<input type="file" id="file-input" accept="audio/*">
+
+<script>
+class SoundManager {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+        this.musicInterval = null;
+        this.step = 0;
+        this.customAudio = null;
+        this.usingCustomAudio = false;
+    }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    setCustomAudio(file) {
+        const url = URL.createObjectURL(file);
+        if (this.customAudio) {
+            this.customAudio.pause();
+        }
+        this.customAudio = new Audio(url);
+        this.customAudio.loop = true;
+        this.usingCustomAudio = true;
+    }
+
+    playJump() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(650, this.ctx.currentTime + 0.12);
+        
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+    }
+
+    playScore() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.08);
+        
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    }
+
+    playHit() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.25);
+        
+        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+    }
+
+    startMusic() {
+        this.init();
+        if (this.usingCustomAudio && this.customAudio) {
+            this.customAudio.currentTime = 0;
+            this.customAudio.play().catch(() => {});
+            return;
+        }
+
+        if (this.musicInterval) return;
+
+        // Urban / Reggaeton Dembow Synth Loop (~96 BPM)
+        const tempo = 156; // 16th note speed in ms
+        this.step = 0;
+
+        this.musicInterval = setInterval(() => {
+            if (state !== 'PLAYING') return;
+            const now = this.ctx.currentTime;
+
+            // Reggaeton Dembow Beat Pattern:
+            // Kick on 0, 4, 8, 12 | Snare/Dem-bow on 3, 6, 11, 14
+            const isKick = (this.step % 4 === 0);
+            const isSnare = (this.step % 8 === 3) || (this.step % 8 === 6);
+            const isBass = (this.step % 4 === 0) || (this.step % 16 === 10);
+
+            if (isKick) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.exponentialRampToValueAtTime(35, now + 0.08);
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+
+            if (isSnare) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(90, now + 0.06);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.06);
+            }
+
+            if (isBass) {
+                const notes = [130.81, 146.83, 110.00, 123.47]; // C3, D3, A2, B2 melodic vibe
+                const note = notes[Math.floor(this.step / 8) % notes.length];
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(note / 2, now);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.14);
+            }
+
+            this.step = (this.step + 1) % 32;
+        }, tempo);
+    }
+
+    stopMusic() {
+        if (this.usingCustomAudio && this.customAudio) {
+            this.customAudio.pause();
+        }
+        if (this.musicInterval) {
+            clearInterval(this.musicInterval);
+            this.musicInterval = null;
+        }
+    }
+}
+
+const sounds = new SoundManager();
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        sounds.setCustomAudio(e.target.files[0]);
+    }
+});
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const wrapper = document.getElementById('game-wrapper');
+
+let width = 0;
+let height = 0;
+
+function resize() {
+    width = wrapper.clientWidth;
+    height = wrapper.clientHeight;
+    canvas.width = width;
+    canvas.height = height;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Game State
+let state = 'START'; // START, PLAYING, GAMEOVER
+let score = 0;
+let highScore = parseInt(localStorage.getItem('among_jungle_hs') || '0', 10);
+let frame = 0;
+
+// Entities
+const crewmate = {
+    x: 0,
+    y: 0,
+    width: 38,
+    height: 44,
+    gravity: 0.42,
+    lift: -7.8,
+    velocity: 0,
+    rotation: 0,
+    color: '#e63946',
+    visorColor: '#8ecae6',
+    jetpackColor: '#1d3557'
+};
+
+const pipes = [];
+const particles = [];
+const bgTrees = [];
+
+const pipeGap = 165;
+const pipeWidth = 65;
+let pipeSpeed = 2.4;
+const initialPipeSpeed = 2.4;
+
+function resetGame() {
+    crewmate.x = width * 0.28;
+    crewmate.y = height * 0.45;
+    crewmate.velocity = 0;
+    crewmate.rotation = 0;
+    
+    pipes.length = 0;
+    particles.length = 0;
+    score = 0;
+    frame = 0;
+    pipeSpeed = initialPipeSpeed;
+    
+    if (bgTrees.length === 0) {
+        for (let i = 0; i < 8; i++) {
+            bgTrees.push({
+                x: i * (width / 4),
+                r: 40 + Math.random() * 30,
+                speed: 0.6
+            });
+        }
+    }
+}
+
+resetGame();
+
+function flap() {
+    sounds.init();
+    if (state === 'START') {
+        state = 'PLAYING';
+        crewmate.velocity = crewmate.lift;
+        sounds.playJump();
+        sounds.startMusic();
+        createJetpackParticles();
+    } else if (state === 'PLAYING') {
+        crewmate.velocity = crewmate.lift;
+        sounds.playJump();
+        createJetpackParticles();
+    } else if (state === 'GAMEOVER') {
+        resetGame();
+        state = 'PLAYING';
+        crewmate.velocity = crewmate.lift;
+        sounds.playJump();
+        sounds.startMusic();
+    }
+}
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+        e.preventDefault();
+        flap();
+    }
+});
+
+wrapper.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    flap();
+});
+
+wrapper.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    flap();
+}, { passive: false });
+
+function createJetpackParticles() {
+    for (let i = 0; i < 6; i++) {
+        particles.push({
+            x: crewmate.x - 12,
+            y: crewmate.y + 10,
+            vx: -2 - Math.random() * 2,
+            vy: 2 + Math.random() * 3,
+            size: 4 + Math.random() * 4,
+            color: Math.random() > 0.4 ? '#ffb703' : '#fb8500',
+            life: 1.0
+        });
+    }
+}
+
+function createCrashParticles() {
+    for (let i = 0; i < 25; i++) {
+        particles.push({
+            x: crewmate.x,
+            y: crewmate.y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.5) * 8,
+            size: 3 + Math.random() * 6,
+            color: Math.random() > 0.3 ? crewmate.color : '#333',
+            life: 1.0
+        });
+    }
+}
+
+function drawBackground() {
+    const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
+    skyGradient.addColorStop(0, '#0d2310');
+    skyGradient.addColorStop(0.6, '#1a3e1c');
+    skyGradient.addColorStop(1, '#09150a');
+    ctx.fillStyle = skyGradient;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#112b13';
+    bgTrees.forEach(tree => {
+        if (state === 'PLAYING') tree.x -= tree.speed;
+        if (tree.x < -tree.r * 2) tree.x = width + tree.r * 2;
+
+        ctx.beginPath();
+        ctx.arc(tree.x, height - 40, tree.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(tree.x - tree.r / 3, height - 60, tree.r / 1.5, 40);
+    });
+
+    ctx.fillStyle = 'rgba(120, 220, 140, 0.03)';
+    ctx.beginPath();
+    ctx.moveTo(width * 0.1, 0);
+    ctx.lineTo(width * 0.4, 0);
+    ctx.lineTo(width * 0.1, height);
+    ctx.lineTo(-width * 0.2, height);
+    ctx.fill();
+}
+
+function drawGround() {
+    const groundHeight = 45;
+    const y = height - groundHeight;
+
+    ctx.fillStyle = '#2b1b0e';
+    ctx.fillRect(0, y, width, groundHeight);
+
+    ctx.fillStyle = '#2d6a37';
+    ctx.fillRect(0, y, width, 12);
+    ctx.fillStyle = '#52b788';
+    ctx.fillRect(0, y, width, 4);
+
+    ctx.strokeStyle = '#1b1109';
+    ctx.lineWidth = 2;
+    for (let i = 10; i < width; i += 40) {
+        ctx.beginPath();
+        ctx.arc(i, y + 20, 8, 0, Math.PI);
+        ctx.stroke();
+    }
+}
+
+function drawCrewmate(x, y, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+
+    const w = crewmate.width;
+    const h = crewmate.height;
+
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3.5;
+    ctx.lineJoin = 'round';
+
+    // 1. Backpack / Oxygen Tank
+    ctx.fillStyle = crewmate.color;
+    ctx.beginPath();
+    ctx.roundRect(-w / 2 - 8, -h / 2 + 10, 10, 22, 5);
+    ctx.fill();
+    ctx.stroke();
+
+    // 2. Legs
+    ctx.beginPath();
+    ctx.roundRect(-w / 2 + 3, h / 2 - 10, 11, 12, [0, 0, 5, 5]);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.roundRect(w / 2 - 14, h / 2 - 10, 11, 12, [0, 0, 5, 5]);
+    ctx.fill();
+    ctx.stroke();
+
+    // 3. Main Body
+    ctx.beginPath();
+    ctx.roundRect(-w / 2, -h / 2, w, h - 6, [18, 18, 8, 8]);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.beginPath();
+    ctx.roundRect(-w / 2, 4, w, h / 2 - 10, [0, 0, 8, 8]);
+    ctx.fill();
+
+    // 4. Visor
+    ctx.fillStyle = crewmate.visorColor;
+    ctx.beginPath();
+    ctx.roundRect(-w / 2 + 10, -h / 2 + 7, 22, 14, 7);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(-w / 2 + 15, -h / 2 + 9, 11, 4, 2);
+    ctx.fill();
+
+    // Leaf Hat
+    ctx.fillStyle = '#52b788';
+    ctx.beginPath();
+    ctx.ellipse(0, -h / 2 - 2, 8, 4, -Math.PI / 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function spawnPipe() {
+    const groundHeight = 45;
+    const minPipe = 70;
+    
+    // Dynamically expand pipe gap slightly as speed grows to ensure fair clearance
+    const currentGap = Math.min(190, pipeGap + (pipeSpeed - initialPipeSpeed) * 5);
+    const maxTop = height - groundHeight - currentGap - minPipe;
+
+    let gapCenter;
+    if (pipes.length > 0) {
+        // Calculate previous pipe gap center
+        const lastPipe = pipes[pipes.length - 1];
+        const lastCenter = lastPipe.top + (lastPipe.gap / 2);
+        
+        // Clamp maximum vertical height difference between consecutive pipes 
+        // to guarantee physical jump/fall feasibility within travel time
+        const maxVerticalDelta = 95;
+        
+        const minCenter = Math.max(minPipe + currentGap / 2, lastCenter - maxVerticalDelta);
+        const maxCenter = Math.min(height - groundHeight - minPipe - currentGap / 2, lastCenter + maxVerticalDelta);
+        
+        gapCenter = Math.floor(Math.random() * (maxCenter - minCenter + 1)) + minCenter;
+    } else {
+        const minCenter = minPipe + currentGap / 2;
+        const maxCenter = height - groundHeight - minPipe - currentGap / 2;
+        gapCenter = Math.floor(Math.random() * (maxCenter - minCenter + 1)) + minCenter;
+    }
+
+    const topHeight = gapCenter - currentGap / 2;
+
+    pipes.push({
+        x: width + 10,
+        top: topHeight,
+        bottom: height - groundHeight - topHeight - currentGap,
+        gap: currentGap,
+        passed: false
+    });
+}
+
+function drawVines(pipe) {
+    const groundHeight = 45;
+
+    ctx.fillStyle = '#1f4e27';
+    ctx.strokeStyle = '#0a240f';
+    ctx.lineWidth = 3.5;
+
+    // Top Pipe
+    ctx.beginPath();
+    ctx.rect(pipe.x, 0, pipeWidth, pipe.top);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.roundRect(pipe.x - 4, pipe.top - 18, pipeWidth + 8, 18, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Bottom Pipe
+    const bottomY = height - groundHeight - pipe.bottom;
+    ctx.beginPath();
+    ctx.rect(pipe.x, bottomY, pipeWidth, pipe.bottom);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.roundRect(pipe.x - 4, bottomY, pipeWidth + 8, 18, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Leaves
+    ctx.fillStyle = '#40916c';
+    ctx.beginPath();
+    ctx.arc(pipe.x - 6, pipe.top - 8, 14, 0, Math.PI * 2);
+    ctx.arc(pipe.x + pipeWidth + 6, pipe.top - 35, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(pipe.x - 6, bottomY + 28, 14, 0, Math.PI * 2);
+    ctx.arc(pipe.x + pipeWidth + 6, bottomY + 10, 13, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.03;
+
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+            continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+function update() {
+    if (state !== 'PLAYING') return;
+
+    frame++;
+
+    // Continuous acceleration: speed steadily increases over time & score
+    pipeSpeed = initialPipeSpeed + (frame * 0.0008) + (score * 0.12);
+
+    // Create high-speed trail particles when going fast
+    if (pipeSpeed > 3.2 && frame % 4 === 0) {
+        particles.push({
+            x: crewmate.x - 15,
+            y: crewmate.y + (Math.random() * 20 - 10),
+            vx: -pipeSpeed * 1.5,
+            vy: (Math.random() - 0.5) * 1.5,
+            size: 2 + Math.random() * 3,
+            color: 'rgba(255, 255, 255, 0.6)',
+            life: 0.6
+        });
+    }
+
+    crewmate.velocity += crewmate.gravity;
+    crewmate.y += crewmate.velocity;
+
+    crewmate.rotation = Math.min(Math.max(crewmate.velocity * 0.06, -0.45), 0.7);
+
+    const groundY = height - 45;
+    if (crewmate.y + crewmate.height / 2 >= groundY) {
+        crewmate.y = groundY - crewmate.height / 2;
+        triggerGameOver();
+    }
+    if (crewmate.y - crewmate.height / 2 <= 0) {
+        crewmate.y = crewmate.height / 2;
+        crewmate.velocity = 0;
+    }
+
+    // Dynamic pipe spawn frequency maintains ~50 frames of reaction time minimum
+    const spawnInterval = Math.max(50, Math.floor(210 / pipeSpeed));
+    if (frame % spawnInterval === 0) {
+        spawnPipe();
+    }
+
+    for (let i = pipes.length - 1; i >= 0; i--) {
+        const p = pipes[i];
+        p.x -= pipeSpeed;
+
+        const cLeft = crewmate.x - crewmate.width / 2 + 4;
+        const cRight = crewmate.x + crewmate.width / 2 - 4;
+        const cTop = crewmate.y - crewmate.height / 2 + 4;
+        const cBottom = crewmate.y + crewmate.height / 2 - 4;
+
+        const bottomPipeY = height - 45 - p.bottom;
+
+        if (cRight > p.x && cLeft < p.x + pipeWidth) {
+            if (cTop < p.top || cBottom > bottomPipeY) {
+                triggerGameOver();
+            }
+        }
+
+        if (!p.passed && p.x + pipeWidth < crewmate.x) {
+            p.passed = true;
+            score++;
+            sounds.playScore();
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('among_jungle_hs', highScore.toString());
+            }
+        }
+
+        if (p.x + pipeWidth < -20) {
+            pipes.splice(i, 1);
+        }
+    }
+}
+
+function triggerGameOver() {
+    if (state === 'GAMEOVER') return;
+    state = 'GAMEOVER';
+    sounds.playHit();
+    sounds.stopMusic();
+    createCrashParticles();
+}
+
+function renderUI() {
+    ctx.textAlign = 'center';
+
+    if (state === 'START') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = '#74c69d';
+        ctx.font = '900 26px sans-serif';
+        ctx.fillText('AMONG US', width / 2, height * 0.22);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 30px sans-serif';
+        ctx.fillText('JUNGLE FLIGHT', width / 2, height * 0.28);
+
+        ctx.fillStyle = '#ffb703';
+        ctx.font = '600 13px sans-serif';
+        ctx.fillText('🎵 Urban Beats: "Después de la 1" Vibe', width / 2, height * 0.33);
+
+        const hoverY = height * 0.48 + Math.sin(Date.now() * 0.005) * 8;
+        drawCrewmate(width / 2, hoverY, 0);
+
+        ctx.fillStyle = '#d8f3dc';
+        ctx.font = '700 17px sans-serif';
+        ctx.fillText('PRESS SPACEBAR TO START', width / 2, height * 0.65);
+        
+        ctx.fillStyle = '#a7c957';
+        ctx.font = '600 14px sans-serif';
+        ctx.fillText(`BEST SCORE: ${highScore}`, width / 2, height * 0.71);
+
+    } else if (state === 'PLAYING') {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 5;
+        ctx.font = '900 42px sans-serif';
+        ctx.strokeText(score, width / 2, 80);
+        ctx.fillText(score, width / 2, 80);
+
+        // Display real-time Speed Multiplier HUD
+        const speedMult = (pipeSpeed / initialPipeSpeed).toFixed(1);
+        ctx.fillStyle = speedMult > 1.4 ? '#ffb703' : '#a7c957';
+        ctx.font = '700 14px sans-serif';
+        ctx.fillText(`⚡ SPEED: ${speedMult}x`, width / 2, 108);
+
+    } else if (state === 'GAMEOVER') {
+        ctx.fillStyle = 'rgba(10, 24, 12, 0.75)';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = '#ff4d4d';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.font = '900 34px sans-serif';
+        ctx.strokeText('EJECTED!', width / 2, height * 0.32);
+        ctx.fillText('EJECTED!', width / 2, height * 0.32);
+
+        const boxW = 240;
+        const boxH = 120;
+        const boxX = width / 2 - boxW / 2;
+        const boxY = height * 0.38;
+
+        ctx.fillStyle = '#1b4332';
+        ctx.strokeStyle = '#2d6a4f';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#b7e4c7';
+        ctx.font = '600 16px sans-serif';
+        ctx.fillText('SCORE', width / 2 - 50, boxY + 45);
+        ctx.fillText('BEST', width / 2 + 50, boxY + 45);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 28px sans-serif';
+        ctx.fillText(score, width / 2 - 50, boxY + 85);
+        ctx.fillText(highScore, width / 2 + 50, boxY + 85);
+
+        ctx.fillStyle = '#d8f3dc';
+        ctx.font = '700 16px sans-serif';
+        ctx.fillText('PRESS SPACEBAR TO RESTART', width / 2, height * 0.65);
+    }
+}
+
+function loop() {
+    ctx.clearRect(0, 0, width, height);
+
+    drawBackground();
+
+    for (let pipe of pipes) {
+        drawVines(pipe);
+    }
+
+    drawGround();
+
+    if (state !== 'START') {
+        drawCrewmate(crewmate.x, crewmate.y, crewmate.rotation);
+    }
+
+    updateParticles();
+    update();
+    renderUI();
+
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>

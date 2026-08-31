@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>The Labyrinth Runner - v2</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #080a0d;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1200px;
+            max-height: 800px;
+            display: flex;
+            flex-direction: column;
+            background: #0f1319;
+            border-radius: 12px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.9);
+            overflow: hidden;
+            border: 1px solid #2d3748;
+        }
+
+        /* Header Bar */
+        #header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #151a23;
+            border-bottom: 2px solid #2d3748;
+            z-index: 10;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-group h1 {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #ecc94b;
+            margin: 0;
+            text-shadow: 0 0 8px rgba(236, 201, 75, 0.4);
+        }
+
+        .version-badge {
+            background: #e53e3e;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(229, 62, 62, 0.5);
+        }
+
+        .stats-group {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            align-items: center;
+        }
+
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #2d3748;
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+
+        .stamina-bar-bg {
+            width: 80px;
+            height: 10px;
+            background: #4a5568;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .stamina-bar-fill {
+            width: 100%;
+            height: 100%;
+            background: #48bb78;
+            transition: width 0.1s linear;
+        }
+
+        /* Canvas Screen */
+        #canvas-wrapper {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background: #030406;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Mini Map HUD */
+        #minimap-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 120px;
+            height: 120px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 2px solid #ecc94b;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 12;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        }
+
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI Overlays */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 10, 13, 0.92);
+            backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 20;
+            padding: 20px;
+            color: #edf2f7;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .overlay h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 12px rgba(236, 201, 75, 0.5);
+        }
+
+        .overlay.death h2 {
+            color: #e53e3e;
+            text-shadow: 0 0 16px rgba(229, 62, 62, 0.8);
+        }
+
+        .overlay.win h2 {
+            color: #38a169;
+            text-shadow: 0 0 16px rgba(56, 161, 105, 0.8);
+        }
+
+        .overlay p {
+            max-width: 520px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #cbd5e0;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            background: #d69e2e;
+            color: #1a202c;
+            border: none;
+            padding: 12px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(214, 158, 46, 0.3);
+        }
+
+        .btn:hover {
+            background: #ecc94b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(236, 201, 75, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .mechanic-card {
+            background: rgba(45, 55, 72, 0.7);
+            border: 1px solid #4a5568;
+            border-left: 4px solid #e53e3e;
+            padding: 12px 16px;
+            border-radius: 6px;
+            text-align: left;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            max-width: 500px;
+        }
+
+        .mechanic-card strong {
+            color: #e53e3e;
+        }
+
+        /* Mobile Controls */
+        #touch-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 5px;
+            pointer-events: auto;
+        }
+
+        .dbtn {
+            background: rgba(26, 32, 44, 0.75);
+            border: 1px solid rgba(226, 232, 240, 0.25);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .dbtn:active {
+            background: rgba(236, 201, 75, 0.6);
+        }
+
+        #sprint-touch-btn {
+            pointer-events: auto;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(229, 62, 62, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        #sprint-touch-btn:active {
+            background: rgba(229, 62, 62, 0.9);
+        }
+
+        @media (min-width: 800px) {
+            #touch-controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Top Status Bar -->
+        <div id="header-bar">
+            <div class="title-group">
+                <h1>The Labyrinth Runner</h1>
+                <span class="version-badge">v2 HARD MODE</span>
+            </div>
+            <div class="stats-group">
+                <div class="stat-box">
+                    <span>🔑 Keys:</span>
+                    <span id="keys-count" style="color:#ecc94b; font-weight:bold;">0 / 3</span>
+                </div>
+                <div class="stat-box">
+                    <span>⚡ Stamina:</span>
+                    <div class="stamina-bar-bg">
+                        <div id="stamina-fill" class="stamina-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Rendering Canvas -->
+        <div id="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+
+            <!-- Minimap HUD -->
+            <div id="minimap-container">
+                <canvas id="minimapCanvas"></canvas>
+            </div>
+
+            <!-- Touch / Mobile Overlay -->
+            <div id="touch-controls">
+                <div class="dpad">
+                    <div></div>
+                    <div class="dbtn" id="btn-up">▲</div>
+                    <div></div>
+                    <div class="dbtn" id="btn-left">◄</div>
+                    <div></div>
+                    <div class="dbtn" id="btn-right">►</div>
+                    <div></div>
+                    <div class="dbtn" id="btn-down">▼</div>
+                    <div></div>
+                </div>
+                <button id="sprint-touch-btn">SPRINT</button>
+            </div>
+
+            <!-- Start Screen Overlay -->
+            <div id="start-screen" class="overlay">
+                <h2>THE LABYRINTH RUNNER v2</h2>
+                <p>An expanded, intricate labyrinth filled with <strong>4 intelligent Grievers</strong>. Collect the 3 Key Blades and escape through Sector Exit!</p>
+                
+                <div class="mechanic-card">
+                    <strong>⚡ HARD MODE ENHANCEMENTS:</strong><br>
+                    • <strong>A* Pathfinding Intelligence:</strong> Grievers navigate around walls and dead-ends!<br>
+                    • <strong>4 Grievers Roaming:</strong> Keep your eyes on the HUD Mini-map!<br>
+                    • <strong>1-Second Lag Leap:</strong> When close, Grievers leap to where you were 1s ago!
+                </div>
+
+                <p style="font-size: 0.85rem; color: #a0aec0;">Controls: WASD / Arrow Keys to move. Hold SHIFT to sprint.</p>
+                <button class="btn" id="start-btn">ENTER THE LABYRINTH</button>
+            </div>
+
+            <!-- Death Screen Overlay -->
+            <div id="death-screen" class="overlay death hidden">
+                <h2>YOU WERE CAUGHT!</h2>
+                <p id="death-reason">A Griever's A* pathfinding cornered you and executed its leap attack!</p>
+                <button class="btn" id="restart-btn">TRY AGAIN</button>
+            </div>
+
+            <!-- Victory Screen Overlay -->
+            <div id="win-screen" class="overlay win hidden">
+                <h2>YOU ESCAPED THE LABYRINTH!</h2>
+                <p>Outstanding skills! You outsmarted the Grievers' pathfinding and escaped Section 8!</p>
+                <button class="btn" id="play-again-btn">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           AUDIO SYSTEM (Web Audio API Synthesizer)
+           ========================================================================== */
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playFootstep() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(110, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playKeyCollect() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+                osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, this.ctx.currentTime + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, this.ctx.currentTime + 0.24); // C6
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.35);
+            }
+
+            playGrieverTelegraph() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(500, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+
+            playGrieverLanding() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(25, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+
+            playDeath() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.6);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.6);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.6);
+            }
+
+            playWin() {
+                if (!this.ctx) return;
+                const notes = [440, 554.37, 659.25, 880, 1108.73];
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.1 + 0.35);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + i * 0.1);
+                    osc.stop(this.ctx.currentTime + i * 0.1 + 0.35);
+                });
+            }
+        }
+
+        const sounds = new SoundEffects();
+
+        /* ==========================================================================
+           MAZE GENERATOR (25x25 Grid with Loops for Tactical Gameplay)
+           ========================================================================== */
+        class Maze {
+            constructor(cols, rows) {
+                this.cols = cols;
+                this.rows = rows;
+                this.grid = [];
+                this.cellSize = 64; // In pixels
+                this.generate();
+            }
+
+            generate() {
+                // Initialize grid (1 = Wall, 0 = Path)
+                this.grid = Array(this.rows).fill(0).map(() => Array(this.cols).fill(1));
+
+                const stack = [];
+                const startC = 1, startR = 1;
+                this.grid[startR][startC] = 0;
+                stack.push({ r: startR, c: startC });
+
+                while (stack.length > 0) {
+                    const current = stack[stack.length - 1];
+                    const neighbors = [];
+
+                    const directions = [
+                        { dr: -2, dc: 0 },
+                        { dr: 2, dc: 0 },
+                        { dr: 0, dc: -2 },
+                        { dr: 0, dc: 2 }
+                    ];
+
+                    for (let d of directions) {
+                        const nr = current.r + d.dr;
+                        const nc = current.c + d.dc;
+
+                        if (nr > 0 && nr < this.rows - 1 && nc > 0 && nc < this.cols - 1) {
+                            if (this.grid[nr][nc] === 1) {
+                                neighbors.push({ r: nr, c: nc, dr: d.dr / 2, dc: d.dc / 2 });
+                            }
+                        }
+                    }
+
+                    if (neighbors.length > 0) {
+                        const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        this.grid[current.r + next.dr][current.c + next.dc] = 0;
+                        this.grid[next.r][next.c] = 0;
+                        stack.push({ r: next.r, c: next.c });
+                    } else {
+                        stack.pop();
+                    }
+                }
+
+                // Add random loops/corridors so the maze is non-linear & tactical
+                for (let r = 2; r < this.rows - 2; r += 2) {
+                    for (let c = 2; c < this.cols - 2; c += 2) {
+                        if (this.grid[r][c] === 1 && Math.random() < 0.20) {
+                            this.grid[r][c] = 0;
+                        }
+                    }
+                }
+
+                // Glade Safe Starting Zone in Top-Left (4x4)
+                for (let r = 1; r <= 4; r++) {
+                    for (let c = 1; c <= 4; c++) {
+                        this.grid[r][c] = 0;
+                    }
+                }
+            }
+
+            isWall(x, y) {
+                const c = Math.floor(x / this.cellSize);
+                const r = Math.floor(y / this.cellSize);
+                if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return true;
+                return this.grid[r][c] === 1;
+            }
+
+            isGridWall(r, c) {
+                if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return true;
+                return this.grid[r][c] === 1;
+            }
+        }
+
+        /* ==========================================================================
+           A* PATHFINDING SYSTEM FOR GRIEVER AI
+           ========================================================================== */
+        class PathFinder {
+            static findPath(maze, startR, startC, targetR, targetC) {
+                if (maze.isGridWall(targetR, targetC)) return [];
+
+                const openSet = [];
+                const closedSet = new Set();
+                const nodes = new Map();
+
+                const getKey = (r, c) => `${r},${c}`;
+
+                const startNode = {
+                    r: startR, c: startC,
+                    g: 0,
+                    h: Math.hypot(targetR - startR, targetC - startC),
+                    f: 0,
+                    parent: null
+                };
+                startNode.f = startNode.g + startNode.h;
+
+                openSet.push(startNode);
+                nodes.set(getKey(startR, startC), startNode);
+
+                while (openSet.length > 0) {
+                    // Get node with lowest f cost
+                    openSet.sort((a, b) => a.f - b.f);
+                    const current = openSet.shift();
+
+                    if (current.r === targetR && current.c === targetC) {
+                        // Reconstruct path
+                        const path = [];
+                        let temp = current;
+                        while (temp.parent) {
+                            path.push({ r: temp.r, c: temp.c });
+                            temp = temp.parent;
+                        }
+                        return path.reverse();
+                    }
+
+                    closedSet.add(getKey(current.r, current.c));
+
+                    const neighbors = [
+                        { r: current.r - 1, c: current.c },
+                        { r: current.r + 1, c: current.c },
+                        { r: current.r, c: current.c - 1 },
+                        { r: current.r, c: current.c + 1 }
+                    ];
+
+                    for (let n of neighbors) {
+                        if (maze.isGridWall(n.r, n.c)) continue;
+                        const key = getKey(n.r, n.c);
+                        if (closedSet.has(key)) continue;
+
+                        const gScore = current.g + 1;
+                        let neighborNode = nodes.get(key);
+
+                        if (!neighborNode) {
+                            neighborNode = {
+                                r: n.r, c: n.c,
+                                g: gScore,
+                                h: Math.hypot(targetR - n.r, targetC - n.c),
+                                f: 0,
+                                parent: current
+                            };
+                            neighborNode.f = neighborNode.g + neighborNode.h;
+                            nodes.set(key, neighborNode);
+                            openSet.push(neighborNode);
+                        } else if (gScore < neighborNode.g) {
+                            neighborNode.g = gScore;
+                            neighborNode.f = neighborNode.g + neighborNode.h;
+                            neighborNode.parent = current;
+                        }
+                    }
+                }
+                return []; // No path found
+            }
+        }
+
+        /* ==========================================================================
+           PLAYER & HISTORY BUFFER (Tracking position 1.0s ago)
+           ========================================================================== */
+        class Player {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 16;
+                this.speed = 190;
+                this.sprintMultiplier = 1.6;
+                this.stamina = 100;
+                this.maxStamina = 100;
+                this.isSprinting = false;
+                this.angle = 0;
+                this.history = [];
+                this.stepTimer = 0;
+            }
+
+            update(dt, keys, maze) {
+                let dx = 0, dy = 0;
+
+                if (keys['ArrowUp'] || keys['KeyW']) dy -= 1;
+                if (keys['ArrowDown'] || keys['KeyS']) dy += 1;
+                if (keys['ArrowLeft'] || keys['KeyA']) dx -= 1;
+                if (keys['ArrowRight'] || keys['KeyD']) dx += 1;
+
+                if (dx !== 0 && dy !== 0) {
+                    dx *= 0.7071;
+                    dy *= 0.7071;
+                }
+
+                this.isSprinting = keys['ShiftLeft'] || keys['ShiftRight'] || keys['MobileSprint'];
+                let currentSpeed = this.speed;
+
+                if (this.isSprinting && (dx !== 0 || dy !== 0) && this.stamina > 0) {
+                    currentSpeed *= this.sprintMultiplier;
+                    this.stamina -= 35 * dt;
+                    if (this.stamina < 0) this.stamina = 0;
+                } else {
+                    this.stamina += 18 * dt;
+                    if (this.stamina > this.maxStamina) this.stamina = this.maxStamina;
+                }
+
+                if (dx !== 0 || dy !== 0) {
+                    this.angle = Math.atan2(dy, dx);
+
+                    this.stepTimer += dt * (currentSpeed / this.speed);
+                    if (this.stepTimer > 0.32) {
+                        sounds.playFootstep();
+                        this.stepTimer = 0;
+                    }
+
+                    let nextX = this.x + dx * currentSpeed * dt;
+                    let nextY = this.y + dy * currentSpeed * dt;
+
+                    if (!this.checkWallCollision(nextX, this.y, maze)) {
+                        this.x = nextX;
+                    }
+                    if (!this.checkWallCollision(this.x, nextY, maze)) {
+                        this.y = nextY;
+                    }
+                }
+
+                const now = performance.now();
+                this.history.push({ x: this.x, y: this.y, time: now });
+
+                while (this.history.length > 0 && now - this.history[0].time > 2000) {
+                    this.history.shift();
+                }
+            }
+
+            checkWallCollision(x, y, maze) {
+                const r = this.radius - 2;
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+                    const px = x + Math.cos(a) * r;
+                    const py = y + Math.sin(a) * r;
+                    if (maze.isWall(px, py)) return true;
+                }
+                return false;
+            }
+
+            getPositionOneSecondAgo() {
+                const targetTime = performance.now() - 1000;
+                if (this.history.length === 0) return { x: this.x, y: this.y };
+
+                let closest = this.history[0];
+                for (let i = 1; i < this.history.length; i++) {
+                    if (Math.abs(this.history[i].time - targetTime) < Math.abs(closest.time - targetTime)) {
+                        closest = this.history[i];
+                    }
+                }
+                return { x: closest.x, y: closest.y };
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Flash shadow under player
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 16, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Character Body (Runner Vest)
+                ctx.fillStyle = '#d69e2e';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner shirt
+                ctx.fillStyle = '#2b6cb0';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius - 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Head / Hair
+                ctx.fillStyle = '#4a5568';
+                ctx.beginPath();
+                ctx.arc(-2, 0, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Runner Satchel / Backpack Strap
+                ctx.strokeStyle = '#742a2a';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-10, -8);
+                ctx.lineTo(10, 8);
+                ctx.stroke();
+
+                // Eyes/Faceway
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(8, -4, 3, 0, Math.PI * 2);
+                ctx.arc(8, 4, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        /* ==========================================================================
+           GRIEVER MONSTER (With A* Pathfinding + 1-Second Lag Jump Attack!)
+           ========================================================================== */
+        class Griever {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 22;
+                this.speed = 125;
+                this.angle = Math.random() * Math.PI * 2;
+
+                this.state = 'PATROL';
+                this.detectionRadius = 240;
+                this.pounceCooldown = 0;
+
+                // Pathfinding variables
+                this.path = [];
+                this.pathUpdateTimer = 0;
+
+                // Jump Arc calculations
+                this.jumpStart = { x: 0, y: 0 };
+                this.jumpTarget = { x: 0, y: 0 };
+                this.jumpTimer = 0;
+                this.jumpDuration = 0.55; // Slightly faster leap in v2!
+                this.jumpHeight = 0;
+                this.telegraphTimer = 0;
+                this.recoveryTimer = 0;
+            }
+
+            update(dt, player, maze) {
+                const distToPlayer = Math.hypot(player.x - this.x, player.y - this.y);
+
+                if (this.pounceCooldown > 0) {
+                    this.pounceCooldown -= dt;
+                }
+
+                switch (this.state) {
+                    case 'PATROL':
+                        // Periodically calculate A* path to player position
+                        this.pathUpdateTimer -= dt;
+                        if (this.pathUpdateTimer <= 0) {
+                            this.pathUpdateTimer = 0.35; // Recalculate path every 0.35s
+                            const myR = Math.floor(this.y / maze.cellSize);
+                            const myC = Math.floor(this.x / maze.cellSize);
+                            const targetR = Math.floor(player.y / maze.cellSize);
+                            const targetC = Math.floor(player.x / maze.cellSize);
+
+                            this.path = PathFinder.findPath(maze, myR, myC, targetR, targetC);
+                        }
+
+                        // Follow A* Path waypoint
+                        if (this.path.length > 0) {
+                            const nextWayPoint = this.path[0];
+                            const wayX = (nextWayPoint.c + 0.5) * maze.cellSize;
+                            const wayY = (nextWayPoint.r + 0.5) * maze.cellSize;
+
+                            const distToWay = Math.hypot(wayX - this.x, wayY - this.y);
+                            if (distToWay < 15) {
+                                this.path.shift(); // Reached waypoint
+                            } else {
+                                this.angle = Math.atan2(wayY - this.y, wayX - this.x);
+                                let nextX = this.x + Math.cos(this.angle) * this.speed * dt;
+                                let nextY = this.y + Math.sin(this.angle) * this.speed * dt;
+                                this.x = nextX;
+                                this.y = nextY;
+                            }
+                        } else {
+                            // Direct chase fallback
+                            this.angle = Math.atan2(player.y - this.y, player.x - this.x);
+                            let nextX = this.x + Math.cos(this.angle) * this.speed * dt;
+                            let nextY = this.y + Math.sin(this.angle) * this.speed * dt;
+                            if (!maze.isWall(nextX, this.y)) this.x = nextX;
+                            if (!maze.isWall(this.x, nextY)) this.y = nextY;
+                        }
+
+                        // Trigger 1-Second Lag Jump Attack
+                        if (distToPlayer <= this.detectionRadius && this.pounceCooldown <= 0) {
+                            this.state = 'TELEGRAPH';
+                            this.telegraphTimer = 0.35; // Charge warning
+                            sounds.playGrieverTelegraph();
+                        }
+                        break;
+
+                    case 'TELEGRAPH':
+                        this.telegraphTimer -= dt;
+                        if (this.telegraphTimer <= 0) {
+                            // Lock onto position player was 1.0 second ago!
+                            const targetPos = player.getPositionOneSecondAgo();
+                            this.jumpStart = { x: this.x, y: this.y };
+                            this.jumpTarget = { x: targetPos.x, y: targetPos.y };
+                            this.jumpTimer = 0;
+                            this.state = 'JUMPING';
+                        }
+                        break;
+
+                    case 'JUMPING':
+                        this.jumpTimer += dt;
+                        let progress = this.jumpTimer / this.jumpDuration;
+
+                        if (progress >= 1) {
+                            progress = 1;
+                            this.x = this.jumpTarget.x;
+                            this.y = this.jumpTarget.y;
+                            this.jumpHeight = 0;
+                            this.state = 'RECOVERY';
+                            this.recoveryTimer = 0.4;
+                            this.pounceCooldown = 2.0;
+                            sounds.playGrieverLanding();
+                        } else {
+                            this.x = this.jumpStart.x + (this.jumpTarget.x - this.jumpStart.x) * progress;
+                            this.y = this.jumpStart.y + (this.jumpTarget.y - this.jumpStart.y) * progress;
+                            this.jumpHeight = Math.sin(progress * Math.PI) * 60;
+                        }
+                        break;
+
+                    case 'RECOVERY':
+                        this.recoveryTimer -= dt;
+                        if (this.recoveryTimer <= 0) {
+                            this.state = 'PATROL';
+                        }
+                        break;
+                }
+            }
+
+            draw(ctx) {
+                // Draw target landing indicator during leap
+                if (this.state === 'JUMPING' || this.state === 'TELEGRAPH') {
+                    const targetX = this.state === 'JUMPING' ? this.jumpTarget.x : this.x;
+                    const targetY = this.state === 'JUMPING' ? this.jumpTarget.y : this.y;
+
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(229, 62, 62, 0.9)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(targetX, targetY, this.radius * 1.3, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(targetX - 12, targetY); ctx.lineTo(targetX + 12, targetY);
+                    ctx.moveTo(targetX, targetY - 12); ctx.lineTo(targetX, targetY + 12);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // Shadow
+                ctx.save();
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y, this.radius, this.radius * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Body & Height
+                ctx.save();
+                const drawY = this.y - this.jumpHeight;
+                ctx.translate(this.x, drawY);
+
+                if (this.state === 'TELEGRAPH') {
+                    ctx.fillStyle = (Math.floor(performance.now() / 60) % 2 === 0) ? '#e53e3e' : '#1a202c';
+                } else if (this.state === 'JUMPING') {
+                    ctx.fillStyle = '#3182ce';
+                } else {
+                    ctx.fillStyle = '#171923';
+                }
+
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#4a5568';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Blades / Legs
+                ctx.strokeStyle = '#cbd5e0';
+                ctx.lineWidth = 2.5;
+                for (let i = 0; i < 8; i++) {
+                    const legAngle = (Math.PI * 2 / 8) * i + (performance.now() * 0.006);
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(legAngle) * (this.radius - 2), Math.sin(legAngle) * (this.radius - 2));
+                    ctx.lineTo(Math.cos(legAngle) * (this.radius + 12), Math.sin(legAngle) * (this.radius + 12));
+                    ctx.stroke();
+                }
+
+                // Glowing Red Eyes
+                ctx.fillStyle = '#e53e3e';
+                ctx.shadowColor = '#e53e3e';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.arc(7, -7, 4, 0, Math.PI * 2);
+                ctx.arc(7, 7, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        /* ==========================================================================
+           COLLECTIBLES & EXIT PORTAL
+           ========================================================================== */
+        class KeyBlade {
+            constructor(x, y, id) {
+                this.x = x;
+                this.y = y;
+                this.id = id;
+                this.collected = false;
+                this.radius = 12;
+            }
+
+            draw(ctx) {
+                if (this.collected) return;
+
+                const hoverOffset = Math.sin(performance.now() * 0.005) * 4;
+                ctx.save();
+                ctx.translate(this.x, this.y + hoverOffset);
+
+                ctx.shadowColor = '#ecc94b';
+                ctx.shadowBlur = 18;
+                ctx.fillStyle = '#ecc94b';
+
+                ctx.beginPath();
+                ctx.arc(0, -6, 6, 0, Math.PI * 2);
+                ctx.rect(-3, -2, 6, 14);
+                ctx.rect(0, 4, 5, 3);
+                ctx.rect(0, 9, 5, 3);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        class ExitDoor {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            draw(ctx, keysCollected, totalKeys) {
+                ctx.save();
+
+                const isUnlocked = keysCollected >= totalKeys;
+
+                ctx.fillStyle = isUnlocked ? '#38a169' : '#e53e3e';
+                ctx.fillRect(this.x - 32, this.y - 32, 64, 64);
+
+                ctx.fillStyle = isUnlocked ? '#68d391' : '#1a202c';
+                ctx.shadowColor = isUnlocked ? '#68d391' : '#e53e3e';
+                ctx.shadowBlur = 24;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 22, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(isUnlocked ? "EXIT" : "LOCKED", this.x, this.y + 4);
+
+                ctx.restore();
+            }
+        }
+
+        /* ==========================================================================
+           MAIN GAME CONTROLLER
+           ========================================================================== */
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                this.minimapCanvas = document.getElementById('minimapCanvas');
+                this.minimapCtx = this.minimapCanvas.getContext('2d');
+
+                this.resize();
+
+                this.mazeCols = 25; // Expanded Maze Grid in v2!
+                this.mazeRows = 25;
+                this.maze = new Maze(this.mazeCols, this.mazeRows);
+
+                this.player = new Player(1.5 * this.maze.cellSize, 1.5 * this.maze.cellSize);
+
+                this.keys = {};
+                this.grievers = [];
+                this.keyBlades = [];
+                this.exitDoor = null;
+                this.totalKeys = 3;
+                this.keysCollected = 0;
+
+                this.state = 'START';
+                this.lastTime = 0;
+
+                this.initEventListeners();
+                this.spawnEntities();
+            }
+
+            resize() {
+                const wrapper = document.getElementById('canvas-wrapper');
+                this.canvas.width = wrapper.clientWidth;
+                this.canvas.height = wrapper.clientHeight;
+
+                this.minimapCanvas.width = 120;
+                this.minimapCanvas.height = 120;
+            }
+
+            spawnEntities() {
+                this.keyBlades = [];
+                this.grievers = [];
+
+                const openCells = [];
+                for (let r = 1; r < this.maze.rows - 1; r++) {
+                    for (let c = 1; c < this.maze.cols - 1; c++) {
+                        if (this.maze.grid[r][c] === 0 && !(r <= 4 && c <= 4)) {
+                            openCells.push({ r, c });
+                        }
+                    }
+                }
+
+                for (let i = openCells.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [openCells[i], openCells[j]] = [openCells[j], openCells[i]];
+                }
+
+                // Place Key Blades
+                for (let i = 0; i < this.totalKeys; i++) {
+                    if (openCells.length > 0) {
+                        const cell = openCells.pop();
+                        const x = (cell.c + 0.5) * this.maze.cellSize;
+                        const y = (cell.r + 0.5) * this.maze.cellSize;
+                        this.keyBlades.push(new KeyBlade(x, y, i));
+                    }
+                }
+
+                // Place Exit Door
+                const exitCell = openCells.pop() || { r: this.maze.rows - 2, c: this.maze.cols - 2 };
+                this.exitDoor = new ExitDoor((exitCell.c + 0.5) * this.maze.cellSize, (exitCell.r + 0.5) * this.maze.cellSize);
+
+                // Place 4 Grievers in v2 HARD MODE
+                for (let i = 0; i < 4; i++) {
+                    if (openCells.length > 0) {
+                        const cell = openCells.pop();
+                        const x = (cell.c + 0.5) * this.maze.cellSize;
+                        const y = (cell.r + 0.5) * this.maze.cellSize;
+                        this.grievers.push(new Griever(x, y));
+                    }
+                }
+            }
+
+            initEventListeners() {
+                window.addEventListener('resize', () => this.resize());
+
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.code] = true;
+                    sounds.init();
+                });
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.code] = false;
+                });
+
+                document.getElementById('start-btn').addEventListener('click', () => {
+                    sounds.init();
+                    this.startNewGame();
+                });
+                document.getElementById('restart-btn').addEventListener('click', () => {
+                    this.startNewGame();
+                });
+                document.getElementById('play-again-btn').addEventListener('click', () => {
+                    this.startNewGame();
+                });
+
+                const bindTouchBtn = (elementId, keyCode) => {
+                    const btn = document.getElementById(elementId);
+                    if (!btn) return;
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.keys[keyCode] = true;
+                        sounds.init();
+                    });
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.keys[keyCode] = false;
+                    });
+                };
+
+                bindTouchBtn('btn-up', 'ArrowUp');
+                bindTouchBtn('btn-down', 'ArrowDown');
+                bindTouchBtn('btn-left', 'ArrowLeft');
+                bindTouchBtn('btn-right', 'ArrowRight');
+                bindTouchBtn('sprint-touch-btn', 'MobileSprint');
+            }
+
+            startNewGame() {
+                this.maze = new Maze(this.mazeCols, this.mazeRows);
+                this.player = new Player(1.5 * this.maze.cellSize, 1.5 * this.maze.cellSize);
+                this.keysCollected = 0;
+                document.getElementById('keys-count').innerText = `0 / ${this.totalKeys}`;
+
+                this.spawnEntities();
+
+                this.state = 'PLAYING';
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('death-screen').classList.add('hidden');
+                document.getElementById('win-screen').classList.add('hidden');
+
+                this.lastTime = performance.now();
+            }
+
+            update(dt) {
+                if (this.state !== 'PLAYING') return;
+
+                this.player.update(dt, this.keys, this.maze);
+
+                const staminaPercent = (this.player.stamina / this.player.maxStamina) * 100;
+                document.getElementById('stamina-fill').style.width = `${staminaPercent}%`;
+
+                this.keyBlades.forEach(key => {
+                    if (!key.collected) {
+                        const dist = Math.hypot(this.player.x - key.x, this.player.y - key.y);
+                        if (dist < this.player.radius + key.radius) {
+                            key.collected = true;
+                            this.keysCollected++;
+                            sounds.playKeyCollect();
+                            document.getElementById('keys-count').innerText = `${this.keysCollected} / ${this.totalKeys}`;
+                        }
+                    }
+                });
+
+                const exitDist = Math.hypot(this.player.x - this.exitDoor.x, this.player.y - this.exitDoor.y);
+                if (exitDist < this.player.radius + 24 && this.keysCollected >= this.totalKeys) {
+                    this.state = 'WIN';
+                    sounds.playWin();
+                    document.getElementById('win-screen').classList.remove('hidden');
+                    return;
+                }
+
+                this.grievers.forEach(griever => {
+                    griever.update(dt, this.player, this.maze);
+
+                    const distToGriever = Math.hypot(this.player.x - griever.x, this.player.y - griever.y);
+                    const lethalRadius = (griever.state === 'JUMPING') ? griever.radius * 1.3 : griever.radius;
+
+                    if (distToGriever < this.player.radius + lethalRadius && griever.jumpHeight < 15) {
+                        this.state = 'DEAD';
+                        sounds.playDeath();
+                        document.getElementById('death-screen').classList.remove('hidden');
+                    }
+                });
+            }
+
+            renderMinimap() {
+                const mCtx = this.minimapCtx;
+                const mW = this.minimapCanvas.width;
+                const mH = this.minimapCanvas.height;
+
+                mCtx.clearRect(0, 0, mW, mH);
+                mCtx.fillStyle = '#0f172a';
+                mCtx.fillRect(0, 0, mW, mH);
+
+                const cellW = mW / this.maze.cols;
+                const cellH = mH / this.maze.rows;
+
+                // Render maze walls
+                mCtx.fillStyle = '#334155';
+                for (let r = 0; r < this.maze.rows; r++) {
+                    for (let c = 0; c < this.maze.cols; c++) {
+                        if (this.maze.grid[r][c] === 1) {
+                            mCtx.fillRect(c * cellW, r * cellH, cellW + 0.5, cellH + 0.5);
+                        }
+                    }
+                }
+
+                // Keys
+                mCtx.fillStyle = '#ecc94b';
+                this.keyBlades.forEach(key => {
+                    if (!key.collected) {
+                        const kc = Math.floor(key.x / this.maze.cellSize);
+                        const kr = Math.floor(key.y / this.maze.cellSize);
+                        mCtx.fillRect(kc * cellW, kr * cellH, cellW * 1.5, cellH * 1.5);
+                    }
+                });
+
+                // Exit Door
+                mCtx.fillStyle = (this.keysCollected >= this.totalKeys) ? '#38a169' : '#e53e3e';
+                const ec = Math.floor(this.exitDoor.x / this.maze.cellSize);
+                const er = Math.floor(this.exitDoor.y / this.maze.cellSize);
+                mCtx.fillRect(ec * cellW, er * cellH, cellW * 2, cellH * 2);
+
+                // Grievers (Red Radar Blips)
+                mCtx.fillStyle = '#f56565';
+                this.grievers.forEach(g => {
+                    const gc = g.x / this.maze.cellSize;
+                    const gr = g.y / this.maze.cellSize;
+                    mCtx.beginPath();
+                    mCtx.arc(gc * cellW, gr * cellH, 2.5, 0, Math.PI * 2);
+                    mCtx.fill();
+                });
+
+                // Player (Green Dot)
+                mCtx.fillStyle = '#48bb78';
+                const pc = this.player.x / this.maze.cellSize;
+                const pr = this.player.y / this.maze.cellSize;
+                mCtx.beginPath();
+                mCtx.arc(pc * cellW, pr * cellH, 3, 0, Math.PI * 2);
+                mCtx.fill();
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (this.state === 'START') {
+                    this.ctx.fillStyle = '#080a0d';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    return;
+                }
+
+                // Camera follow system
+                this.ctx.save();
+                const cameraX = this.canvas.width / 2 - this.player.x;
+                const cameraY = this.canvas.height / 2 - this.player.y;
+                this.ctx.translate(cameraX, cameraY);
+
+                // Render Maze Walls & Floor
+                for (let r = 0; r < this.maze.rows; r++) {
+                    for (let c = 0; c < this.maze.cols; c++) {
+                        const x = c * this.maze.cellSize;
+                        const y = r * this.maze.cellSize;
+
+                        if (this.maze.grid[r][c] === 1) {
+                            // High Wall with ivy accents
+                            this.ctx.fillStyle = '#2d3748';
+                            this.ctx.fillRect(x, y, this.maze.cellSize, this.maze.cellSize);
+
+                            this.ctx.strokeStyle = '#1a202c';
+                            this.ctx.lineWidth = 2;
+                            this.ctx.strokeRect(x, y, this.maze.cellSize, this.maze.cellSize);
+
+                            if ((r * 7 + c * 3) % 4 === 0) {
+                                this.ctx.fillStyle = '#276749';
+                                this.ctx.fillRect(x + 6, y + 6, 14, 10);
+                            }
+                        } else {
+                            if (r <= 4 && c <= 4) {
+                                this.ctx.fillStyle = '#22543d'; // Glade Safe Grass
+                            } else {
+                                this.ctx.fillStyle = '#11141a'; // Maze Corridor Stone
+                            }
+                            this.ctx.fillRect(x, y, this.maze.cellSize, this.maze.cellSize);
+
+                            this.ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+                            this.ctx.strokeRect(x, y, this.maze.cellSize, this.maze.cellSize);
+                        }
+                    }
+                }
+
+                // Exit Door
+                this.exitDoor.draw(this.ctx, this.keysCollected, this.totalKeys);
+
+                // Key Blades
+                this.keyBlades.forEach(key => key.draw(this.ctx));
+
+                // Player
+                this.player.draw(this.ctx);
+
+                // Grievers
+                this.grievers.forEach(griever => griever.draw(this.ctx));
+
+                this.ctx.restore();
+
+                // Dynamic Torchlight Vignette Overlay
+                this.ctx.save();
+                const grad = this.ctx.createRadialGradient(
+                    this.canvas.width / 2, this.canvas.height / 2, 110,
+                    this.canvas.width / 2, this.canvas.height / 2, Math.max(this.canvas.width, this.canvas.height) * 0.75
+                );
+                grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                grad.addColorStop(1, 'rgba(3, 4, 6, 0.94)');
+
+                this.ctx.fillStyle = grad;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.restore();
+
+                // Render HUD Minimap
+                this.renderMinimap();
+            }
+
+            loop(timestamp) {
+                const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1);
+                this.lastTime = timestamp;
+
+                this.update(dt);
+                this.render();
+
+                requestAnimationFrame((t) => this.loop(t));
+            }
+
+            run() {
+                requestAnimationFrame((t) => this.loop(t));
+            }
+        }
+
+        window.onload = () => {
+            const game = new Game();
+            game.run();
+        };
+    </script>
+</body>
+</html>

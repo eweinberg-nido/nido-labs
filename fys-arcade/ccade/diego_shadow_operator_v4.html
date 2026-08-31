@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Operator - v4</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            color: #38bdf8;
+            text-transform: uppercase;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+            margin-top: 6px;
+            justify-content: center;
+        }
+
+        .stat {
+            background: #1e293b;
+            padding: 4px 14px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        .version-badge {
+            background: #0284c7;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #334155;
+        }
+
+        canvas {
+            display: block;
+            background-color: #020617;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 10;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .overlay h2 {
+            font-size: 2.2rem;
+            color: #ef4444;
+            letter-spacing: 1px;
+        }
+
+        .overlay p {
+            color: #94a3b8;
+            font-size: 1.05rem;
+        }
+
+        .btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #0369a1;
+            transform: translateY(-2px);
+        }
+
+        .controls-hint {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .key {
+            background: #1e293b;
+            color: #cbd5e1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #475569;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Shadow Operator <span class="version-badge">v4</span></h1>
+        <div class="stats-bar">
+            <div class="stat">Spies Tagged: <span id="score" style="color:#38bdf8; font-weight:bold;">0</span></div>
+            <div class="stat">Wave: <span id="wave" style="color:#f59e0b; font-weight:bold;">1</span></div>
+        </div>
+    </header>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="850" height="550"></canvas>
+        
+        <div id="gameOverOverlay" class="overlay hidden">
+            <h2>SPOTTED! MISSION FAILED</h2>
+            <p>A spy caught you in their line of sight.</p>
+            <p>Final Score: <span id="finalScore" style="color:white; font-weight:bold;">0</span></p>
+            <button class="btn" id="restartBtn">Try Again</button>
+        </div>
+    </div>
+
+    <div class="controls-hint">
+        Use <span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> to move. Clear all spies to proceed to a new dynamic level!
+    </div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreEl = document.getElementById("score");
+const waveEl = document.getElementById("wave");
+const finalScoreEl = document.getElementById("finalScore");
+const gameOverOverlay = document.getElementById("gameOverOverlay");
+const restartBtn = document.getElementById("restartBtn");
+
+let score = 0;
+let wave = 1;
+let gameOver = false;
+let obstacles = [];
+let spies = [];
+
+const keys = { w: false, a: false, s: false, d: false };
+
+window.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+    if (k === 'w' || k === 'arrowup') keys.w = true;
+    if (k === 'a' || k === 'arrowleft') keys.a = true;
+    if (k === 's' || k === 'arrowdown') keys.s = true;
+    if (k === 'd' || k === 'arrowright') keys.d = true;
+});
+
+window.addEventListener("keyup", (e) => {
+    const k = e.key.toLowerCase();
+    if (k === 'w' || k === 'arrowup') keys.w = false;
+    if (k === 'a' || k === 'arrowleft') keys.a = false;
+    if (k === 's' || k === 'arrowdown') keys.s = false;
+    if (k === 'd' || k === 'arrowright') keys.d = false;
+});
+
+const player = {
+    x: 80,
+    y: 275,
+    radius: 14,
+    speed: 3.2,
+    color: "#38bdf8"
+};
+
+// Smooth push-out wall collision algorithm preventing stuck entities
+function resolveWallCollision(circle) {
+    for (let obs of obstacles) {
+        let closestX = Math.max(obs.x, Math.min(circle.x, obs.x + obs.w));
+        let closestY = Math.max(obs.y, Math.min(circle.y, obs.y + obs.h));
+        let distX = circle.x - closestX;
+        let distY = circle.y - closestY;
+        let distanceSq = (distX * distX) + (distY * distY);
+
+        if (distanceSq < circle.radius * circle.radius) {
+            let distance = Math.sqrt(distanceSq);
+            let overlap = circle.radius - distance;
+            
+            if (distance === 0) {
+                circle.x += circle.radius;
+            } else {
+                circle.x += (distX / distance) * overlap;
+                circle.y += (distY / distance) * overlap;
+            }
+        }
+    }
+}
+
+// Precise Wall Raycasting
+function raycastWallDistance(startX, startY, angle, maxDist) {
+    const rayDirX = Math.cos(angle);
+    const rayDirY = Math.sin(angle);
+    let minDist = maxDist;
+
+    for (let obs of obstacles) {
+        const lines = [
+            { x1: obs.x, y1: obs.y, x2: obs.x + obs.w, y2: obs.y },
+            { x1: obs.x + obs.w, y1: obs.y, x2: obs.x + obs.w, y2: obs.y + obs.h },
+            { x1: obs.x + obs.w, y1: obs.y + obs.h, x2: obs.x, y2: obs.y + obs.h },
+            { x1: obs.x, y1: obs.y + obs.h, x2: obs.x, y2: obs.y }
+        ];
+
+        for (let line of lines) {
+            const x1 = line.x1, y1 = line.y1, x2 = line.x2, y2 = line.y2;
+            const x3 = startX, y3 = startY, x4 = startX + rayDirX * maxDist, y4 = startY + rayDirY * maxDist;
+
+            const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+            if (den === 0) continue;
+
+            const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
+            const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;
+
+            if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+                const hitDist = u * maxDist;
+                if (hitDist < minDist) minDist = hitDist;
+            }
+        }
+    }
+    return minDist;
+}
+
+class Spy {
+    constructor(waypoints, speed = 1.4) {
+        this.waypoints = waypoints;
+        this.currentWaypointIdx = 0;
+        this.x = waypoints[0].x;
+        this.y = waypoints[0].y;
+        this.radius = 14;
+        this.speed = speed;
+        this.angle = 0;
+        this.targetAngle = 0;
+        this.fov = Math.PI / 3;
+        this.viewDistance = 175;
+        this.pauseTimer = 0;
+    }
+
+    update() {
+        if (this.waypoints.length === 0) return;
+
+        if (this.pauseTimer > 0) {
+            this.pauseTimer--;
+            this.smoothRotate();
+            return;
+        }
+
+        const target = this.waypoints[this.currentWaypointIdx];
+        const dx = target.x - this.x;
+        const dy = target.y - this.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < 8) {
+            this.pauseTimer = 35;
+            this.currentWaypointIdx = (this.currentWaypointIdx + 1) % this.waypoints.length;
+        } else {
+            this.targetAngle = Math.atan2(dy, dx);
+            this.smoothRotate();
+
+            this.x += Math.cos(this.angle) * this.speed;
+            this.y += Math.sin(this.angle) * this.speed;
+
+            // Prevent spy stuck behavior by resolving wall overlap
+            resolveWallCollision(this);
+        }
+    }
+
+    smoothRotate() {
+        let diff = this.targetAngle - this.angle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        this.angle += diff * 0.12;
+    }
+
+    draw() {
+        // Red Vision Cone Raycasting
+        ctx.save();
+        ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.45)";
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+
+        const rayCount = 32;
+        const startAngle = this.angle - this.fov / 2;
+        const angleStep = this.fov / rayCount;
+
+        for (let i = 0; i <= rayCount; i++) {
+            const rayAngle = startAngle + i * angleStep;
+            const distToWall = raycastWallDistance(this.x, this.y, rayAngle, this.viewDistance);
+            const endX = this.x + Math.cos(rayAngle) * distToWall;
+            const endY = this.y + Math.sin(rayAngle) * distToWall;
+            ctx.lineTo(endX, endY);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        // Spy Body
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#020617";
+        ctx.fill();
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#1e293b";
+        ctx.fill();
+
+        // Sight Vector Line
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(
+            this.x + Math.cos(this.angle) * (this.radius + 6),
+            this.y + Math.sin(this.angle) * (this.radius + 6)
+        );
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+}
+
+// Procedural Map & Wave Generator
+function generateMapAndSpies(waveNum) {
+    const layoutTypes = [
+        // Map Type 0: Dual Columns
+        () => {
+            obstacles = [
+                { x: 220, y: 100, w: 60, h: 350 },
+                { x: 570, y: 100, w: 60, h: 350 }
+            ];
+            return [
+                new Spy([{ x: 120, y: 80 }, { x: 120, y: 470 }]),
+                new Spy([{ x: 425, y: 100 }, { x: 425, y: 450 }]),
+                new Spy([{ x: 730, y: 470 }, { x: 730, y: 80 }])
+            ];
+        },
+        // Map Type 1: Central Fortress
+        () => {
+            obstacles = [
+                { x: 180, y: 60,  w: 60, h: 200 },
+                { x: 180, y: 310, w: 60, h: 180 },
+                { x: 380, y: 160, w: 100, h: 230 },
+                { x: 600, y: 60,  w: 60, h: 180 },
+                { x: 600, y: 310, w: 60, h: 200 }
+            ];
+            return [
+                new Spy([{ x: 100, y: 275 }, { x: 280, y: 275 }]),
+                new Spy([{ x: 430, y: 80 }, { x: 430, y: 470 }]),
+                new Spy([{ x: 720, y: 100 }, { x: 720, y: 450 }]),
+                new Spy([{ x: 530, y: 470 }, { x: 300, y: 470 }])
+            ];
+        },
+        // Map Type 2: Scattered Blockades
+        () => {
+            obstacles = [
+                { x: 160, y: 140, w: 120, h: 50 },
+                { x: 160, y: 360, w: 120, h: 50 },
+                { x: 360, y: 230, w: 140, h: 90 },
+                { x: 570, y: 140, w: 120, h: 50 },
+                { x: 570, y: 360, w: 120, h: 50 }
+            ];
+            return [
+                new Spy([{ x: 220, y: 80 }, { x: 630, y: 80 }]),
+                new Spy([{ x: 630, y: 470 }, { x: 220, y: 470 }]),
+                new Spy([{ x: 430, y: 100 }, { x: 430, y: 450 }]),
+                new Spy([{ x: 100, y: 100 }, { x: 100, y: 450 }])
+            ];
+        }
+    ];
+
+    // Select layout pattern based on wave number cycle
+    const layoutIdx = (waveNum - 1) % layoutTypes.length;
+    spies = layoutTypes[layoutIdx]();
+
+    // Scale spy speed with each wave
+    const speedBoost = Math.min((waveNum - 1) * 0.2, 1.8);
+    spies.forEach(spy => spy.speed += speedBoost);
+
+    // Reset player position safely to start
+    player.x = 80;
+    player.y = 275;
+}
+
+function isPlayerInSight(spy, player) {
+    const dx = player.x - spy.x;
+    const dy = player.y - spy.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > spy.viewDistance) return false;
+
+    let angleToPlayer = Math.atan2(dy, dx);
+    let angleDiff = angleToPlayer - spy.angle;
+
+    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+    if (Math.abs(angleDiff) > spy.fov / 2) return false;
+
+    const wallDist = raycastWallDistance(spy.x, spy.y, angleToPlayer, spy.viewDistance);
+    return dist <= wallDist;
+}
+
+function update() {
+    if (gameOver) return;
+
+    // Movement
+    let moveX = 0;
+    let moveY = 0;
+    if (keys.w) moveY -= player.speed;
+    if (keys.s) moveY += player.speed;
+    if (keys.a) moveX -= player.speed;
+    if (keys.d) moveX += player.speed;
+
+    if (moveX !== 0 && moveY !== 0) {
+        moveX *= 0.7071;
+        moveY *= 0.7071;
+    }
+
+    player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x + moveX));
+    player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y + moveY));
+
+    // Smooth collision resolution for player against obstacles
+    resolveWallCollision(player);
+
+    // Update Spies
+    for (let i = spies.length - 1; i >= 0; i--) {
+        const spy = spies[i];
+        spy.update();
+
+        if (isPlayerInSight(spy, player)) {
+            triggerGameOver();
+            return;
+        }
+
+        const distToSpy = Math.hypot(player.x - spy.x, player.y - spy.y);
+        if (distToSpy < player.radius + spy.radius) {
+            spies.splice(i, 1);
+            score += 100;
+            scoreEl.textContent = score;
+        }
+    }
+
+    // Advance to next level layout upon wave clear
+    if (spies.length === 0) {
+        wave++;
+        waveEl.textContent = wave;
+        generateMapAndSpies(wave);
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Floor Grid
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+
+    // Dynamic Obstacle Rendering
+    obstacles.forEach(obs => {
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+    });
+
+    // Spies & Vision
+    spies.forEach(spy => spy.draw());
+
+    // Player Rendering
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.fillStyle = player.color;
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+}
+
+function triggerGameOver() {
+    gameOver = true;
+    finalScoreEl.textContent = score;
+    gameOverOverlay.classList.remove("hidden");
+}
+
+function restartGame() {
+    score = 0;
+    wave = 1;
+    scoreEl.textContent = "0";
+    waveEl.textContent = "1";
+    gameOver = false;
+    gameOverOverlay.classList.add("hidden");
+    generateMapAndSpies(1);
+}
+
+restartBtn.addEventListener("click", restartGame);
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+generateMapAndSpies(1);
+gameLoop();
+</script>
+</body>
+</html>

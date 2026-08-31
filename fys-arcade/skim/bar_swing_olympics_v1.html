@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Swing Olympics v1</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #111827;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI Overlay */
+        .hud-top {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            background: rgba(17, 24, 39, 0.85);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 2px solid #374151;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .hud-card {
+            text-align: center;
+        }
+
+        .hud-card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9CA3AF;
+        }
+
+        .hud-card .value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #F3F4F6;
+        }
+
+        /* QTE Overlay */
+        #qte-container {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .qte-key {
+            width: 80px;
+            height: 80px;
+            background: #2563EB;
+            border: 4px solid #60A5FA;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #FFF;
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.8);
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 15px rgba(37, 99, 235, 0.6); }
+            100% { transform: scale(1.08); box-shadow: 0 0 35px rgba(37, 99, 235, 1); }
+        }
+
+        .qte-timer-bar {
+            width: 140px;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .qte-timer-fill {
+            width: 100%;
+            height: 100%;
+            background: #34D399;
+            transition: width 0.05s linear;
+        }
+
+        /* Feedback floating text */
+        .feedback-text {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: 900;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            animation: floatUp 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
+        }
+
+        /* Modal Screens */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            transition: opacity 0.3s;
+        }
+
+        .modal-card {
+            background: #1E293B;
+            border: 2px solid #334155;
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        .modal-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-subtitle {
+            font-size: 1.1rem;
+            color: #94A3B8;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            color: white;
+            border: none;
+            padding: 16px 36px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(37, 99, 235, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Instructions list */
+        .guide-box {
+            background: #0F172A;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: left;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            color: #CBD5E1;
+            line-height: 1.6;
+        }
+
+        .guide-box ul {
+            padding-left: 20px;
+        }
+
+        .vs-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #0F172A;
+            border-radius: 12px;
+        }
+
+        .vs-player {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Top HUD -->
+    <div class="hud-top">
+        <div class="hud-card">
+            <div class="label">Round</div>
+            <div class="value" id="hud-round">Round of 32</div>
+        </div>
+        <div class="hud-card">
+            <div class="label">Opponent</div>
+            <div class="value" id="hud-opponent" style="color: #F87171;">--</div>
+        </div>
+        <div class="hud-card">
+            <div class="label">Target Dist</div>
+            <div class="value" id="hud-target">0.0 m</div>
+        </div>
+        <div class="hud-card">
+            <div class="label">Your Distance</div>
+            <div class="value" id="hud-distance" style="color: #60A5FA;">0.0 m</div>
+        </div>
+    </div>
+
+    <!-- QTE Container -->
+    <div id="qte-container" class="hidden">
+        <div class="qte-key" id="qte-key-display">A</div>
+        <div class="qte-timer-bar">
+            <div class="qte-timer-fill" id="qte-fill"></div>
+        </div>
+    </div>
+
+    <!-- Main Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Start / Tutorial Modal -->
+    <div id="modal-start" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title">BAR SWING OLYMPICS</div>
+            <div class="modal-subtitle">Version v1</div>
+            
+            <div class="guide-box">
+                <p><strong>How to play:</strong></p>
+                <ul>
+                    <li>Press <strong>LEFT / RIGHT Arrow Keys</strong> in rhythm with your swing to build maximum momentum.</li>
+                    <li>Perform <strong>3 Swing QTEs</strong> (press requested key instantly) for huge speed boosts!</li>
+                    <li>Hit <strong>SPACEBAR</strong> on your forward up-swing to release from the bar at the optimal angle.</li>
+                    <li>Out-jump your AI opponents in 5 bracket rounds to win Olympic Gold!</li>
+                </ul>
+            </div>
+
+            <button class="btn" id="btn-start-game">Start Tournament</button>
+        </div>
+    </div>
+
+    <!-- Round Start Modal -->
+    <div id="modal-round" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-title" id="round-title">Round of 32</div>
+            <div class="modal-subtitle">Matchup Preview</div>
+
+            <div class="vs-bar">
+                <div class="vs-player" style="color: #60A5FA;">YOU</div>
+                <div style="color: #64748B; font-weight: 900;">VS</div>
+                <div class="vs-player" id="vs-opp-name" style="color: #F87171;">Opponent</div>
+            </div>
+
+            <p style="margin-bottom: 20px; color: #94A3B8; font-size: 0.95rem;" id="vs-opp-desc">
+                Target Distance to Beat: <strong id="vs-target-dist" style="color: #FBBF24;">0.0m</strong>
+            </p>
+
+            <button class="btn" id="btn-start-round">Begin Swing</button>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="modal-result" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-title" id="result-title">VICTORY!</div>
+            <div class="modal-subtitle" id="result-subtitle">You advanced to the next round!</div>
+
+            <div style="background: #0F172A; padding: 20px; border-radius: 16px; margin-bottom: 25px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Your Jump:</span>
+                    <strong id="res-your-dist" style="color: #60A5FA;">0.0 m</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Opponent Jump:</span>
+                    <strong id="res-opp-dist" style="color: #F87171;">0.0 m</strong>
+                </div>
+            </div>
+
+            <button class="btn" id="btn-next-round">Next Match</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * Bar Swing Olympics - Canvas Game Logic (v1)
+ */
+
+// Canvas Setup
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Game Configuration & Bracket Setup
+const ROUNDS = [
+    { name: "Round of 32", oppName: "Rookie Bob", baseDist: 28, varDist: 4, qteSpeed: 1.0, qteTime: 1.8 },
+    { name: "Round of 16", oppName: "Amateur Alex", baseDist: 38, varDist: 5, qteSpeed: 1.2, qteTime: 1.5 },
+    { name: "Quarterfinals", oppName: "Pro Pavel", baseDist: 50, varDist: 6, qteSpeed: 1.4, qteTime: 1.2 },
+    { name: "Semifinals", oppName: "Champ Chen", baseDist: 64, varDist: 7, qteSpeed: 1.6, qteTime: 1.0 },
+    { name: "Finals", oppName: "Legend Lars", baseDist: 80, varDist: 8, qteSpeed: 1.9, qteTime: 0.8 }
+];
+
+let currentRoundIdx = 0;
+let oppTargetDistance = 0;
+let playerBestDistance = 0;
+
+// Game State Enum
+const STATE = {
+    MENU: 'MENU',
+    PRE_SWING: 'PRE_SWING',
+    SWINGING: 'SWINGING',
+    FLYING: 'FLYING',
+    LANDED: 'LANDED',
+    ROUND_END: 'ROUND_END'
+};
+let gameState = STATE.MENU;
+
+// Physics / World Constants
+const PIXELS_PER_METER = 15;
+const GRAVITY = 9.81 * 80; // Scaled gravity
+const BAR_POS = { x: 300, y: 250 };
+const ROPE_LENGTH = 110;
+
+// Camera System
+const camera = {
+    x: 0,
+    y: 0,
+    targetX: 0,
+    targetY: 0,
+    update(focusX, focusY) {
+        this.targetX = focusX - canvas.width * 0.3;
+        this.targetY = focusY - canvas.height * 0.6;
+        // Smooth pan
+        this.x += (this.targetX - this.x) * 0.1;
+        this.y += (this.targetY - this.y) * 0.1;
+        // Keep camera above ground mostly
+        if (this.y > 100) this.y = 100;
+    }
+};
+
+// Player Object
+const player = {
+    angle: -Math.PI / 3, // Current swing angle
+    angularVelocity: 0,
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    momentum: 1.0,
+    isReleased: false,
+    trail: [],
+    
+    reset() {
+        this.angle = -Math.PI / 3;
+        this.angularVelocity = 0;
+        this.x = BAR_POS.x + Math.sin(this.angle) * ROPE_LENGTH;
+        this.y = BAR_POS.y + Math.cos(this.angle) * ROPE_LENGTH;
+        this.vx = 0;
+        this.vy = 0;
+        this.momentum = 1.0;
+        this.isReleased = false;
+        this.trail = [];
+    }
+};
+
+// QTE System
+const QTE_KEYS = ['A', 'S', 'D', 'J', 'K', 'L', 'ARROWLEFT', 'ARROWRIGHT'];
+const qteState = {
+    active: false,
+    keyNeeded: '',
+    timeRemaining: 0,
+    maxTime: 1,
+    countCompleted: 0,
+    releaseQteActive: false,
+    feedbackText: ''
+};
+
+// Controls tracking
+const keysPressed = {};
+window.addEventListener('keydown', (e) => {
+    const k = e.key.toUpperCase();
+    keysPressed[k] = true;
+    
+    // Handle Input logic for Swing sway & QTEs
+    handleKeyPress(k, e.key);
+});
+
+window.addEventListener('keyup', (e) => {
+    const k = e.key.toUpperCase();
+    keysPressed[k] = false;
+});
+
+// UI Elements
+const hudRound = document.getElementById('hud-round');
+const hudOpponent = document.getElementById('hud-opponent');
+const hudTarget = document.getElementById('hud-target');
+const hudDistance = document.getElementById('hud-distance');
+
+const modalStart = document.getElementById('modal-start');
+const modalRound = document.getElementById('modal-round');
+const modalResult = document.getElementById('modal-result');
+
+const qteContainer = document.getElementById('qte-container');
+const qteKeyDisplay = document.getElementById('qte-key-display');
+const qteFill = document.getElementById('qte-fill');
+
+// Event Listeners for UI
+document.getElementById('btn-start-game').addEventListener('click', () => {
+    modalStart.classList.add('hidden');
+    startRoundSetup();
+});
+
+document.getElementById('btn-start-round').addEventListener('click', () => {
+    modalRound.classList.add('hidden');
+    startSwingPhase();
+});
+
+document.getElementById('btn-next-round').addEventListener('click', () => {
+    modalResult.classList.add('hidden');
+    if (currentRoundIdx < ROUNDS.length - 1 && playerBestDistance >= oppTargetDistance) {
+        currentRoundIdx++;
+        startRoundSetup();
+    } else {
+        // Reset to start on win or lose
+        currentRoundIdx = 0;
+        modalStart.classList.remove('hidden');
+    }
+});
+
+// Tournament Flow Functions
+function startRoundSetup() {
+    const roundInfo = ROUNDS[currentRoundIdx];
+    hudRound.innerText = roundInfo.name;
+    hudOpponent.innerText = roundInfo.oppName;
+    
+    // Calculate opponent distance with slight randomness
+    oppTargetDistance = parseFloat((roundInfo.baseDist + (Math.random() * roundInfo.varDist)).toFixed(1));
+    hudTarget.innerText = oppTargetDistance.toFixed(1) + " m";
+    hudDistance.innerText = "0.0 m";
+
+    document.getElementById('round-title').innerText = roundInfo.name;
+    document.getElementById('vs-opp-name').innerText = roundInfo.oppName;
+    document.getElementById('vs-target-dist').innerText = oppTargetDistance.toFixed(1) + "m";
+    document.getElementById('vs-opp-desc').innerText = `To beat ${roundInfo.oppName}, you must swing further than ${oppTargetDistance.toFixed(1)} meters!`;
+
+    modalRound.classList.remove('hidden');
+    gameState = STATE.PRE_SWING;
+    player.reset();
+    camera.x = 0;
+    camera.y = 0;
+}
+
+function startSwingPhase() {
+    gameState = STATE.SWINGING;
+    qteState.countCompleted = 0;
+    qteState.active = false;
+    qteState.releaseQteActive = false;
+    scheduleNextQTE();
+}
+
+function scheduleNextQTE() {
+    if (qteState.countCompleted >= 3) return;
+    
+    // Trigger QTEs at intervals during swing phase
+    const delay = 1500 + Math.random() * 1500;
+    setTimeout(() => {
+        if (gameState === STATE.SWINGING && !qteState.active) {
+            triggerQTE();
+        }
+    }, delay);
+}
+
+function triggerQTE() {
+    const round = ROUNDS[currentRoundIdx];
+    const key = QTE_KEYS[Math.floor(Math.random() * QTE_KEYS.length)];
+    
+    qteState.active = true;
+    qteState.keyNeeded = key;
+    qteState.maxTime = round.qteTime;
+    qteState.timeRemaining = round.qteTime;
+
+    qteKeyDisplay.innerText = key.replace('ARROW', '');
+    qteContainer.classList.remove('hidden');
+}
+
+function showFeedback(text, color = '#34D399') {
+    const elem = document.createElement('div');
+    elem.className = 'feedback-text';
+    elem.innerText = text;
+    elem.style.color = color;
+    elem.style.left = (window.innerWidth / 2 - 50) + 'px';
+    elem.style.top = (window.innerHeight * 0.35) + 'px';
+    document.body.appendChild(elem);
+
+    setTimeout(() => elem.remove(), 800);
+}
+
+function handleKeyPress(key, originalKey) {
+    if (gameState !== STATE.SWINGING) return;
+
+    // Handle Active Swing QTE
+    if (qteState.active) {
+        if (key === qteState.keyNeeded || originalKey.toUpperCase() === qteState.keyNeeded) {
+            // QTE Success!
+            player.momentum += 0.45;
+            qteState.countCompleted++;
+            qteState.active = false;
+            qteContainer.classList.add('hidden');
+            showFeedback("PERFECT! +MOMENTUM", "#34D399");
+            scheduleNextQTE();
+        } else if (['A','S','D','J','K','L','ARROWLEFT','ARROWRIGHT'].includes(key)) {
+            // Wrong key missed
+            player.momentum = Math.max(0.7, player.momentum - 0.2);
+            qteState.active = false;
+            qteContainer.classList.add('hidden');
+            showFeedback("MISSED!", "#EF4444");
+            scheduleNextQTE();
+        }
+        return;
+    }
+
+    // Manual Sway controls
+    if (key === 'ARROWLEFT' && player.angularVelocity < 0) {
+        player.angularVelocity -= 0.015 * player.momentum;
+    } else if (key === 'ARROWRIGHT' && player.angularVelocity > 0) {
+        player.angularVelocity += 0.015 * player.momentum;
+    }
+
+    // Release Bar Trigger (SPACEBAR)
+    if (key === ' ' || key === 'SPACEBAR') {
+        releasePlayer();
+    }
+}
+
+function releasePlayer() {
+    if (player.isReleased) return;
+
+    player.isReleased = true;
+    gameState = STATE.FLYING;
+    qteContainer.classList.add('hidden');
+
+    // Calculate Release physics velocity from angular speed
+    const tangentialSpeed = player.angularVelocity * ROPE_LENGTH * 2.8;
+    
+    // Direction vector perpendicular to rope
+    const releaseAngle = player.angle + Math.PI / 2;
+    player.vx = Math.cos(releaseAngle) * tangentialSpeed;
+    player.vy = Math.sin(releaseAngle) * tangentialSpeed;
+
+    // Check angle bonus for optimal launch (between 30deg and 60deg upward forward launch)
+    const normalizedVx = player.vx;
+    const normalizedVy = -player.vy; // Invert Y because canvas Y is down
+
+    if (normalizedVx > 0 && normalizedVy > 0) {
+        const angleDeg = Math.atan2(normalizedVy, normalizedVx) * (180 / Math.PI);
+        if (angleDeg >= 35 && angleDeg <= 55) {
+            player.vx *= 1.25;
+            player.vy *= 1.25;
+            showFeedback("PERFECT RELEASE ANGLE!", "#FBBF24");
+        } else {
+            showFeedback("GOOD RELEASE!", "#60A5FA");
+        }
+    } else {
+        showFeedback("POOR TIMING!", "#EF4444");
+    }
+}
+
+// Update Game Physics
+let lastTime = performance.now();
+function update(dt) {
+    if (gameState === STATE.SWINGING) {
+        // Pendulum simulation
+        const angularAcceleration = (-1 * (GRAVITY / ROPE_LENGTH) * Math.sin(player.angle)) / 60;
+        player.angularVelocity += angularAcceleration * dt;
+        
+        // Dampening/friction
+        player.angularVelocity *= 0.998;
+        player.angle += player.angularVelocity * dt;
+
+        // Position on rope
+        player.x = BAR_POS.x + Math.sin(player.angle) * ROPE_LENGTH;
+        player.y = BAR_POS.y + Math.cos(player.angle) * ROPE_LENGTH;
+
+        // QTE Timer Tick
+        if (qteState.active) {
+            qteState.timeRemaining -= dt;
+            const fillPct = Math.max(0, (qteState.timeRemaining / qteState.maxTime) * 100);
+            qteFill.style.width = fillPct + '%';
+
+            if (qteState.timeRemaining <= 0) {
+                qteState.active = false;
+                qteContainer.classList.add('hidden');
+                player.momentum = Math.max(0.6, player.momentum - 0.25);
+                showFeedback("TOO SLOW!", "#EF4444");
+                scheduleNextQTE();
+            }
+        }
+    } else if (gameState === STATE.FLYING) {
+        // Free-flight projectile physics
+        player.vy += GRAVITY * dt;
+        player.x += player.vx * dt;
+        player.y += player.vy * dt;
+
+        // Add trail points
+        player.trail.push({ x: player.x, y: player.y, alpha: 1.0 });
+        if (player.trail.length > 25) player.trail.shift();
+
+        // Check ground landing
+        const groundY = canvas.height - 100;
+        if (player.y >= groundY - 20) {
+            player.y = groundY - 20;
+            gameState = STATE.LANDED;
+            
+            // Calculate total jump distance
+            const distancePixels = Math.max(0, player.x - BAR_POS.x);
+            playerBestDistance = parseFloat((distancePixels / PIXELS_PER_METER).toFixed(1));
+            hudDistance.innerText = playerBestDistance.toFixed(1) + " m";
+
+            setTimeout(endRound, 1200);
+        }
+    }
+
+    // Camera follow player
+    if (gameState === STATE.SWINGING || gameState === STATE.FLYING || gameState === STATE.LANDED) {
+        camera.update(player.x, player.y);
+    }
+}
+
+function endRound() {
+    gameState = STATE.ROUND_END;
+    const round = ROUNDS[currentRoundIdx];
+    const won = playerBestDistance >= oppTargetDistance;
+
+    const resTitle = document.getElementById('result-title');
+    const resSub = document.getElementById('result-subtitle');
+    const btnNext = document.getElementById('btn-next-round');
+
+    document.getElementById('res-your-dist').innerText = playerBestDistance.toFixed(1) + " m";
+    document.getElementById('res-opp-dist').innerText = oppTargetDistance.toFixed(1) + " m";
+
+    if (won) {
+        if (currentRoundIdx === ROUNDS.length - 1) {
+            resTitle.innerText = "OLYMPIC GOLD MEDALIST!";
+            resSub.innerText = "Congratulations! You won the Bar Swing Olympic Tournament!";
+            btnNext.innerText = "Play Again";
+        } else {
+            resTitle.innerText = "VICTORY!";
+            resSub.innerText = `You defeated ${round.oppName} and advanced!`;
+            btnNext.innerText = "Next Round";
+        }
+        resTitle.style.background = "linear-gradient(135deg, #10B981, #059669)";
+        resTitle.style.webkitBackgroundClip = "text";
+    } else {
+        resTitle.innerText = "ELIMINATED!";
+        resSub.innerText = `You were out-swung by ${round.oppName}. Try again!`;
+        btnNext.innerText = "Restart Tournament";
+        resTitle.style.background = "linear-gradient(135deg, #EF4444, #B91C1C)";
+        resTitle.style.webkitBackgroundClip = "text";
+    }
+
+    modalResult.classList.remove('hidden');
+}
+
+// Rendering Logic
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    // Apply camera transformation
+    ctx.translate(-camera.x, -camera.y);
+
+    const groundY = canvas.height - 100;
+
+    // 1. Draw Background & Stadium Atmosphere
+    // Sky gradient
+    const skyGrad = ctx.createLinearGradient(0, -1000, 0, groundY);
+    skyGrad.addColorStop(0, '#0F172A');
+    skyGrad.addColorStop(1, '#1E293B');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(camera.x - 200, -1000, canvas.width + 400, canvas.height + 1000);
+
+    // Audience / Stadium Stands (Parallax)
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(camera.x * 0.8 - 200, groundY - 180, canvas.width * 2, 80);
+    // Crowds dots
+    for (let i = 0; i < 150; i++) {
+        ctx.fillStyle = (i % 3 === 0) ? '#60A5FA' : (i % 2 === 0 ? '#F87171' : '#FBBF24');
+        ctx.beginPath();
+        ctx.arc((i * 45) - 200, groundY - 140 + Math.sin(i) * 15, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 2. Draw Ground / Landing Pit
+    ctx.fillStyle = '#D97706'; // Sand pit colors
+    ctx.fillRect(-500, groundY, 10000, 500);
+
+    ctx.fillStyle = '#059669'; // Turf before bar
+    ctx.fillRect(-500, groundY, BAR_POS.x + 50, 500);
+
+    // Grass transition line
+    ctx.strokeStyle = '#10B981';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(-500, groundY);
+    ctx.lineTo(BAR_POS.x + 50, groundY);
+    ctx.stroke();
+
+    // 3. Distance Markers along landing zone
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    for (let m = 0; m <= 150; m += 10) {
+        const markerX = BAR_POS.x + (m * PIXELS_PER_METER);
+        if (markerX > camera.x - 100 && markerX < camera.x + canvas.width + 100) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.fillRect(markerX - 1, groundY, 2, 20);
+            ctx.fillStyle = '#F3F4F6';
+            ctx.fillText(`${m}m`, markerX, groundY + 38);
+        }
+    }
+
+    // Target Opponent Marker Line
+    if (oppTargetDistance > 0) {
+        const targetX = BAR_POS.x + (oppTargetDistance * PIXELS_PER_METER);
+        ctx.strokeStyle = '#EF4444';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(targetX, groundY - 200);
+        ctx.lineTo(targetX, groundY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Target Flag Banner
+        ctx.fillStyle = '#EF4444';
+        ctx.fillRect(targetX - 45, groundY - 230, 90, 26);
+        ctx.fillStyle = '#FFF';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(`TARGET: ${oppTargetDistance}m`, targetX, groundY - 213);
+    }
+
+    // 4. Draw Swing Rig Structure
+    ctx.strokeStyle = '#94A3B8';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    // Left Support Leg
+    ctx.moveTo(BAR_POS.x - 80, groundY);
+    ctx.lineTo(BAR_POS.x, BAR_POS.y);
+    // Right Support Leg
+    ctx.lineTo(BAR_POS.x + 80, groundY);
+    ctx.stroke();
+
+    // High Bar Center Axle
+    ctx.fillStyle = '#CBD5E1';
+    ctx.beginPath();
+    ctx.arc(BAR_POS.x, BAR_POS.y, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 5. Draw Player & Swing Rope
+    if (!player.isReleased) {
+        // Draw Rope
+        ctx.strokeStyle = '#F3F4F6';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(BAR_POS.x, BAR_POS.y);
+        ctx.lineTo(player.x, player.y);
+        ctx.stroke();
+    }
+
+    // Draw Motion Trail
+    if (gameState === STATE.FLYING) {
+        for (let i = 0; i < player.trail.length; i++) {
+            const pt = player.trail[i];
+            ctx.fillStyle = `rgba(96, 165, 250, ${ (i / player.trail.length) * 0.6 })`;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6 * (i / player.trail.length), 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Draw Athlete (Simplified Rig)
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    if (!player.isReleased) {
+        // Rotate body relative to swing angle
+        ctx.rotate(player.angle);
+    } else {
+        // Rotate body according to velocity direction
+        const flyAngle = Math.atan2(player.vy, player.vx) - Math.PI / 2;
+        ctx.rotate(flyAngle);
+    }
+
+    // Head
+    ctx.fillStyle = '#FCA5A5';
+    ctx.beginPath();
+    ctx.arc(0, -18, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Torso (Jersey)
+    ctx.fillStyle = '#2563EB';
+    ctx.fillRect(-8, -8, 16, 26);
+
+    // Limbs
+    ctx.strokeStyle = '#FCA5A5';
+    ctx.lineWidth = 4;
+
+    // Arms
+    ctx.beginPath();
+    ctx.moveTo(-6, -5);
+    ctx.lineTo(-14, -22);
+    ctx.moveTo(6, -5);
+    ctx.lineTo(14, -22);
+    ctx.stroke();
+
+    // Legs
+    ctx.beginPath();
+    ctx.moveTo(-4, 18);
+    ctx.lineTo(-8, 38);
+    ctx.moveTo(4, 18);
+    ctx.lineTo(8, 38);
+    ctx.stroke();
+
+    ctx.restore();
+
+    ctx.restore(); // Restore Camera transform
+}
+
+// Main Game Loop
+function gameLoop(timestamp) {
+    const dt = Math.min((timestamp - lastTime) / 1000, 0.1); // cap max delta
+    lastTime = timestamp;
+
+    update(dt);
+    render();
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Start Game Loop
+requestAnimationFrame(gameLoop);
+
+</script>
+</body>
+</html>

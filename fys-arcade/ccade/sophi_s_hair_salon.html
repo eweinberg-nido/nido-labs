@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sophi's Hair Salon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        salon: {
+                            pink: '#ff85a2',
+                            lightpink: '#fbb1bd',
+                            purple: '#9b5de5',
+                            mint: '#70d6ff',
+                            yellow: '#ffd670',
+                            peach: '#ff9770',
+                            card: '#ffffff'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Sparkle & particle keyframes */
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+
+        .sparkle-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: sparkleAnim 0.8s ease-out forwards;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255,133,162,0.4)); }
+            50% { transform: scale(1.03); filter: drop-shadow(0 0 20px rgba(255,133,162,0.8)); }
+        }
+
+        .model-container {
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
+
+        /* Custom scrollbar for hairstyle catalog */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ff85a2;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9b5de5;
+        }
+
+        .hair-style-card {
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .hair-style-card:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
+        .hair-style-card.active {
+            border-color: #ff85a2;
+            background-color: #fff0f5;
+            box-shadow: 0 8px 20px -4px rgba(255, 133, 162, 0.4);
+        }
+
+        .character-btn {
+            transition: all 0.3s ease;
+        }
+        .character-btn.active {
+            ring: 4px;
+            transform: scale(1.08);
+        }
+
+        /* Snip snip scissors animation */
+        @keyframes snipLeft {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-25deg); }
+        }
+        @keyframes snipRight {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(25deg); }
+        }
+        .animate-snip-left { animation: snipLeft 0.3s ease-in-out 2; }
+        .animate-snip-right { animation: snipRight 0.3s ease-in-out 2; }
+
+        /* Floating reaction hearts */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.6); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.2); }
+        }
+        .reaction-heart {
+            position: absolute;
+            animation: floatUp 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-100 via-purple-50 to-sky-100 min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Navigation Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b-4 border-pink-200 px-4 py-3 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-gradient-to-tr from-pink-400 to-purple-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md rotate-[-6deg]">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-600 to-sky-500 bg-clip-text text-transparent tracking-wide">
+                        Sophi's Hair Salon
+                    </h1>
+                    <p class="text-xs text-pink-500 font-semibold hidden sm:block">✨ Pick a model, style & transform! ✨</p>
+                </div>
+            </div>
+
+            <!-- Top Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="p-2.5 px-3.5 bg-pink-50 hover:bg-pink-100 text-pink-600 rounded-xl border-2 border-pink-200 font-bold text-sm flex items-center gap-2 transition">
+                    <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                    <span class="hidden md:inline">Sound</span>
+                </button>
+                <button onclick="resetModel()" class="p-2.5 px-3.5 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl border-2 border-purple-200 font-bold text-sm flex items-center gap-2 transition">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span class="hidden md:inline">Reset Look</span>
+                </button>
+                <button onclick="openPhotoBooth()" class="p-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-xl font-bold text-sm shadow-md flex items-center gap-2 transition transform hover:scale-105">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Photo Booth</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto w-full p-3 md:p-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- LEFT COLUMN: Girl Selector & Salon Canvas (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-4">
+            
+            <!-- Model Selection Bar -->
+            <div class="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg border-2 border-pink-100">
+                <h2 class="text-sm uppercase tracking-wider text-purple-500 font-bold mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-users text-pink-400"></i> Select Your Model:
+                </h2>
+                <div class="grid grid-cols-3 gap-3" id="characterSelector">
+                    <!-- Character 1: Black Girl -->
+                    <button onclick="selectCharacter('aaliyah')" id="btn-aaliyah" class="character-btn active bg-amber-50 hover:bg-amber-100 border-2 border-amber-300 p-2.5 rounded-2xl flex flex-col items-center gap-1.5 focus:outline-none">
+                        <div class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-b from-amber-200 to-amber-400 p-1 border-2 border-amber-500 shadow-inner">
+                            <!-- Preview Avatar SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                <circle cx="50" cy="50" r="35" fill="#5c3826"/> <!-- Dark Skin Tone -->
+                                <circle cx="38" cy="48" r="4" fill="#2d1a0e"/>
+                                <circle cx="62" cy="48" r="4" fill="#2d1a0e"/>
+                                <path d="M 42 62 Q 50 68 58 62" stroke="#d65a6f" stroke-width="3" fill="none" stroke-linecap="round"/>
+                                <path d="M 20 40 Q 50 10 80 40 Q 80 15 50 15 Q 20 15 20 40" fill="#1c130e"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-extrabold text-amber-900">Aaliyah</span>
+                        <span class="text-[10px] text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-full font-medium">Deep Skin</span>
+                    </button>
+
+                    <!-- Character 2: White Girl Blonde Hair -->
+                    <button onclick="selectCharacter('chloe')" id="btn-chloe" class="character-btn bg-pink-50 hover:bg-pink-100 border-2 border-pink-200 p-2.5 rounded-2xl flex flex-col items-center gap-1.5 focus:outline-none">
+                        <div class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-b from-rose-100 to-rose-200 p-1 border-2 border-pink-300 shadow-inner">
+                            <!-- Preview Avatar SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                <circle cx="50" cy="50" r="35" fill="#fde2d1"/> <!-- Light Fair Skin Tone -->
+                                <circle cx="38" cy="48" r="4" fill="#2b5c8f"/>
+                                <circle cx="62" cy="48" r="4" fill="#2b5c8f"/>
+                                <path d="M 42 62 Q 50 68 58 62" stroke="#e64980" stroke-width="3" fill="none" stroke-linecap="round"/>
+                                <path d="M 22 45 Q 50 15 78 45" fill="#fcd34d"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-extrabold text-pink-900">Chloe</span>
+                        <span class="text-[10px] text-pink-700 bg-pink-200/60 px-2 py-0.5 rounded-full font-medium">Blonde</span>
+                    </button>
+
+                    <!-- Character 3: Olive Skinned Girl Black Hair -->
+                    <button onclick="selectCharacter('maya')" id="btn-maya" class="character-btn bg-teal-50 hover:bg-teal-100 border-2 border-teal-200 p-2.5 rounded-2xl flex flex-col items-center gap-1.5 focus:outline-none">
+                        <div class="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-b from-amber-100 to-orange-200 p-1 border-2 border-teal-300 shadow-inner">
+                            <!-- Preview Avatar SVG -->
+                            <svg viewBox="0 0 100 100" class="w-full h-full">
+                                <circle cx="50" cy="50" r="35" fill="#d09a68"/> <!-- Olive Skin Tone -->
+                                <circle cx="38" cy="48" r="4" fill="#1e293b"/>
+                                <circle cx="62" cy="48" r="4" fill="#1e293b"/>
+                                <path d="M 42 62 Q 50 68 58 62" stroke="#c2410c" stroke-width="3" fill="none" stroke-linecap="round"/>
+                                <path d="M 20 40 Q 50 15 80 40" fill="#18181b"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-extrabold text-teal-900">Maya</span>
+                        <span class="text-[10px] text-teal-700 bg-teal-200/60 px-2 py-0.5 rounded-full font-medium">Olive Skin</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Salon Chair Display Stage -->
+            <div id="salonStage" class="relative bg-gradient-to-b from-sky-100 via-pink-100 to-purple-100 rounded-3xl p-6 shadow-xl border-4 border-white flex flex-col items-center justify-center min-h-[440px] overflow-hidden group">
+                
+                <!-- Salon Stage Backdrop Decoration -->
+                <div class="absolute top-4 left-4 flex gap-1.5 opacity-60">
+                    <span class="w-3 h-3 rounded-full bg-pink-400"></span>
+                    <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                    <span class="w-3 h-3 rounded-full bg-sky-400"></span>
+                </div>
+                
+                <div class="absolute top-4 right-4 text-pink-300 text-3xl opacity-50">
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+
+                <!-- Salon Mirror Frame -->
+                <div class="relative w-full max-w-[340px] aspect-[4/5] bg-gradient-to-b from-white to-pink-50 rounded-[40px] border-8 border-pink-200 shadow-2xl flex items-center justify-center overflow-hidden p-2 model-container">
+                    
+                    <!-- Sparkle effect container -->
+                    <div id="sparkleOverlay" class="absolute inset-0 pointer-events-none z-30"></div>
+                    <!-- Reaction heart container -->
+                    <div id="reactionOverlay" class="absolute inset-0 pointer-events-none z-30"></div>
+
+                    <!-- SVG DOLL RENDERER -->
+                    <svg id="characterSvg" viewBox="0 0 400 500" class="w-full h-full drop-shadow-md">
+                        <!-- Defined Filters / Gradients -->
+                        <defs>
+                            <linearGradient id="blushGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ff0055" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#ff0055" stop-opacity="0"/>
+                            </linearGradient>
+                            <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+
+                        <!-- LAYER 0: Back Hair (For long hair styles behind body) -->
+                        <g id="hairBackLayer"></g>
+
+                        <!-- LAYER 1: Torso / Clothing -->
+                        <g id="bodyLayer">
+                            <!-- Shoulders / Neck -->
+                            <path id="neck" d="M 175 320 L 225 320 L 225 380 L 175 380 Z" fill="#5c3826"/>
+                            <path id="shoulders" d="M 110 440 C 120 370, 160 360, 200 360 C 240 360, 280 370, 290 440 Z" fill="#ff70a6"/>
+                            <!-- Stylish Top Collar -->
+                            <path d="M 170 360 Q 200 390 230 360 Z" fill="#ffffff" opacity="0.9"/>
+                            <path d="M 200 360 L 200 440" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4"/>
+                        </g>
+
+                        <!-- LAYER 2: Head & Facial Features -->
+                        <g id="headLayer">
+                            <!-- Ears -->
+                            <circle id="earLeft" cx="130" cy="250" r="18" fill="#5c3826"/>
+                            <circle id="earRight" cx="270" cy="250" r="18" fill="#5c3826"/>
+                            <circle id="innerEarL" cx="130" cy="250" r="9" fill="#000000" opacity="0.08"/>
+                            <circle id="innerEarR" cx="270" cy="250" r="9" fill="#000000" opacity="0.08"/>
+
+                            <!-- Main Head Shape -->
+                            <path id="headShape" d="M 130 200 C 130 110, 270 110, 270 200 C 270 290, 250 330, 200 330 C 150 330, 130 290, 130 200 Z" fill="#5c3826"/>
+
+                            <!-- Blush Cheeks -->
+                            <ellipse cx="160" cy="265" rx="16" ry="10" fill="url(#blushGrad)"/>
+                            <ellipse cx="240" cy="265" rx="16" ry="10" fill="url(#blushGrad)"/>
+
+                            <!-- Eyes Group -->
+                            <g id="eyes">
+                                <!-- Left Eye White -->
+                                <ellipse cx="165" cy="235" rx="16" ry="12" fill="#ffffff"/>
+                                <!-- Right Eye White -->
+                                <ellipse cx="235" cy="235" rx="16" ry="12" fill="#ffffff"/>
+                                
+                                <!-- Irises -->
+                                <circle id="irisL" cx="165" cy="235" r="8" fill="#3d2314"/>
+                                <circle id="irisR" cx="235" cy="235" r="8" fill="#3d2314"/>
+                                
+                                <!-- Pupils -->
+                                <circle cx="165" cy="235" r="4" fill="#000000"/>
+                                <circle cx="235" cy="235" r="4" fill="#000000"/>
+                                
+                                <!-- Eye Sparkles -->
+                                <circle cx="162" cy="231" r="3" fill="#ffffff"/>
+                                <circle cx="232" cy="231" r="3" fill="#ffffff"/>
+                                <circle cx="167" cy="237" r="1.5" fill="#ffffff"/>
+                                <circle cx="237" cy="237" r="1.5" fill="#ffffff"/>
+
+                                <!-- Eyelashes -->
+                                <path d="M 148 232 Q 165 220 182 232" stroke="#1e293b" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                                <path d="M 218 232 Q 235 220 252 232" stroke="#1e293b" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                                
+                                <path d="M 147 228 L 142 222" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M 253 228 L 258 222" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- Eyebrows -->
+                            <g id="eyebrows">
+                                <path id="eyebrowL" d="M 148 212 Q 165 204 182 212" stroke="#2d1a0e" stroke-width="4" fill="none" stroke-linecap="round"/>
+                                <path id="eyebrowR" d="M 218 212 Q 235 204 252 212" stroke="#2d1a0e" stroke-width="4" fill="none" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- Nose -->
+                            <path id="nose" d="M 196 250 Q 200 258 204 250" stroke="#000000" opacity="0.25" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+                            <!-- Lips/Mouth -->
+                            <g id="mouth">
+                                <path id="lipMain" d="M 175 282 Q 200 305 225 282 Q 200 290 175 282 Z" fill="#e11d48"/>
+                                <path id="lipHighlight" d="M 188 285 Q 200 290 212 285" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.6" stroke-linecap="round"/>
+                            </g>
+                        </g>
+
+                        <!-- LAYER 3: Front Hair Layer (Hairstyle on top) -->
+                        <g id="hairFrontLayer"></g>
+
+                        <!-- LAYER 4: Accessories (Bows, Tiara, Sunglasses, Clips) -->
+                        <g id="accessoriesLayer"></g>
+                    </svg>
+
+                </div>
+
+                <!-- Interactive Tools Palette Bar below salon chair -->
+                <div class="mt-4 flex items-center justify-center gap-2 sm:gap-3 bg-white/90 backdrop-blur px-4 py-2.5 rounded-2xl shadow-md border border-pink-200">
+                    <span class="text-xs font-bold text-pink-500 uppercase tracking-wide mr-1 hidden sm:inline">Tools:</span>
+                    
+                    <button onclick="useTool('scissors')" class="p-2 px-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-xl font-bold text-xs flex items-center gap-1.5 transition transform hover:scale-105" title="Trim / Snip hair animation">
+                        <i class="fa-solid fa-scissors text-amber-600"></i>
+                        <span>Snip</span>
+                    </button>
+
+                    <button onclick="useTool('blowdry')" class="p-2 px-3 bg-sky-100 hover:bg-sky-200 text-sky-800 rounded-xl font-bold text-xs flex items-center gap-1.5 transition transform hover:scale-105" title="Blow dry sparkle animation">
+                        <i class="fa-solid fa-wind text-sky-600"></i>
+                        <span>Blow Dryer</span>
+                    </button>
+
+                    <button onclick="useTool('glitter')" class="p-2 px-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs flex items-center gap-1.5 transition transform hover:scale-105" title="Add glitter magic">
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
+                        <span>Glitter</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- RIGHT COLUMN: Styling Controls (Styles, Colors, Accessories) (7 cols) -->
+        <section class="lg:col-span-7 bg-white/90 backdrop-blur rounded-3xl p-4 md:p-6 shadow-xl border-2 border-pink-100 flex flex-col gap-5">
+            
+            <!-- Category Tab Switcher -->
+            <div class="flex items-center gap-2 border-b-2 border-pink-100 pb-3 overflow-x-auto custom-scrollbar">
+                <button onclick="switchTab('styles')" id="tab-styles" class="tab-btn px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition bg-pink-500 text-white shadow-md">
+                    <i class="fa-solid fa-scissors"></i>
+                    <span>Hairstyles</span>
+                </button>
+                <button onclick="switchTab('colors')" id="tab-colors" class="tab-btn px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition bg-slate-100 text-slate-600 hover:bg-pink-100">
+                    <i class="fa-solid fa-palette"></i>
+                    <span>Hair Color</span>
+                </button>
+                <button onclick="switchTab('accessories')" id="tab-accessories" class="tab-btn px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition bg-slate-100 text-slate-600 hover:bg-pink-100">
+                    <i class="fa-solid fa-crown"></i>
+                    <span>Accessories</span>
+                </button>
+                <button onclick="switchTab('makeup')" id="tab-makeup" class="tab-btn px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition bg-slate-100 text-slate-600 hover:bg-pink-100">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Lipstick & Eyes</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: HAIRSTYLES CATALOG -->
+            <div id="content-styles" class="tab-content block">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-extrabold text-slate-700 flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-pink-500"></span> Choose a Hair Style:
+                    </h3>
+                    <span class="text-xs text-pink-500 font-semibold bg-pink-50 px-2.5 py-1 rounded-full">10 Trendy Styles</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-h-[380px] overflow-y-auto p-1 custom-scrollbar" id="hairStyleGrid">
+                    <!-- Cards will be populated dynamically via JavaScript -->
+                </div>
+            </div>
+
+            <!-- TAB 2: HAIR COLOR PALETTE -->
+            <div id="content-colors" class="tab-content hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-extrabold text-slate-700 flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-purple-500"></span> Select Hair Color / Dye:
+                    </h3>
+                    <span class="text-xs text-purple-600 font-semibold bg-purple-50 px-2.5 py-1 rounded-full">Instant Tint</span>
+                </div>
+
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 p-1" id="colorPaletteGrid">
+                    <!-- Color Buttons will be generated via JS -->
+                </div>
+            </div>
+
+            <!-- TAB 3: ACCESSORIES -->
+            <div id="content-accessories" class="tab-content hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-extrabold text-slate-700 flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-amber-500"></span> Add Cute Accessories:
+                    </h3>
+                    <span class="text-xs text-amber-600 font-semibold bg-amber-50 px-2.5 py-1 rounded-full">Hats, Bows & Clips</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-1" id="accessoriesGrid">
+                    <!-- Accessories loaded via JS -->
+                </div>
+            </div>
+
+            <!-- TAB 4: MAKEUP & EXPRESSIONS -->
+            <div id="content-makeup" class="tab-content hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-extrabold text-slate-700 flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-sky-500"></span> Lipstick & Eye Shadow:
+                    </h3>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-extrabold text-slate-500 uppercase tracking-wide block mb-2">Lipstick Color</label>
+                        <div class="flex flex-wrap gap-2" id="lipstickGrid"></div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-extrabold text-slate-500 uppercase tracking-wide block mb-2">Eye Color</label>
+                        <div class="flex flex-wrap gap-2" id="eyeColorGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stylist Advice Banner -->
+            <div class="mt-auto bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-sky-500/10 p-3.5 rounded-2xl border border-pink-200 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-pink-500 text-white flex items-center justify-center shrink-0 text-lg">
+                    <i class="fa-solid fa-lightbulb"></i>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <strong class="text-pink-600 font-bold">Pro Salon Tip:</strong> Try pairing the <span class="font-semibold text-purple-600">Space Buns</span> with <span class="font-semibold text-pink-600">Cotton Candy Pink</span> hair dye and <span class="font-semibold text-amber-600">Cute Flower Clips</span>!
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Photo Booth Modal -->
+    <div id="photoBoothModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-4 border-pink-200 transform scale-95 transition-transform duration-300" id="photoBoothCard">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+                    <i class="fa-solid fa-camera text-pink-500"></i> Salon Photo Booth
+                </h3>
+                <button onclick="closePhotoBooth()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Polaroid Photo Container -->
+            <div id="polaroidArea" class="bg-gradient-to-b from-pink-50 to-purple-50 p-4 pb-8 rounded-2xl border-2 border-slate-200 shadow-md flex flex-col items-center">
+                <div id="polaroidCanvasHolder" class="w-64 h-72 bg-white rounded-xl shadow-inner overflow-hidden border border-slate-200 flex items-center justify-center relative">
+                    <!-- Cloned character SVG will be rendered here -->
+                </div>
+                <div class="mt-4 text-center">
+                    <input type="text" value="Styled at Sophi's Hair Salon! ✨" class="text-center font-bold text-pink-600 bg-transparent border-b border-dashed border-pink-300 focus:outline-none focus:border-pink-500 text-sm px-2 py-1 w-full" id="polaroidCaption"/>
+                    <p class="text-[10px] text-slate-400 mt-1" id="polaroidDate"></p>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="mt-5 flex gap-3">
+                <button onclick="downloadSnapshot()" class="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold rounded-xl shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i> Save Photo
+                </button>
+                <button onclick="closePhotoBooth()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-xs text-slate-500 font-medium">
+        Sophi's Hair Salon &copy; 2026 — Style & Express Yourself! ✨
+    </footer>
+
+
+    <script>
+        // Game State Engine
+        const state = {
+            activeCharacter: 'aaliyah', // 'aaliyah' (Black), 'chloe' (White Blonde), 'maya' (Olive Black hair)
+            currentHairStyle: 'afroPuffs',
+            currentHairColor: '#2d1a0e',
+            currentAccessory: 'none',
+            currentLipstick: '#e11d48',
+            currentEyeColor: '#3d2314',
+            soundEnabled: true
+        };
+
+        // Character Presets (Skin tones, natural default hair colors, default features)
+        const characters = {
+            aaliyah: {
+                name: "Aaliyah",
+                skinColor: "#5c3826", // Deep Warm Brown
+                earColor: "#5c3826",
+                defaultHairColor: "#1c130e",
+                defaultStyle: "afroPuffs",
+                defaultLipstick: "#b91c1c",
+                defaultEyeColor: "#2d1a0e",
+                eyebrowColor: "#1c130e"
+            },
+            chloe: {
+                name: "Chloe",
+                skinColor: "#fde2d1", // Fair Porcelain
+                earColor: "#fde2d1",
+                defaultHairColor: "#f59e0b", // Warm Blonde
+                defaultStyle: "glamWaves",
+                defaultLipstick: "#f43f5e",
+                defaultEyeColor: "#2563eb", // Blue eyes
+                eyebrowColor: "#d97706"
+            },
+            maya: {
+                name: "Maya",
+                skinColor: "#c88c5a", // Warm Olive Skin
+                earColor: "#c88c5a",
+                defaultHairColor: "#18181b", // Sleek Jet Black
+                defaultStyle: "sleekBob",
+                defaultLipstick: "#e11d48",
+                defaultEyeColor: "#059669", // Hazel/Green eyes
+                eyebrowColor: "#18181b"
+            }
+        };
+
+        // SVG Vector Hairstyle Definitions
+        // Returns Object { back: SVG_STRING, front: SVG_STRING }
+        const hairstyles = {
+            afroPuffs: {
+                name: "Afro Puffs",
+                icon: `<circle cx="20" cy="20" r="8" fill="#ff85a2"/><circle cx="40" cy="20" r="8" fill="#ff85a2"/>`,
+                render: (color) => ({
+                    back: ``,
+                    front: `
+                        <!-- Left Puff -->
+                        <circle cx="120" cy="150" r="50" fill="${color}" />
+                        <circle cx="100" cy="130" r="35" fill="${color}" opacity="0.9"/>
+                        <!-- Right Puff -->
+                        <circle cx="280" cy="150" r="50" fill="${color}" />
+                        <circle cx="300" cy="130" r="35" fill="${color}" opacity="0.9"/>
+                        <!-- Hairbands -->
+                        <rect x="145" y="175" width="12" height="18" rx="4" fill="#ff477e"/>
+                        <rect x="243" y="175" width="12" height="18" rx="4" fill="#ff477e"/>
+                        <!-- Front Bangs Curve -->
+                        <path d="M 130 190 Q 200 130 270 190 Q 200 160 130 190 Z" fill="${color}"/>
+                    `
+                })
+            },
+            glamWaves: {
+                name: "Glam Waves",
+                icon: `<path d="M 10 30 Q 25 10 40 30" stroke="#ff85a2" stroke-width="4" fill="none"/>`,
+                render: (color) => ({
+                    back: `
+                        <path d="M 110 200 Q 80 320 100 420 Q 140 450 170 380 Q 130 300 140 200 Z" fill="${color}"/>
+                        <path d="M 290 200 Q 320 320 300 420 Q 260 450 230 380 Q 270 300 260 200 Z" fill="${color}"/>
+                    `,
+                    front: `
+                        <!-- Top Crown & Side Flow -->
+                        <path d="M 125 200 C 120 100, 280 100, 275 200 C 275 160, 250 130, 200 130 C 150 130, 125 160, 125 200 Z" fill="${color}"/>
+                        <!-- Front Waves -->
+                        <path d="M 125 190 C 150 160, 180 220, 200 180 C 220 220, 250 160, 275 190 C 290 270, 260 360, 250 380 C 235 340, 250 250, 220 220 C 180 250, 150 240, 125 190 Z" fill="${color}"/>
+                        <!-- Highlights -->
+                        <path d="M 150 160 Q 200 140 240 160" stroke="#ffffff" stroke-width="3" opacity="0.25" fill="none"/>
+                    `
+                })
+            },
+            sleekBob: {
+                name: "Sleek Bob",
+                icon: `<path d="M 15 15 L 15 35 L 45 35 L 45 15 Z" fill="#ff85a2"/>`,
+                render: (color) => ({
+                    back: `
+                        <path d="M 125 200 L 120 320 L 280 320 L 275 200 Z" fill="${color}"/>
+                    `,
+                    front: `
+                        <path d="M 125 200 C 120 100, 280 100, 275 200 L 285 310 C 285 320, 265 325, 255 310 L 240 210 C 210 200, 190 200, 160 210 L 145 310 C 135 325, 115 320, 115 310 Z" fill="${color}"/>
+                        <path d="M 130 190 Q 200 165 270 190" stroke="#ffffff" stroke-width="2.5" opacity="0.2" fill="none"/>
+                    `
+                })
+            },
+            braidedCrown: {
+                name: "Braided Crown",
+                icon: `<circle cx="30" cy="25" r="15" stroke="#ff85a2" stroke-width="4" fill="none"/>`,
+                render: (color) => ({
+                    back: `
+                        <circle cx="200" cy="180" r="95" fill="${color}"/>
+                    `,
+                    front: `
+                        <!-- Crown Braid Loops -->
+                        <path d="M 120 190 Q 150 120 200 120 Q 250 120 280 190 Q 200 150 120 190 Z" fill="${color}"/>
+                        <!-- Braid Detail Lines -->
+                        <path d="M 135 165 Q 160 140 185 165 Q 210 140 235 165 Q 260 140 270 170" stroke="#ffffff" stroke-width="2" opacity="0.3" fill="none" stroke-dasharray="6 4"/>
+                        <!-- Cute Low Side Bun -->
+                        <circle cx="275" cy="270" r="30" fill="${color}"/>
+                    `
+                })
+            },
+            spaceBuns: {
+                name: "Space Buns",
+                icon: `<circle cx="15" cy="15" r="7" fill="#ff85a2"/><circle cx="45" cy="15" r="7" fill="#ff85a2"/>`,
+                render: (color) => ({
+                    back: ``,
+                    front: `
+                        <!-- Left Bun -->
+                        <circle cx="125" cy="120" r="42" fill="${color}"/>
+                        <circle cx="125" cy="120" r="30" stroke="#ffffff" stroke-width="2" opacity="0.2" fill="none"/>
+                        <!-- Right Bun -->
+                        <circle cx="275" cy="120" r="42" fill="${color}"/>
+                        <circle cx="275" cy="120" r="30" stroke="#ffffff" stroke-width="2" opacity="0.2" fill="none"/>
+                        <!-- Base Hair Sleek -->
+                        <path d="M 125 200 C 120 110, 280 110, 275 200 Q 200 150 125 200 Z" fill="${color}"/>
+                        <!-- Center Part -->
+                        <line x1="200" y1="120" x2="200" y2="185" stroke="#ffffff" opacity="0.3" stroke-width="2"/>
+                    `
+                })
+            },
+            curlyRinglets: {
+                name: "Curly Ringlets",
+                icon: `<path d="M 15 10 C 25 20, 5 30, 25 40" stroke="#ff85a2" stroke-width="4" fill="none"/>`,
+                render: (color) => ({
+                    back: `
+                        <path d="M 100 200 Q 70 300 90 410 Q 150 430 170 350 Z" fill="${color}"/>
+                        <path d="M 300 200 Q 330 300 310 410 Q 250 430 230 350 Z" fill="${color}"/>
+                    `,
+                    front: `
+                        <g fill="${color}">
+                            <circle cx="120" cy="190" r="28"/>
+                            <circle cx="140" cy="150" r="30"/>
+                            <circle cx="175" cy="130" r="32"/>
+                            <circle cx="225" cy="130" r="32"/>
+                            <circle cx="260" cy="150" r="30"/>
+                            <circle cx="280" cy="190" r="28"/>
+                            <!-- Hanging curls -->
+                            <path d="M 115 210 C 95 250, 135 290, 110 340 C 100 360, 130 360, 130 330 C 145 280, 125 240, 135 210 Z"/>
+                            <path d="M 285 210 C 305 250, 265 290, 290 340 C 300 360, 270 360, 270 330 C 255 280, 275 240, 265 210 Z"/>
+                        </g>
+                    `
+                })
+            },
+            pixieCut: {
+                name: "Cute Pixie",
+                icon: `<path d="M 15 30 Q 30 15 45 30" stroke="#ff85a2" stroke-width="5" fill="none"/>`,
+                render: (color) => ({
+                    back: ``,
+                    front: `
+                        <!-- Short Chic Pixie -->
+                        <path d="M 125 210 C 120 100, 280 100, 275 210 C 275 190, 255 160, 200 160 C 145 160, 125 190, 125 210 Z" fill="${color}"/>
+                        <!-- Textured Spikes / Bangs -->
+                        <path d="M 130 190 Q 150 205 170 185 Q 190 210 210 185 Q 240 210 270 190 Q 240 160 200 160 Q 160 160 130 190 Z" fill="${color}"/>
+                    `
+                })
+            },
+            highPonytail: {
+                name: "High Ponytail",
+                icon: `<path d="M 25 15 C 40 15, 45 35, 35 45" stroke="#ff85a2" stroke-width="4" fill="none"/>`,
+                render: (color) => ({
+                    back: `
+                        <!-- Swinging Ponytail Tail -->
+                        <path d="M 250 110 C 320 100, 350 220, 310 330 C 280 310, 290 200, 240 130 Z" fill="${color}"/>
+                    `,
+                    front: `
+                        <!-- Pulled Back Crown -->
+                        <path d="M 128 200 C 125 110, 275 110, 272 200 Q 200 165 128 200 Z" fill="${color}"/>
+                        <!-- Hair scrunchie -->
+                        <circle cx="248" cy="118" r="14" fill="#ec4899"/>
+                    `
+                })
+            },
+            mermaidWaves: {
+                name: "Mermaid Waves",
+                icon: `<path d="M 10 10 Q 25 25 10 40 Q 25 50 40 30" stroke="#ff85a2" stroke-width="3" fill="none"/>`,
+                render: (color) => ({
+                    back: `
+                        <path d="M 110 190 C 70 280, 120 380, 90 460 C 150 470, 180 390, 170 300 Z" fill="${color}"/>
+                        <path d="M 290 190 C 330 280, 280 380, 310 460 C 250 470, 220 390, 230 300 Z" fill="${color}"/>
+                    `,
+                    front: `
+                        <path d="M 125 190 C 120 90, 280 90, 275 190 C 250 170, 220 160, 200 175 C 180 160, 150 170, 125 190 Z" fill="${color}"/>
+                        <!-- Long Front Cascading Strands -->
+                        <path d="M 125 190 C 110 260, 150 330, 125 410 C 145 400, 160 320, 140 240 Z" fill="${color}"/>
+                        <path d="M 275 190 C 290 260, 250 330, 275 410 C 255 400, 240 320, 260 240 Z" fill="${color}"/>
+                    `
+                })
+            },
+            elegantUpdo: {
+                name: "Elegant Updo",
+                icon: `<circle cx="30" cy="20" r="12" fill="#ff85a2"/>`,
+                render: (color) => ({
+                    back: ``,
+                    front: `
+                        <!-- Big Elegant Top Chignon -->
+                        <ellipse cx="200" cy="110" rx="55" ry="42" fill="${color}"/>
+                        <path d="M 160 110 Q 200 85 240 110 Q 200 130 160 110 Z" fill="#ffffff" opacity="0.15"/>
+                        <!-- Sleek Front Wrap -->
+                        <path d="M 128 200 C 125 130, 275 130, 272 200 Q 200 170 128 200 Z" fill="${color}"/>
+                        <!-- Pearl Pin in Bun -->
+                        <circle cx="225" cy="100" r="6" fill="#ffffff"/>
+                        <circle cx="212" cy="112" r="4.5" fill="#ffffff"/>
+                    `
+                })
+            }
+        };
+
+        // Hair Colors Preset List
+        const colorPresets = [
+            { name: "Jet Black", hex: "#18181b" },
+            { name: "Dark Chocolate", hex: "#3b2314" },
+            { name: "Chestnut Brown", hex: "#78350f" },
+            { name: "Golden Blonde", hex: "#f59e0b" },
+            { name: "Platinum Blonde", hex: "#fef08a" },
+            { name: "Cotton Candy Pink", hex: "#ff69b4" },
+            { name: "Electric Blue", hex: "#0284c7" },
+            { name: "Lavender Magic", hex: "#a855f7" },
+            { name: "Minty Green", hex: "#10b981" },
+            { name: "Fiery Crimson", hex: "#e11d48" },
+            { name: "Sunset Orange", hex: "#f97316" },
+            { name: "Silver Frost", hex: "#94a3b8" }
+        ];
+
+        // Salon Accessories Definitions
+        const accessories = {
+            none: { name: "None", render: () => "" },
+            tiara: {
+                name: "Princess Tiara",
+                icon: "fa-crown",
+                render: () => `
+                    <g transform="translate(150, 115)">
+                        <path d="M 0 30 L 20 5 L 40 25 L 50 0 L 60 25 L 80 5 L 100 30 Z" fill="#ffd700" stroke="#b45309" stroke-width="2"/>
+                        <circle cx="50" cy="8" r="4" fill="#e11d48"/>
+                        <circle cx="20" cy="12" r="3" fill="#2563eb"/>
+                        <circle cx="80" cy="12" r="3" fill="#2563eb"/>
+                    </g>
+                `
+            },
+            flowerClip: {
+                name: "Flower Clip",
+                icon: "fa-flower",
+                render: () => `
+                    <g transform="translate(250, 170)">
+                        <circle cx="0" cy="-12" r="10" fill="#ff70a6"/>
+                        <circle cx="12" cy="0" r="10" fill="#ff70a6"/>
+                        <circle cx="0" cy="12" r="10" fill="#ff70a6"/>
+                        <circle cx="-12" cy="0" r="10" fill="#ff70a6"/>
+                        <circle cx="0" cy="0" r="7" fill="#facc15"/>
+                    </g>
+                `
+            },
+            sunglasses: {
+                name: "Cool Sunglasses",
+                icon: "fa-glasses",
+                render: () => `
+                    <g transform="translate(135, 218)">
+                        <!-- Left Lens -->
+                        <rect x="0" y="0" width="55" height="32" rx="10" fill="#0f172a"/>
+                        <!-- Right Lens -->
+                        <rect x="75" y="0" width="55" height="32" rx="10" fill="#0f172a"/>
+                        <!-- Bridge -->
+                        <rect x="52" y="8" width="26" height="6" rx="3" fill="#0f172a"/>
+                        <!-- Lens Shine -->
+                        <line x1="8" y1="6" x2="28" y2="26" stroke="#ffffff" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+                        <line x1="83" y1="6" x2="103" y2="26" stroke="#ffffff" stroke-width="3" opacity="0.5" stroke-linecap="round"/>
+                    </g>
+                `
+            },
+            cuteBow: {
+                name: "Pink Bow",
+                icon: "fa-ribbon",
+                render: () => `
+                    <g transform="translate(170, 110)">
+                        <polygon points="0,15 30,0 30,30" fill="#f43f5e"/>
+                        <polygon points="60,15 30,0 30,30" fill="#f43f5e"/>
+                        <circle cx="30" cy="15" r="7" fill="#fb7185"/>
+                    </g>
+                `
+            },
+            catEars: {
+                name: "Cat Headband",
+                icon: "fa-cat",
+                render: () => `
+                    <g transform="translate(130, 110)">
+                        <!-- Headband Arc -->
+                        <path d="M 10 70 Q 70 20 130 70" stroke="#1e293b" stroke-width="4" fill="none"/>
+                        <!-- Left Ear -->
+                        <polygon points="15,45 35,5 50,40" fill="#f43f5e" stroke="#1e293b" stroke-width="3"/>
+                        <polygon points="22,40 35,18 43,38" fill="#fbcfe8"/>
+                        <!-- Right Ear -->
+                        <polygon points="90,40 105,5 125,45" fill="#f43f5e" stroke="#1e293b" stroke-width="3"/>
+                        <polygon points="97,38 105,18 118,40" fill="#fbcfe8"/>
+                    </g>
+                `
+            }
+        };
+
+        // Web Audio Synthesizer for Fun Salon Sounds
+        let audioCtx = null;
+
+        function playSalonSound(type) {
+            if (!state.soundEnabled) return;
+            
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'snip') {
+                    // Snip sound (filtered noise pulse)
+                    const bufferSize = audioCtx.sampleRate * 0.1;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 2000;
+                    const gain = audioCtx.createGain();
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    noise.start(now);
+                } else if (type === 'sparkle') {
+                    // Chime musical melody
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.1, now + idx * 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.05);
+                        osc.stop(now + idx * 0.05 + 0.2);
+                    });
+                } else if (type === 'wind') {
+                    // Blow dryer noise synth
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(300, now + 0.2);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                }
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        function toggleAudio() {
+            state.soundEnabled = !state.soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const btn = document.getElementById('soundToggleBtn');
+            if (state.soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+                btn.classList.remove('opacity-60');
+                playSalonSound('click');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark';
+                btn.classList.add('opacity-60');
+            }
+        }
+
+        // Renders active character features, hair, and accessories to SVG
+        function renderCharacter() {
+            const char = characters[state.activeCharacter];
+
+            // 1. Update skin tones
+            document.getElementById('neck').setAttribute('fill', char.skinColor);
+            document.getElementById('headShape').setAttribute('fill', char.skinColor);
+            document.getElementById('earLeft').setAttribute('fill', char.earColor);
+            document.getElementById('earRight').setAttribute('fill', char.earColor);
+
+            // 2. Update Eyes & Eyebrows & Lipstick
+            document.getElementById('irisL').setAttribute('fill', state.currentEyeColor);
+            document.getElementById('irisR').setAttribute('fill', state.currentEyeColor);
+            document.getElementById('eyebrowL').setAttribute('stroke', char.eyebrowColor);
+            document.getElementById('eyebrowR').setAttribute('stroke', char.eyebrowColor);
+            document.getElementById('lipMain').setAttribute('fill', state.currentLipstick);
+
+            // 3. Render Hairstyle
+            const styleDef = hairstyles[state.currentHairStyle];
+            if (styleDef) {
+                const hairSvg = styleDef.render(state.currentHairColor);
+                document.getElementById('hairBackLayer').innerHTML = hairSvg.back;
+                document.getElementById('hairFrontLayer').innerHTML = hairSvg.front;
+            }
+
+            // 4. Render Accessory
+            const accDef = accessories[state.currentAccessory];
+            if (accDef) {
+                document.getElementById('accessoriesLayer').innerHTML = accDef.render();
+            }
+        }
+
+        // Switch character handler
+        function selectCharacter(charKey) {
+            playSalonSound('click');
+            state.activeCharacter = charKey;
+
+            // Update UI selector button styles
+            ['aaliyah', 'chloe', 'maya'].forEach(key => {
+                const btn = document.getElementById(`btn-${key}`);
+                if (key === charKey) {
+                    btn.classList.add('active', 'ring-4', 'ring-pink-400');
+                } else {
+                    btn.classList.remove('active', 'ring-4', 'ring-pink-400');
+                }
+            });
+
+            // Set character defaults
+            const char = characters[charKey];
+            state.currentHairColor = char.defaultHairColor;
+            state.currentHairStyle = char.defaultStyle;
+            state.currentLipstick = char.defaultLipstick;
+            state.currentEyeColor = char.defaultEyeColor;
+
+            // Trigger happy reaction & render
+            triggerHeartReaction();
+            renderCharacter();
+            updateActiveCardsUI();
+        }
+
+        // Apply Hair style
+        function applyHairStyle(styleKey) {
+            playSalonSound('click');
+            state.currentHairStyle = styleKey;
+            renderCharacter();
+            updateActiveCardsUI();
+            triggerSparkleEffect();
+        }
+
+        // Apply Hair Color
+        function applyHairColor(colorHex) {
+            playSalonSound('click');
+            state.currentHairColor = colorHex;
+            renderCharacter();
+            updateActiveCardsUI();
+            triggerSparkleEffect();
+        }
+
+        // Apply Accessory
+        function applyAccessory(accKey) {
+            playSalonSound('click');
+            state.currentAccessory = accKey;
+            renderCharacter();
+            updateActiveCardsUI();
+            triggerHeartReaction();
+        }
+
+        // Apply Lipstick
+        function applyLipstick(hex) {
+            playSalonSound('click');
+            state.currentLipstick = hex;
+            renderCharacter();
+        }
+
+        // Apply Eye Color
+        function applyEyeColor(hex) {
+            playSalonSound('click');
+            state.currentEyeColor = hex;
+            renderCharacter();
+        }
+
+        // Reset character look
+        function resetModel() {
+            playSalonSound('click');
+            selectCharacter(state.activeCharacter);
+            state.currentAccessory = 'none';
+            renderCharacter();
+        }
+
+        // Generate UI Grid Cards
+        function populateCatalogUI() {
+            // 1. Hairstyles
+            const hairGrid = document.getElementById('hairStyleGrid');
+            hairGrid.innerHTML = '';
+            Object.keys(hairstyles).forEach(key => {
+                const item = hairstyles[key];
+                const card = document.createElement('button');
+                card.id = `hair-card-${key}`;
+                card.className = `hair-style-card bg-white border-2 border-slate-100 p-3 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-pink-300 focus:outline-none cursor-pointer`;
+                card.onclick = () => applyHairStyle(key);
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center text-pink-500">
+                        <svg viewBox="0 0 50 50" class="w-8 h-8">
+                            ${item.icon}
+                        </svg>
+                    </div>
+                    <span class="text-xs font-extrabold text-slate-700 text-center leading-tight">${item.name}</span>
+                `;
+                hairGrid.appendChild(card);
+            });
+
+            // 2. Hair Colors
+            const colorGrid = document.getElementById('colorPaletteGrid');
+            colorGrid.innerHTML = '';
+            colorPresets.forEach(preset => {
+                const btn = document.createElement('button');
+                btn.id = `color-btn-${preset.hex.replace('#','')}`;
+                btn.className = `p-2.5 bg-white border-2 border-slate-100 rounded-2xl flex flex-col items-center gap-1.5 hover:scale-105 transition focus:outline-none cursor-pointer`;
+                btn.onclick = () => applyHairColor(preset.hex);
+                btn.innerHTML = `
+                    <div class="w-8 h-8 rounded-full shadow-inner border border-black/10" style="background-color: ${preset.hex}"></div>
+                    <span class="text-[10px] font-bold text-slate-600 text-center">${preset.name}</span>
+                `;
+                colorGrid.appendChild(btn);
+            });
+
+            // 3. Accessories
+            const accGrid = document.getElementById('accessoriesGrid');
+            accGrid.innerHTML = '';
+            Object.keys(accessories).forEach(key => {
+                const item = accessories[key];
+                const btn = document.createElement('button');
+                btn.id = `acc-btn-${key}`;
+                btn.className = `p-3 bg-white border-2 border-slate-100 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-amber-300 transition focus:outline-none cursor-pointer`;
+                btn.onclick = () => applyAccessory(key);
+                btn.innerHTML = `
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg">
+                        <i class="fa-solid ${item.icon || 'fa-ban'}"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700 text-center">${item.name}</span>
+                `;
+                accGrid.appendChild(btn);
+            });
+
+            // 4. Lipstick & Eyes
+            const lipstickGrid = document.getElementById('lipstickGrid');
+            const lipColors = ['#e11d48', '#f43f5e', '#ec4899', '#b91c1c', '#c026d3', '#9333ea', '#d97706'];
+            lipstickGrid.innerHTML = '';
+            lipColors.forEach(hex => {
+                const b = document.createElement('button');
+                b.className = 'w-9 h-9 rounded-full border-2 border-white shadow hover:scale-110 transition';
+                b.style.backgroundColor = hex;
+                b.onclick = () => applyLipstick(hex);
+                lipstickGrid.appendChild(b);
+            });
+
+            const eyeGrid = document.getElementById('eyeColorGrid');
+            const eyeColors = ['#2d1a0e', '#2563eb', '#059669', '#7c3aed', '#db2777', '#475569'];
+            eyeGrid.innerHTML = '';
+            eyeColors.forEach(hex => {
+                const b = document.createElement('button');
+                b.className = 'w-9 h-9 rounded-full border-2 border-white shadow hover:scale-110 transition';
+                b.style.backgroundColor = hex;
+                b.onclick = () => applyEyeColor(hex);
+                eyeGrid.appendChild(b);
+            });
+
+            updateActiveCardsUI();
+        }
+
+        // Highlight selected items in UI
+        function updateActiveCardsUI() {
+            // Hairstyles highlight
+            Object.keys(hairstyles).forEach(key => {
+                const el = document.getElementById(`hair-card-${key}`);
+                if (el) {
+                    if (key === state.currentHairStyle) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                }
+            });
+
+            // Accessories highlight
+            Object.keys(accessories).forEach(key => {
+                const el = document.getElementById(`acc-btn-${key}`);
+                if (el) {
+                    if (key === state.currentAccessory) {
+                        el.classList.add('border-pink-400', 'bg-pink-50');
+                    } else {
+                        el.classList.remove('border-pink-400', 'bg-pink-50');
+                    }
+                }
+            });
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            playSalonSound('click');
+            ['styles', 'colors', 'accessories', 'makeup'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                if (t === tabName) {
+                    btn.className = 'tab-btn px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition bg-pink-500 text-white shadow-md';
+                    content.classList.remove('hidden');
+                    content.classList.add('block');
+                } else {
+                    btn.className = 'tab-btn px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition bg-slate-100 text-slate-600 hover:bg-pink-100';
+                    content.classList.remove('block');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // Interactive Tools (Scissors, Blowdryer, Glitter)
+        function useTool(toolType) {
+            if (toolType === 'scissors') {
+                playSalonSound('snip');
+                triggerHeartReaction();
+                // Snip animation effect
+                const stage = document.getElementById('salonStage');
+                stage.classList.add('animate-pulse');
+                setTimeout(() => stage.classList.remove('animate-pulse'), 500);
+            } else if (toolType === 'blowdry') {
+                playSalonSound('wind');
+                triggerSparkleEffect();
+            } else if (toolType === 'glitter') {
+                playSalonSound('sparkle');
+                triggerSparkleEffect();
+                triggerHeartReaction();
+            }
+        }
+
+        // Visual Sparkle Particles Effect
+        function triggerSparkleEffect() {
+            playSalonSound('sparkle');
+            const container = document.getElementById('sparkleOverlay');
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.className = 'sparkle-particle text-amber-400 text-xl';
+                p.innerHTML = '<i class="fa-solid fa-sparkles"></i>';
+                p.style.left = `${Math.random() * 80 + 10}%`;
+                p.style.top = `${Math.random() * 80 + 10}%`;
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 850);
+            }
+        }
+
+        // Visual Floating Reaction Hearts
+        function triggerHeartReaction() {
+            const container = document.getElementById('reactionOverlay');
+            const icons = ['💖', '✨', '👑', '😍', '🌸'];
+            for (let i = 0; i < 5; i++) {
+                const h = document.createElement('div');
+                h.className = 'reaction-heart text-2xl';
+                h.innerText = icons[Math.floor(Math.random() * icons.length)];
+                h.style.left = `${Math.random() * 60 + 20}%`;
+                h.style.top = `${Math.random() * 40 + 40}%`;
+                container.appendChild(h);
+                setTimeout(() => h.remove(), 1200);
+            }
+        }
+
+        // Photo Booth Modal Functions
+        function openPhotoBooth() {
+            playSalonSound('sparkle');
+            const modal = document.getElementById('photoBoothModal');
+            const card = document.getElementById('photoBoothCard');
+            const holder = document.getElementById('polaroidCanvasHolder');
+
+            // Clone SVG to polaroid holder
+            const origSvg = document.getElementById('characterSvg');
+            holder.innerHTML = origSvg.outerHTML;
+
+            // Set date caption
+            const now = new Date();
+            document.getElementById('polaroidDate').innerText = now.toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }
+
+        function closePhotoBooth() {
+            playSalonSound('click');
+            const modal = document.getElementById('photoBoothModal');
+            const card = document.getElementById('photoBoothCard');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+        }
+
+        // Save Polaroid Image as Canvas PNG download
+        function downloadSnapshot() {
+            playSalonSound('sparkle');
+            const polaroid = document.getElementById('polaroidArea');
+
+            // Simple SVG data URL download fallback
+            const svgData = document.getElementById('characterSvg').outerHTML;
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const URL = window.URL || window.webkitURL || window;
+            const blobURL = URL.createObjectURL(svgBlob);
+
+            const image = new Image();
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 500;
+                canvas.height = 600;
+                const ctx = canvas.getContext('2d');
+
+                // Draw background card
+                ctx.fillStyle = '#fdf2f8';
+                ctx.fillRect(0, 0, 500, 600);
+
+                // Draw image
+                ctx.drawImage(image, 50, 40, 400, 450);
+
+                // Draw text
+                ctx.fillStyle = '#db2777';
+                ctx.font = 'bold 22px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                const captionText = document.getElementById('polaroidCaption').value || "Sophi's Hair Salon";
+                ctx.fillText(captionText, 250, 540);
+
+                // Trigger Download
+                const a = document.createElement('a');
+                a.download = `Sophi-Hair-Salon-${state.activeCharacter}.png`;
+                a.href = canvas.toDataURL('image/png');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+            image.src = blobURL;
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            populateCatalogUI();
+            selectCharacter('aaliyah'); // Default girl
+        };
+    </script>
+</body>
+</html>
