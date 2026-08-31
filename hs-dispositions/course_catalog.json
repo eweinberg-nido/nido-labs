@@ -1,0 +1,1220 @@
+[
+  {
+    "department": "English",
+    "course_name": "English 9",
+    "course_code": "1000",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "English",
+    "course_name": "English 10",
+    "course_code": "1010",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Literature SLI",
+    "course_code": "1070",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Literature HLI",
+    "course_code": "1080",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Language & Literature SL I",
+    "course_code": "1092",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Language & Literature HL I",
+    "course_code": "1090",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "English",
+    "course_name": "English: The Imperfect Art of Living",
+    "course_code": "1018",
+    "credit": "1",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "English",
+    "course_name": "English: World Perspectives in Literature",
+    "course_code": "1019",
+    "credit": "1",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Literature SL II",
+    "course_code": "1071",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Literature HL II",
+    "course_code": "1081",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Language & Literature SL II",
+    "course_code": "1093",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "English",
+    "course_name": "IB English A: Language & Literature HL II",
+    "course_code": "1091",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "English as an Additional Language (EAL)",
+    "course_name": "English for Academic Purposes*",
+    "course_code": "138",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "English as an Additional Language (EAL)",
+    "course_name": "HS English: EAL Adapted I",
+    "course_code": "136",
+    "credit": "1",
+    "grade_range": "9-11"
+  },
+  {
+    "department": "English as an Additional Language (EAL)",
+    "course_name": "HS English: EAL Adapted II",
+    "course_code": "137",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "World Studies",
+    "course_code": "2031",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "US History",
+    "course_code": "2020",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "Leadership (University of Delaware)",
+    "course_code": "2138",
+    "credit": ".5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "Introduction to Entrepreneurship (Syracuse University)",
+    "course_code": "2144",
+    "credit": "1.0",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "Sustainable Design",
+    "course_code": "2137",
+    "credit": "0.5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Economics SL I",
+    "course_code": "2049",
+    "credit": "1",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Economics HL I",
+    "course_code": "2052",
+    "credit": "1",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Env Systems & Society SL I",
+    "course_code": "4305",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Env Systems & Society HL I",
+    "course_code": "4311",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Psychology SL I",
+    "course_code": "2155",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Psychology HL I",
+    "course_code": "2157",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Economics SL II",
+    "course_code": "2051",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Economics HL II",
+    "course_code": "2053",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Env. Systems & Society SL II",
+    "course_code": "4310",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Env. Systems & Society HL II",
+    "course_code": "4312",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Psychology SL II",
+    "course_code": "2158",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies (International)",
+    "course_name": "IB Psychology HL II",
+    "course_code": "2159",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math Lab 1",
+    "course_code": "3009",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math 9",
+    "course_code": "3011",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math 9 Advanced",
+    "course_code": "3012",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math Lab 2",
+    "course_code": "3013",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math 10",
+    "course_code": "3014",
+    "credit": "1",
+    "grade_range": "9-11"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math 10 Advanced",
+    "course_code": "3016",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math Lab 3",
+    "course_code": "3057",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math 11",
+    "course_code": "3041",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math SL Applications & Interpretation I",
+    "course_code": "3076",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math SL Analysis & Approaches I",
+    "course_code": "3081",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math HL Applications & Interpretation I",
+    "course_code": "3078",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math HL Analysis & Approaches I",
+    "course_code": "3083",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math Lab 4",
+    "course_code": "3058",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Math",
+    "course_name": "Math 12",
+    "course_code": "3042",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math SL Applications & Interpretation II",
+    "course_code": "3077",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math SL Analysis & Approaches II",
+    "course_code": "3082",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math HL Applications & Interpretation II",
+    "course_code": "3079",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Math",
+    "course_name": "IB Math HL Analysis & Approaches HL II",
+    "course_code": "3084",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "National Plan Social Studies 9",
+    "course_code": "2111",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "National Plan Social Studies 10",
+    "course_code": "2112",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "Philosophy I",
+    "course_code": "2132",
+    "credit": ".5",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "IB History SLI (Spanish)",
+    "course_code": "2041",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "IB History HLI (Spanish)",
+    "course_code": "2039",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "Chilean Studies I",
+    "course_code": "2117",
+    "credit": ".5",
+    "grade_range": "11"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "Philosophy II",
+    "course_code": "2133",
+    "credit": ".5",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "IB History SL II (Spanish)",
+    "course_code": "2042",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "IB History HL II (Spanish)",
+    "course_code": "2040",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Social Studies National Plan",
+    "course_name": "Chilean Studies II",
+    "course_code": "2118",
+    "credit": ".5",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "Spanish B Novice",
+    "course_code": "5154",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "Spanish B Novice High",
+    "course_code": "5155",
+    "credit": "1.0",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "Spanish B Intermediate*",
+    "course_code": "5156",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "Spanish B Advanced*",
+    "course_code": "5157",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "Spanish B Bridge*",
+    "course_code": "5158",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "IB Spanish Ab Initio SL I",
+    "course_code": "5202",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "IB Spanish B SL I",
+    "course_code": "5205",
+    "credit": "1",
+    "grade_range": "10-11"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "IB Spanish B HL I",
+    "course_code": "5200",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "IB Spanish Ab Initio SL II",
+    "course_code": "5203",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "IB Spanish B SL II",
+    "course_code": "5206",
+    "credit": "1",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "Spanish as an Additional Language",
+    "course_name": "IB Spanish B HL II",
+    "course_code": "5201",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "Spanish 9",
+    "course_code": "5000",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "Spanish 10",
+    "course_code": "5010",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A: Literature SLI",
+    "course_code": "5040",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A: Literature HLI",
+    "course_code": "5050",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A; Language & Literature SLI",
+    "course_code": "5042",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A; Language & Literature HLI",
+    "course_code": "5044",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "Spanish 12",
+    "course_code": "5031",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A: Literature SL II",
+    "course_code": "5041",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A: Literature HL II",
+    "course_code": "5051",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A: Language & Literature SL II",
+    "course_code": "5043",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Spanish as a First Language",
+    "course_name": "IB Spanish A; Language & Literature HL II",
+    "course_code": "5045",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Self Taught Language",
+    "course_name": "IB French Ab Initio SL I**",
+    "course_code": "5312",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Self Taught Language",
+    "course_name": "IB Mandarin Ab Initio SL I**",
+    "course_code": "5524",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Self Taught Language",
+    "course_name": "IB French Ab Initio SL II**",
+    "course_code": "5313",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Self Taught Language",
+    "course_name": "IB Mandarin Ab Initio SL II**",
+    "course_code": "5523",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Self Taught Language",
+    "course_name": "School Supported Self Taught IB Language A: Literature SL I***",
+    "course_code": "5298",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Self Taught Language",
+    "course_name": "School Supported Self Taught IB Language A: Literature SL II***",
+    "course_code": "5299",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "Science 9",
+    "course_code": "4011",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Science",
+    "course_name": "Science 10",
+    "course_code": "4012",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Science",
+    "course_name": "Astronomy",
+    "course_code": "4019",
+    "credit": ".5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Science",
+    "course_name": "Culinary Science",
+    "course_code": "4027",
+    "credit": ".5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Science",
+    "course_name": "Engineering",
+    "course_code": "4026",
+    "credit": ".5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Biology SL I",
+    "course_code": "4050",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Biology HL I",
+    "course_code": "4051",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Chemistry SL I",
+    "course_code": "4106",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Chemistry HL I",
+    "course_code": "4107",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Physics SL I",
+    "course_code": "4205",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Physics HL I",
+    "course_code": "4206",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Env. Systems & Society SL I",
+    "course_code": "4305",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Env. Systems & Society HL I",
+    "course_code": "4311",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Design Technology SL I",
+    "course_code": "4315",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Design Technology HL I",
+    "course_code": "4316",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Biology SL II",
+    "course_code": "4031",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Biology HL II",
+    "course_code": "4041",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Chemistry SL II",
+    "course_code": "4101",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Chemistry HL II",
+    "course_code": "4103",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Physics SL II",
+    "course_code": "4202",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Physics HL II",
+    "course_code": "4204",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Env Systems & Society SL II",
+    "course_code": "4310",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Env. Systems & Society HL II",
+    "course_code": "4312",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Design Technology SL II",
+    "course_code": "4317",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Science",
+    "course_name": "IB Design Technology HL II",
+    "course_code": "4318",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Interdisciplinary Studies",
+    "course_name": "First Year Seminar",
+    "course_code": "8065",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Interdisciplinary Studies",
+    "course_name": "Changemakers",
+    "course_code": "8066",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Interdisciplinary Studies",
+    "course_name": "Nidoships (Internships)",
+    "course_code": "8068",
+    "credit": "0.5",
+    "grade_range": "11-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "Foundations of Design Tech",
+    "course_code": "6507",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "Foundations of Coding",
+    "course_code": "6514",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "Robotics",
+    "course_code": "8050",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "Design Lab*",
+    "course_code": "6508",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "Engineering",
+    "course_code": "4026",
+    "credit": ".5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "Sustainable Design",
+    "course_code": "2137",
+    "credit": "0.5",
+    "grade_range": "10-12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "IB Design Technology SL I",
+    "course_code": "4315",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "IB Design Technology HL I",
+    "course_code": "4316",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "IB Design Technology SL II",
+    "course_code": "4317",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Design Technology",
+    "course_name": "IB Design Technology HL II",
+    "course_code": "4318",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "Foundations of Art",
+    "course_code": "6005",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "Visual Arts 2D Lab*",
+    "course_code": "6038",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "Visual Arts 3D Lab*",
+    "course_code": "6045",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "Digital Art Lab*",
+    "course_code": "6047",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "IB Visual Arts SL I",
+    "course_code": "6043",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "IB Visual Arts HL I",
+    "course_code": "6044",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "IB Visual Arts SL II",
+    "course_code": "6041",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Visual Arts",
+    "course_name": "IB Visual Arts HL II",
+    "course_code": "6042",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Digital Design & Film",
+    "course_name": "Digital Filmmaking*",
+    "course_code": "6515",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Digital Design & Film",
+    "course_name": "Graphic Design",
+    "course_code": "6506",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Digital Design & Film",
+    "course_name": "IB Film SL I",
+    "course_code": "6503",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Digital Design & Film",
+    "course_name": "IB Film HL I",
+    "course_code": "6512",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Digital Design & Film",
+    "course_name": "IB Film SL II",
+    "course_code": "6504",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Digital Design & Film",
+    "course_name": "IB Film HL II",
+    "course_code": "6513",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Foundations of Band*",
+    "course_code": "6219",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Concert Band*",
+    "course_code": "6220",
+    "credit": "1",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Choir*",
+    "course_code": "6247",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Percussion*",
+    "course_code": "6418",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Music Composition*",
+    "course_code": "6409",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Guitar*",
+    "course_code": "6241",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "Piano*",
+    "course_code": "6416",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Music",
+    "course_name": "IB Music SL I",
+    "course_code": "6210",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Music",
+    "course_name": "IB Music HL I",
+    "course_code": "6211",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Music",
+    "course_name": "IB Music SL II",
+    "course_code": "6212",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Music",
+    "course_name": "IB Music HL II",
+    "course_code": "6213",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "Theater",
+    "course_name": "Improv",
+    "course_code": "6104",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Theater",
+    "course_name": "Stagecraft",
+    "course_code": "6153",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Theater",
+    "course_name": "Acting",
+    "course_code": "6139",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Physical Education",
+    "course_name": "Foundations of PE",
+    "course_code": "7040",
+    "credit": ".5",
+    "grade_range": "9-10"
+  },
+  {
+    "department": "Physical Education",
+    "course_name": "Wilderness Adventure*",
+    "course_code": "7041",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Physical Education",
+    "course_name": "Personal Fitness*",
+    "course_code": "7004",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Physical Education",
+    "course_name": "Mind & Body Wellness*",
+    "course_code": "7045",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Physical Education",
+    "course_name": "Group Games & Leadership*",
+    "course_code": "7049",
+    "credit": ".5",
+    "grade_range": "9-12"
+  },
+  {
+    "department": "Core/University Program",
+    "course_name": "Junior Core",
+    "course_code": "996",
+    "credit": "N/A",
+    "grade_range": "11"
+  },
+  {
+    "department": "Core/University Program",
+    "course_name": "Senior Core",
+    "course_code": "997",
+    "credit": "N/A",
+    "grade_range": "12"
+  },
+  {
+    "department": "Core/University Program",
+    "course_name": "Internship",
+    "course_code": "995",
+    "credit": "N/A",
+    "grade_range": "12"
+  },
+  {
+    "department": "Outdoor Education",
+    "course_name": "Week Without Walls 9",
+    "course_code": "WWW9",
+    "credit": ".25",
+    "grade_range": "9"
+  },
+  {
+    "department": "Outdoor Education",
+    "course_name": "Week Without Walls 10",
+    "course_code": "WWW10",
+    "credit": ".25",
+    "grade_range": "10"
+  },
+  {
+    "department": "Outdoor Education",
+    "course_name": "Week Without Walls 11",
+    "course_code": "WWW11",
+    "credit": ".25",
+    "grade_range": "11"
+  },
+  {
+    "department": "Outdoor Education",
+    "course_name": "Week Without Walls 12",
+    "course_code": "WWW12",
+    "credit": ".25",
+    "grade_range": "12"
+  },
+  {
+    "department": "Learning Support",
+    "course_name": "Learning Lab 1*",
+    "course_code": "145",
+    "credit": "1",
+    "grade_range": "9/10"
+  },
+  {
+    "department": "Learning Support",
+    "course_name": "Learning Lab 2*",
+    "course_code": "146",
+    "credit": "1",
+    "grade_range": "11/12"
+  },
+  {
+    "department": "Learning Support",
+    "course_name": "Math Lab 1",
+    "course_code": "3009",
+    "credit": "1",
+    "grade_range": "9"
+  },
+  {
+    "department": "Learning Support",
+    "course_name": "Math Lab 2",
+    "course_code": "3013",
+    "credit": "1",
+    "grade_range": "10"
+  },
+  {
+    "department": "Learning Support",
+    "course_name": "Math Lab 3",
+    "course_code": "3057",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "Learning Support",
+    "course_name": "Math Lab 4",
+    "course_code": "3058",
+    "credit": "1",
+    "grade_range": "12"
+  },
+  {
+    "department": "IB Core/University Program",
+    "course_name": "IB TOK/Core I",
+    "course_code": "2062",
+    "credit": "1",
+    "grade_range": "11"
+  },
+  {
+    "department": "IB Core/University Program",
+    "course_name": "IB TOK/ Core II",
+    "course_code": "2063",
+    "credit": "1",
+    "grade_range": "12"
+  }
+]
