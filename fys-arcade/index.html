@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The F.Y.S. Arcade!!</title>
+<style>
+  :root{ color-scheme: light; }
+
+  html{
+    background:#000030
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Crect width='140' height='140' fill='%23000030'/%3E%3Ccircle cx='12' cy='22' r='1' fill='%23ffffff'/%3E%3Ccircle cx='64' cy='9' r='1.4' fill='%23ccddff'/%3E%3Ccircle cx='103' cy='40' r='1' fill='%23ffffff'/%3E%3Ccircle cx='31' cy='71' r='1.2' fill='%23ffeeaa'/%3E%3Ccircle cx='88' cy='96' r='1' fill='%23ffffff'/%3E%3Ccircle cx='127' cy='118' r='1.3' fill='%23ccddff'/%3E%3Ccircle cx='47' cy='131' r='1' fill='%23ffffff'/%3E%3Ccircle cx='7' cy='104' r='1' fill='%23ffffff'/%3E%3C/svg%3E");
+  }
+  body{
+    margin:0; padding:10px;
+    font-family:"Times New Roman", Times, serif;
+    font-size:16px; color:#000;
+  }
+
+  /* ---------- the page "table" ---------- */
+  .page{
+    max-width:920px; margin:0 auto;
+    background:#c0c0c0;
+    border:4px ridge #dfdfdf;
+    padding:0 0 14px 0;
+  }
+
+  /* ---------- header ---------- */
+  .banner{
+    background:#000080;
+    background-image:linear-gradient(180deg,#0000b0 0%,#000060 100%);
+    border-bottom:3px ridge #8080ff;
+    text-align:center;
+    padding:14px 10px 10px 10px;
+  }
+  .banner h1{
+    margin:0;
+    font-family:"Comic Sans MS","Chalkboard SE",cursive;
+    font-size:40px; line-height:1.05;
+    color:#ffff00;
+    text-shadow:3px 3px 0 #ff00ff, 5px 5px 0 #000;
+    letter-spacing:1px;
+  }
+  .banner .sub{
+    margin-top:6px; color:#00ffff; font-size:15px; font-weight:bold;
+    font-family:"Courier New",monospace;
+  }
+  .rule{
+    height:6px; margin:0;
+    background:repeating-linear-gradient(90deg,#ff0000 0 14px,#ff9900 14px 28px,#ffff00 28px 42px,#00cc00 42px 56px,#0066ff 56px 70px,#9900ff 70px 84px);
+    border-top:1px solid #fff; border-bottom:1px solid #555;
+  }
+
+  marquee{
+    background:#000; color:#00ff00;
+    font-family:"Courier New",monospace; font-size:14px; font-weight:bold;
+    padding:4px 0; border-bottom:2px groove #808080;
+  }
+
+  .blink{ animation:blink 1s steps(1,end) infinite; }
+  @keyframes blink{ 50%{ opacity:0 } }
+
+  /* ---------- shared 90s chrome ---------- */
+  .panel{
+    background:#c0c0c0; border:3px outset #f0f0f0;
+    margin:14px 14px 0 14px; padding:10px 12px 14px 12px;
+  }
+  .panel > h2{
+    margin:0 0 10px 0; font-size:20px;
+    font-family:"Comic Sans MS","Chalkboard SE",cursive;
+    color:#000080; text-align:center;
+    border-bottom:2px groove #808080; padding-bottom:6px;
+  }
+  .btn{
+    font-family:"Times New Roman",Times,serif; font-size:15px;
+    background:#c0c0c0; border:3px outset #f0f0f0;
+    padding:4px 12px; cursor:pointer; color:#000;
+  }
+  .btn:active{ border-style:inset; padding:5px 11px 3px 13px; }
+
+  /* ---------- class chooser ---------- */
+  .classes{
+    display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
+  }
+  .classbtn{
+    flex:1 1 200px; max-width:260px;
+    background:#c0c0c0; border:4px outset #f0f0f0;
+    padding:12px 8px; cursor:pointer; text-align:center;
+    font-family:"Times New Roman",Times,serif; color:#000;
+  }
+  .classbtn:hover{ background:#d4d4d4; }
+  .classbtn:active{ border-style:inset; }
+  .classbtn.on{ border-style:inset; background:#ffffcc; }
+  .classbtn .emoji{ font-size:34px; display:block; line-height:1; }
+  .classbtn .nm{
+    display:block; margin-top:6px; font-size:19px; font-weight:bold; color:#000080;
+    font-family:"Comic Sans MS","Chalkboard SE",cursive;
+  }
+  .classbtn .ct{ display:block; font-size:12px; color:#404040; margin-top:2px; }
+  .classbtn.on .nm{ color:#800000; }
+
+  /* ---------- game grid ---------- */
+  #shelfWrap{ display:none; }
+  #shelfTitle{
+    margin:0 0 4px 0; text-align:center; font-size:22px;
+    font-family:"Comic Sans MS","Chalkboard SE",cursive; color:#000080;
+  }
+  #shelfNote{ text-align:center; font-size:12px; color:#404040; margin:0 0 12px 0; }
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:14px;
+  }
+  .game{
+    background:#e8e8e8; border:3px outset #f8f8f8;
+    padding:6px; display:flex; flex-direction:column;
+  }
+  .shot{
+    position:relative; overflow:hidden;
+    background:#000; border:2px inset #808080;
+    width:100%;
+  }
+  .shot iframe{
+    position:absolute; top:0; left:0;
+    width:1024px; height:768px; border:0;
+    transform-origin:top left; pointer-events:none;
+    background:#111;
+  }
+  .shot .veil{ position:absolute; inset:0; cursor:pointer; }
+  .shot .idle{
+    position:absolute; inset:0; display:flex;
+    align-items:center; justify-content:center; font-size:44px;
+    background:#101040; color:#8080ff;
+  }
+  .game h3{
+    margin:8px 2px 2px 2px; font-size:16px; line-height:1.2;
+    font-family:"Comic Sans MS","Chalkboard SE",cursive; color:#000080;
+  }
+  .by{ margin:2px; font-size:14px; color:#800000; font-weight:bold; }
+  .ctl{
+    margin:4px 2px 8px 2px; font-size:12px; color:#303030;
+    font-family:"Courier New",monospace; flex:1 1 auto;
+  }
+  .new{ color:#ff0000; font-size:11px; font-family:"Courier New",monospace; }
+  .playbtn{
+    width:100%; font-size:15px; font-weight:bold; color:#008000;
+    background:#c0c0c0; border:3px outset #f0f0f0; padding:5px; cursor:pointer;
+    font-family:"Times New Roman",Times,serif;
+  }
+  .playbtn:hover{ background:#d8ffd8; }
+  .playbtn:active{ border-style:inset; }
+
+  /* ---------- modal window ---------- */
+  #modal{
+    display:none; position:fixed; inset:0; z-index:50;
+    background:rgba(0,0,40,.82); padding:12px;
+  }
+  #modal.on{ display:flex; align-items:center; justify-content:center; }
+  .win{
+    width:min(1100px,100%); height:100%;
+    background:#c0c0c0; border:3px outset #f0f0f0;
+    display:flex; flex-direction:column; padding:3px;
+  }
+  .titlebar{
+    background:linear-gradient(90deg,#000080,#1084d0);
+    color:#fff; font-family:"Times New Roman",Times,serif; font-weight:bold;
+    padding:3px 4px; display:flex; align-items:center; gap:8px; font-size:15px;
+  }
+  .titlebar .t{ flex:1 1 auto; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .titlebar .x{
+    background:#c0c0c0; border:2px outset #f0f0f0; color:#000;
+    font-family:"Courier New",monospace; font-weight:bold;
+    width:26px; height:22px; line-height:1; cursor:pointer; flex:0 0 auto;
+  }
+  .titlebar .x:active{ border-style:inset; }
+  .winbar{
+    background:#c0c0c0; border-bottom:2px groove #808080;
+    padding:3px 5px; font-size:12px; display:flex; gap:10px; align-items:center;
+    flex-wrap:wrap;
+  }
+  .winbar a{ color:#0000ee; }
+  #frameHolder{ flex:1 1 auto; background:#000; border:2px inset #808080; }
+  #gameFrame{ width:100%; height:100%; border:0; display:block; background:#000; }
+
+  /* ---------- footer ---------- */
+  .foot{
+    margin:16px 14px 0 14px; padding-top:10px;
+    border-top:2px groove #808080;
+    text-align:center; font-size:12px; color:#000;
+  }
+  .counter{
+    display:inline-block; background:#000; color:#00ff00;
+    font-family:"Courier New",monospace; font-size:18px; letter-spacing:3px;
+    padding:2px 8px; border:2px inset #808080;
+  }
+  .construction{
+    margin:10px auto 6px auto; max-width:340px; height:16px;
+    border:2px outset #f0f0f0;
+    background:repeating-linear-gradient(45deg,#ffcc00 0 12px,#000 12px 24px);
+    background-size:34px 34px;
+    animation:march 1.4s linear infinite;
+  }
+  @keyframes march{ to{ background-position:34px 0 } }
+  .warn{
+    margin:12px 14px 0 14px; padding:8px;
+    background:#ffffcc; border:2px dashed #ff0000; font-size:13px;
+  }
+
+  @media (max-width:520px){
+    .banner h1{ font-size:26px; }
+    .grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="banner">
+    <h1>&#9733; The F.Y.S. Arcade &#9733;</h1>
+    <div class="sub">~ 21 ORIGINAL GAMES &middot; BUILT BY FIRST YEAR SEMINAR STUDENTS ~</div>
+  </div>
+  <div class="rule"></div>
+
+  <marquee scrollamount="5">
+    &#128126; WELCOME TO THE ARCADE &#128126; PICK YOUR TEACHER, PICK A GAME, PRESS PLAY &#128126;
+    NO QUARTERS REQUIRED &#128126; BEST VIEWED IN NETSCAPE NAVIGATOR 3.0 &#128126;
+  </marquee>
+
+  <div class="panel">
+    <h2>&#128218; Step 1: Choose A Class</h2>
+    <div class="classes">
+      <button class="classbtn" data-class="ccade">
+        <span class="emoji">&#127968;</span>
+        <span class="nm">Ms. Cade</span>
+        <span class="ct">10 games</span>
+      </button>
+      <button class="classbtn" data-class="skim">
+        <span class="emoji">&#127979;</span>
+        <span class="nm">Ms. Kim</span>
+        <span class="ct">11 games</span>
+      </button>
+      <button class="classbtn" data-class="all">
+        <span class="emoji">&#127918;</span>
+        <span class="nm">All Games</span>
+        <span class="ct">21 games</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="panel" id="shelfWrap">
+    <h2 id="shelfTitle">Now Playing</h2>
+    <p id="shelfNote">Click any cabinet to play. Previews below are live &mdash; the real game runs in the window.</p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="warn" id="fileWarn" style="display:none">
+    <b>&#9888; Heads up:</b> this page is open from the file system (<code>file://</code>), and most browsers
+    block local pages from loading each other in frames. Start the Live Server
+    (<b>Go Live</b> in VS Code) and the previews and Play buttons will work.
+  </div>
+
+  <div class="foot">
+    <div class="construction"></div>
+    <p>
+      You are visitor number<br>
+      <span class="counter" id="hits">000000</span>
+    </p>
+    <p>
+      <b>The F.Y.S. Arcade</b> &middot; First Year Seminar &middot; Ms. Cade &amp; Ms. Kim<br>
+      <span class="blink" style="color:#ff0000">&#9733; NEW! &#9733;</span>
+      All games written by students. Sound on, volume up.
+    </p>
+    <p style="color:#404040">
+      Best viewed at 800&times;600 &middot; Made with Notepad &middot; Last updated 08/31/2026
+    </p>
+  </div>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="win">
+    <div class="titlebar">
+      <span>&#127918;</span>
+      <span class="t" id="winTitle">Game</span>
+      <button class="x" id="closeBtn" title="Close (Esc)">X</button>
+    </div>
+    <div class="winbar">
+      <span id="winCtl"></span>
+      <span style="flex:1 1 auto"></span>
+      <a href="#" id="newTab" target="_blank" rel="noopener">Open in new window</a>
+      <a href="#" id="reloadBtn">Restart game</a>
+    </div>
+    <div id="frameHolder"><iframe id="gameFrame" title="Game" allow="autoplay; fullscreen; gamepad"></iframe></div>
+  </div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------
+   The catalog. Each game is a self-contained HTML file on disk.
+   Add a game by dropping the file in ccade/ or skim/ and adding a row.
+   ------------------------------------------------------------------ */
+var CLASSES = {
+  ccade: { name: "Ms. Cade", dir: "ccade" },
+  skim:  { name: "Ms. Kim",  dir: "skim"  }
+};
+
+var GAMES = [
+  /* --- Ms. Cade --- */
+  { cls:"ccade", file:"anni_unicorn_2048_game_v1.html",           title:"Unicorn 2048",                 by:"Anni",    ctl:"Arrow keys or swipe" },
+  { cls:"ccade", file:"bea_flappy_unicorn_v1.html",               title:"Flappy Unicorn",               by:"Bea",     ctl:"Click or tap to flap" },
+  { cls:"ccade", file:"diego_shadow_operator_v4.html",            title:"Shadow Operator",              by:"Diego",   ctl:"W A S D to sneak" },
+  { cls:"ccade", file:"julian_jungle_crewmate_flappy_bird.html",  title:"Among Us: Jungle Flight",      by:"Julian",  ctl:"Spacebar or tap to jump" },
+  { cls:"ccade", file:"matias_geometry_dash_v1.html",             title:"Geometry Dash",                by:"Matias",  ctl:"Space or click to jump" },
+  { cls:"ccade", file:"micah_slalom_skiing_v2.html",              title:"Slalom Skiing Championship",   by:"Micah",   ctl:"Left / Right arrows to carve" },
+  { cls:"ccade", file:"nico_overstim_snake.html",                 title:"Overstim Snake",               by:"Nico",    ctl:"Arrow keys &mdash; brace yourself" },
+  { cls:"ccade", file:"ryo_retro_fifa_legends.html",              title:"FIFA 26: Retro Legends",       by:"Ryo",     ctl:"W A S D move, Space shoot, Shift switch" },
+  { cls:"ccade", file:"shanying_kaleido_snake.html",              title:"Kaleidoscope Snake",           by:"Shanying",ctl:"W A S D or arrow keys" },
+  { cls:"ccade", file:"sophi_s_hair_salon.html",                  title:"Sophi's Hair Salon",           by:"Sophi",   ctl:"Mouse &mdash; snip, dye and style" },
+
+  /* --- Ms. Kim --- */
+  { cls:"skim",  file:"Game Diego.html",                          title:"Football 1v1",                 by:"Diego",   ctl:"1P or 2P &middot; W A S D + Space / Arrows + Enter" },
+  { cls:"skim",  file:"Rebecca.html",                             title:"Alien Starship Abduction",     by:"Rebecca", ctl:"W A S D move, mouse to aim and fire" },
+  { cls:"skim",  file:"adrian Game.html",                         title:"The Labyrinth Runner",         by:"Adrian",  ctl:"Arrow keys, Shift to sprint" },
+  { cls:"skim",  file:"ale - vikinggame.html",                    title:"Viking Tug-of-Dash",           by:"Ale",     ctl:"2 players &middot; mash A vs. mash L" },
+  { cls:"skim",  file:"astrid - Game.html",                       title:"3D Desert Skyway Racer",       by:"Astrid",  ctl:"Arrow keys to steer" },
+  { cls:"skim",  file:"bar_swing_olympics_v1.html",               title:"Bar Swing Olympics",           by:"",        ctl:"Left / Right in rhythm, Space to release" },
+  { cls:"skim",  file:"chloe - rhythm_dash_v1.html",              title:"Rhythm Dash",                  by:"Chloe",   ctl:"Space to jump &middot; upload your own song" },
+  { cls:"skim",  file:"inaki.html",                               title:"1v1 Soccer",                   by:"Inaki",   ctl:"W A S D or arrows, Space to power kick" },
+  { cls:"skim",  file:"pedro.html",                               title:"Flappy Hoops",                 by:"Pedro",   ctl:"Space &middot; 2P adds mouse click" },
+  { cls:"skim",  file:"santi - 3d_table_tennis_game.html",        title:"3D Table Tennis",              by:"Santi",   ctl:"W A S D to move, O to hit and serve" },
+  { cls:"skim",  file:"victoria - splatoon_ink_racers_v2.html",   title:"Splatoon Ink Racers",          by:"Victoria",ctl:"2 players &middot; W A S D + Space / Arrows + Enter" }
+];
+
+/* Filenames contain spaces and apostrophes, so encode each path segment. */
+function srcFor(g){
+  return encodeURIComponent(CLASSES[g.cls].dir) + "/" + encodeURIComponent(g.file);
+}
+
+var grid       = document.getElementById("grid");
+var shelfWrap  = document.getElementById("shelfWrap");
+var shelfTitle = document.getElementById("shelfTitle");
+var modal      = document.getElementById("modal");
+var gameFrame  = document.getElementById("gameFrame");
+var winTitle   = document.getElementById("winTitle");
+var winCtl     = document.getElementById("winCtl");
+var newTab     = document.getElementById("newTab");
+var current    = null;
+
+/* --- lazy-load the live preview frames only once they scroll into view --- */
+var seen = [];
+var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(!e.isIntersecting) return;
+    io.unobserve(e.target);
+    loadPreview(e.target);
+  });
+}, { rootMargin: "200px" }) : null;
+
+function loadPreview(shot){
+  if(shot.dataset.loaded) return;
+  shot.dataset.loaded = "1";
+  var f = document.createElement("iframe");
+  f.setAttribute("scrolling","no");
+  f.setAttribute("tabindex","-1");
+  f.setAttribute("aria-hidden","true");
+  f.dataset.src = shot.dataset.src;
+  /* Drop the "tuning in" placeholder once the cabinet is actually showing something. */
+  f.addEventListener("load", function(){
+    var idle = shot.querySelector(".idle");
+    if(idle) idle.parentNode.removeChild(idle);
+  });
+  f.src = shot.dataset.src;
+  shot.insertBefore(f, shot.firstChild);
+  seen.push(f);
+  scaleOne(shot);
+}
+
+/* The preview frames render at 1024x768 and get scaled down to the card. */
+function scaleOne(shot){
+  var w = shot.clientWidth;
+  if(!w) return;
+  var s = w / 1024;
+  shot.style.height = Math.round(768 * s) + "px";
+  var f = shot.querySelector("iframe");
+  if(f) f.style.transform = "scale(" + s + ")";
+}
+function scaleAll(){
+  Array.prototype.forEach.call(document.querySelectorAll(".shot"), scaleOne);
+}
+window.addEventListener("resize", scaleAll);
+
+function render(which){
+  grid.innerHTML = "";
+  seen = [];
+  var list = GAMES.filter(function(g){ return which === "all" || g.cls === which; });
+
+  shelfTitle.innerHTML = which === "all"
+    ? "&#127918; Every Game In The Arcade"
+    : "&#127918; " + CLASSES[which].name + "'s Class";
+
+  list.forEach(function(g){
+    var src = srcFor(g);
+
+    var card = document.createElement("div");
+    card.className = "game";
+
+    var shot = document.createElement("div");
+    shot.className = "shot";
+    shot.dataset.src = src;
+    shot.innerHTML = '<div class="idle">&#128250;</div><div class="veil" title="Play"></div>';
+
+    var h3 = document.createElement("h3");
+    h3.textContent = g.title;
+
+    var by = document.createElement("div");
+    by.className = "by";
+    by.innerHTML = g.by
+      ? "by " + g.by + (which === "all" ? ' <span class="new">(' + CLASSES[g.cls].name + ")</span>" : "")
+      : '<span style="color:#606060">student unlisted</span>';
+
+    var ctl = document.createElement("div");
+    ctl.className = "ctl";
+    ctl.innerHTML = g.ctl;
+
+    var btn = document.createElement("button");
+    btn.className = "playbtn";
+    btn.innerHTML = "&#9654; PLAY!";
+
+    card.appendChild(shot);
+    card.appendChild(h3);
+    card.appendChild(by);
+    card.appendChild(ctl);
+    card.appendChild(btn);
+    grid.appendChild(card);
+
+    function open(){ openGame(g); }
+    btn.addEventListener("click", open);
+    shot.querySelector(".veil").addEventListener("click", open);
+
+    if(io) io.observe(shot); else loadPreview(shot);
+  });
+
+  shelfWrap.style.display = "block";
+  scaleAll();
+}
+
+/* --- modal --- */
+function openGame(g){
+  current = g;
+  var src = srcFor(g);
+  setHash("play=" + g.cls + "/" + g.file);
+  winTitle.textContent = g.title + (g.by ? " — by " + g.by : "");
+  winCtl.innerHTML = "<b>Controls:</b> " + g.ctl;
+  newTab.href = src;
+  gameFrame.src = src;
+  modal.classList.add("on");
+  document.body.style.overflow = "hidden";
+  freezePreviews(true);
+  /* Give the game the keyboard so arrow keys reach it, not the page. */
+  gameFrame.addEventListener("load", function once(){
+    gameFrame.removeEventListener("load", once);
+    try { gameFrame.contentWindow.focus(); } catch(e){}
+  });
+}
+
+function closeGame(){
+  if(current) setHash(current.cls);
+  modal.classList.remove("on");
+  gameFrame.src = "about:blank";
+  document.body.style.overflow = "";
+  current = null;
+  freezePreviews(false);
+}
+
+/* Stop 20 background game loops from fighting the game you're playing. */
+function freezePreviews(off){
+  seen.forEach(function(f){
+    if(off){ f.src = "about:blank"; }
+    else if(f.src.indexOf("about:blank") !== -1){ f.src = f.dataset.src; }
+  });
+}
+
+document.getElementById("closeBtn").addEventListener("click", closeGame);
+document.getElementById("reloadBtn").addEventListener("click", function(e){
+  e.preventDefault();
+  if(current) gameFrame.src = srcFor(current);
+});
+modal.addEventListener("click", function(e){ if(e.target === modal) closeGame(); });
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && modal.classList.contains("on")) closeGame();
+});
+
+/* ------------------------------------------------------------------
+   Routing. #ccade / #skim / #all open a shelf; #play=skim/pedro.html
+   opens one game directly, so a single game can be linked or bookmarked.
+   ------------------------------------------------------------------ */
+var muteHash = false;
+function setHash(h){
+  muteHash = true;
+  history.replaceState(null, "", "#" + h);
+  setTimeout(function(){ muteHash = false; }, 0);
+}
+
+function select(which, scroll){
+  if(which !== "all" && !CLASSES[which]) return false;
+  Array.prototype.forEach.call(document.querySelectorAll(".classbtn"), function(o){
+    o.classList.toggle("on", o.dataset.class === which);
+  });
+  render(which);
+  if(scroll) shelfWrap.scrollIntoView({ behavior:"smooth", block:"start" });
+  return true;
+}
+
+function route(hash){
+  var h = decodeURIComponent(String(hash || "").replace(/^#/, ""));
+  if(h.indexOf("play=") === 0){
+    var rest = h.slice(5);
+    var cut  = rest.indexOf("/");
+    var cls  = rest.slice(0, cut), file = rest.slice(cut + 1);
+    var g = null;
+    GAMES.forEach(function(x){ if(x.cls === cls && x.file === file) g = x; });
+    if(g){ select(cls, false); openGame(g); return; }
+  }
+  if(modal.classList.contains("on")) closeGame();
+  select(h, false);
+}
+
+Array.prototype.forEach.call(document.querySelectorAll(".classbtn"), function(b){
+  b.addEventListener("click", function(){
+    setHash(b.dataset.class);
+    select(b.dataset.class, true);
+  });
+});
+
+route(location.hash);
+window.addEventListener("hashchange", function(){
+  if(!muteHash) route(location.hash);
+});
+
+/* --- 1996 essentials --- */
+(function(){
+  var n = 0;
+  try { n = parseInt(localStorage.getItem("fysHits") || "0", 10) || 0; } catch(e){}
+  n = n + 1;
+  try { localStorage.setItem("fysHits", String(n)); } catch(e){}
+  document.getElementById("hits").textContent = String(1996 + n).padStart(6, "0");
+})();
+
+if(location.protocol === "file:"){
+  document.getElementById("fileWarn").style.display = "block";
+}
+</script>
+</body>
+</html>
