@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, where, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFhiLa94zjP8IakzEd4nvtJOH-HRX10fI",
@@ -81,6 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
             myCoursesSection.style.display = 'block';
             selectionForm.style.display = 'none'; // hidden until they click Add or Edit
 
+            // Save user to 'users' collection
+            setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                lastLogin: new Date().toISOString()
+            }, { merge: true }).catch(err => console.error("Error saving user profile:", err));
+
             document.getElementById('sign-out-btn').addEventListener('click', () => {
                 signOut(auth).then(() => {
                     currentUser = null;
@@ -88,8 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
             
-            // Fetch user's selections
-            const q = query(collection(db, "selections"), where("userEmail", "==", user.email));
+            // Fetch user's hs-dispositions
+            const q = query(collection(db, "hs-dispositions"), where("userEmail", "==", user.email));
             onSnapshot(q, (snapshot) => {
                 myCoursesList.innerHTML = '';
                 if (snapshot.empty) {
@@ -121,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.querySelector('.edit-btn').addEventListener('click', () => editEntry(docSnap.id, data));
                     li.querySelector('.delete-btn').addEventListener('click', async () => {
                         if (confirm(`Are you sure you want to delete your configuration for ${titleText}?`)) {
-                            await deleteDoc(doc(db, "selections", docSnap.id));
+                            await deleteDoc(doc(db, "hs-dispositions", docSnap.id));
                             if (currentEditingDocId === docSnap.id) {
                                 resetForm();
                             }
@@ -422,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveBtn.addEventListener('click', async () => {
         if (!currentUser) {
-            alert("Please sign in with Google before saving your selections.");
+            alert("Please sign in with Google before saving your hs-dispositions.");
             return;
         }
 
@@ -462,14 +470,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (currentEditingDocId) {
                 // Update existing document
-                await updateDoc(doc(db, "selections", currentEditingDocId), selectionData);
+                await updateDoc(doc(db, "hs-dispositions", currentEditingDocId), selectionData);
                 console.log("Document updated with ID: ", currentEditingDocId);
                 alert("Course configuration updated successfully!");
                 resetForm();
                 selectionForm.style.display = 'none';
             } else {
                 // Add new document
-                const docRef = await addDoc(collection(db, "selections"), selectionData);
+                const docRef = await addDoc(collection(db, "hs-dispositions"), selectionData);
                 console.log("Document written with ID: ", docRef.id);
                 alert("New course configuration saved successfully!");
                 resetForm();
@@ -487,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!currentUser) return alert("Please sign in first.");
             if (!coursesData || coursesData.length === 0) return alert("Course catalog not loaded yet.");
             
-            const numToGenerate = 40;
+            const numToGenerate = 25;
             const allDispositions = ["Empathy", "Reflection", "Curiosity", "Perseverance", "Self-Direction"];
             
             generateTestDataBtn.innerText = "Generating...";
@@ -510,9 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         userName: currentUser.displayName
                     };
                     
-                    await addDoc(collection(db, "selections"), testData);
+                    await addDoc(collection(db, "hs-dispositions"), testData);
                 }
-                alert("Successfully added 40 dummy courses!");
+                alert("Successfully added 25 dummy courses!");
             } catch (e) {
                 console.error("Error generating test data:", e);
                 alert("Error adding dummy data.");
@@ -571,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return cleaned;
     }
 
-    onSnapshot(collection(db, "selections"), (snapshot) => {
+    onSnapshot(collection(db, "hs-dispositions"), (snapshot) => {
         nodes = []; 
         snapshot.forEach((doc) => {
             const data = doc.data();
