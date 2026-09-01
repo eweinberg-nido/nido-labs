@@ -708,20 +708,6 @@
   },
   {
     "department": "Science",
-    "course_name": "IB Design Technology SL I",
-    "course_code": "4315",
-    "credit": "1",
-    "grade_range": "11"
-  },
-  {
-    "department": "Science",
-    "course_name": "IB Design Technology HL I",
-    "course_code": "4316",
-    "credit": "1",
-    "grade_range": "11"
-  },
-  {
-    "department": "Science",
     "course_name": "IB Biology SL II",
     "course_code": "4031",
     "credit": "1",
@@ -777,105 +763,91 @@
     "grade_range": "12"
   },
   {
-    "department": "Science",
-    "course_name": "IB Design Technology SL II",
-    "course_code": "4317",
-    "credit": "1",
-    "grade_range": "12"
-  },
-  {
-    "department": "Science",
-    "course_name": "IB Design Technology HL II",
-    "course_code": "4318",
-    "credit": "1",
-    "grade_range": "12"
-  },
-  {
-    "department": "Interdisciplinary Studies",
+    "department": "Interdisciplinary",
     "course_name": "First Year Seminar",
     "course_code": "8065",
     "credit": "1",
     "grade_range": "9"
   },
   {
-    "department": "Interdisciplinary Studies",
+    "department": "Interdisciplinary",
     "course_name": "Changemakers",
     "course_code": "8066",
     "credit": "1",
     "grade_range": "10"
   },
   {
-    "department": "Interdisciplinary Studies",
+    "department": "Interdisciplinary",
     "course_name": "Nidoships (Internships)",
     "course_code": "8068",
     "credit": "0.5",
     "grade_range": "11-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "Foundations of Design Tech",
     "course_code": "6507",
     "credit": ".5",
     "grade_range": "9-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "Foundations of Coding",
     "course_code": "6514",
     "credit": ".5",
     "grade_range": "9-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "Robotics",
     "course_code": "8050",
     "credit": ".5",
     "grade_range": "9-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "Design Lab*",
     "course_code": "6508",
     "credit": ".5",
     "grade_range": "9-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "Engineering",
     "course_code": "4026",
     "credit": ".5",
     "grade_range": "10-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "Sustainable Design",
     "course_code": "2137",
     "credit": "0.5",
     "grade_range": "10-12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "IB Design Technology SL I",
     "course_code": "4315",
     "credit": "1",
     "grade_range": "11"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "IB Design Technology HL I",
     "course_code": "4316",
     "credit": "1",
     "grade_range": "11"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "IB Design Technology SL II",
     "course_code": "4317",
     "credit": "1",
     "grade_range": "12"
   },
   {
-    "department": "Design Technology",
+    "department": "Design-Tech",
     "course_name": "IB Design Technology HL II",
     "course_code": "4318",
     "credit": "1",
@@ -1204,14 +1176,14 @@
     "grade_range": "12"
   },
   {
-    "department": "IB Core/University Program",
+    "department": "IB Core/University",
     "course_name": "IB TOK/Core I",
     "course_code": "2062",
     "credit": "1",
     "grade_range": "11"
   },
   {
-    "department": "IB Core/University Program",
+    "department": "IB Core/University",
     "course_name": "IB TOK/ Core II",
     "course_code": "2063",
     "credit": "1",
