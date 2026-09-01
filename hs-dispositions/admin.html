@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Nido Skills & Dispositions</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { background-color: #f4f6f8; margin: 0; padding: 0; font-family: sans-serif; }
+        .container { max-width: 1200px; margin: 2rem auto; background: var(--nido-white); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .table-responsive { overflow-x: auto; margin-top: 1rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: var(--nido-blue); color: white; }
+        .action-btn { margin-right: 5px; cursor: pointer; padding: 4px 8px; border: none; border-radius: 4px; color: white; font-size: 0.8rem; }
+        .btn-edit { background-color: #17a2b8; }
+        .btn-delete { background-color: var(--nido-red); }
+        .btn-view { background-color: #6c757d; }
+        .filter-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 2rem; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .evidence-box { background: #f9f9f9; padding: 10px; border-left: 4px solid var(--nido-blue); margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <header class="bg-nido-blue text-white" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <h1 class="font-bold" style="margin: 0; font-size: 1.5rem;">Admin Dashboard - Dispositions</h1>
+        <a href="index.html" style="color: white; text-decoration: none;">&larr; Back to Main Site</a>
+    </header>
+
+    <main class="container">
+        <!-- Auth Section -->
+        <div id="auth-section" style="text-align: center; margin-bottom: 2rem;">
+            <h2>Admin Authentication Required</h2>
+            <button id="sign-in-btn" class="btn-nido-blue">Sign in with Google</button>
+            <p id="auth-message" style="color: var(--nido-red); margin-top: 1rem;"></p>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>All Course Configurations</h2>
+                <button id="add-entry-btn" class="btn-nido-blue">+ Add New Entry for Teacher</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="form-label text-nido-blue">Teacher (Name/Email):</label>
+                    <input type="text" id="filter-teacher" class="form-control" placeholder="Search teacher...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label text-nido-blue">Department:</label>
+                    <select id="filter-department" class="form-control">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label text-nido-blue">Course:</label>
+                    <select id="filter-course" class="form-control">
+                        <option value="">All Courses</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label text-nido-blue">Disposition:</label>
+                    <select id="filter-disposition" class="form-control">
+                        <option value="">All Dispositions</option>
+                        <option value="Empathy">Empathy</option>
+                        <option value="Reflection">Reflection</option>
+                        <option value="Curiosity">Curiosity</option>
+                        <option value="Perseverance">Perseverance</option>
+                        <option value="Self-Direction">Self-Direction</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Department</th>
+                            <th>Course</th>
+                            <th>Dispositions</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Evidence Modal -->
+    <div id="evidence-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-nido-blue">Evidence Collection Ideas</h2>
+            <div id="evidence-content" style="margin: 1.5rem 0;"></div>
+            <button class="btn-nido-dark" onclick="document.getElementById('evidence-modal').classList.add('hidden')">Close</button>
+        </div>
+    </div>
+
+    <!-- Edit/Add Modal (simplified for admin rapid entry) -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title" class="text-nido-blue">Edit Entry</h2>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Teacher Name:</label>
+                <input type="text" id="edit-teacher-name" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Teacher Email:</label>
+                <input type="email" id="edit-teacher-email" class="form-control" required>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Department:</label>
+                    <select id="edit-department" class="form-control" required></select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Course:</label>
+                    <select id="edit-course" class="form-control" required></select>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <label class="form-label">Dispositions (Check all that apply):</label>
+                <div id="edit-dispositions-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                    <!-- checkboxes generated -->
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button class="btn-nido-dark" id="modal-cancel-btn" style="flex: 1;">Cancel</button>
+                <button class="btn-nido-blue" id="modal-save-btn" style="flex: 1;">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
