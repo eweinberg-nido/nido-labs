@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         id: `${doc.id}-${disp}`, 
                         dept: deptShort,
                         disp: disp,
-                        radius: 18,
+                        radius: 10,
                         userName: data.userName,
                         course: data.course
                     });
