@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         id: `${doc.id}-${disp}`, 
                         dept: deptShort,
                         disp: disp,
-                        radius: 10,
+                        radius: 10, // Shrunk from 18 to make them fit better
                         userName: data.userName,
                         course: data.course
                     });
@@ -620,7 +620,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const numCategories = categories.length;
         if (numCategories === 0) return; 
 
-        const centerRadius = numCategories > 5 ? 180 : 150;
+        // Lowering the radius pulls the clusters closer to the center (away from the edges)
+        const centerRadius = numCategories > 5 ? 150 : 120;
         
         categories.forEach((cat, i) => {
             const angle = (i / numCategories) * 2 * Math.PI - (Math.PI / 2);
