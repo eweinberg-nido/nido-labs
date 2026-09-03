@@ -41,13 +41,24 @@
 
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2>All Course Configurations</h2>
-                <button id="add-entry-btn" class="btn-nido-blue">+ Add New Entry for Teacher</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="margin: 0;">All Course Configurations</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="export-csv-btn" class="btn-nido-dark" style="background-color: #28a745; color: white;">Export CSV</button>
+                    <button id="add-entry-btn" class="btn-nido-blue">+ Add New Entry</button>
+                </div>
             </div>
 
             <!-- Filters -->
             <div class="filter-row">
+                <div class="filter-group">
+                    <label class="form-label text-nido-blue">Status:</label>
+                    <select id="filter-status" class="form-control">
+                        <option value="all">All</option>
+                        <option value="entered">Entered Data</option>
+                        <option value="missing">Missing Data</option>
+                    </select>
+                </div>
                 <div class="filter-group">
                     <label class="form-label text-nido-blue">Teacher (Name/Email):</label>
                     <input type="text" id="filter-teacher" class="form-control" placeholder="Search teacher...">
@@ -75,6 +86,10 @@
                         <option value="Self-Direction">Self-Direction</option>
                     </select>
                 </div>
+            </div>
+
+            <div id="result-count" class="text-nido-blue font-bold" style="margin-bottom: 0.5rem; font-size: 0.95rem;">
+                Showing 0 entries
             </div>
 
             <div class="table-responsive">
