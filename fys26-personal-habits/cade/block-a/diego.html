@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyQuest - 9th Grade Study Tracker & Reward Hub</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.5);
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.8);
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.92; transform: scale(1.01); }
+    }
+    .pulse-alert {
+      animation: pulse-subtle 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body id="app-body" class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-300">
+
+  <!-- Top Navigation Header -->
+  <header id="main-header" class="bg-indigo-700 text-white shadow-md sticky top-0 z-30 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-white/10 rounded-xl shadow-inner backdrop-blur-sm">
+          <i data-lucide="graduation-cap" class="w-7 h-7 text-yellow-300"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+            StudyQuest <span class="text-xs font-semibold px-2 py-0.5 bg-white/20 rounded-full text-white uppercase tracking-wider">Grade 9</span>
+          </h1>
+          <p class="text-xs text-white/80">Beat procrastination • Start early • Claim rewards</p>
+        </div>
+      </div>
+
+      <!-- Quick Stats, Theme Selector & Class Settings -->
+      <div class="flex items-center space-x-3 sm:space-x-4 text-sm font-medium flex-wrap gap-y-2">
+        <!-- Theme Picker Dropdown -->
+        <div class="flex items-center space-x-1 bg-white/10 px-2.5 py-1.5 rounded-lg border border-white/20 text-xs">
+          <i data-lucide="palette" class="w-4 h-4 text-white/80"></i>
+          <label for="theme-select" class="hidden sm:inline text-white/90 font-medium">Theme:</label>
+          <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-white font-semibold focus:outline-none cursor-pointer">
+            <option value="indigo" class="text-slate-900">Indigo Royal</option>
+            <option value="emerald" class="text-slate-900">Emerald Forest</option>
+            <option value="violet" class="text-slate-900">Violet Galaxy</option>
+            <option value="rose" class="text-slate-900">Rose Crimson</option>
+            <option value="amber" class="text-slate-900">Sunset Amber</option>
+            <option value="dark" class="text-slate-900">Midnight Dark</option>
+          </select>
+        </div>
+
+        <!-- Manage Classes Button -->
+        <button onclick="openClassModal()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 text-xs font-semibold flex items-center space-x-1.5 transition-colors">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+          <span>Edit Classes</span>
+        </button>
+
+        <div class="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
+          <i data-lucide="clock" class="w-4 h-4 text-white/80"></i>
+          <span id="current-time-display" class="font-mono font-bold text-white">--:--:--</span>
+        </div>
+        <div class="flex items-center space-x-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">
+          <i data-lucide="flame" class="w-4 h-4 text-orange-400"></i>
+          <span>Streak: <strong id="streak-counter" class="text-orange-300">0 Days</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full space-y-6">
+
+    <!-- SMART Goal Banner & Evening Alert -->
+    <section class="dynamic-card bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 relative overflow-hidden transition-colors duration-300">
+      <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
+        <i data-lucide="target" class="w-64 h-64 text-current"></i>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center relative z-10">
+        <!-- Goal Overview -->
+        <div class="md:col-span-2 space-y-2">
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase tracking-wide">My Daily SMART Goal</span>
+            <span id="target-time-badge" class="px-2.5 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-bold rounded-full">Target: 6:00 PM or Earlier</span>
+          </div>
+          <h2 class="text-xl font-bold">Study for at least 45 minutes starting around 6:00 PM</h2>
+          <p class="text-sm opacity-80 leading-relaxed">
+            Starting early leaves your evening free and improves your 9th-grade GPA without last-minute stress!
+          </p>
+        </div>
+
+        <!-- Start Motivation Callout -->
+        <div id="countdown-card" class="dynamic-card-subtle bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col items-center text-center justify-center space-y-2 pulse-alert transition-colors duration-300">
+          <div class="flex items-center space-x-2 font-semibold text-sm">
+            <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+            <span id="countdown-title">Target Start Time</span>
+          </div>
+          <p id="countdown-timer" class="text-2xl font-black font-mono">00h 00m 00s</p>
+          <p id="countdown-subtext" class="text-xs opacity-80">Get ready to hit the books by 6:00 PM!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Overall Daily Progress & Reward Trigger -->
+    <section id="banner-progress" class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white rounded-2xl p-6 shadow-md relative overflow-hidden transition-all duration-300">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
+        <div>
+          <span class="text-white/80 font-semibold text-xs tracking-wider uppercase">Today's Total Focus</span>
+          <div class="flex items-baseline space-x-3 mt-1">
+            <span id="total-study-time" class="text-3xl md:text-4xl font-extrabold font-mono text-white">00m 00s</span>
+            <span class="text-white/80 text-sm font-medium">/ 45 minutes target</span>
+          </div>
+        </div>
+
+        <!-- Reward Button -->
+        <div>
+          <button id="claim-reward-btn" onclick="openRewardModal()" disabled 
+            class="px-6 py-3 bg-slate-700 text-slate-400 font-bold rounded-xl shadow cursor-not-allowed transition-all duration-200 flex items-center space-x-2">
+            <i data-lucide="gift" class="w-5 h-5"></i>
+            <span id="reward-btn-text">Reach 45 mins to Unlock Reward</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="space-y-1.5">
+        <div class="w-full bg-slate-950/60 rounded-full h-4 p-0.5 border border-white/20">
+          <div id="daily-progress-bar" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-full rounded-full transition-all duration-500 w-0 shadow-sm"></div>
+        </div>
+        <div class="flex justify-between text-xs text-white/80 font-medium px-1">
+          <span>0m</span>
+          <span>15m</span>
+          <span>30m</span>
+          <span class="font-bold text-amber-300">45m (Goal)</span>
+          <span>60m+</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TO-DO & HOMEWORK PLANNER SECTION -->
+    <section class="dynamic-card bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4 transition-colors duration-300">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-black/10 pb-3">
+        <div>
+          <h3 class="text-lg font-bold flex items-center gap-2">
+            <i data-lucide="check-square" class="w-5 h-5 dynamic-icon-color"></i>
+            Homework & Study To-Do List
+          </h3>
+          <p class="text-xs opacity-70">Organize your assignments by importance, due date, or date handed out!</p>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <!-- Sort Dropdown -->
+          <div class="flex items-center space-x-1 bg-black/5 dark:bg-white/10 rounded-lg px-2.5 py-1.5 text-xs">
+            <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-60"></i>
+            <span class="font-medium opacity-80">Sort by:</span>
+            <select id="todo-sort-select" onchange="changeTodoSort(this.value)" class="bg-transparent font-bold focus:outline-none cursor-pointer">
+              <option value="priority" class="text-slate-900">Most Important (Priority)</option>
+              <option value="dueDate" class="text-slate-900">Date Due (Soonest First)</option>
+              <option value="dateHanded" class="text-slate-900">Day Handed Out / Assigned</option>
+            </select>
+          </div>
+
+          <button onclick="openAddTodoModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm transition-colors dynamic-btn">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Task</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- To-Do Tasks Table / List -->
+      <div class="overflow-x-auto">
+        <div id="todos-container" class="space-y-2 min-w-[600px]">
+          <!-- Task items dynamically injected here -->
+        </div>
+        <div id="no-todos-msg" class="text-center py-8 opacity-60 text-xs flex flex-col items-center justify-center space-y-1">
+          <i data-lucide="clipboard-check" class="w-8 h-8 opacity-40"></i>
+          <span>No assignments in your list! Click "Add Task" to stay organized.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Subjects Grid Header -->
+    <div class="flex justify-between items-center pt-2">
+      <h3 class="text-lg font-bold flex items-center gap-2">
+        <i data-lucide="book-open" class="w-5 h-5 dynamic-icon-color"></i>
+        Subject Study Timers
+      </h3>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs opacity-70 hidden sm:inline">Customize your classes anytime!</span>
+        <button onclick="openClassModal()" class="text-xs font-semibold underline flex items-center gap-1 dynamic-text-color">
+          <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Manage Classes
+        </button>
+      </div>
+    </div>
+
+    <!-- Subjects Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="subjects-container">
+      <!-- Subject cards dynamically injected here -->
+    </section>
+
+    <!-- Bottom Dashboard: Quick Tips & Session Logs -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+      
+      <!-- Anti-Procrastination Hacks -->
+      <section class="dynamic-card bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3 transition-colors duration-300">
+        <h4 class="font-bold flex items-center gap-2 text-md">
+          <i data-lucide="brain-circuit" class="w-5 h-5 text-amber-500"></i>
+          How to Start Studying at 6 PM
+        </h4>
+        <ul class="space-y-2.5 text-xs opacity-90">
+          <li class="flex items-start gap-2 dynamic-card-subtle p-2.5 rounded-lg border">
+            <span class="font-bold text-amber-500 text-sm">1.</span>
+            <span><strong>The 5-Minute Rule:</strong> Tell yourself you'll study for just 5 minutes. Once you start, momentum takes over!</span>
+          </li>
+          <li class="flex items-start gap-2 dynamic-card-subtle p-2.5 rounded-lg border">
+            <span class="font-bold text-amber-500 text-sm">2.</span>
+            <span><strong>Prepare at 5:55 PM:</strong> Clear your desk, open your books, and close social media 5 minutes early.</span>
+          </li>
+          <li class="flex items-start gap-2 dynamic-card-subtle p-2.5 rounded-lg border">
+            <span class="font-bold text-amber-500 text-sm">3.</span>
+            <span><strong>Reward Focus:</strong> Remind yourself that 45 minutes of work unlocks random game privileges or food treats!</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Today's Study Log History -->
+      <section class="dynamic-card lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between transition-colors duration-300">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="font-bold flex items-center gap-2 text-md">
+              <i data-lucide="history" class="w-5 h-5 dynamic-icon-color"></i>
+              Today's Completed Sessions
+            </h4>
+            <button onclick="resetTodayData()" class="text-xs text-rose-500 hover:text-rose-700 font-medium underline flex items-center gap-1">
+              <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Today's Time
+            </button>
+          </div>
+
+          <div class="max-h-48 overflow-y-auto custom-scrollbar pr-1">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-black/5 dark:bg-white/10 font-semibold uppercase sticky top-0">
+                <tr>
+                  <th class="p-2 rounded-l-lg">Time</th>
+                  <th class="p-2">Subject</th>
+                  <th class="p-2">Duration</th>
+                  <th class="p-2 rounded-r-lg">Notes</th>
+                </tr>
+              </thead>
+              <tbody id="session-log-tbody">
+                <!-- Log rows dynamically injected -->
+              </tbody>
+            </table>
+            <div id="no-logs-msg" class="text-center py-6 opacity-60 text-xs">
+              No sessions completed today yet. Click 'Start' on any subject above!
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-black/10 text-right text-xs opacity-60">
+          Data saved automatically to your device's browser local storage.
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="dynamic-footer bg-white border-t border-slate-200 mt-10 py-4 text-center text-xs opacity-80 transition-colors duration-300">
+    StudyQuest • SMART Study & Privilege Reward System for High School Success
+  </footer>
+
+  <!-- ==================== MANAGE CLASSES MODAL ==================== -->
+  <div id="class-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="dynamic-card bg-white rounded-2xl max-w-lg w-full shadow-2xl border overflow-hidden transform transition-all">
+      <div class="bg-indigo-700 dynamic-header text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5"></i>
+          Customize Classes & Study Topics
+        </h3>
+        <button onclick="closeClassModal()" class="text-white/80 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+        <!-- Add New Class Form -->
+        <div class="dynamic-card-subtle p-3.5 rounded-xl border space-y-3">
+          <h4 class="text-xs font-bold uppercase tracking-wide opacity-80">Add a New Class</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <input type="text" id="new-class-name" placeholder="Class Name (e.g. AP World History)" 
+              class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <input type="text" id="new-class-topics" placeholder="Default Topics / What to study" 
+              class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <button onclick="addNewSubject()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 dynamic-btn">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add Class</span>
+          </button>
+        </div>
+
+        <!-- Existing Classes List -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wide mb-2 opacity-80">Existing Classes</h4>
+          <div id="classes-list-manage" class="space-y-2">
+            <!-- Dynamic list of classes -->
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-black/5 dark:bg-white/5 px-5 py-3 border-t border-black/10 flex justify-end">
+        <button onclick="closeClassModal()" class="px-4 py-2 bg-black/10 dark:bg-white/10 hover:bg-black/20 text-xs font-semibold rounded-lg">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ADD TO-DO TASK MODAL ==================== -->
+  <div id="todo-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="dynamic-card bg-white rounded-2xl max-w-md w-full shadow-2xl border overflow-hidden transform transition-all">
+      <div class="bg-indigo-700 dynamic-header text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="check-square" class="w-5 h-5"></i>
+          Add Assignment or Homework
+        </h3>
+        <button onclick="closeAddTodoModal()" class="text-white/80 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveTodoFromModal(event)" class="p-5 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold mb-1 opacity-90">Assignment Title *</label>
+          <input type="text" id="todo-title-input" required placeholder="e.g. Read Ch. 4 & Answer Questions 1-5" 
+            class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1 opacity-90">Class / Subject *</label>
+            <select id="todo-subject-select" class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
+              <!-- Dynamically populated from subjects -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 opacity-90">Importance (Priority) *</label>
+            <select id="todo-priority-select" class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold">
+              <option value="high" class="text-rose-600 font-bold">🔴 High Priority (Most Important)</option>
+              <option value="medium" selected class="text-amber-600 font-bold">🟡 Medium Priority</option>
+              <option value="low" class="text-emerald-600 font-bold">🟢 Low Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1 opacity-90">Day Handed Out / Assigned</label>
+            <input type="date" id="todo-handed-input" 
+              class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 opacity-90">Date Due *</label>
+            <input type="date" id="todo-due-input" required 
+              class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 opacity-90">Study Notes / Topics to Cover</label>
+          <textarea id="todo-notes-input" rows="2" placeholder="Specific details or chapters to study..." 
+            class="w-full px-3 py-2 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeAddTodoModal()" class="px-4 py-2 bg-black/10 dark:bg-white/10 hover:bg-black/20 text-xs font-semibold rounded-lg">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow transition-colors dynamic-btn">
+            Save Assignment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REWARD MODAL -->
+  <div id="reward-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="dynamic-card bg-white rounded-2xl max-w-md w-full shadow-2xl border overflow-hidden transform transition-all text-center">
+      <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="gift" class="w-5 h-5"></i>
+          Privilege Reward Wheel
+        </h3>
+        <button onclick="closeRewardModal()" class="text-slate-900/80 hover:text-slate-900 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div id="reward-card-display" class="dynamic-card-subtle border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center min-h-[160px]">
+          <h4 id="reward-title" class="text-xl font-black">Ready to Claim?</h4>
+          <p id="reward-desc" class="text-xs opacity-80 mt-2">Click the button below to draw your random privilege reward!</p>
+        </div>
+
+        <button id="spin-btn" onclick="spinForReward()" class="w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-900 font-extrabold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+          <span>Draw Random Reward!</span>
+        </button>
+
+        <div id="certificate-wrapper" class="hidden border-t border-black/10 pt-4 text-left">
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-xs space-y-1">
+            <p class="font-bold text-amber-500 flex items-center gap-1">
+              <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+              Official Study Privilege Pass
+            </p>
+            <p class="opacity-80">Issued on: <span id="cert-date" class="font-mono font-bold"></span></p>
+            <p class="opacity-80">Granted: <strong id="cert-reward-name" class="text-amber-500"></strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-black/5 dark:bg-white/5 px-5 py-3 border-t border-black/10 flex justify-end">
+        <button onclick="closeRewardModal()" class="px-4 py-2 bg-black/10 dark:bg-white/10 hover:bg-black/20 text-xs font-semibold rounded-lg">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // --- FULL SCREEN THEME DEFINITIONS ---
+    const THEME_CLASSES = {
+      indigo: {
+        body: 'bg-slate-50 text-slate-800',
+        header: 'bg-indigo-700 text-white',
+        banner: 'from-indigo-900 via-indigo-800 to-slate-900 text-white',
+        card: 'bg-white text-slate-800 border-slate-200/80',
+        cardSubtle: 'bg-indigo-50/60 border-indigo-100 text-indigo-950',
+        btn: 'bg-indigo-600 hover:bg-indigo-700 text-white',
+        icon: 'text-indigo-600',
+        footer: 'bg-white border-slate-200 text-slate-500'
+      },
+      emerald: {
+        body: 'bg-emerald-950/5 text-emerald-950',
+        header: 'bg-emerald-700 text-white',
+        banner: 'from-emerald-900 via-teal-800 to-slate-900 text-white',
+        card: 'bg-white text-emerald-950 border-emerald-100',
+        cardSubtle: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+        btn: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+        icon: 'text-emerald-600',
+        footer: 'bg-white border-emerald-100 text-emerald-700'
+      },
+      violet: {
+        body: 'bg-purple-950/5 text-purple-950',
+        header: 'bg-purple-800 text-white',
+        banner: 'from-purple-900 via-indigo-900 to-slate-900 text-white',
+        card: 'bg-white text-purple-950 border-purple-100',
+        cardSubtle: 'bg-purple-50 border-purple-200 text-purple-900',
+        btn: 'bg-purple-600 hover:bg-purple-700 text-white',
+        icon: 'text-purple-600',
+        footer: 'bg-white border-purple-100 text-purple-700'
+      },
+      rose: {
+        body: 'bg-rose-950/5 text-rose-950',
+        header: 'bg-rose-700 text-white',
+        banner: 'from-rose-900 via-pink-900 to-slate-900 text-white',
+        card: 'bg-white text-rose-950 border-rose-100',
+        cardSubtle: 'bg-rose-50 border-rose-200 text-rose-900',
+        btn: 'bg-rose-600 hover:bg-rose-700 text-white',
+        icon: 'text-rose-600',
+        footer: 'bg-white border-rose-100 text-rose-700'
+      },
+      amber: {
+        body: 'bg-amber-950/5 text-amber-950',
+        header: 'bg-amber-600 text-white',
+        banner: 'from-amber-900 via-orange-800 to-slate-900 text-white',
+        card: 'bg-white text-amber-950 border-amber-100',
+        cardSubtle: 'bg-amber-50 border-amber-200 text-amber-900',
+        btn: 'bg-amber-600 hover:bg-amber-700 text-white',
+        icon: 'text-amber-600',
+        footer: 'bg-white border-amber-100 text-amber-700'
+      },
+      dark: {
+        body: 'bg-slate-950 text-slate-100 dark',
+        header: 'bg-slate-900 text-white border-b border-slate-800',
+        banner: 'from-slate-900 via-slate-800 to-slate-950 text-white border border-slate-800',
+        card: 'bg-slate-900 text-slate-100 border-slate-800',
+        cardSubtle: 'bg-slate-800/80 border-slate-700 text-slate-200',
+        btn: 'bg-indigo-600 hover:bg-indigo-500 text-white',
+        icon: 'text-indigo-400',
+        footer: 'bg-slate-900 border-slate-800 text-slate-400'
+      }
+    };
+
+    const DEFAULT_SUBJECTS = [
+      { id: 'math', name: 'Mathematics', icon: 'calculator', color: 'blue', topics: 'Algebra, Equations, Geometry' },
+      { id: 'english', name: 'English / Language Arts', icon: 'book-marked', color: 'emerald', topics: 'Reading, Essays, Vocabulary' },
+      { id: 'science', name: 'Science (Biology/Phys)', icon: 'flask-conical', color: 'purple', topics: 'Lab reports, Concepts, Biology' },
+      { id: 'social', name: 'Social Studies / History', icon: 'globe', color: 'amber', topics: 'Chapters, Outlines, Maps' },
+      { id: 'foreign', name: 'Foreign Language', icon: 'languages', color: 'rose', topics: 'Vocab flashcards, Grammar' },
+      { id: 'electives', name: 'Electives / Other', icon: 'pen-tool', color: 'indigo', topics: 'Projects, Assignments' }
+    ];
+
+    const REWARDS = [
+      {
+        id: 'game',
+        title: 'Game Privilege Certificate',
+        category: 'Gaming',
+        icon: 'gamepad-2',
+        desc: 'Unlocks 1 to 2 hours of guilt-free video game time tonight!',
+        color: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
+      },
+      {
+        id: 'food',
+        title: 'Food & Treat Access',
+        category: 'Snacks',
+        icon: 'utensils',
+        desc: 'Access to your favorite snack, dessert, or evening treat!',
+        color: 'bg-orange-500/10 border-orange-500/30 text-orange-400'
+      },
+      {
+        id: 'relax',
+        title: 'Relaxation & Chill Time',
+        category: 'Rest',
+        icon: 'tv',
+        desc: 'Watch your favorite movie, TV show, or YouTube channel!',
+        color: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+      },
+      {
+        id: 'free',
+        title: 'Free Choice Privilege',
+        category: 'Wildcard',
+        icon: 'sparkles',
+        desc: 'Pick whatever fun activity you want to do for the rest of the night!',
+        color: 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+      }
+    ];
+
+    // Local Storage Keys
+    const STORAGE_KEY_SESSIONS = 'studyquest_sessions_v1';
+    const STORAGE_KEY_STREAK = 'studyquest_streak_v1';
+    const STORAGE_KEY_REWARD = 'studyquest_reward_drawn_v1';
+    const STORAGE_KEY_SUBJECTS = 'studyquest_subjects_v1';
+    const STORAGE_KEY_TODOS = 'studyquest_todos_v1';
+    const STORAGE_KEY_THEME = 'studyquest_theme_v1';
+
+    // Application state variables
+    let SUBJECTS = [];
+    let TODOS = [];
+    let currentSort = 'priority';
+    let currentTheme = 'indigo';
+    let subjectTimers = {};
+    let dailySessions = []; 
+    let streakCount = 0;
+    let rewardDrawnToday = null;
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      initData();
+      applyTheme(currentTheme);
+      updateClockAndCountdown();
+      setInterval(updateClockAndCountdown, 1000);
+      renderLogHistory();
+      recalculateTotalTime();
+      lucide.createIcons();
+    };
+
+    function getTodayString() {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
+    }
+
+    function updateClockAndCountdown() {
+      const now = new Date();
+      
+      // Update header clock
+      const timeDisplay = document.getElementById('current-time-display');
+      if (timeDisplay) {
+        timeDisplay.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+
+      // Target start time: 6:00 PM (18:00) today
+      const targetTime = new Date();
+      targetTime.setHours(18, 0, 0, 0);
+
+      const timerEl = document.getElementById('countdown-timer');
+      const titleEl = document.getElementById('countdown-title');
+      const subtextEl = document.getElementById('countdown-subtext');
+
+      if (!timerEl) return;
+
+      const diffMs = targetTime - now;
+
+      if (diffMs > 0) {
+        const totalSecs = Math.floor(diffMs / 1000);
+        const hrs = Math.floor(totalSecs / 3600);
+        const mins = Math.floor((totalSecs % 3600) / 60);
+        const secs = totalSecs % 60;
+
+        if (titleEl) titleEl.textContent = "Target Start Time";
+        timerEl.textContent = `${padZero(hrs)}h ${padZero(mins)}m ${padZero(secs)}s`;
+        if (subtextEl) subtextEl.textContent = "Get ready to hit the books by 6:00 PM!";
+      } else {
+        if (titleEl) titleEl.textContent = "Study Goal Active!";
+        timerEl.textContent = "Goal Time Reached!";
+        if (subtextEl) subtextEl.textContent = "Great time to focus and unlock your reward!";
+      }
+    }
+
+    function initData() {
+      // Load Theme
+      const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
+      if (savedTheme) {
+        currentTheme = savedTheme;
+        document.getElementById('theme-select').value = currentTheme;
+      }
+
+      // Load Subjects
+      const savedSubjects = localStorage.getItem(STORAGE_KEY_SUBJECTS);
+      if (savedSubjects) {
+        try {
+          SUBJECTS = JSON.parse(savedSubjects);
+        } catch(e) {
+          SUBJECTS = DEFAULT_SUBJECTS;
+        }
+      } else {
+        SUBJECTS = DEFAULT_SUBJECTS;
+      }
+
+      // Load To-Dos
+      const savedTodos = localStorage.getItem(STORAGE_KEY_TODOS);
+      if (savedTodos) {
+        try {
+          TODOS = JSON.parse(savedTodos);
+        } catch(e) {
+          TODOS = [];
+        }
+      }
+
+      // Initialize Timers Object
+      SUBJECTS.forEach(s => {
+        if (!subjectTimers[s.id]) {
+          subjectTimers[s.id] = { seconds: 0, interval: null, isRunning: false };
+        }
+      });
+
+      // Load Sessions
+      const savedSessions = localStorage.getItem(STORAGE_KEY_SESSIONS);
+      if (savedSessions) {
+        try {
+          const parsed = JSON.parse(savedSessions);
+          const todayStr = getTodayString();
+          dailySessions = parsed.filter(session => session.date === todayStr);
+        } catch(e) {
+          dailySessions = [];
+        }
+      }
+
+      // Load Streak
+      const savedStreak = localStorage.getItem(STORAGE_KEY_STREAK);
+      if (savedStreak) {
+        try {
+          const streakData = JSON.parse(savedStreak);
+          if (streakData.lastDate === getTodayString()) {
+            streakCount = streakData.count;
+          } else {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (streakData.lastDate === yesterday.toISOString().split('T')[0]) {
+              streakCount = streakData.count;
+            } else {
+              streakCount = 0;
+            }
+          }
+        } catch(e) {
+          streakCount = 0;
+        }
+      }
+
+      // Load Reward
+      const savedReward = localStorage.getItem(STORAGE_KEY_REWARD);
+      if (savedReward) {
+        try {
+          const parsedReward = JSON.parse(savedReward);
+          if (parsedReward.date === getTodayString()) {
+            rewardDrawnToday = parsedReward.reward;
+          }
+        } catch(e) {
+          rewardDrawnToday = null;
+        }
+      }
+
+      document.getElementById('streak-counter').textContent = `${streakCount} Days`;
+    }
+
+    // --- THEME COLOR MANAGEMENT (FULL SCREEN) ---
+    function changeTheme(themeName) {
+      currentTheme = themeName;
+      localStorage.setItem(STORAGE_KEY_THEME, themeName);
+      applyTheme(themeName);
+    }
+
+    function applyTheme(themeName) {
+      const config = THEME_CLASSES[themeName] || THEME_CLASSES.indigo;
+
+      // 1. Full Body & Screen Theme
+      const body = document.getElementById('app-body');
+      if (body) {
+        body.className = `${config.body} min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-300`;
+      }
+
+      // 2. Header
+      const header = document.getElementById('main-header');
+      if (header) {
+        header.className = `${config.header} shadow-md sticky top-0 z-30 transition-colors duration-300`;
+      }
+
+      // 3. Dynamic Main Cards
+      document.querySelectorAll('.dynamic-card').forEach(el => {
+        const preserve = Array.from(el.classList).filter(c => 
+          c.startsWith('lg:') || c.startsWith('md:') || c.startsWith('col-span') || c === 'relative' || c === 'overflow-hidden' || c === 'space-y-4' || c === 'space-y-3' || c === 'flex' || c === 'flex-col' || c === 'justify-between'
+        ).join(' ');
+        el.className = `dynamic-card rounded-2xl p-5 shadow-sm border transition-colors duration-300 ${config.card} ${preserve}`;
+      });
+
+      // 4. Dynamic Subtle Cards
+      document.querySelectorAll('.dynamic-card-subtle').forEach(el => {
+        const preserve = Array.from(el.classList).filter(c => 
+          c.includes('pulse') || c.includes('grid') || c.includes('flex') || c.includes('items-') || c.includes('justify-') || c.includes('space-')
+        ).join(' ');
+        el.className = `dynamic-card-subtle rounded-xl p-4 border transition-colors duration-300 ${config.cardSubtle} ${preserve}`;
+      });
+
+      // 5. Dynamic Header Bar
+      document.querySelectorAll('.dynamic-header').forEach(el => {
+        el.className = `dynamic-header ${config.header} p-4 flex justify-between items-center transition-colors duration-300`;
+      });
+
+      // 6. Dynamic Buttons
+      document.querySelectorAll('.dynamic-btn').forEach(el => {
+        const baseBtn = "px-3 py-1.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-colors";
+        el.className = `dynamic-btn ${config.btn} ${baseBtn}`;
+      });
+
+      // 7. Dynamic Icons & Text
+      document.querySelectorAll('.dynamic-icon-color').forEach(el => {
+        el.className = `dynamic-icon-color ${config.icon} w-5 h-5`;
+      });
+      document.querySelectorAll('.dynamic-text-color').forEach(el => {
+        el.className = `dynamic-text-color ${config.icon} text-xs font-semibold underline flex items-center gap-1`;
+      });
+
+      // 8. Progress Banner
+      const banner = document.getElementById('banner-progress');
+      if (banner) {
+        banner.className = `bg-gradient-to-r ${config.banner} rounded-2xl p-6 shadow-md relative overflow-hidden transition-all duration-300`;
+      }
+
+      // 9. Footer
+      const footer = document.querySelector('footer');
+      if (footer) {
+        footer.className = `dynamic-footer ${config.footer} border-t mt-10 py-4 text-center text-xs transition-colors duration-300`;
+      }
+
+      // Re-render components so their card backgrounds match active theme
+      renderSubjects();
+      renderTodos();
+    }
+
+    // --- CLASS / SUBJECT MANAGEMENT ---
+    function openClassModal() {
+      renderManageClassesList();
+      document.getElementById('class-modal').classList.remove('hidden');
+    }
+
+    function closeClassModal() {
+      document.getElementById('class-modal').classList.add('hidden');
+      renderSubjects();
+    }
+
+    function renderManageClassesList() {
+      const container = document.getElementById('classes-list-manage');
+      container.innerHTML = '';
+
+      SUBJECTS.forEach((sub, index) => {
+        const item = document.createElement('div');
+        item.className = "dynamic-card-subtle p-3 rounded-xl border flex flex-col space-y-2";
+        item.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <input type="text" value="${escapeHTML(sub.name)}" onchange="updateSubjectName(${index}, this.value)" 
+              class="font-bold border-b border-black/10 dark:border-white/20 bg-transparent text-xs px-1 py-0.5 w-full">
+            <button onclick="deleteSubject(${index})" class="text-rose-500 hover:text-rose-700 p-1" title="Delete Class">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <div>
+            <label class="text-[10px] opacity-60 font-semibold block uppercase">Topics / What to study</label>
+            <input type="text" value="${escapeHTML(sub.topics || '')}" onchange="updateSubjectTopics(${index}, this.value)" 
+              placeholder="Topics to study..." class="text-xs border border-black/10 dark:border-white/20 rounded px-2 py-1 w-full bg-black/5 dark:bg-white/5">
+          </div>
+        `;
+        container.appendChild(item);
+      });
+      lucide.createIcons();
+    }
+
+    function addNewSubject() {
+      const nameInput = document.getElementById('new-class-name');
+      const topicsInput = document.getElementById('new-class-topics');
+      const name = nameInput.value.trim();
+      const topics = topicsInput.value.trim();
+
+      if (!name) {
+        showToast("Please enter a class name.");
+        return;
+      }
+
+      const newSub = {
+        id: 'sub_' + Date.now(),
+        name: name,
+        icon: 'book-open',
+        color: 'indigo',
+        topics: topics || 'Homework & Study'
+      };
+
+      SUBJECTS.push(newSub);
+      subjectTimers[newSub.id] = { seconds: 0, interval: null, isRunning: false };
+      saveSubjects();
+      nameInput.value = '';
+      topicsInput.value = '';
+      renderManageClassesList();
+      showToast(`Added ${name}!`);
+    }
+
+    function updateSubjectName(index, newName) {
+      if (newName.trim()) {
+        SUBJECTS[index].name = newName.trim();
+        saveSubjects();
+      }
+    }
+
+    function updateSubjectTopics(index, newTopics) {
+      SUBJECTS[index].topics = newTopics.trim();
+      saveSubjects();
+    }
+
+    function deleteSubject(index) {
+      if (SUBJECTS.length <= 1) {
+        showToast("You must keep at least one class.");
+        return;
+      }
+      const removed = SUBJECTS.splice(index, 1);
+      saveSubjects();
+      renderManageClassesList();
+      showToast(`Deleted ${removed[0].name}.`);
+    }
+
+    function saveSubjects() {
+      localStorage.setItem(STORAGE_KEY_SUBJECTS, JSON.stringify(SUBJECTS));
+    }
+
+    // --- TO-DO / HOMEWORK PLANNER LOGIC ---
+    function openAddTodoModal() {
+      const select = document.getElementById('todo-subject-select');
+      select.innerHTML = '';
+      SUBJECTS.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        opt.className = "text-slate-900";
+        select.appendChild(opt);
+      });
+
+      const todayStr = getTodayString();
+      document.getElementById('todo-handed-input').value = todayStr;
+      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('todo-due-input').value = tomorrow.toISOString().split('T')[0];
+
+      document.getElementById('todo-modal').classList.remove('hidden');
+    }
+
+    function closeAddTodoModal() {
+      document.getElementById('todo-modal').classList.add('hidden');
+    }
+
+    function saveTodoFromModal(e) {
+      e.preventDefault();
+      const title = document.getElementById('todo-title-input').value.trim();
+      const subjectId = document.getElementById('todo-subject-select').value;
+      const priority = document.getElementById('todo-priority-select').value;
+      const dateHanded = document.getElementById('todo-handed-input').value || getTodayString();
+      const dateDue = document.getElementById('todo-due-input').value;
+      const notes = document.getElementById('todo-notes-input').value.trim();
+
+      if (!title || !dateDue) return;
+
+      const subObj = SUBJECTS.find(s => s.id === subjectId) || { name: 'General' };
+
+      const newTodo = {
+        id: 'todo_' + Date.now(),
+        title: title,
+        subjectId: subjectId,
+        subjectName: subObj.name,
+        priority: priority,
+        dateHanded: dateHanded,
+        dateDue: dateDue,
+        notes: notes,
+        completed: false
+      };
+
+      TODOS.push(newTodo);
+      saveTodos();
+      renderTodos();
+      closeAddTodoModal();
+      document.getElementById('todo-title-input').value = '';
+      document.getElementById('todo-notes-input').value = '';
+      showToast("Assignment added!");
+    }
+
+    function toggleTodoComplete(todoId) {
+      const todo = TODOS.find(t => t.id === todoId);
+      if (todo) {
+        todo.completed = !todo.completed;
+        saveTodos();
+        renderTodos();
+        if (todo.completed) {
+          confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
+        }
+      }
+    }
+
+    function deleteTodo(todoId) {
+      TODOS = TODOS.filter(t => t.id !== todoId);
+      saveTodos();
+      renderTodos();
+      showToast("Assignment deleted.");
+    }
+
+    function changeTodoSort(sortType) {
+      currentSort = sortType;
+      renderTodos();
+    }
+
+    function saveTodos() {
+      localStorage.setItem(STORAGE_KEY_TODOS, JSON.stringify(TODOS));
+    }
+
+    function renderTodos() {
+      const container = document.getElementById('todos-container');
+      const noMsg = document.getElementById('no-todos-msg');
+      container.innerHTML = '';
+
+      if (TODOS.length === 0) {
+        noMsg.classList.remove('hidden');
+        return;
+      }
+      noMsg.classList.add('hidden');
+
+      let sorted = [...TODOS];
+      if (currentSort === 'priority') {
+        const priorityScore = { high: 3, medium: 2, low: 1 };
+        sorted.sort((a, b) => priorityScore[b.priority] - priorityScore[a.priority]);
+      } else if (currentSort === 'dueDate') {
+        sorted.sort((a, b) => new Date(a.dateDue) - new Date(b.dateDue));
+      } else if (currentSort === 'dateHanded') {
+        sorted.sort((a, b) => new Date(b.dateHanded) - new Date(a.dateHanded));
+      }
+
+      const config = THEME_CLASSES[currentTheme] || THEME_CLASSES.indigo;
+
+      sorted.forEach(todo => {
+        const card = document.createElement('div');
+        const isCompleted = todo.completed;
+
+        let priorityBadge = '';
+        if (todo.priority === 'high') {
+          priorityBadge = `<span class="px-2 py-0.5 bg-rose-500/20 text-rose-500 text-[10px] font-bold rounded-full">High Priority</span>`;
+        } else if (todo.priority === 'medium') {
+          priorityBadge = `<span class="px-2 py-0.5 bg-amber-500/20 text-amber-500 text-[10px] font-bold rounded-full">Medium Priority</span>`;
+        } else {
+          priorityBadge = `<span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-500 text-[10px] font-bold rounded-full">Low Priority</span>`;
+        }
+
+        card.className = `p-3.5 rounded-xl border transition-all flex items-start justify-between gap-3 ${
+          isCompleted ? 'opacity-40 border-black/10 dark:border-white/10' : `${config.cardSubtle}`
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-start space-x-3 w-full">
+            <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleTodoComplete('${todo.id}')" 
+              class="mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+            <div class="space-y-1 w-full">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-bold text-xs sm:text-sm ${isCompleted ? 'line-through opacity-60' : ''}">
+                  ${escapeHTML(todo.title)}
+                </span>
+                ${priorityBadge}
+                <span class="px-2 py-0.5 bg-black/10 dark:bg-white/10 text-[10px] font-semibold rounded-md">
+                  ${escapeHTML(todo.subjectName)}
+                </span>
+              </div>
+              
+              ${todo.notes ? `<p class="text-xs opacity-70">${escapeHTML(todo.notes)}</p>` : ''}
+
+              <div class="flex flex-wrap items-center gap-4 text-[11px] opacity-60 pt-0.5">
+                <span class="flex items-center gap-1">
+                  <i data-lucide="calendar" class="w-3 h-3 opacity-60"></i> Handed: <strong>${todo.dateHanded}</strong>
+                </span>
+                <span class="flex items-center gap-1 ${new Date(todo.dateDue) < new Date() && !isCompleted ? 'text-rose-500 font-bold' : ''}">
+                  <i data-lucide="clock" class="w-3 h-3"></i> Due: <strong>${todo.dateDue}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="deleteTodo('${todo.id}')" class="opacity-60 hover:opacity-100 hover:text-rose-500 p-1" title="Delete">
+            <i data-lucide="trash" class="w-4 h-4"></i>
+          </button>
+        `;
+
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // --- RENDER SUBJECT CARDS ---
+    function renderSubjects() {
+      const container = document.getElementById('subjects-container');
+      container.innerHTML = '';
+
+      const config = THEME_CLASSES[currentTheme] || THEME_CLASSES.indigo;
+
+      SUBJECTS.forEach(sub => {
+        if (!subjectTimers[sub.id]) {
+          subjectTimers[sub.id] = { seconds: 0, interval: null, isRunning: false };
+        }
+
+        const card = document.createElement('div');
+        card.className = `dynamic-card ${config.card} rounded-2xl p-5 border shadow-sm flex flex-col justify-between space-y-4 transition-colors duration-300 hover:shadow-md`;
+
+        card.innerHTML = `
+          <div>
+            <!-- Subject Header -->
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-3">
+                <div class="p-2.5 rounded-xl bg-black/5 dark:bg-white/10 ${config.icon}">
+                  <i data-lucide="${sub.icon || 'book-open'}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-base">${escapeHTML(sub.name)}</h4>
+                  <p class="text-[10px] opacity-60">${escapeHTML(sub.topics || 'Study topic')}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Timer Display -->
+            <div class="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl p-3 text-center my-3">
+              <span id="timer-display-${sub.id}" class="text-3xl font-black font-mono tracking-wider">
+                ${formatHMS(subjectTimers[sub.id].seconds)}
+              </span>
+            </div>
+
+            <!-- Optional Note input -->
+            <input type="text" id="note-input-${sub.id}" placeholder="What are you studying specifically?" 
+              class="w-full text-xs px-3 py-2 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400">
+          </div>
+
+          <!-- Controls -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button id="btn-toggle-${sub.id}" onclick="toggleTimer('${sub.id}')" 
+              class="py-2.5 px-3 ${subjectTimers[sub.id].isRunning ? 'bg-amber-500 hover:bg-amber-600 text-white' : config.btn} font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-sm">
+              <i data-lucide="${subjectTimers[sub.id].isRunning ? 'pause' : 'play'}" class="w-4 h-4"></i>
+              <span>${subjectTimers[sub.id].isRunning ? 'Pause' : 'Start'}</span>
+            </button>
+            <button onclick="logSession('${sub.id}')" 
+              class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-sm">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Save & Log</span>
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // --- STOPWATCH LOGIC ---
+    function toggleTimer(subjectId) {
+      const timerState = subjectTimers[subjectId];
+      const toggleBtn = document.getElementById(`btn-toggle-${subjectId}`);
+
+      if (!timerState.isRunning) {
+        timerState.isRunning = true;
+        toggleBtn.className = "py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-sm";
+        toggleBtn.innerHTML = `<i data-lucide="pause" class="w-4 h-4"></i><span>Pause</span>`;
+
+        timerState.interval = setInterval(() => {
+          timerState.seconds++;
+          updateTimerUI(subjectId);
+        }, 1000);
+      } else {
+        timerState.isRunning = false;
+        clearInterval(timerState.interval);
+        const config = THEME_CLASSES[currentTheme] || THEME_CLASSES.indigo;
+        toggleBtn.className = `py-2.5 px-3 ${config.btn} font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-sm`;
+        toggleBtn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i><span>Resume</span>`;
+      }
+      lucide.createIcons();
+    }
+
+    function updateTimerUI(subjectId) {
+      const seconds = subjectTimers[subjectId].seconds;
+      const el = document.getElementById(`timer-display-${subjectId}`);
+      if (el) el.textContent = formatHMS(seconds);
+    }
+
+    function logSession(subjectId) {
+      const timerState = subjectTimers[subjectId];
+      const elapsed = timerState.seconds;
+
+      if (elapsed < 10) {
+        showToast("Please study for at least 10 seconds before logging.");
+        return;
+      }
+
+      if (timerState.isRunning) {
+        toggleTimer(subjectId);
+      }
+
+      const noteInput = document.getElementById(`note-input-${subjectId}`);
+      const notes = noteInput.value.trim() || 'General study';
+      const subjectObj = SUBJECTS.find(s => s.id === subjectId) || { name: 'Study' };
+
+      const newSession = {
+        id: Date.now().toString(),
+        date: getTodayString(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        subjectId: subjectId,
+        subjectName: subjectObj.name,
+        durationSeconds: elapsed,
+        notes: notes
+      };
+
+      dailySessions.push(newSession);
+      saveSessionsToLocalStorage();
+
+      timerState.seconds = 0;
+      updateTimerUI(subjectId);
+      if (noteInput) noteInput.value = '';
+
+      recalculateTotalTime();
+      renderLogHistory();
+      showToast(`Logged ${formatMinutes(elapsed)} for ${subjectObj.name}!`);
+    }
+
+    // --- RECALCULATE TOTAL TIME & UPDATE REWARD STATE ---
+    function recalculateTotalTime() {
+      const totalSeconds = dailySessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
+      
+      document.getElementById('total-study-time').textContent = formatHMS(totalSeconds);
+
+      const targetSeconds = 45 * 60;
+      const progressPercent = Math.min(100, Math.round((totalSeconds / targetSeconds) * 100));
+
+      const progressBar = document.getElementById('daily-progress-bar');
+      progressBar.style.width = `${progressPercent}%`;
+
+      const claimBtn = document.getElementById('claim-reward-btn');
+      const btnText = document.getElementById('reward-btn-text');
+
+      if (totalSeconds >= targetSeconds) {
+        claimBtn.disabled = false;
+        claimBtn.className = "px-6 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-slate-900 font-extrabold rounded-xl shadow-lg hover:shadow-orange-500/20 transform hover:-translate-y-0.5 transition-all cursor-pointer flex items-center space-x-2 animate-bounce";
+        
+        if (rewardDrawnToday) {
+          btnText.textContent = "View Earned Privilege Pass";
+        } else {
+          btnText.textContent = "Unlock & Draw Privilege Reward!";
+        }
+
+        updateStreakOnGoalMet();
+      } else {
+        claimBtn.disabled = true;
+        claimBtn.className = "px-6 py-3 bg-black/20 text-white/50 font-bold rounded-xl border border-white/10 cursor-not-allowed flex items-center space-x-2";
+        const minsLeft = Math.ceil((targetSeconds - totalSeconds) / 60);
+        btnText.textContent = `${minsLeft} mins remaining for Reward`;
+      }
+    }
+
+    function updateStreakOnGoalMet() {
+      const todayStr = getTodayString();
+      const savedStreak = localStorage.getItem(STORAGE_KEY_STREAK);
+      let streakData = savedStreak ? JSON.parse(savedStreak) : { count: 0, lastDate: '' };
+
+      if (streakData.lastDate !== todayStr) {
+        streakData.count += 1;
+        streakData.lastDate = todayStr;
+        localStorage.setItem(STORAGE_KEY_STREAK, JSON.stringify(streakData));
+        document.getElementById('streak-counter').textContent = `${streakData.count} Days`;
+      }
+    }
+
+    // --- LOG HISTORY TABLE ---
+    function renderLogHistory() {
+      const tbody = document.getElementById('session-log-tbody');
+      const noLogsMsg = document.getElementById('no-logs-msg');
+
+      tbody.innerHTML = '';
+
+      if (dailySessions.length === 0) {
+        noLogsMsg.classList.remove('hidden');
+        return;
+      }
+
+      noLogsMsg.classList.add('hidden');
+
+      dailySessions.slice().reverse().forEach(session => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5";
+
+        tr.innerHTML = `
+          <td class="p-2 font-mono opacity-70">${session.time}</td>
+          <td class="p-2 font-bold">${session.subjectName}</td>
+          <td class="p-2 font-mono font-semibold text-emerald-500">${formatHMS(session.durationSeconds)}</td>
+          <td class="p-2 opacity-70 max-w-xs truncate">${escapeHTML(session.notes)}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- REWARD SYSTEM MODAL & RANDOM DRAW ---
+    function openRewardModal() {
+      const modal = document.getElementById('reward-modal');
+      modal.classList.remove('hidden');
+
+      if (rewardDrawnToday) {
+        displayDrawnReward(rewardDrawnToday);
+      } else {
+        const config = THEME_CLASSES[currentTheme] || THEME_CLASSES.indigo;
+        document.getElementById('reward-card-display').className = `${config.cardSubtle} border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center min-h-[160px]`;
+        document.getElementById('reward-title').textContent = "Ready to Claim?";
+        document.getElementById('reward-desc').textContent = "Click the button below to draw your random privilege reward!";
+        document.getElementById('spin-btn').classList.remove('hidden');
+        document.getElementById('certificate-wrapper').classList.add('hidden');
+      }
+    }
+
+    function closeRewardModal() {
+      document.getElementById('reward-modal').classList.add('hidden');
+    }
+
+    function spinForReward() {
+      const spinBtn = document.getElementById('spin-btn');
+      spinBtn.disabled = true;
+      spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      let counter = 0;
+      const totalTicks = 20;
+      const rewardTitle = document.getElementById('reward-title');
+      const rewardDesc = document.getElementById('reward-desc');
+
+      const interval = setInterval(() => {
+        const randomTemp = REWARDS[Math.floor(Math.random() * REWARDS.length)];
+        rewardTitle.textContent = randomTemp.title;
+        rewardDesc.textContent = randomTemp.category;
+        counter++;
+
+        if (counter >= totalTicks) {
+          clearInterval(interval);
+          
+          const finalReward = REWARDS[Math.floor(Math.random() * REWARDS.length)];
+          rewardDrawnToday = finalReward;
+
+          localStorage.setItem(STORAGE_KEY_REWARD, JSON.stringify({
+            date: getTodayString(),
+            reward: finalReward
+          }));
+
+          displayDrawnReward(finalReward);
+
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+
+          spinBtn.disabled = false;
+          spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          recalculateTotalTime();
+        }
+      }, 100);
+    }
+
+    function displayDrawnReward(reward) {
+      const displayCard = document.getElementById('reward-card-display');
+      displayCard.className = `border-2 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[160px] ${reward.color}`;
+
+      document.getElementById('reward-title').textContent = reward.title;
+      document.getElementById('reward-desc').textContent = reward.desc;
+
+      document.getElementById('spin-btn').classList.add('hidden');
+      
+      const certWrapper = document.getElementById('certificate-wrapper');
+      certWrapper.classList.remove('hidden');
+      document.getElementById('cert-date').textContent = getTodayString();
+      document.getElementById('cert-reward-name').textContent = reward.title;
+
+      lucide.createIcons();
+    }
+
+    // --- LOCAL STORAGE HELPERS ---
+    function saveSessionsToLocalStorage() {
+      localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(dailySessions));
+    }
+
+    function resetTodayData() {
+      if (confirm("Are you sure you want to reset today's study progress? This cannot be undone.")) {
+        dailySessions = [];
+        rewardDrawnToday = null;
+        localStorage.removeItem(STORAGE_KEY_SESSIONS);
+        localStorage.removeItem(STORAGE_KEY_REWARD);
+        
+        recalculateTotalTime();
+        renderLogHistory();
+        showToast("Today's progress has been reset.");
+      }
+    }
+
+    // --- UTILITIES ---
+    function formatHMS(totalSecs) {
+      const hrs = Math.floor(totalSecs / 3600);
+      const mins = Math.floor((totalSecs % 3600) / 60);
+      const secs = totalSecs % 60;
+      return `${padZero(hrs)}:${padZero(mins)}:${padZero(secs)}`;
+    }
+
+    function formatMinutes(totalSecs) {
+      const mins = Math.round(totalSecs / 60);
+      return `${mins} min${mins !== 1 ? 's' : ''}`;
+    }
+
+    function padZero(num) {
+      return num < 10 ? `0${num}` : num;
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl z-50 transition-opacity duration-300 opacity-0 transform translate-y-2";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

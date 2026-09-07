@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mindful Flow - Planificador Diario y Seguimiento Emocional</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            cream: {
+              50: '#FAF8F5',
+              100: '#F5F0EB',
+              200: '#EAE0D5',
+              300: '#DDD0C0',
+            },
+            softPink: '#FCEFEF',
+            softSage: '#EBF2EE',
+            softBeige: '#F7F3EE',
+            sand: '#C6AC8F',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #FAF8F5;
+      color: #33302E;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .clean-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid #EAE0D5;
+      box-shadow: 0 4px 20px -2px rgba(221, 208, 192, 0.25);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #FAF8F5;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #DDD0C0;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <!-- Encabezado de la página -->
+  <header class="w-full max-w-5xl mx-auto px-4 pt-8 pb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="text-center md:text-left">
+      <div class="flex items-center justify-center md:justify-start gap-2">
+        <span class="text-2xl">✨</span>
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-stone-800">Mindful Flow</h1>
+      </div>
+      <p class="text-xs md:text-sm text-stone-500 mt-1">Organiza con calma, fluye a tu ritmo y protege tu paz ☁️</p>
+    </div>
+    
+    <!-- Botón para modo vacaciones o día libre -->
+    <div class="flex items-center gap-3">
+      <button id="vacationToggleBtn" onclick="toggleVacationMode()" class="px-4 py-2 rounded-full text-xs font-semibold transition border border-amber-200 bg-amber-50/60 text-amber-800 hover:bg-amber-100/80 flex items-center gap-1.5 shadow-sm">
+        <span id="vacationIcon">🏫</span>
+        <span id="vacationText">Día de Escuela Activo</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Barra de Navegación por Fechas y Vista Semanal -->
+  <nav class="max-w-5xl mx-auto px-4 mb-3 flex flex-col gap-2">
+    <div class="clean-card rounded-2xl px-5 py-3 flex items-center justify-between shadow-xs">
+      <button onclick="changeDate(-1)" class="px-3 py-1.5 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-xl text-xs font-medium transition flex items-center gap-1">
+        <span>←</span> Día Anterior
+      </button>
+      
+      <div class="text-center">
+        <p id="currentDateDisplay" class="text-sm font-bold text-stone-800">Cargando fecha...</p>
+        <button onclick="goToToday()" class="text-[11px] text-amber-800 hover:underline font-medium mt-0.5">Ir a Hoy</button>
+      </div>
+
+      <button onclick="changeDate(1)" class="px-3 py-1.5 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-xl text-xs font-medium transition flex items-center gap-1">
+        Día Siguiente <span>→</span>
+      </button>
+    </div>
+
+    <!-- Barra de Días de la Semana -->
+    <div class="clean-card rounded-2xl p-2.5 flex items-center justify-between gap-1 overflow-x-auto custom-scrollbar">
+      <div id="weekStrip" class="w-full grid grid-cols-7 gap-1 text-center min-w-[340px]">
+        <!-- Generado dinámicamente con JS -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenedor Principal -->
+  <main class="max-w-5xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 mt-1">
+    
+    <!-- COLUMNA IZQUIERDA: Presupuesto de Tiempo y Emociones -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Tarjeta de Presupuesto de Tiempo -->
+      <div class="clean-card rounded-3xl p-6 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-stone-800 flex items-center gap-2">
+            <span>🍵</span> Presupuesto de Tiempo
+          </h2>
+          <span class="text-xs bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full font-medium">24 Horas Totales</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="bg-stone-50/80 border border-stone-100 p-2.5 rounded-2xl">
+            <p class="text-[11px] text-stone-400 font-medium mb-0.5">🏫 Escuela</p>
+            <p id="statSchoolHours" class="text-base font-bold text-stone-700">7.25 hrs</p>
+            <p id="vacationSubtext" class="text-[9px] text-stone-400 leading-tight">8:00 AM - 3:15 PM</p>
+          </div>
+
+          <div class="bg-stone-50/80 border border-stone-100 p-2.5 rounded-2xl">
+            <p class="text-[11px] text-stone-400 font-medium mb-0.5">🌙 Sueño</p>
+            <div class="flex items-center gap-1">
+              <input type="number" id="sleepHoursInput" step="0.5" min="0" max="16" value="8" onchange="updateSleepHours(this.value)" class="w-12 text-base font-bold text-stone-700 bg-transparent border-b border-stone-300 focus:outline-none focus:border-amber-400 text-center">
+              <span class="text-xs text-stone-500 font-medium">hrs</span>
+            </div>
+            <p class="text-[9px] text-stone-400 leading-tight mt-1">Descanso Diario</p>
+          </div>
+
+          <div class="bg-stone-50/80 border border-stone-100 p-2.5 rounded-2xl">
+            <p class="text-[11px] text-stone-400 font-medium mb-0.5">📚 Tareas</p>
+            <p id="statTaskHours" class="text-base font-bold text-stone-700">0 hrs</p>
+            <p class="text-[9px] text-stone-400 leading-tight">Planificado</p>
+          </div>
+        </div>
+
+        <!-- Tiempo Libre Personal Garantizado -->
+        <div class="bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-100/80 p-4 rounded-2xl text-center">
+          <p class="text-xs font-semibold uppercase tracking-wider text-emerald-800/80 mb-1">✨ Tiempo Libre Personal Garantizado</p>
+          <p id="statFreeTime" class="text-3xl font-extrabold text-emerald-700">8.75 <span class="text-base font-normal">hrs</span></p>
+          <p class="text-[11px] text-emerald-600/90 mt-1">Para descansar, tus hobbies, estar en familia y relajarte sin culpa ☁️</p>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Registro de Emociones -->
+      <div class="clean-card rounded-3xl p-6 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold text-stone-800 flex items-center gap-2">
+            <span>🌸</span> ¿Cómo te sientes hoy?
+          </h2>
+          <span class="text-[11px] text-stone-400">Elige máximo 2</span>
+        </div>
+
+        <!-- Cuadrícula de emociones -->
+        <div id="emotionGrid" class="grid grid-cols-3 gap-2">
+          <!-- Botones de emociones generados dinámicamente -->
+        </div>
+
+        <!-- Reflexión escrita -->
+        <div id="journalSection" class="hidden flex-col gap-3 mt-2">
+          <label for="journalText" class="text-xs font-medium text-stone-600">¿Por qué te sientes así hoy?</label>
+          <textarea id="journalText" rows="2" placeholder="Tengo bastante tarea de matemáticas y me sentí algo cansada después de clases..." class="w-full text-xs p-3 rounded-2xl border border-stone-200 bg-white/60 focus:outline-none focus:ring-2 focus:ring-amber-200/60 resize-none"></textarea>
+          
+          <button id="submitEmotionBtn" onclick="processEmotionTracker()" class="w-full py-2.5 bg-stone-800 text-white rounded-2xl text-xs font-medium hover:bg-stone-700 transition shadow-sm flex items-center justify-center gap-2">
+            <span>⚡</span> Reflexionar con Inteligencia Artificial
+          </button>
+        </div>
+
+        <!-- Preguntas de reflexión e itinerario sugerido por la IA -->
+        <div id="aiEmotionFeedback" class="hidden flex-col gap-3 border-t border-stone-100 pt-4 mt-1">
+          <div class="bg-amber-50/50 border border-amber-100 p-4 rounded-2xl text-xs text-stone-700">
+            <p class="font-semibold text-amber-900 mb-1 flex items-center gap-1.5">
+              <span>🤖</span> Preguntas de Reflexión de la IA
+            </p>
+            <div id="aiQuestionsList" class="space-y-2 mt-2 text-stone-600"></div>
+            
+            <div id="aiAnswerForm" class="mt-3 space-y-2">
+              <input type="text" id="aiAns1" placeholder="Respuesta a la Pregunta 1..." class="w-full text-xs p-2 rounded-xl border border-amber-200/80 bg-white focus:outline-none">
+              <input type="text" id="aiAns2" placeholder="Respuesta a la Pregunta 2..." class="w-full text-xs p-2 rounded-xl border border-amber-200/80 bg-white focus:outline-none">
+              <button onclick="getScheduleAdjustments()" class="w-full py-2 bg-amber-200/80 text-amber-900 rounded-xl text-xs font-semibold hover:bg-amber-300/80 transition flex items-center justify-center gap-1">
+                <span>⚡</span> Obtener Sugerencias de la IA
+              </button>
+            </div>
+          </div>
+
+          <!-- Sugerencia de ajuste que el usuario acepta o rechaza libremente -->
+          <div id="aiScheduleAdvice" class="hidden bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl text-xs text-stone-700">
+            <p class="font-semibold text-emerald-900 mb-1 flex items-center gap-1.5">
+              <span>💡</span> Propuesta de Ajuste para tu Día
+            </p>
+            <p id="aiAdviceText" class="text-stone-600 leading-relaxed my-2"></p>
+            
+            <div class="flex gap-2 mt-3">
+              <button onclick="acceptAiScheduleChanges()" class="flex-1 py-2 bg-emerald-700 text-white rounded-xl font-medium text-[11px] hover:bg-emerald-600 transition shadow-xs">
+                ✓ Aceptar y Actualizar Tareas
+              </button>
+              <button onclick="declineAiScheduleChanges()" class="py-2 px-3 bg-stone-200 text-stone-700 rounded-xl font-medium text-[11px] hover:bg-stone-300 transition">
+                ✕ Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- COLUMNA DERECHA: Planificador de Tareas y Lista (7 Cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      
+      <!-- Formulario para Agregar o Editar Tareas -->
+      <div class="clean-card rounded-3xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 id="taskFormHeader" class="font-semibold text-stone-800 flex items-center gap-2">
+            <span>📝</span> Agregar Nueva Tarea
+          </h2>
+          <button id="cancelEditBtn" onclick="cancelEditingTask()" class="hidden text-xs text-stone-400 hover:text-stone-600 underline">
+            Cancelar Edición
+          </button>
+        </div>
+
+        <form id="taskForm" onsubmit="handleAddTask(event)" class="space-y-3">
+          <input type="hidden" id="editingTaskId" value="">
+
+          <div>
+            <input type="text" id="taskTitle" required placeholder="¿En qué vas a trabajar? (ej. Guía de Biología)" class="w-full text-xs p-3 rounded-2xl border border-stone-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-amber-200/60">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-stone-500 mb-1">Categoría</label>
+              <select id="taskCategory" class="w-full text-xs p-3 rounded-2xl border border-stone-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-amber-200/60">
+                <option value="1">1. Importante / Urgente 🔴</option>
+                <option value="2">2. Opcional 🟡</option>
+                <option value="3">3. Personal Importante 🟣</option>
+                <option value="4">4. Horario Fijo / Escuela 🟢</option>
+                <option value="5">5. Descanso y Recarga 🔵</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-medium text-stone-500 mb-1">Tiempo Recomendado por IA</label>
+              <div class="flex gap-2">
+                <button type="button" onclick="getAiTimeRecommendation()" class="px-3 py-3 bg-stone-100 text-stone-700 rounded-2xl text-xs font-medium hover:bg-stone-200 transition flex items-center gap-1 shrink-0">
+                  <span>⚡</span> Pedir a IA
+                </button>
+                <div id="aiRecBadge" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-2 rounded-2xl flex items-center">
+                  Sugerido: <span id="aiRecVal" class="font-bold ml-1">30m</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Casilla para Tareas de Todo el Día -->
+          <div class="flex items-center gap-2 pt-1 pb-1">
+            <input type="checkbox" id="isAllDay" onchange="toggleAllDay(this.checked)" class="w-4 h-4 rounded border-stone-300 text-amber-600 focus:ring-amber-200 cursor-pointer">
+            <label for="isAllDay" class="text-xs font-medium text-stone-700 cursor-pointer flex items-center gap-1">
+              <span>📅</span> Tarea para todo el día (Sin horas específicas)
+            </label>
+          </div>
+
+          <!-- Selección de Horas en Intervalos de 5 minutos (step="300") -->
+          <div id="timeInputsRow" class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-stone-500 mb-1">Hora de Inicio (cada 5 min)</label>
+              <input type="time" id="startTime" step="300" required class="w-full text-xs p-3 rounded-2xl border border-stone-200 bg-white/80 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-stone-500 mb-1">Hora de Término (cada 5 min)</label>
+              <input type="time" id="endTime" step="300" required class="w-full text-xs p-3 rounded-2xl border border-stone-200 bg-white/80 focus:outline-none">
+            </div>
+          </div>
+
+          <button id="taskSubmitBtn" type="submit" class="w-full py-3 bg-stone-800 text-white rounded-2xl text-xs font-semibold hover:bg-stone-700 transition shadow-sm flex items-center justify-center gap-2 mt-2">
+            <span>✨</span> Guardar Tarea en mi Día
+          </button>
+        </form>
+      </div>
+
+      <!-- Lista de Tareas y Filtros -->
+      <div class="clean-card rounded-3xl p-6 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="font-semibold text-stone-800 flex items-center gap-2">
+            <span>📋</span> Lista de Verificación
+          </h2>
+          <div class="flex items-center gap-1 bg-stone-100/80 p-1 rounded-2xl overflow-x-auto text-[11px]">
+            <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1 rounded-xl font-medium bg-white shadow-xs text-stone-800">Todas</button>
+            <button onclick="setFilter('1')" id="filter-1" class="px-3 py-1 rounded-xl font-medium text-stone-500 hover:text-stone-800">Importantes</button>
+            <button onclick="setFilter('2')" id="filter-2" class="px-3 py-1 rounded-xl font-medium text-stone-500 hover:text-stone-800">Opcionales</button>
+            <button onclick="setFilter('3')" id="filter-3" class="px-3 py-1 rounded-xl font-medium text-stone-500 hover:text-stone-800">Personales</button>
+          </div>
+        </div>
+
+        <!-- Lista de tareas -->
+        <div id="taskList" class="space-y-3 max-h-[480px] overflow-y-auto pr-1 custom-scrollbar">
+          <!-- Renderizado con JavaScript -->
+        </div>
+
+        <!-- Estado vacío -->
+        <div id="emptyTaskState" class="hidden text-center py-12 text-stone-400">
+          <p class="text-2xl mb-1">☁️</p>
+          <p class="text-xs">¡Tu lista está despejada! Agrega tu primera meta arriba.</p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Lógica y Funcionalidad JS -->
+  <script>
+    // Clave de API provista por el entorno
+    const apiKey = ""; 
+
+    // Datos de categorías
+    const CATEGORIES = {
+      '1': { name: 'Importante/Urgente', color: 'bg-rose-50 text-rose-700 border-rose-200', dot: '🔴' },
+      '2': { name: 'Opcional', color: 'bg-amber-50 text-amber-700 border-amber-200', dot: '🟡' },
+      '3': { name: 'Personal Importante', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: '🟣' },
+      '4': { name: 'Escuela / Fijo', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: '🟢' },
+      '5': { name: 'Descanso y Recarga', color: 'bg-sky-50 text-sky-700 border-sky-200', dot: '🔵' }
+    };
+
+    // Lista de emociones ampliadas
+    const EMOTIONS = [
+      { id: 'Excited', label: 'Entusiasmada 🎉' },
+      { id: 'Good', label: 'Bien ✨' },
+      { id: 'Fun', label: 'Divertida 🎨' },
+      { id: 'Just Fine', label: 'Tranquila ☁️' },
+      { id: 'Okay', label: 'Aceptable 👍' },
+      { id: 'Tired', label: 'Cansada 😴' },
+      { id: 'Sad', label: 'Triste 🌧️' },
+      { id: 'Stressed', label: 'Estresada 🌀' },
+      { id: 'Exhausted', label: 'Agotada 🔋' },
+      { id: 'Nervous', label: 'Nerviosa 🔴' },
+      { id: 'Scared', label: 'Asustada 😨' },
+      { id: 'Angry', label: 'Enojada 😡' },
+    ];
+
+    // Variables de Estado Global
+    let currentDate = new Date(); 
+    let allData = {}; 
+    let activeFilter = 'all';
+    let pendingAiAdvice = null;
+
+    // INICIALIZACIÓN
+    window.onload = function() {
+      loadAllState();
+      renderEmotions();
+      updateDateDisplay();
+      renderWeekStrip();
+      renderTasks();
+      calculateTimeStats();
+
+      // Ajustar hora inicial sugerida redondeando a 5 minutos
+      const now = roundTo5Mins(new Date());
+      const nextHour = new Date(now.getTime() + 60*60*1000);
+      document.getElementById('startTime').value = now.toTimeString().substring(0,5);
+      document.getElementById('endTime').value = nextHour.toTimeString().substring(0,5);
+    };
+
+    function roundTo5Mins(date) {
+      const ms = 1000 * 60 * 5;
+      return new Date(Math.round(date.getTime() / ms) * ms);
+    }
+
+    function getDateKey(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTodayData() {
+      const key = getDateKey(currentDate);
+      if (!allData[key]) {
+        allData[key] = {
+          tasks: [],
+          isVacationMode: false,
+          selectedEmotions: [],
+          journalText: '',
+          sleepHours: 8.0
+        };
+      }
+      if (allData[key].sleepHours === undefined) {
+        allData[key].sleepHours = 8.0;
+      }
+      return allData[key];
+    }
+
+    // MANEJO DE SUEÑO Y OPCIÓN TODO EL DÍA
+    function updateSleepHours(val) {
+      const dayData = getTodayData();
+      const num = parseFloat(val);
+      dayData.sleepHours = isNaN(num) ? 8.0 : Math.max(0, Math.min(16, num));
+      saveState();
+      calculateTimeStats();
+    }
+
+    function toggleAllDay(checked) {
+      const row = document.getElementById('timeInputsRow');
+      const startInp = document.getElementById('startTime');
+      const endInp = document.getElementById('endTime');
+
+      if (checked) {
+        row.classList.add('opacity-40', 'pointer-events-none');
+        startInp.removeAttribute('required');
+        endInp.removeAttribute('required');
+      } else {
+        row.classList.remove('opacity-40', 'pointer-events-none');
+        startInp.setAttribute('required', 'required');
+        endInp.setAttribute('required', 'required');
+      }
+    }
+
+    // NAVEGACIÓN DE CALENDARIO
+    function changeDate(daysOffset) {
+      currentDate.setDate(currentDate.getDate() + daysOffset);
+      onDateChanged();
+    }
+
+    function selectSpecificDate(year, month, day) {
+      currentDate = new Date(year, month, day);
+      onDateChanged();
+    }
+
+    function goToToday() {
+      currentDate = new Date();
+      onDateChanged();
+    }
+
+    function onDateChanged() {
+      updateDateDisplay();
+      renderWeekStrip();
+      updateVacationUI();
+      renderEmotions();
+      cancelEditingTask();
+      
+      const data = getTodayData();
+      document.getElementById('journalText').value = data.journalText || '';
+      document.getElementById('sleepHoursInput').value = data.sleepHours || 8.0;
+      document.getElementById('aiEmotionFeedback').classList.add('hidden');
+      document.getElementById('aiScheduleAdvice').classList.add('hidden');
+      
+      renderTasks();
+      calculateTimeStats();
+    }
+
+    function updateDateDisplay() {
+      const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+      document.getElementById('currentDateDisplay').textContent = currentDate.toLocaleDateString('es-ES', options);
+    }
+
+    function renderWeekStrip() {
+      const stripEl = document.getElementById('weekStrip');
+      stripEl.innerHTML = '';
+
+      const today = new Date();
+      const todayKey = getDateKey(today);
+      const activeKey = getDateKey(currentDate);
+
+      // Calcular lunes de la semana actual
+      const startOfWeek = new Date(currentDate);
+      const dayOfWeek = startOfWeek.getDay();
+      const distanceToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+      startOfWeek.setDate(startOfWeek.getDate() + distanceToMon);
+
+      const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+      for (let i = 0; i < 7; i++) {
+        const iterDate = new Date(startOfWeek);
+        iterDate.setDate(iterDate.getDate() + i);
+        const iterKey = getDateKey(iterDate);
+
+        const isSelected = (iterKey === activeKey);
+        const isActualToday = (iterKey === todayKey);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectSpecificDate(iterDate.getFullYear(), iterDate.getMonth(), iterDate.getDate());
+        
+        let bgClass = 'bg-stone-50 text-stone-600 hover:bg-stone-100 border-stone-200/60';
+        if (isSelected) {
+          bgClass = 'bg-stone-800 text-white font-semibold shadow-xs border-stone-800';
+        } else if (isActualToday) {
+          bgClass = 'bg-amber-100/90 text-amber-900 border-amber-300 font-semibold';
+        }
+
+        btn.className = `p-2 rounded-xl text-xs border transition flex flex-col items-center justify-center ${bgClass}`;
+        btn.innerHTML = `
+          <span class="text-[10px] uppercase font-medium opacity-80">${dayNames[i]}</span>
+          <span class="text-xs font-bold mt-0.5">${iterDate.getDate()}</span>
+          ${isActualToday && !isSelected ? '<span class="text-[8px] tracking-tight text-amber-800">Hoy</span>' : ''}
+        `;
+
+        stripEl.appendChild(btn);
+      }
+    }
+
+    // ALMACENAMIENTO LOCAL EN EL NAVEGADOR
+    function saveState() {
+      localStorage.setItem('mindful_flow_multiday', JSON.stringify(allData));
+    }
+
+    function loadAllState() {
+      const dataStr = localStorage.getItem('mindful_flow_multiday');
+      if (dataStr) {
+        try {
+          allData = JSON.parse(dataStr);
+        } catch(e) {
+          console.error("Error al cargar datos guardados", e);
+          allData = {};
+        }
+      }
+      updateVacationUI();
+    }
+
+    // DÍAS LIBRES Y VACACIONES
+    function toggleVacationMode() {
+      const dayData = getTodayData();
+      dayData.isVacationMode = !dayData.isVacationMode;
+      updateVacationUI();
+      calculateTimeStats();
+      saveState();
+    }
+
+    function updateVacationUI() {
+      const dayData = getTodayData();
+      const btn = document.getElementById('vacationToggleBtn');
+      const icon = document.getElementById('vacationIcon');
+      const text = document.getElementById('vacationText');
+      const subtext = document.getElementById('vacationSubtext');
+
+      const day = currentDate.getDay(); // 3 = Miércoles
+
+      if (dayData.isVacationMode) {
+        btn.className = "px-4 py-2 rounded-full text-xs font-semibold transition border border-emerald-200 bg-emerald-50/80 text-emerald-800 hover:bg-emerald-100/80 flex items-center gap-1.5 shadow-sm";
+        icon.textContent = "🌴";
+        text.textContent = "Día Libre / Vacaciones";
+        subtext.textContent = "¡Sin escuela hoy!";
+      } else {
+        btn.className = "px-4 py-2 rounded-full text-xs font-semibold transition border border-amber-200 bg-amber-50/60 text-amber-800 hover:bg-amber-100/80 flex items-center gap-1.5 shadow-sm";
+        icon.textContent = "🏫";
+        text.textContent = "Día de Escuela Activo";
+        if (day === 3) {
+          subtext.textContent = "8:00 AM - 2:30 PM (6.5 hrs)";
+        } else {
+          subtext.textContent = "8:00 AM - 3:15 PM (7.25 hrs)";
+        }
+      }
+    }
+
+    // CÁLCULO DEL TIEMPO
+    function calculateTimeStats() {
+      const day = currentDate.getDay(); // 0 = Dom, 3 = Mié, 1-5 = Lun-Vie
+      const isWeekday = (day >= 1 && day <= 5);
+      const dayData = getTodayData();
+
+      // Horario escolar: 8:00 AM - 3:15 PM (7.25 hrs) | Miércoles: 8:00 AM - 2:30 PM (6.5 hrs)
+      let schoolHours = 0;
+      if (isWeekday && !dayData.isVacationMode) {
+        if (day === 3) {
+          schoolHours = 6.5; 
+        } else {
+          schoolHours = 7.25; 
+        }
+      }
+
+      const sleepHours = dayData.sleepHours || 8.0;
+
+      let taskMinutes = 0;
+      (dayData.tasks || []).forEach(t => {
+        if (!t.completed && !t.isAllDay) {
+          const start = timeToMinutes(t.startTime);
+          const end = timeToMinutes(t.endTime);
+          let diff = end - start;
+          if (diff < 0) diff += 24 * 60;
+          taskMinutes += diff;
+        }
+      });
+
+      const taskHours = taskMinutes / 60;
+      const totalUsedHours = schoolHours + sleepHours + taskHours;
+      const freeHours = Math.max(0, 24 - totalUsedHours);
+
+      document.getElementById('statSchoolHours').textContent = `${schoolHours} hrs`;
+      document.getElementById('statTaskHours').textContent = `${taskHours.toFixed(1)} hrs`;
+      document.getElementById('statFreeTime').innerHTML = `${freeHours.toFixed(2)} <span class="text-base font-normal">hrs</span>`;
+    }
+
+    function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function minutesToTimeStr(mins) {
+      let h = Math.floor(mins / 60) % 24;
+      let m = mins % 60;
+      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    }
+
+    // RENDERIZAR LISTA DE TAREAS
+    function renderTasks() {
+      const listEl = document.getElementById('taskList');
+      const emptyEl = document.getElementById('emptyTaskState');
+      listEl.innerHTML = '';
+
+      const dayData = getTodayData();
+      const filtered = (dayData.tasks || []).filter(t => {
+        if (activeFilter === 'all') return true;
+        return t.category === activeFilter;
+      });
+
+      if (filtered.length === 0) {
+        emptyEl.classList.remove('hidden');
+      } else {
+        emptyEl.classList.add('hidden');
+      }
+
+      filtered.forEach(task => {
+        const cat = CATEGORIES[task.category] || CATEGORIES['1'];
+        
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+          task.completed ? 'bg-stone-50/50 border-stone-200 opacity-60' : 'bg-white/90 border-stone-200/80 shadow-xs hover:border-stone-300'
+        }`;
+
+        const timeBadge = task.isAllDay 
+          ? `📅 Todo el día` 
+          : `🕒 ${task.startTime} - ${task.endTime}`;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask('${task.id}')" class="w-4 h-4 rounded border-stone-300 text-stone-800 focus:ring-amber-200 cursor-pointer">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold ${task.completed ? 'line-through text-stone-400' : 'text-stone-800'} truncate">${escapeHtml(task.title)}</p>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-[10px] px-2 py-0.5 rounded-full border font-medium ${cat.color}">
+                  ${cat.dot} ${cat.name}
+                </span>
+                <span class="text-[10px] text-stone-400 font-medium">
+                  ${timeBadge}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="startEditingTask('${task.id}')" class="text-stone-400 hover:text-stone-700 transition text-xs px-2 py-1 bg-stone-100 hover:bg-stone-200 rounded-lg">
+              ✏️ Editar
+            </button>
+            <button onclick="deleteTask('${task.id}')" class="text-stone-300 hover:text-rose-400 transition text-sm p-1">
+              ✕
+            </button>
+          </div>
+        `;
+
+        listEl.appendChild(card);
+      });
+
+      calculateTimeStats();
+    }
+
+    function setFilter(filter) {
+      activeFilter = filter;
+      ['all', '1', '2', '3'].forEach(f => {
+        const btn = document.getElementById(`filter-${f}`);
+        if (btn) {
+          if (f === filter) {
+            btn.className = "px-3 py-1 rounded-xl font-medium bg-white shadow-xs text-stone-800";
+          } else {
+            btn.className = "px-3 py-1 rounded-xl font-medium text-stone-500 hover:text-stone-800";
+          }
+        }
+      });
+      renderTasks();
+    }
+
+    // CREACIÓN Y EDICIÓN DE TAREAS
+    function handleAddTask(e) {
+      e.preventDefault();
+      const editingId = document.getElementById('editingTaskId').value;
+      const title = document.getElementById('taskTitle').value.trim();
+      const category = document.getElementById('taskCategory').value;
+      const isAllDay = document.getElementById('isAllDay').checked;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+
+      if (!title) return;
+      if (!isAllDay && (!startTime || !endTime)) return;
+
+      const dayData = getTodayData();
+
+      if (editingId) {
+        const task = dayData.tasks.find(t => t.id === editingId);
+        if (task) {
+          task.title = title;
+          task.category = category;
+          task.isAllDay = isAllDay;
+          task.startTime = isAllDay ? '' : startTime;
+          task.endTime = isAllDay ? '' : endTime;
+        }
+      } else {
+        const newTask = {
+          id: Date.now().toString(),
+          title,
+          category,
+          isAllDay,
+          startTime: isAllDay ? '' : startTime,
+          endTime: isAllDay ? '' : endTime,
+          completed: false
+        };
+        dayData.tasks.push(newTask);
+      }
+
+      saveState();
+      cancelEditingTask();
+      renderTasks();
+    }
+
+    function startEditingTask(id) {
+      const dayData = getTodayData();
+      const task = dayData.tasks.find(t => t.id === id);
+      if (!task) return;
+
+      document.getElementById('editingTaskId').value = task.id;
+      document.getElementById('taskTitle').value = task.title;
+      document.getElementById('taskCategory').value = task.category;
+      
+      const isAllDay = !!task.isAllDay;
+      document.getElementById('isAllDay').checked = isAllDay;
+      toggleAllDay(isAllDay);
+
+      if (!isAllDay) {
+        document.getElementById('startTime').value = task.startTime || '';
+        document.getElementById('endTime').value = task.endTime || '';
+      }
+
+      document.getElementById('taskFormHeader').innerHTML = `<span>✏️</span> Editar Tarea`;
+      document.getElementById('taskSubmitBtn').innerHTML = `<span>✓</span> Guardar Cambios`;
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      document.getElementById('taskForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEditingTask() {
+      document.getElementById('editingTaskId').value = '';
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('isAllDay').checked = false;
+      toggleAllDay(false);
+      document.getElementById('aiRecBadge').classList.add('hidden');
+      document.getElementById('taskFormHeader').innerHTML = `<span>📝</span> Agregar Nueva Tarea`;
+      document.getElementById('taskSubmitBtn').innerHTML = `<span>✨</span> Guardar Tarea en mi Día`;
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+    }
+
+    function toggleTask(id) {
+      const dayData = getTodayData();
+      const task = dayData.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveState();
+        renderTasks();
+      }
+    }
+
+    function deleteTask(id) {
+      const dayData = getTodayData();
+      dayData.tasks = dayData.tasks.filter(t => t.id !== id);
+      if (document.getElementById('editingTaskId').value === id) {
+        cancelEditingTask();
+      }
+      saveState();
+      renderTasks();
+    }
+
+    // REGISTRO DE EMOCIONES
+    function renderEmotions() {
+      const grid = document.getElementById('emotionGrid');
+      grid.innerHTML = '';
+      const dayData = getTodayData();
+
+      EMOTIONS.forEach(emo => {
+        const isSelected = (dayData.selectedEmotions || []).includes(emo.id);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `p-2 rounded-2xl text-xs font-medium border transition text-center ${
+          isSelected 
+            ? 'bg-amber-100/80 border-amber-300 text-amber-900 font-semibold shadow-xs' 
+            : 'bg-white/60 border-stone-200/80 text-stone-600 hover:bg-stone-100/60'
+        }`;
+        btn.textContent = emo.label;
+        btn.onclick = () => toggleEmotion(emo.id);
+        grid.appendChild(btn);
+      });
+    }
+
+    function toggleEmotion(id) {
+      const dayData = getTodayData();
+      let arr = dayData.selectedEmotions || [];
+
+      if (arr.includes(id)) {
+        arr = arr.filter(e => e !== id);
+      } else {
+        if (arr.length < 2) {
+          arr.push(id);
+        } else {
+          arr = [arr[0], id];
+        }
+      }
+      dayData.selectedEmotions = arr;
+      
+      const journalSec = document.getElementById('journalSection');
+      if (arr.length > 0) {
+        journalSec.classList.remove('hidden');
+        journalSec.classList.add('flex');
+      } else {
+        journalSec.classList.add('hidden');
+        journalSec.classList.remove('flex');
+      }
+
+      renderEmotions();
+      saveState();
+    }
+
+    // INTEGRACIÓN DE INTELIGENCIA ARTIFICIAL GEMINI
+    async function callGeminiApi(payload, retries = 3, delay = 800) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      
+      for (let i = 0; i < retries; i++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          return data;
+        } catch (err) {
+          if (i === retries - 1) throw err;
+          await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+        }
+      }
+    }
+
+    // 1. Recomendación de tiempo de tareas
+    async function getAiTimeRecommendation() {
+      const title = document.getElementById('taskTitle').value.trim();
+      const category = document.getElementById('taskCategory').value;
+
+      if (!title) {
+        alert("¡Escribe primero el nombre de la tarea!");
+        return;
+      }
+
+      const recBadge = document.getElementById('aiRecBadge');
+      const recVal = document.getElementById('aiRecVal');
+      recBadge.classList.remove('hidden');
+      recVal.textContent = "⚡...";
+
+      const prompt = `Tarea: "${title}". Categoría ID: ${category}. Sugiere una duración realista en minutos para una estudiante de 9no grado. Salida JSON estricta: {"minutes": número}`;
+
+      try {
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        };
+        const data = await callGeminiApi(payload);
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const parsed = JSON.parse(text);
+          const durationMins = parsed.minutes || 30;
+          recVal.textContent = `${durationMins}m`;
+
+          const startTime = document.getElementById('startTime').value || "16:00";
+          const startMins = timeToMinutes(startTime);
+          const endMins = startMins + durationMins;
+          document.getElementById('endTime').value = minutesToTimeStr(endMins);
+        }
+      } catch (e) {
+        recVal.textContent = "30m";
+      }
+    }
+
+    // 2. Reflexión emocional e IA
+    async function processEmotionTracker() {
+      const dayData = getTodayData();
+      const journalText = document.getElementById('journalText').value.trim();
+      dayData.journalText = journalText;
+      saveState();
+
+      if (!dayData.selectedEmotions || dayData.selectedEmotions.length === 0) return;
+
+      const feedbackDiv = document.getElementById('aiEmotionFeedback');
+      const qList = document.getElementById('aiQuestionsList');
+      feedbackDiv.classList.remove('hidden');
+      feedbackDiv.classList.add('flex');
+      qList.innerHTML = `<p class="italic text-stone-400">Generando preguntas comprensivas en español...</p>`;
+
+      const prompt = `Estudiante de secundaria siente: ${dayData.selectedEmotions.join(', ')}. Nota personal: "${journalText}". Genera 2 preguntas cortas y amables en español para ayudarle a reflexionar. Formato JSON: {"questions": ["q1", "q2"]}`;
+
+      try {
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        };
+        const data = await callGeminiApi(payload);
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const parsed = JSON.parse(text);
+          const questions = parsed.questions || [
+            "¿Qué detalle pequeño te ayudaría a sentir más relajación en este instante?",
+            "¿Hay alguna tarea opcional que puedas postergar sin culpa?"
+          ];
+
+          qList.innerHTML = questions.map((q, idx) => `
+            <p><strong class="text-amber-800">P${idx+1}:</strong> ${escapeHtml(q)}</p>
+          `).join('');
+        }
+      } catch (e) {
+        qList.innerHTML = `
+          <p><strong class="text-amber-800">P1:</strong> ¿Qué es lo que más energía te quita hoy y cómo podrías simplificarlo?</p>
+          <p><strong class="text-amber-800">P2:</strong> ¿Qué actividad tranquila te gustaría disfrutar durante tus horas libres de hoy?</p>
+        `;
+      }
+    }
+
+    // 3. Consejos de organización inteligente según el estado de ánimo
+    async function getScheduleAdjustments() {
+      const dayData = getTodayData();
+      const journalText = dayData.journalText || '';
+      const ans1 = document.getElementById('aiAns1').value.trim();
+      const ans2 = document.getElementById('aiAns2').value.trim();
+
+      const adviceDiv = document.getElementById('aiScheduleAdvice');
+      const adviceText = document.getElementById('aiAdviceText');
+      adviceDiv.classList.remove('hidden');
+      adviceText.textContent = "Analizando tu lista de tareas y nivel de energía...";
+
+      const prompt = `Estudiante siente: ${dayData.selectedEmotions.join(', ')}. Nota: "${journalText}". Respuestas: "${ans1}", "${ans2}". 
+Tareas actuales: ${JSON.stringify(dayData.tasks)}.
+Ofrece un párrafo empático en español sugiriendo ajustar el día (ej. dividir tareas largas en bloques de 25 min con descansos o mover tareas opcionales a mañana). 
+JSON: {"advice": "texto"}`;
+
+      try {
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        };
+        const data = await callGeminiApi(payload);
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const parsed = JSON.parse(text);
+          adviceText.textContent = parsed.advice;
+          pendingAiAdvice = parsed;
+        }
+      } catch (e) {
+        adviceText.textContent = "Debido a tus emociones de hoy, te sugiero dividir las sesiones de estudio largas de más de 45 minutos en bloques más breves con descansos de 10 minutos, o mover las tareas opcionales al día de mañana para cuidar tu salud mental.";
+      }
+    }
+
+    function acceptAiScheduleChanges() {
+      const dayData = getTodayData();
+      const hasStressState = (dayData.selectedEmotions || []).some(e => ['Tired', 'Sad', 'Stressed', 'Exhausted', 'Nervous', 'Scared', 'Angry'].includes(e));
+
+      if (hasStressState) {
+        let newTasks = [];
+        (dayData.tasks || []).forEach(t => {
+          if (t.isAllDay) {
+            newTasks.push(t);
+            return;
+          }
+          const duration = timeToMinutes(t.endTime) - timeToMinutes(t.startTime);
+          if (!t.completed && duration > 45 && t.category === '1') {
+            const half = Math.floor(duration / 2);
+            const start1 = timeToMinutes(t.startTime);
+            const end1 = start1 + half;
+            const start2 = end1 + 10;
+            const end2 = start2 + half;
+
+            newTasks.push({
+              ...t,
+              title: `${t.title} (Bloque 1)`,
+              endTime: minutesToTimeStr(end1)
+            });
+            newTasks.push({
+              id: Date.now().toString() + 'b',
+              title: `☁️ Descanso y Pausa Recreativa (10m)`,
+              category: '5',
+              startTime: minutesToTimeStr(end1),
+              endTime: minutesToTimeStr(start2),
+              completed: false
+            });
+            newTasks.push({
+              id: Date.now().toString() + 'c',
+              title: `${t.title} (Bloque 2)`,
+              category: t.category,
+              startTime: minutesToTimeStr(start2),
+              endTime: minutesToTimeStr(end2),
+              completed: false
+            });
+          } else {
+            newTasks.push(t);
+          }
+        });
+        dayData.tasks = newTasks;
+      }
+
+      deferOptionalToTomorrow();
+      saveState();
+      renderTasks();
+      document.getElementById('aiScheduleAdvice').classList.add('hidden');
+    }
+
+    function declineAiScheduleChanges() {
+      document.getElementById('aiScheduleAdvice').classList.add('hidden');
+    }
+
+    function deferOptionalToTomorrow() {
+      const dayData = getTodayData();
+      const optionalTasks = (dayData.tasks || []).filter(t => t.category === '2');
+      dayData.tasks = (dayData.tasks || []).filter(t => t.category !== '2');
+
+      if (optionalTasks.length > 0) {
+        const tomorrow = new Date(currentDate);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowKey = getDateKey(tomorrow);
+        
+        if (!allData[tomorrowKey]) {
+          allData[tomorrowKey] = { tasks: [], isVacationMode: false, selectedEmotions: [], journalText: '', sleepHours: 8.0 };
+        }
+        allData[tomorrowKey].tasks.push(...optionalTasks);
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+  </script>
+</body>
+</html>
