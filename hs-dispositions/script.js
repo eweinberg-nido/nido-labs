@@ -533,7 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- D3 VISUALIZATION (LIVE FIREBASE DATA) ---
     
-    const width = document.getElementById('d3-container').clientWidth || 800;
+    // Initialize D3 properties
+    const width = 1000;
     const height = 500;
     const tooltip = d3.select("#d3-tooltip");
     const groupBySelect = document.getElementById('group-by-select');
@@ -541,11 +542,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('d3-container').innerHTML = '';
     
-    const svg = d3.select("#d3-container")
-        .append("svg")
+    const svg = d3.select("#d3-container").append("svg")
         .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`);
+        .attr("height", "100%")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
 
     const nodeGroup = svg.append("g").attr("class", "nodes");
     const labelGroup = svg.append("g").attr("class", "labels");
@@ -564,8 +565,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let foci = {};
 
     const simulation = d3.forceSimulation()
-        .force("charge", d3.forceManyBody().strength(-20))
-        .force("collide", d3.forceCollide().radius(d => d.radius + 2).iterations(2))
+        .force("charge", d3.forceManyBody().strength(-5))
+        .force("collide", d3.forceCollide().radius(d => d.radius + 1).iterations(2))
         .force("x", d3.forceX(d => getFocalPoint(d).x).strength(0.12))
         .force("y", d3.forceY(d => getFocalPoint(d).y).strength(0.12))
         .on("tick", ticked);
@@ -607,6 +608,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return foci[key] || { x: width / 2, y: height / 2 };
     }
 
+    function splitTextIntoLines(text) {
+        if (text.length <= 16) return [text];
+        const words = text.split(" ");
+        const lines = [];
+        let currentLine = words[0];
+        for (let i = 1; i < words.length; i++) {
+            if (currentLine.length + words[i].length + 1 > 16) {
+                lines.push(currentLine);
+                currentLine = words[i];
+            } else {
+                currentLine += " " + words[i];
+            }
+        }
+        lines.push(currentLine);
+        return lines;
+    }
+
     function calculateFoci() {
         foci = {};
         let categories = [];
@@ -620,28 +638,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const numCategories = categories.length;
         if (numCategories === 0) return; 
 
-        // Lowering the radius pulls the clusters closer to the center (away from the edges)
-        const centerRadius = numCategories > 5 ? 150 : 120;
+        // Horizontal oval parameters
+    const xRadius = numCategories > 5 ? 380 : 250;
+    const yRadius = numCategories > 5 ? 170 : 120;
         
         categories.forEach((cat, i) => {
             const angle = (i / numCategories) * 2 * Math.PI - (Math.PI / 2);
             foci[cat] = {
-                x: width / 2 + Math.cos(angle) * centerRadius,
-                y: height / 2 + Math.sin(angle) * centerRadius
+                x: width / 2 + Math.cos(angle) * xRadius,
+                y: height / 2 + Math.sin(angle) * yRadius
             };
         });
 
         const labels = labelGroup.selectAll(".cluster-label").data(categories, d => d);
         labels.exit().remove();
-        labels.enter()
+        
+        const labelsEnter = labels.enter()
             .append("text")
             .attr("class", "cluster-label")
-            .merge(labels)
-            .text(d => d)
-            .transition().duration(1000)
-            .attr("x", d => foci[d].x)
-            .attr("y", d => foci[d].y)
-            .attr("dy", "0.35em")
             .attr("text-anchor", "middle")
             .style("fill", "var(--nido-dark)")
             .style("stroke", "white")
@@ -650,7 +664,27 @@ document.addEventListener('DOMContentLoaded', () => {
             .style("font-weight", "900")
             .style("opacity", 1)
             .style("font-size", "16px")
-            .style("font-family", "var(--font-gotham), sans-serif");
+            .style("font-family", "var(--font-gotham), sans-serif")
+            .style("pointer-events", "none");
+            
+        const allLabels = labelsEnter.merge(labels);
+        
+        // Wrap text into tspans and vertically center
+        allLabels.text(null);
+        allLabels.each(function(d) {
+            const el = d3.select(this);
+            const lines = splitTextIntoLines(d);
+            const lineHeight = 1.1; // em
+            const yOffset = -(lines.length - 1) * lineHeight / 2 + 0.35;
+            
+            lines.forEach((line, i) => {
+                el.append("tspan")
+                  .text(line)
+                  .attr("x", foci[d].x)
+                  .attr("y", foci[d].y)
+                  .attr("dy", `${yOffset + i * lineHeight}em`);
+            });
+        });
     }
 
     const dispositionShapes = {
@@ -878,12 +912,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function ticked() {
         if (currentChart !== "bubble") return;
+
         nodeGroup.selectAll("path")
             .attr("transform", d => {
                 d.x = Math.max(d.radius, Math.min(width - d.radius, d.x));
                 d.y = Math.max(d.radius, Math.min(height - d.radius, d.y));
                 return `translate(${d.x}, ${d.y})`;
             });
+            
+        // Calculate centroids so labels stick to the actual center of the clumps
+        const sums = {};
+        const counts = {};
+        nodes.forEach(d => {
+            const key = currentMode === "disposition" ? d.disp : d.dept;
+            if (!sums[key]) { sums[key] = {x:0, y:0}; counts[key] = 0; }
+            sums[key].x += d.x;
+            sums[key].y += d.y;
+            counts[key]++;
+        });
+        
+        labelGroup.selectAll(".cluster-label").each(function(d) {
+            let targetX = foci[d].x;
+            let targetY = foci[d].y;
+            if (counts[d]) {
+                targetX = sums[d].x / counts[d];
+                targetY = sums[d].y / counts[d];
+            }
+            // Update tspans x and y
+            d3.select(this).selectAll("tspan")
+                .attr("x", targetX)
+                .attr("y", targetY);
+        });
     }
 
     function dragstarted(event, d) {
