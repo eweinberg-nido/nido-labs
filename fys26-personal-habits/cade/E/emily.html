@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FocusBubble - Toaster Focus & Calendar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@600;800;900&display=swap');
+
+    * {
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .bubble-card {
+      border-radius: 24px;
+      box-shadow: 0 8px 0px rgba(0,0,0,0.08), 0 15px 25px rgba(0,0,0,0.05);
+      border: 3px solid rgba(255,255,255,0.6);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .bubble-btn {
+      border-radius: 999px;
+      box-shadow: 0 6px 0px rgba(0, 0, 0, 0.15), 0 10px 15px rgba(0,0,0,0.1);
+      transition: all 0.1s ease;
+      position: relative;
+      font-weight: 700;
+    }
+
+    .bubble-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    :root {
+      --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+      --card-bg: rgba(255, 255, 255, 0.88);
+      --text-main: #2d3748;
+      --accent-color: #4facfe;
+      --nav-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body.theme-blue {
+      --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+    }
+    body.theme-pink {
+      --bg-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    }
+    body.theme-nature {
+      --bg-gradient: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+    }
+    body.theme-yellow {
+      --bg-gradient: linear-gradient(135deg, #ffeef1 0%, #ffeaa7 100%);
+    }
+
+    body.dark-mode {
+      --bg-gradient: linear-gradient(135deg, #1e272e 0%, #0f172a 100%) !important;
+      --card-bg: rgba(30, 41, 59, 0.88);
+      --text-main: #f1f5f9;
+      --nav-bg: rgba(15, 23, 42, 0.95);
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .card-element {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-bar {
+      background: var(--nav-bg);
+      backdrop-filter: blur(15px);
+    }
+
+    /* Toaster Interactive Visual Styles */
+    .toaster-container {
+      position: relative;
+      width: 220px;
+      height: 170px;
+      margin: 0 auto;
+    }
+
+    .toaster-body {
+      position: absolute;
+      bottom: 0;
+      width: 220px;
+      height: 130px;
+      background: linear-gradient(145deg, #e2e8f0, #cbd5e1);
+      border: 4px solid #475569;
+      border-radius: 35px 35px 15px 15px;
+      box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+
+    .dark-mode .toaster-body {
+      background: linear-gradient(145deg, #334155, #1e293b);
+      border-color: #64748b;
+    }
+
+    .toaster-slot {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      width: 160px;
+      height: 14px;
+      background: #1e293b;
+      border-radius: 8px;
+      z-index: 5;
+    }
+
+    .toast-bread {
+      position: absolute;
+      top: 5px;
+      left: 50px;
+      width: 120px;
+      height: 95px;
+      background: linear-gradient(135deg, #fde68a, #f59e0b);
+      border: 4px solid #d97706;
+      border-radius: 24px 24px 10px 10px;
+      z-index: 6;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .toast-bread.in-toaster {
+      transform: translateY(38px);
+    }
+
+    .toast-bread.popped-golden {
+      transform: translateY(-22px);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-color: #b45309;
+      animation: popJump 0.5s ease-out;
+    }
+
+    .toast-bread.popped-burnt {
+      transform: translateY(-22px);
+      background: linear-gradient(135deg, #374151, #111827) !important;
+      border-color: #000000 !important;
+      animation: popJump 0.5s ease-out;
+    }
+
+    @keyframes popJump {
+      0% { transform: translateY(38px); }
+      60% { transform: translateY(-30px); }
+      100% { transform: translateY(-22px); }
+    }
+
+    .toaster-lever-track {
+      position: absolute;
+      right: 18px;
+      top: 45px;
+      width: 8px;
+      height: 60px;
+      background: #475569;
+      border-radius: 4px;
+      z-index: 12;
+    }
+
+    .toaster-lever-knob {
+      position: absolute;
+      right: 10px;
+      top: 45px;
+      width: 24px;
+      height: 16px;
+      background: #ef4444;
+      border-radius: 6px;
+      z-index: 13;
+      transition: top 0.4s ease;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .toaster-lever-knob.down {
+      top: 85px;
+    }
+
+    .toaster-dial {
+      position: absolute;
+      bottom: 15px;
+      left: 20px;
+      width: 28px;
+      height: 28px;
+      background: #94a3b8;
+      border: 3px solid #475569;
+      border-radius: 50%;
+      z-index: 12;
+    }
+
+    .smoke-container {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      z-index: 20;
+    }
+    .smoke-container.active {
+      display: flex;
+      gap: 6px;
+    }
+    .smoke-puff {
+      width: 12px;
+      height: 12px;
+      background: rgba(80, 80, 80, 0.6);
+      border-radius: 50%;
+      animation: floatSmoke 1.5s infinite ease-out;
+    }
+    .smoke-puff:nth-child(2) { animation-delay: 0.3s; }
+    .smoke-puff:nth-child(3) { animation-delay: 0.6s; }
+
+    @keyframes floatSmoke {
+      0% { transform: translateY(0) scale(0.8); opacity: 0.8; }
+      100% { transform: translateY(-30px) scale(2); opacity: 0; }
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .calendar-day-cell {
+      aspect-ratio: 1;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .calendar-day-cell:hover {
+      transform: scale(1.08);
+      z-index: 5;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="theme-blue flex justify-center items-center pb-24 md:pb-6 antialiased">
+
+  <div id="appContainer" class="w-full max-w-md min-h-screen md:min-h-[852px] md:max-h-[852px] md:my-4 md:rounded-[48px] md:shadow-2xl md:border-[8px] md:border-white/40 flex flex-col justify-between overflow-hidden relative">
+
+    <div id="appToast" class="fixed top-6 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2.5 rounded-2xl text-xs font-extrabold shadow-2xl z-50 transition-all duration-300 opacity-0 -translate-y-2 pointer-events-none flex items-center gap-2"></div>
+
+    <!-- Main Viewport Area -->
+    <main class="flex-1 overflow-y-auto no-scrollbar p-5 pb-28">
+
+      <section id="sec-homepage" class="page-section space-y-5">
+        <div class="flex justify-between items-center pt-2">
+          <div>
+            <h1 class="text-2xl font-bold tracking-wide">Hi Emily! 👋</h1>
+            <p class="text-xs opacity-75 font-semibold">Toast your goals, don't burn 'em!</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center shadow-inner">
+            <i class="fa-solid fa-bread-slice text-amber-500 text-lg"></i>
+          </div>
+        </div>
+
+        <!-- Today's Screen Time Card with Sync Button -->
+        <div class="bubble-card card-element p-5 text-center relative overflow-hidden">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-70">Today's Screen Time</span>
+            <button onclick="openSyncModal()" class="text-[10px] font-black bg-indigo-500 text-white px-2.5 py-1 rounded-full shadow hover:bg-indigo-600 transition-all flex items-center gap-1">
+              <i class="fa-solid fa-arrows-rotate text-[9px]"></i> Sync Settings
+            </button>
+          </div>
+
+          <div class="text-4xl font-extrabold my-2 tracking-tight flex items-center justify-center gap-2">
+            <i class="fa-solid fa-mobile-screen text-3xl opacity-80 text-indigo-500"></i>
+            <span id="homeScreenTimeDisplay">2h 14m</span>
+          </div>
+
+          <div class="w-full bg-black/10 dark:bg-white/10 rounded-full h-3 overflow-hidden mt-2">
+            <div id="screenTimeBar" class="bg-emerald-400 h-full rounded-full transition-all duration-500" style="width: 45%;"></div>
+          </div>
+
+          <div class="flex justify-between items-center mt-2 text-xs">
+            <span id="screenTimeGoalLabel" class="opacity-80">Goal: Under 3h 00m</span>
+            <span id="screenTimeSyncStatus" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-check"></i> Synced Today
+            </span>
+          </div>
+        </div>
+
+        <div id="homeActiveTimerWidget" class="bubble-card card-element p-4 flex flex-col gap-2 border-l-8 border-amber-500 hidden">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">Active Toasting Session 🔥</span>
+              <h3 id="homeTimerTitle" class="font-bold text-base">30 Min Focus Session</h3>
+            </div>
+            <div id="homeTimerClock" class="text-2xl font-black font-mono bg-amber-500 text-white px-3 py-1 rounded-xl shadow-md">
+              30:00
+            </div>
+          </div>
+          <div class="text-xs bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 p-2 rounded-xl flex items-center justify-between">
+            <span>Goal: <strong id="homeActiveGoalText">Doing Homework 📚</strong></span>
+            <button onclick="switchTab('block')" class="text-[10px] font-black bg-amber-500 text-white px-2.5 py-1 rounded-lg">View Toaster</button>
+          </div>
+        </div>
+
+        <!-- Theme Controls -->
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="cycleTheme()" class="bubble-card card-element p-3.5 flex flex-col items-center justify-center text-center gap-1.5 bubble-btn active:scale-95">
+            <i class="fa-solid fa-palette text-xl text-purple-500"></i>
+            <span class="text-xs font-bold">Theme</span>
+            <span id="currentThemeLabel" class="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded-full font-extrabold">Pastel Blue</span>
+          </button>
+
+          <button onclick="toggleDarkMode()" class="bubble-card card-element p-3.5 flex flex-col items-center justify-center text-center gap-1.5 bubble-btn active:scale-95">
+            <i id="darkModeIcon" class="fa-solid fa-moon text-xl text-amber-500"></i>
+            <span class="text-xs font-bold">Day / Night</span>
+            <span id="darkModeLabel" class="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-300 px-2 py-0.5 rounded-full font-extrabold">Day Mode</span>
+          </button>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="bubble-card card-element p-5 space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-base flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-indigo-500"></i> Tasks & Reminders
+            </h3>
+            <span id="taskCountBadge" class="text-xs bg-indigo-500 text-white font-bold px-2 py-0.5 rounded-full">0</span>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="newTaskInput" placeholder="Add a goal or task..." class="w-full text-xs p-3 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-black/10 focus:outline-none">
+            <button onclick="addTask()" class="bubble-btn bg-indigo-500 text-white px-4 py-2 text-xs font-bold hover:bg-indigo-600">Add</button>
+          </div>
+
+          <ul id="taskList" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pt-1">
+            <!-- Dynamic Tasks -->
+          </ul>
+        </div>
+      </section>
+
+      <section id="sec-wheel" class="page-section hidden space-y-5 text-center">
+        <div>
+          <h1 class="text-2xl font-bold">Activity Wheel 🎡</h1>
+          <p class="text-xs opacity-75 font-semibold">Spin to select your focus activity for the toaster!</p>
+        </div>
+
+        <div>
+          <button onclick="spinWheel()" class="bubble-btn bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xl px-10 py-3 rounded-full shadow-lg hover:brightness-110 active:scale-95 transition-all">
+            SPIN! 🚀
+          </button>
+        </div>
+
+        <!-- Quick Homework Selector -->
+        <div class="bubble-card card-element p-3.5 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-amber-400 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-xs text-amber-900 dark:text-amber-200">Doing Homework instead? 📚</h4>
+              <p class="text-[10px] text-amber-700 dark:text-amber-300">Set Homework as your active goal for the Toaster!</p>
+            </div>
+          </div>
+          <button onclick="selectHomeworkOverride()" class="bubble-btn bg-amber-500 text-white text-xs px-4 py-2 whitespace-nowrap active:scale-95 transition-all">
+            Use Goal
+          </button>
+        </div>
+
+        <!-- Wheel Canvas -->
+        <div class="bubble-card card-element p-4 flex flex-col items-center justify-center relative">
+          <div class="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-red-500 absolute -top-2 z-10 drop-shadow-md"></div>
+          <canvas id="wheelCanvas" width="280" height="280" class="max-w-full"></canvas>
+        </div>
+
+        <div id="wheelResultModal" class="bubble-card card-element p-4 border-2 border-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hidden flex flex-col gap-2">
+          <span class="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400">Your Activity Selected:</span>
+          <h2 id="wheelResultText" class="text-xl font-black text-emerald-700 dark:text-emerald-300 my-0.5">Go on a walk 🌿</h2>
+          <button onclick="useWheelGoalInToaster()" class="bubble-btn bg-emerald-500 text-white px-4 py-2 text-xs self-center mt-1">
+            <i class="fa-solid fa-bread-slice mr-1"></i> Start Toaster with Goal
+          </button>
+        </div>
+
+        <div class="bubble-card card-element p-4 space-y-3 text-left">
+          <h3 class="font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle text-rose-500"></i> Custom Activities
+          </h3>
+          <div class="flex gap-2">
+            <input type="text" id="newActivityInput" placeholder="e.g. Read 20 pages..." class="w-full text-xs p-3 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-black/10 focus:outline-none">
+            <button onclick="addActivity()" class="bubble-btn bg-rose-500 text-white px-4 text-xs hover:bg-rose-600">Add</button>
+          </div>
+          <div id="customActivitiesTags" class="flex flex-wrap gap-1.5 pt-2"></div>
+        </div>
+      </section>
+
+      <section id="sec-block" class="page-section hidden space-y-5 text-center">
+        <div>
+          <h1 class="text-2xl font-bold">Toaster Timer 🍞🔥</h1>
+          <p class="text-xs opacity-75 font-semibold">Start the toaster to cook your focus time! Don't pop early or it burns!</p>
+        </div>
+
+        <!-- Interactive Toaster Appliance Display -->
+        <div class="bubble-card card-element p-6 space-y-4 flex flex-col items-center relative overflow-hidden">
+          
+          <div class="smoke-container" id="toasterSmoke">
+            <div class="smoke-puff"></div>
+            <div class="smoke-puff"></div>
+            <div class="smoke-puff"></div>
+          </div>
+
+          <div class="toaster-container">
+            <!-- Toast Bread Slice -->
+            <div id="toastBread" class="toast-bread">
+              <div id="toastFace" class="text-xl select-none">
+                <i class="fa-solid fa-face-smile text-amber-800"></i>
+              </div>
+              <span id="toastStatusLabel" class="text-[9px] font-black uppercase text-amber-950 mt-1">Ready</span>
+            </div>
+
+            <!-- Toaster Outer Body -->
+            <div class="toaster-body">
+              <div class="toaster-slot"></div>
+              <div class="toaster-lever-track"></div>
+              <div id="toasterLever" onclick="toggleToasterTimer()" class="toaster-lever-knob"></div>
+              <div class="toaster-dial"></div>
+              <div class="absolute bottom-3 right-5 text-[10px] font-extrabold tracking-widest text-slate-500 dark:text-slate-400">FOCUS-MATIC 3000</div>
+            </div>
+          </div>
+
+          <!-- Digital Clock Display -->
+          <div class="pt-2">
+            <span id="toasterPhaseText" class="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 inline-block mb-1">
+              Ready to Toast
+            </span>
+            <div id="lockoutClockDisplay" class="text-5xl font-black font-mono tracking-tight my-1 text-slate-800 dark:text-slate-100">
+              30:00
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3 justify-center w-full max-w-xs pt-1">
+            <button id="btnStartLockout" onclick="toggleToasterTimer()" class="bubble-btn bg-emerald-500 text-white px-6 py-3 text-xs font-bold hover:bg-emerald-600 w-full flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-fire text-amber-300"></i> Push Lever & Start
+            </button>
+            <button id="btnCancelLockout" onclick="endTimerEarly()" class="bubble-btn bg-rose-500 text-white px-6 py-3 text-xs font-bold hover:bg-rose-600 w-full hidden flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-fire-burner"></i> End Early (Burns Toast!)
+            </button>
+          </div>
+        </div>
+
+        <!-- Duration Controls -->
+        <div class="bubble-card card-element p-5 space-y-4 text-center">
+          <label class="text-xs font-bold uppercase tracking-wider opacity-75 block">Select Toasting Duration</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setLockoutTime(15)" id="btnPreset15" class="bubble-btn p-2 text-xs bg-white/70 dark:bg-slate-800 font-bold">15m</button>
+            <button onclick="setLockoutTime(30)" id="btnPreset30" class="bubble-btn p-2 text-xs bg-amber-500 text-white font-bold">30m</button>
+            <button onclick="setLockoutTime(60)" id="btnPreset60" class="bubble-btn p-2 text-xs bg-white/70 dark:bg-slate-800 font-bold">1h</button>
+            <button onclick="setLockoutTime(120)" id="btnPreset120" class="bubble-btn p-2 text-xs bg-white/70 dark:bg-slate-800 font-bold">2h</button>
+          </div>
+
+          <div class="flex items-center justify-center gap-3 pt-1">
+            <button onclick="adjustLockoutMinutes(-5)" class="bubble-btn w-10 h-10 bg-slate-200 dark:bg-slate-700 font-bold text-lg flex items-center justify-center">-5m</button>
+            <span id="lockoutMinutesDisplay" class="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono w-28">30 min</span>
+            <button onclick="adjustLockoutMinutes(5)" class="bubble-btn w-10 h-10 bg-slate-200 dark:bg-slate-700 font-bold text-lg flex items-center justify-center">+5m</button>
+          </div>
+        </div>
+
+        <div class="bubble-card card-element p-5 space-y-3 text-left">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-bold uppercase tracking-wider opacity-75">Connected Goal</label>
+            <button onclick="switchTab('wheel')" class="text-xs text-rose-500 font-extrabold flex items-center gap-1 hover:underline">
+              <i class="fa-solid fa-arrows-rotate"></i> Spin Wheel
+            </button>
+          </div>
+
+          <select id="lockoutGoalSelect" onchange="updateSelectedLockoutGoal()" class="w-full text-xs p-3 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-black/10 focus:outline-none font-bold text-amber-600 dark:text-amber-300">
+            <!-- Populated dynamically -->
+          </select>
+
+          <div class="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-800 text-center">
+            <span class="text-[10px] uppercase font-bold text-amber-500 block">Toast Challenge:</span>
+            <p id="lockoutChallengeSummary" class="text-sm font-black text-amber-800 dark:text-amber-200 mt-0.5">
+              "30 mins of: Doing Homework 📚"
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-history" class="page-section hidden space-y-5">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold">Focus Calendar 📅</h1>
+            <p class="text-xs opacity-75 font-semibold">Monthly focus logs, toasted & burnt stats</p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="changeCalendarMonth(-1)" class="w-8 h-8 rounded-full bg-white/60 dark:bg-slate-800 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="calendarMonthHeader" class="text-xs font-black px-2">September 2026</span>
+            <button onclick="changeCalendarMonth(1)" class="w-8 h-8 rounded-full bg-white/60 dark:bg-slate-800 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Monthly Overview Stats -->
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="bubble-card card-element p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300">
+            <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 block uppercase">Perfect Toasts</span>
+            <strong id="statPerfectToasts" class="text-lg font-black text-amber-700 dark:text-amber-300">12 🍞</strong>
+          </div>
+          <div class="bubble-card card-element p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-300">
+            <span class="text-[10px] font-bold text-rose-600 dark:text-rose-400 block uppercase">Burnt Toasts</span>
+            <strong id="statBurntToasts" class="text-lg font-black text-rose-700 dark:text-rose-300">3 🔥</strong>
+          </div>
+          <div class="bubble-card card-element p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-300">
+            <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 block uppercase">Focus Total</span>
+            <strong id="statFocusTotal" class="text-lg font-black text-indigo-700 dark:text-indigo-300">18.5 hrs</strong>
+          </div>
+        </div>
+
+        <!-- Month Grid Card -->
+        <div class="bubble-card card-element p-4 space-y-3">
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-400 pb-1">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+          <div id="calendarDaysGrid" class="calendar-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <p class="text-[11px] text-center opacity-70 italic">💡 Click any date on the calendar to view full screen time & journal details!</p>
+      </section>
+
+      <section id="sec-journal" class="page-section hidden space-y-5">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold">Daily Journal 📝</h1>
+            <p id="journalDateHeader" class="text-xs opacity-75 font-semibold">Today</p>
+          </div>
+          <button onclick="saveJournalEntry()" class="bubble-btn bg-emerald-500 text-white px-4 py-2 text-xs font-bold hover:bg-emerald-600">
+            Save Log
+          </button>
+        </div>
+
+        <div class="bubble-card card-element p-5 space-y-3">
+          <h3 class="font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-clock text-amber-500"></i> Completed Toast Activities Today
+          </h3>
+          <div id="journalActivitiesList" class="grid grid-cols-2 gap-2 text-xs">
+            <!-- Dynamic checklist -->
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <input type="text" id="customJournalActInput" placeholder="Add custom activity..." class="w-full text-xs p-2.5 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-black/10 focus:outline-none">
+            <button onclick="addCustomJournalActivity()" class="bubble-btn bg-amber-500 text-white px-3 text-xs">+ Add</button>
+          </div>
+        </div>
+
+        <div class="bubble-card card-element p-5 space-y-3">
+          <h3 class="font-bold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-face-smile text-indigo-500"></i> Daily Reflections
+          </h3>
+          <textarea id="journalNotesInput" rows="5" placeholder="How did you feel today? What activities helped you stay off your phone?" class="w-full text-xs p-3 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-black/10 focus:outline-none resize-none"></textarea>
+        </div>
+      </section>
+
+    </main>
+
+    <div id="harshWarningModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-5 hidden">
+      <div class="bubble-card card-element w-full max-w-sm p-6 text-center space-y-4 bg-red-950 border-4 border-red-500 shadow-2xl text-white">
+        <div class="w-20 h-20 bg-red-600 text-white rounded-full flex items-center justify-center text-4xl mx-auto animate-bounce border-4 border-red-300 shadow-xl">
+          <i class="fa-solid fa-skull-crossbones"></i>
+        </div>
+        <div class="space-y-1">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest bg-red-600 text-white px-3 py-1 rounded-full">
+            ⚠️ BRAINROT DETECTED
+          </span>
+          <h3 class="text-xl font-black text-red-400 tracking-tight pt-2">WE SAW THAT! YOU LEFT THE APP! 📱❌</h3>
+          <p id="harshRoastText" class="text-xs font-bold text-red-200 leading-relaxed bg-red-900/60 p-3 rounded-2xl border border-red-500/30">
+            "Your attention span is shorter than a goldfish on TikTok! Put down the scroll feed and get back to work!"
+          </p>
+        </div>
+
+        <div class="p-3 bg-black/40 rounded-2xl text-[11px] text-slate-300 flex items-center justify-between border border-red-500/20">
+          <span>App Switch Strikes:</span>
+          <strong id="harshStrikesCount" class="text-red-400 font-extrabold text-sm">1 Strike</strong>
+        </div>
+
+        <button onclick="dismissHarshWarning()" class="bubble-btn bg-red-600 hover:bg-red-500 text-white w-full py-3 text-xs font-extrabold uppercase tracking-wider">
+          I'm Sorry! Returning to Focus 🙇‍♀️
+        </button>
+      </div>
+    </div>
+
+    <div id="syncScreenTimeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bubble-card card-element w-full max-w-sm p-5 space-y-4 bg-white dark:bg-slate-900 border-2 border-indigo-400 shadow-2xl relative text-left">
+        <div class="flex justify-between items-start border-b border-black/10 dark:border-white/10 pb-2">
+          <div>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest text-indigo-500">Device Sync Hub</span>
+            <h3 class="text-lg font-black">Sync Settings Screen Time 📱</h3>
+          </div>
+          <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-times"></i></button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-amber-900 dark:text-amber-200 leading-snug">
+            <strong class="block text-[11px] font-extrabold mb-1"><i class="fa-solid fa-shield-halved text-amber-600 mr-1"></i> Privacy & Web Sandbox Info:</strong>
+            Browsers cannot directly pull native iOS / Android system settings without a companion extension. You can enter your exact Screen Time reading below from your device's settings widget!
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-xs opacity-80">Enter Today's Screen Time Reading:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase opacity-60">Hours</span>
+                <input type="number" id="syncHoursInput" min="0" max="24" value="2" class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-black/10 font-bold text-center text-sm focus:outline-none">
+              </div>
+              <div>
+                <span class="text-[10px] font-bold uppercase opacity-60">Minutes</span>
+                <input type="number" id="syncMinsInput" min="0" max="59" value="14" class="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-black/10 font-bold text-center text-sm focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-bold text-xs opacity-80">Daily Screen Time Goal:</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="syncGoalHoursInput" min="1" max="24" value="3" class="w-20 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-black/10 font-bold text-center text-xs focus:outline-none">
+              <span class="font-bold opacity-70">Hours Limit</span>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="space-y-1 pt-1">
+            <span class="text-[10px] font-bold uppercase opacity-60">Quick Sync Presets:</span>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button onclick="setSyncPreset(1, 30)" class="bubble-btn py-1.5 px-2 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold">1h 30m</button>
+              <button onclick="setSyncPreset(2, 45)" class="bubble-btn py-1.5 px-2 bg-indigo-500 text-white text-[10px] font-bold">2h 45m</button>
+              <button onclick="setSyncPreset(4, 15)" class="bubble-btn py-1.5 px-2 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold">4h 15m</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button onclick="saveSyncSettings()" class="bubble-btn bg-emerald-500 text-white w-full py-2.5 text-xs font-bold hover:bg-emerald-600">
+            <i class="fa-solid fa-check mr-1"></i> Update & Sync Reading
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="calendarDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bubble-card card-element w-full max-w-sm p-5 space-y-4 bg-white dark:bg-slate-900 border-2 border-indigo-400 shadow-2xl relative">
+        <div class="flex justify-between items-start border-b border-black/10 dark:border-white/10 pb-2">
+          <div>
+            <span id="detailDateSub" class="text-[10px] font-extrabold uppercase tracking-widest text-indigo-500">Date Log</span>
+            <h3 id="detailDateTitle" class="text-lg font-black">September 8, 2026</h3>
+          </div>
+          <button onclick="closeCalendarDetail()" class="text-slate-400 hover:text-slate-600 text-lg p-1"><i class="fa-solid fa-times"></i></button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="flex justify-between items-center p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50">
+            <span class="font-semibold"><i class="fa-solid fa-mobile-screen text-indigo-500 mr-1"></i> Screen Time:</span>
+            <strong id="detailScreenTime" class="font-extrabold text-indigo-700 dark:text-indigo-300">2h 14m</strong>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300">
+              <span class="text-[10px] font-bold text-amber-600">Golden Toasts:</span>
+              <div id="detailPerfectCount" class="text-base font-black text-amber-700 dark:text-amber-300">2 🍞</div>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300">
+              <span class="text-[10px] font-bold text-rose-600">Burnt Toasts:</span>
+              <div id="detailBurntCount" class="text-base font-black text-rose-700 dark:text-rose-300">0 🔥</div>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-bold text-[11px] opacity-75">Activities Completed:</span>
+            <div id="detailActivitiesList" class="flex flex-wrap gap-1.5 pt-1">
+              <!-- Rendered tags -->
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <span class="font-bold text-[11px] opacity-75">Journal Reflection:</span>
+            <p id="detailJournalNotes" class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-[11px] italic leading-snug">
+              "No reflections logged for this day."
+            </p>
+          </div>
+        </div>
+
+        <button onclick="closeCalendarDetail()" class="bubble-btn bg-indigo-500 text-white w-full py-2.5 text-xs font-bold">Close Detail Log</button>
+      </div>
+    </div>
+
+    <nav class="nav-bar absolute bottom-0 left-0 right-0 h-20 border-t border-black/5 flex items-center justify-around px-2 z-30">
+      <button onclick="switchTab('journal')" id="nav-journal" class="nav-item flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all opacity-60">
+        <i class="fa-solid fa-book text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Journal</span>
+      </button>
+
+      <button onclick="switchTab('wheel')" id="nav-wheel" class="nav-item flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all opacity-60">
+        <i class="fa-solid fa-dharmachakra text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Wheel</span>
+      </button>
+
+      <button onclick="switchTab('homepage')" id="nav-homepage" class="nav-item flex flex-col items-center justify-center w-16 h-16 rounded-full -mt-5 bg-indigo-500 text-white shadow-lg bubble-btn scale-105 active:scale-95">
+        <i class="fa-solid fa-house text-xl"></i>
+        <span class="text-[9px] font-extrabold mt-0.5">Home</span>
+      </button>
+
+      <button onclick="switchTab('block')" id="nav-block" class="nav-item flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all opacity-60">
+        <i class="fa-solid fa-bread-slice text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Toaster</span>
+      </button>
+
+      <button onclick="switchTab('history')" id="nav-history" class="nav-item flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all opacity-60">
+        <i class="fa-solid fa-calendar-days text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Calendar</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    const THEMES = ['theme-blue', 'theme-pink', 'theme-nature', 'theme-yellow'];
+    const THEME_NAMES = ['Pastel Blue', 'Pastel Pink', 'Nature', 'Baby Yellow'];
+
+    const HARSH_ROASTS = [
+      "REALLY? You couldn't last 5 minutes without scrolling TikTok?! Put the phone down!",
+      "Your attention span is shorter than a goldfish! Go back to work!",
+      "Congratulations on failing your focus time again! What was so urgent?!",
+      "Swayed by brainrot notification again? Pathetic! Your toast is burning!",
+      "Do you want to achieve your goals or just tap icons all day? STAY IN THE APP!"
+    ];
+
+    let state = {
+      currentThemeIdx: 0,
+      darkMode: false,
+      activeTab: 'homepage',
+      currentCalendarYear: 2026,
+      currentCalendarMonth: 8, // September (0-indexed)
+      appSwitchStrikes: 0,
+      timerWasAutoEnded: false,
+      
+      // Screen Time Tracking
+      screenTimeHours: 2,
+      screenTimeMins: 14,
+      screenTimeGoalHours: 3,
+
+      tasks: [
+        { id: 1, text: 'Finish Seminar slides', done: false },
+        { id: 2, text: 'Go for a 15-minute walk without phone', done: true }
+      ],
+      wheelActivities: [
+        'Doing Homework 📚',
+        'Go on a walk 🌿',
+        'Read a book 📚',
+        'Draw or Doodle 🎨',
+        'Listen to music 🎧',
+        'Hydrate & Stretch 💧'
+      ],
+      selectedLockoutGoal: 'Doing Homework 📚',
+      lockoutMinutes: 30,
+      lockoutSecondsLeft: 30 * 60,
+      isLockoutRunning: false,
+      lockoutInterval: null,
+      toastStatus: 'ready',
+
+      journalActivities: [
+        { name: 'Doing Homework 📚', checked: true, time: '04:00 PM' },
+        { name: 'Morning Walk 🌿', checked: true, time: '07:30 AM' }
+      ],
+      journalNotes: 'Had a super productive afternoon! Spending 30 minutes away from my phone made me feel energized.',
+
+      calendarLogs: {
+        '2026-09-08': {
+          screenTime: '2h 14m',
+          perfectToasts: 2,
+          burntToasts: 0,
+          activities: ['Doing Homework 📚', 'Morning Walk 🌿'],
+          journal: 'Had a super productive afternoon! Spending 30 minutes away from my phone made me feel energized.'
+        },
+        '2026-09-07': {
+          screenTime: '2h 45m',
+          perfectToasts: 3,
+          burntToasts: 1,
+          activities: ['Read a book 📚', 'Hydrate & Stretch 💧'],
+          journal: 'Finished reading chapter 4! Got distracted once when checking notifications.'
+        },
+        '2026-09-05': {
+          screenTime: '3h 10m',
+          perfectToasts: 1,
+          burntToasts: 2,
+          activities: ['Draw or Doodle 🎨'],
+          journal: 'Ended timer early twice to reply to messages. Need to stay off social media!'
+        }
+      }
+    };
+
+    function loadState() {
+      const saved = localStorage.getItem('focus_toaster_state');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          state = { ...state, ...parsed };
+        } catch(e) { console.error("Error loading state", e); }
+      }
+      applyTheme();
+      updateScreenTimeCard();
+      renderTasks();
+      renderActivitiesList();
+      populateGoalDropdown();
+      renderJournalActivities();
+      renderCalendarGrid();
+      drawWheel();
+      updateLockoutDisplay();
+    }
+
+    function saveState() {
+      localStorage.setItem('focus_toaster_state', JSON.stringify(state));
+    }
+
+    function openSyncModal() {
+      document.getElementById('syncHoursInput').value = state.screenTimeHours;
+      document.getElementById('syncMinsInput').value = state.screenTimeMins;
+      document.getElementById('syncGoalHoursInput').value = state.screenTimeGoalHours;
+      document.getElementById('syncScreenTimeModal').classList.remove('hidden');
+    }
+
+    function closeSyncModal() {
+      document.getElementById('syncScreenTimeModal').classList.add('hidden');
+    }
+
+    function setSyncPreset(h, m) {
+      document.getElementById('syncHoursInput').value = h;
+      document.getElementById('syncMinsInput').value = m;
+    }
+
+    function saveSyncSettings() {
+      const h = parseInt(document.getElementById('syncHoursInput').value) || 0;
+      const m = parseInt(document.getElementById('syncMinsInput').value) || 0;
+      const goal = parseInt(document.getElementById('syncGoalHoursInput').value) || 3;
+
+      state.screenTimeHours = Math.max(0, Math.min(24, h));
+      state.screenTimeMins = Math.max(0, Math.min(59, m));
+      state.screenTimeGoalHours = Math.max(1, Math.min(24, goal));
+
+      // Update current day log
+      const todayKey = getTodayKey();
+      if (!state.calendarLogs[todayKey]) {
+        state.calendarLogs[todayKey] = { screenTime: `${state.screenTimeHours}h ${state.screenTimeMins}m`, perfectToasts: 0, burntToasts: 0, activities: [], journal: '' };
+      }
+      state.calendarLogs[todayKey].screenTime = `${state.screenTimeHours}h ${state.screenTimeMins}m`;
+
+      updateScreenTimeCard();
+      saveState();
+      closeSyncModal();
+      showToast("📱 Screen Time updated from Device Settings!", "success");
+    }
+
+    function updateScreenTimeCard() {
+      const totalMinutes = state.screenTimeHours * 60 + state.screenTimeMins;
+      const goalMinutes = state.screenTimeGoalHours * 60;
+      const percent = Math.min(100, Math.round((totalMinutes / goalMinutes) * 100));
+
+      document.getElementById('homeScreenTimeDisplay').innerText = `${state.screenTimeHours}h ${state.screenTimeMins}m`;
+      document.getElementById('screenTimeBar').style.width = `${percent}%`;
+      document.getElementById('screenTimeGoalLabel').innerText = `Goal: Under ${state.screenTimeGoalHours}h 00m`;
+
+      const bar = document.getElementById('screenTimeBar');
+      if (percent > 100) {
+        bar.className = 'bg-rose-500 h-full rounded-full transition-all duration-500';
+      } else if (percent > 75) {
+        bar.className = 'bg-amber-400 h-full rounded-full transition-all duration-500';
+      } else {
+        bar.className = 'bg-emerald-400 h-full rounded-full transition-all duration-500';
+      }
+    }
+
+    function applyTheme() {
+      THEMES.forEach(t => document.body.classList.remove(t));
+      document.body.classList.add(THEMES[state.currentThemeIdx]);
+
+      if (state.darkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeLabel').innerText = 'Night Mode';
+        document.getElementById('darkModeIcon').className = 'fa-solid fa-sun text-xl text-amber-400';
+      } else {
+        document.body.classList.remove('dark-mode');
+        document.getElementById('darkModeLabel').innerText = 'Day Mode';
+        document.getElementById('darkModeIcon').className = 'fa-solid fa-moon text-xl text-amber-500';
+      }
+
+      const themeLabel = document.getElementById('currentThemeLabel');
+      if (themeLabel) themeLabel.innerText = THEME_NAMES[state.currentThemeIdx];
+    }
+
+    function cycleTheme() {
+      state.currentThemeIdx = (state.currentThemeIdx + 1) % THEMES.length;
+      applyTheme();
+      saveState();
+    }
+
+    function toggleDarkMode() {
+      state.darkMode = !state.darkMode;
+      applyTheme();
+      saveState();
+    }
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('appToast');
+      if (!toast) return;
+      toast.innerText = msg;
+      
+      let bgClass = 'bg-slate-900 text-white';
+      if (type === 'success') bgClass = 'bg-emerald-600 text-white';
+      if (type === 'warning') bgClass = 'bg-amber-500 text-white';
+      if (type === 'error') bgClass = 'bg-rose-600 text-white';
+
+      toast.className = `fixed top-6 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 text-center rounded-2xl text-xs font-extrabold shadow-2xl z-50 transition-all duration-300 pointer-events-none ${bgClass} opacity-100 translate-y-0`;
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+      }, 3000);
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('opacity-100', 'bg-black/10', 'dark:bg-white/10', 'scale-105');
+        btn.classList.add('opacity-60');
+      });
+
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.remove('opacity-60');
+        activeNav.classList.add('opacity-100');
+        if (tabId !== 'homepage') {
+          activeNav.classList.add('bg-black/10', 'dark:bg-white/10');
+        }
+      }
+
+      if (tabId === 'wheel') {
+        setTimeout(drawWheel, 50);
+      } else if (tabId === 'history') {
+        renderCalendarGrid();
+      }
+    }
+
+    function toggleToasterTimer() {
+      if (state.isLockoutRunning) {
+        endTimerEarly();
+      } else {
+        startToasterTimer();
+      }
+    }
+
+    function startToasterTimer() {
+      state.isLockoutRunning = true;
+      state.toastStatus = 'cooking';
+
+      const toastBread = document.getElementById('toastBread');
+      const toasterLever = document.getElementById('toasterLever');
+      const toastFace = document.getElementById('toastFace');
+      const toastStatusLabel = document.getElementById('toastStatusLabel');
+      const smoke = document.getElementById('toasterSmoke');
+
+      toastBread.className = 'toast-bread in-toaster';
+      toasterLever.className = 'toaster-lever-knob down';
+      toastFace.innerHTML = '<i class="fa-solid fa-face-grin-tears text-amber-900 animate-pulse"></i>';
+      toastStatusLabel.innerText = 'Toasting...';
+      smoke.classList.remove('active');
+
+      document.getElementById('btnStartLockout').classList.add('hidden');
+      document.getElementById('btnCancelLockout').classList.remove('hidden');
+      document.getElementById('homeActiveTimerWidget').classList.remove('hidden');
+      document.getElementById('toasterPhaseText').innerText = 'Toasting Active 🔥 Stay Focused';
+
+      state.lockoutInterval = setInterval(() => {
+        if (state.lockoutSecondsLeft > 0) {
+          state.lockoutSecondsLeft--;
+          updateLockoutDisplay();
+        } else {
+          finishToasterTimer();
+        }
+      }, 1000);
+    }
+
+    function finishToasterTimer() {
+      clearInterval(state.lockoutInterval);
+      state.isLockoutRunning = false;
+      state.toastStatus = 'golden';
+
+      const toastBread = document.getElementById('toastBread');
+      const toasterLever = document.getElementById('toasterLever');
+      const toastFace = document.getElementById('toastFace');
+      const toastStatusLabel = document.getElementById('toastStatusLabel');
+
+      toastBread.className = 'toast-bread popped-golden';
+      toasterLever.className = 'toaster-lever-knob';
+      toastFace.innerHTML = '<i class="fa-solid fa-face-laugh-beam text-amber-950"></i>';
+      toastStatusLabel.innerText = 'GOLDEN!';
+
+      document.getElementById('btnStartLockout').classList.remove('hidden');
+      document.getElementById('btnCancelLockout').classList.add('hidden');
+      document.getElementById('homeActiveTimerWidget').classList.add('hidden');
+      document.getElementById('toasterPhaseText').innerText = '🎉 Perfect Golden Toast!';
+
+      const todayStr = getTodayKey();
+      if (!state.calendarLogs[todayStr]) {
+        state.calendarLogs[todayStr] = { screenTime: `${state.screenTimeHours}h ${state.screenTimeMins}m`, perfectToasts: 0, burntToasts: 0, activities: [], journal: '' };
+      }
+      state.calendarLogs[todayStr].perfectToasts++;
+      if (!state.calendarLogs[todayStr].activities.includes(state.selectedLockoutGoal)) {
+        state.calendarLogs[todayStr].activities.push(state.selectedLockoutGoal);
+      }
+
+      showToast(`🎉 Toast Popped! Successfully completed "${state.selectedLockoutGoal}"!`, "success");
+      saveState();
+      resetLockoutDisplayAfterDelay();
+    }
+
+    function endTimerEarly() {
+      if (!state.isLockoutRunning) return;
+
+      clearInterval(state.lockoutInterval);
+      state.isLockoutRunning = false;
+      state.toastStatus = 'burnt';
+
+      const toastBread = document.getElementById('toastBread');
+      const toasterLever = document.getElementById('toasterLever');
+      const toastFace = document.getElementById('toastFace');
+      const toastStatusLabel = document.getElementById('toastStatusLabel');
+      const smoke = document.getElementById('toasterSmoke');
+
+      toastBread.className = 'toast-bread popped-burnt';
+      toasterLever.className = 'toaster-lever-knob';
+      toastFace.innerHTML = '<i class="fa-solid fa-face-dizzy text-red-400"></i>';
+      toastStatusLabel.innerText = 'BURNT 🔥';
+      smoke.classList.add('active');
+
+      document.getElementById('btnStartLockout').classList.remove('hidden');
+      document.getElementById('btnCancelLockout').classList.add('hidden');
+      document.getElementById('homeActiveTimerWidget').classList.add('hidden');
+      document.getElementById('toasterPhaseText').innerText = '🔥 Toast Ended Early & Burnt!';
+
+      const todayStr = getTodayKey();
+      if (!state.calendarLogs[todayStr]) {
+        state.calendarLogs[todayStr] = { screenTime: `${state.screenTimeHours}h ${state.screenTimeMins}m`, perfectToasts: 0, burntToasts: 0, activities: [], journal: '' };
+      }
+      state.calendarLogs[todayStr].burntToasts++;
+
+      showToast(`🔥 Oh no! You ended early and burnt your toast!`, "error");
+      saveState();
+      resetLockoutDisplayAfterDelay();
+    }
+
+    function resetLockoutDisplayAfterDelay() {
+      setTimeout(() => {
+        if (!state.isLockoutRunning) {
+          state.lockoutSecondsLeft = state.lockoutMinutes * 60;
+          updateLockoutDisplay();
+        }
+      }, 3000);
+    }
+
+    function updateLockoutDisplay() {
+      let seconds = state.lockoutSecondsLeft;
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      
+      document.getElementById('lockoutClockDisplay').innerText = formatted;
+      document.getElementById('homeTimerClock').innerText = formatted;
+    }
+
+    function setLockoutTime(mins) {
+      if (state.isLockoutRunning) return;
+      let clamped = Math.max(5, Math.min(240, Math.round(mins / 5) * 5));
+      state.lockoutMinutes = clamped;
+      state.lockoutSecondsLeft = clamped * 60;
+
+      [15, 30, 60, 120].forEach(m => {
+        const btn = document.getElementById(`btnPreset${m}`);
+        if (btn) {
+          btn.className = m === clamped ? 'bubble-btn p-2 text-xs bg-amber-500 text-white font-bold' : 'bubble-btn p-2 text-xs bg-white/70 dark:bg-slate-800 font-bold';
+        }
+      });
+
+      const displayStr = clamped >= 60 ? `${Math.floor(clamped / 60)}h ${clamped % 60 > 0 ? (clamped % 60) + 'm' : ''}` : `${clamped} min`;
+      document.getElementById('lockoutMinutesDisplay').innerText = displayStr;
+      updateLockoutDisplay();
+      updateLockoutChallengeSummary();
+      saveState();
+    }
+
+    function adjustLockoutMinutes(delta) {
+      setLockoutTime(state.lockoutMinutes + delta);
+    }
+
+    function updateLockoutChallengeSummary() {
+      const summary = document.getElementById('lockoutChallengeSummary');
+      const goalText = state.selectedLockoutGoal || 'Doing Homework 📚';
+      if (summary) summary.innerText = `${state.lockoutMinutes} mins of: ${goalText}`;
+      
+      document.getElementById('homeTimerTitle').innerText = `${state.lockoutMinutes} Min Focus Session`;
+      document.getElementById('homeActiveGoalText').innerText = goalText;
+    }
+
+    function populateGoalDropdown() {
+      const select = document.getElementById('lockoutGoalSelect');
+      if (!select) return;
+      select.innerHTML = '';
+
+      state.wheelActivities.forEach(act => {
+        const opt = document.createElement('option');
+        opt.value = act;
+        opt.innerText = act;
+        if (act === state.selectedLockoutGoal) opt.selected = true;
+        select.appendChild(opt);
+      });
+      updateLockoutChallengeSummary();
+    }
+
+    function updateSelectedLockoutGoal() {
+      const select = document.getElementById('lockoutGoalSelect');
+      state.selectedLockoutGoal = select.value;
+      updateLockoutChallengeSummary();
+      saveState();
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Automatically end timer and burn toast ONLY if user leaves during active focus session
+        if (state.isLockoutRunning) {
+          state.appSwitchStrikes++;
+          endTimerEarly();
+          state.timerWasAutoEnded = true;
+          saveState();
+        }
+      } else {
+        // Only trigger harsh warning modal if an active focus timer was auto-ended
+        if (state.timerWasAutoEnded) {
+          triggerHarshAppSwitchWarning();
+        }
+      }
+    });
+
+    function triggerHarshAppSwitchWarning() {
+      const modal = document.getElementById('harshWarningModal');
+      const roastText = document.getElementById('harshRoastText');
+      const strikesCount = document.getElementById('harshStrikesCount');
+
+      let randomRoast = HARSH_ROASTS[Math.floor(Math.random() * HARSH_ROASTS.length)];
+      if (state.timerWasAutoEnded) {
+        randomRoast = "YOU LEFT THE APP WHILE TOASTING! Your focus timer was automatically canceled and your toast BURNT! 🔥💀";
+        state.timerWasAutoEnded = false;
+      }
+      roastText.innerText = `"${randomRoast}"`;
+      strikesCount.innerText = `${state.appSwitchStrikes} Strike${state.appSwitchStrikes > 1 ? 's' : ''}`;
+
+      modal.classList.remove('hidden');
+    }
+
+    function dismissHarshWarning() {
+      document.getElementById('harshWarningModal').classList.add('hidden');
+    }
+
+    function getTodayKey() {
+      return '2026-09-08';
+    }
+
+    function changeCalendarMonth(delta) {
+      state.currentCalendarMonth += delta;
+      if (state.currentCalendarMonth > 11) {
+        state.currentCalendarMonth = 0;
+        state.currentCalendarYear++;
+      } else if (state.currentCalendarMonth < 0) {
+        state.currentCalendarMonth = 11;
+        state.currentCalendarYear--;
+      }
+      renderCalendarGrid();
+    }
+
+    function renderCalendarGrid() {
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById('calendarMonthHeader').innerText = `${monthNames[state.currentCalendarMonth]} ${state.currentCalendarYear}`;
+
+      const grid = document.getElementById('calendarDaysGrid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(state.currentCalendarYear, state.currentCalendarMonth, 1).getDay();
+      const totalDays = new Date(state.currentCalendarYear, state.currentCalendarMonth + 1, 0).getDate();
+
+      let totalPerfect = 0;
+      let totalBurnt = 0;
+
+      Object.values(state.calendarLogs).forEach(log => {
+        totalPerfect += log.perfectToasts || 0;
+        totalBurnt += log.burntToasts || 0;
+      });
+
+      document.getElementById('statPerfectToasts').innerText = `${totalPerfect} 🍞`;
+      document.getElementById('statBurntToasts').innerText = `${totalBurnt} 🔥`;
+      document.getElementById('statFocusTotal').innerText = `${(totalPerfect * 0.5).toFixed(1)} hrs`;
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        grid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const monthNum = String(state.currentCalendarMonth + 1).padStart(2, '0');
+        const dayNum = String(day).padStart(2, '0');
+        const dateKey = `${state.currentCalendarYear}-${monthNum}-${dayNum}`;
+
+        const cell = document.createElement('div');
+        const logData = state.calendarLogs[dateKey];
+
+        let cellClasses = 'calendar-day-cell bg-white/60 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-black/5';
+        let badgeHtml = '';
+
+        if (dateKey === getTodayKey()) {
+          cellClasses += ' ring-2 ring-indigo-500 font-black';
+        }
+
+        if (logData) {
+          if (logData.perfectToasts > 0 && logData.burntToasts === 0) {
+            cellClasses = 'calendar-day-cell bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-200 border border-amber-300 font-extrabold';
+            badgeHtml = `<span class="text-[9px] text-amber-600 mt-0.5">🍞 ${logData.perfectToasts}</span>`;
+          } else if (logData.burntToasts > 0) {
+            cellClasses = 'calendar-day-cell bg-rose-100 dark:bg-rose-950/70 text-rose-900 dark:text-rose-200 border border-rose-300 font-extrabold';
+            badgeHtml = `<span class="text-[9px] text-rose-600 mt-0.5">🔥 ${logData.burntToasts}</span>`;
+          }
+        }
+
+        cell.className = cellClasses;
+        cell.innerHTML = `<span>${day}</span>${badgeHtml}`;
+        cell.onclick = () => openCalendarDetail(dateKey, day, monthNames[state.currentCalendarMonth]);
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function openCalendarDetail(dateKey, day, monthName) {
+      const modal = document.getElementById('calendarDetailModal');
+      const logData = state.calendarLogs[dateKey] || {
+        screenTime: '1h 45m',
+        perfectToasts: 0,
+        burntToasts: 0,
+        activities: ['Standard Focus Session'],
+        journal: 'No specific reflections recorded for this day.'
+      };
+
+      document.getElementById('detailDateTitle').innerText = `${monthName} ${day}, ${state.currentCalendarYear}`;
+      document.getElementById('detailScreenTime').innerText = logData.screenTime || '2h 10m';
+      document.getElementById('detailPerfectCount').innerText = `${logData.perfectToasts || 0} 🍞`;
+      document.getElementById('detailBurntCount').innerText = `${logData.burntToasts || 0} 🔥`;
+
+      const actsContainer = document.getElementById('detailActivitiesList');
+      actsContainer.innerHTML = '';
+      (logData.activities || []).forEach(act => {
+        const tag = document.createElement('span');
+        tag.className = 'text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full';
+        tag.innerText = act;
+        actsContainer.appendChild(tag);
+      });
+
+      document.getElementById('detailJournalNotes').innerText = `"${logData.journal || 'No journal notes logged.'}"`;
+      modal.classList.remove('hidden');
+    }
+
+    function closeCalendarDetail() {
+      document.getElementById('calendarDetailModal').classList.add('hidden');
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      state.tasks.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between p-2.5 rounded-2xl bg-white/40 dark:bg-slate-800/40 text-xs font-semibold';
+        li.innerHTML = `
+          <div class="flex items-center gap-2 cursor-pointer" onclick="toggleTask(${t.id})">
+            <i class="fa-regular ${t.done ? 'fa-circle-check text-emerald-500' : 'fa-circle opacity-50'} text-base"></i>
+            <span class="${t.done ? 'line-through opacity-50' : ''}">${escapeHtml(t.text)}</span>
+          </div>
+          <button onclick="deleteTask(${t.id})" class="text-slate-400 hover:text-red-500 px-2"><i class="fa-solid fa-trash"></i></button>
+        `;
+        list.appendChild(li);
+      });
+      document.getElementById('taskCountBadge').innerText = state.tasks.filter(t => !t.done).length;
+    }
+
+    function addTask() {
+      const input = document.getElementById('newTaskInput');
+      if (!input.value.trim()) return;
+      state.tasks.push({ id: Date.now(), text: input.value.trim(), done: false });
+      input.value = '';
+      renderTasks();
+      saveState();
+    }
+
+    function toggleTask(id) {
+      state.tasks = state.tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+      renderTasks();
+      saveState();
+    }
+
+    function deleteTask(id) {
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      renderTasks();
+      saveState();
+    }
+
+    function renderJournalActivities() {
+      const box = document.getElementById('journalActivitiesList');
+      if (!box) return;
+      box.innerHTML = '';
+      state.journalActivities.forEach((act, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 p-2 rounded-xl bg-white/50 dark:bg-slate-800/50';
+        div.innerHTML = `
+          <input type="checkbox" ${act.checked ? 'checked' : ''} onchange="toggleJournalAct(${idx})" class="rounded text-amber-500 focus:ring-amber-400">
+          <span class="truncate ${act.checked ? 'line-through opacity-60' : ''}">${escapeHtml(act.name)}</span>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function toggleJournalAct(idx) {
+      state.journalActivities[idx].checked = !state.journalActivities[idx].checked;
+      saveState();
+    }
+
+    function addCustomJournalActivity() {
+      const input = document.getElementById('customJournalActInput');
+      if (!input.value.trim()) return;
+      state.journalActivities.push({ name: input.value.trim(), checked: true, time: 'Now' });
+      input.value = '';
+      renderJournalActivities();
+      saveState();
+    }
+
+    function saveJournalEntry() {
+      const notes = document.getElementById('journalNotesInput').value;
+      state.journalNotes = notes;
+      
+      const todayStr = getTodayKey();
+      if (!state.calendarLogs[todayStr]) {
+        state.calendarLogs[todayStr] = { screenTime: `${state.screenTimeHours}h ${state.screenTimeMins}m`, perfectToasts: 1, burntToasts: 0, activities: [], journal: '' };
+      }
+      state.calendarLogs[todayStr].journal = notes;
+
+      showToast("📝 Journal reflection saved!", "success");
+      saveState();
+    }
+
+    let startAngle = 0;
+    let isSpinning = false;
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const numOptions = state.wheelActivities.length;
+      if (numOptions === 0) return;
+
+      const arcSize = (2 * Math.PI) / numOptions;
+      const colors = ['#f78fb3', '#3dc1d3', '#e15f41', '#f5cd79', '#546de5', '#78e08f'];
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numOptions; i++) {
+        const angle = startAngle + i * arcSize;
+        ctx.beginPath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.moveTo(140, 140);
+        ctx.arc(140, 140, 130, angle, angle + arcSize, false);
+        ctx.lineTo(140, 140);
+        ctx.fill();
+
+        ctx.save();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px Fredoka, sans-serif";
+        ctx.translate(140 + Math.cos(angle + arcSize / 2) * 85, 140 + Math.sin(angle + arcSize / 2) * 85);
+        ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
+        const text = state.wheelActivities[i];
+        ctx.fillText(text.length > 14 ? text.substring(0, 12) + ".." : text, -ctx.measureText(text).width / 2, 0);
+        ctx.restore();
+      }
+    }
+
+    function spinWheel() {
+      if (isSpinning) return;
+      isSpinning = true;
+      document.getElementById('wheelResultModal').classList.add('hidden');
+
+      const spinAngleStart = Math.random() * 10 + 10;
+      let spinTime = 0;
+      const spinTimeTotal = Math.random() * 3000 + 3500;
+
+      function rotateWheel() {
+        spinTime += 30;
+        if (spinTime >= spinTimeTotal) {
+          stopRotateWheel();
+          return;
+        }
+        const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+        startAngle += (spinAngle * Math.PI / 180);
+        drawWheel();
+        requestAnimationFrame(rotateWheel);
+      }
+      rotateWheel();
+    }
+
+    function stopRotateWheel() {
+      isSpinning = false;
+      const numOptions = state.wheelActivities.length;
+      const degrees = startAngle * 180 / Math.PI + 90;
+      const arcd = 360 / numOptions;
+      const index = Math.floor((360 - (degrees % 360)) / arcd) % numOptions;
+
+      const selected = state.wheelActivities[index];
+      state.selectedLockoutGoal = selected;
+
+      document.getElementById('wheelResultText').innerText = selected;
+      document.getElementById('wheelResultModal').classList.remove('hidden');
+
+      populateGoalDropdown();
+      saveState();
+    }
+
+    function easeOut(t, b, c, d) {
+      const ts = (t /= d) * t;
+      const tc = ts * t;
+      return b + c * (tc + -3 * ts + 3 * t);
+    }
+
+    function addActivity() {
+      const input = document.getElementById('newActivityInput');
+      if (!input.value.trim()) return;
+      state.wheelActivities.push(input.value.trim());
+      input.value = '';
+      renderActivitiesList();
+      populateGoalDropdown();
+      drawWheel();
+      saveState();
+    }
+
+    function renderActivitiesList() {
+      const tags = document.getElementById('customActivitiesTags');
+      if (!tags) return;
+      tags.innerHTML = '';
+      state.wheelActivities.forEach((act, idx) => {
+        const tag = document.createElement('span');
+        tag.className = 'text-[10px] font-bold bg-white/60 dark:bg-slate-800/60 px-2.5 py-1 rounded-full flex items-center gap-1';
+        tag.innerHTML = `${escapeHtml(act)} ${idx > 5 ? `<i onclick="removeActivity(${idx})" class="fa-solid fa-times text-red-400 cursor-pointer"></i>` : ''}`;
+        tags.appendChild(tag);
+      });
+    }
+
+    function removeActivity(idx) {
+      state.wheelActivities.splice(idx, 1);
+      renderActivitiesList();
+      populateGoalDropdown();
+      drawWheel();
+      saveState();
+    }
+
+    function useWheelGoalInToaster() {
+      switchTab('block');
+    }
+
+    function selectHomeworkOverride() {
+      state.selectedLockoutGoal = "Doing Homework 📚";
+      populateGoalDropdown();
+      saveState();
+      switchTab('block');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+    }
+
+    window.onload = function() {
+      loadState();
+    };
+  </script>
+</body>
+</html>

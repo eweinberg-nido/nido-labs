@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyQuest - Quiz & Pet Focus</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            pink: '#ff2a85',
+                            pinkLight: '#ff62a5',
+                            orange: '#ff6b00',
+                            orangeLight: '#ff8c38',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float {
+            animation: float 3.5s ease-in-out infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-rose-500 selection:text-white transition-colors duration-300">
+
+    <!-- Top Full-Width Question Timer Bar -->
+    <div id="topTimerContainer" class="w-full bg-slate-900 border-b border-rose-500/20 sticky top-0 z-50 shadow-lg">
+        <div class="flex justify-between items-center px-4 py-1.5 text-xs font-bold text-rose-300 max-w-6xl mx-auto">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="timer" class="w-4 h-4 text-orange-400"></i>
+                <span id="topTimerSubjectLabel">Subject: Ready</span>
+            </div>
+            <div id="topTimerText" class="font-mono text-sm tracking-wider text-white">00:00</div>
+            <div class="flex items-center space-x-1 text-orange-400">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+                <span id="topTimerDifficulty">Level 1</span>
+            </div>
+        </div>
+        <!-- Progress Bar Indicator -->
+        <div class="w-full bg-slate-800 h-2.5 overflow-hidden">
+            <div id="topTimerBar" class="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 h-full transition-all duration-1000 ease-linear" style="width: 100%"></div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-pink-500/30">
+                    <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl tracking-tight bg-gradient-to-r from-pink-400 via-rose-300 to-orange-400 bg-clip-text text-transparent">StudyQuest</h1>
+                    <p class="text-[11px] text-pink-300 font-semibold">Quiz & Pet Study Goal</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex items-center space-x-2 sm:space-x-5">
+                <!-- Coins -->
+                <div class="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 px-3.5 py-1.5 rounded-full border border-amber-500/30 font-extrabold text-sm shadow-inner">
+                    <i data-lucide="coins" class="w-4 h-4 text-amber-400"></i>
+                    <span id="coinBalance">0</span>
+                </div>
+
+                <!-- Streak Days & Pet Level -->
+                <div class="flex items-center space-x-2 bg-gradient-to-r from-pink-500/20 to-rose-500/20 text-pink-300 px-3.5 py-1.5 rounded-full border border-pink-500/30 font-bold text-sm">
+                    <span id="headerPetEmoji" class="text-base">🐣</span>
+                    <span id="streakDays">0</span>
+                    <span class="text-xs font-normal hidden sm:inline text-pink-200">day streak</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Quiz & Study Dashboard (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col space-y-6">
+
+            <!-- 30-Minute Study Session Timer Card -->
+            <div class="bg-gradient-to-r from-pink-900/40 via-rose-900/40 to-orange-900/40 rounded-3xl p-5 border border-pink-500/30 shadow-xl flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-orange-500 flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="hourglass" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-black uppercase tracking-wider text-pink-300">App Session Goal</h2>
+                        <div class="text-xl font-black text-white flex items-center space-x-2">
+                            <span id="sessionTimerDisplay" class="font-mono text-2xl">30:00</span>
+                            <span class="text-xs text-slate-400 font-semibold">Remaining</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="startSessionTimer()" id="sessionTimerBtn" class="bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition flex items-center space-x-1">
+                        <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                        <span id="sessionTimerBtnText">Start 30m Goal</span>
+                    </button>
+                    <button onclick="resetSessionTimer()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl border border-slate-700 transition" title="Reset 30-Min Session">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subject Selection & Mode Card -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-pink-950/40 rounded-3xl p-6 border border-pink-500/30 shadow-2xl relative overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs uppercase tracking-widest font-black text-pink-400 bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/30">
+                        Select Study Quest
+                    </span>
+                    <div class="text-xs font-bold text-slate-400">
+                        Break Passes Left: <span id="breakPassCount" class="text-orange-400 font-black">3</span>/3
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <button onclick="selectSubject('english')" id="btnSubjectEnglish" class="subj-btn bg-slate-800/80 border-2 border-pink-500 p-3 rounded-2xl flex flex-col items-center justify-center transition transform active:scale-95 shadow-md relative">
+                        <span id="badgeLvlEnglish" class="absolute top-2 right-2 bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">Lvl 1</span>
+                        <span class="text-2xl mb-1">📖</span>
+                        <span class="text-xs font-black text-white">English</span>
+                        <span id="progEnglish" class="text-[10px] text-pink-300 font-semibold mt-1">0/5 Mastered</span>
+                    </button>
+                    <button onclick="selectSubject('spanish')" id="btnSubjectSpanish" class="subj-btn bg-slate-800/40 border border-slate-700 p-3 rounded-2xl flex flex-col items-center justify-center transition transform active:scale-95 hover:border-pink-500/50 relative">
+                        <span id="badgeLvlSpanish" class="absolute top-2 right-2 bg-slate-700 text-slate-300 text-[9px] font-black px-1.5 py-0.5 rounded-full">Lvl 1</span>
+                        <span class="text-2xl mb-1">🌮</span>
+                        <span class="text-xs font-black text-white">Spanish</span>
+                        <span id="progSpanish" class="text-[10px] text-slate-400 font-semibold mt-1">0/5 Mastered</span>
+                    </button>
+                    <button onclick="selectSubject('science')" id="btnSubjectScience" class="subj-btn bg-slate-800/40 border border-slate-700 p-3 rounded-2xl flex flex-col items-center justify-center transition transform active:scale-95 hover:border-pink-500/50 relative">
+                        <span id="badgeLvlScience" class="absolute top-2 right-2 bg-slate-700 text-slate-300 text-[9px] font-black px-1.5 py-0.5 rounded-full">Lvl 1</span>
+                        <span class="text-2xl mb-1">🔬</span>
+                        <span class="text-xs font-black text-white">Science</span>
+                        <span id="progScience" class="text-[10px] text-slate-400 font-semibold mt-1">0/5 Mastered</span>
+                    </button>
+                    <button onclick="selectSubject('math')" id="btnSubjectMath" class="subj-btn bg-slate-800/40 border border-slate-700 p-3 rounded-2xl flex flex-col items-center justify-center transition transform active:scale-95 hover:border-pink-500/50 relative">
+                        <span id="badgeLvlMath" class="absolute top-2 right-2 bg-slate-700 text-slate-300 text-[9px] font-black px-1.5 py-0.5 rounded-full">Lvl 1</span>
+                        <span class="text-2xl mb-1">📐</span>
+                        <span class="text-xs font-black text-white">Math</span>
+                        <span id="progMath" class="text-[10px] text-orange-400 font-semibold mt-1">0/5 Mastered</span>
+                    </button>
+                </div>
+
+                <!-- Action Bar (Break & Next Question) -->
+                <div class="flex items-center space-x-3 mt-2">
+                    <button onclick="takeBreak()" id="takeBreakBtn" class="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black py-3 px-4 rounded-2xl shadow-lg shadow-orange-500/20 flex items-center justify-center space-x-2 text-sm transition transform active:scale-95">
+                        <i data-lucide="coffee" class="w-4 h-4"></i>
+                        <span>Take 2-Min Break Pass</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Quiz Card -->
+            <div id="quizCard" class="bg-slate-900/90 rounded-3xl p-6 sm:p-8 border-2 border-pink-500/40 shadow-2xl relative flex flex-col justify-between min-h-[380px]">
+                
+                <!-- Question Header -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <span id="badgeBonus" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-xs px-3 py-1 rounded-full shadow-lg shadow-orange-500/30 animate-pulse">
+                            🔥 BONUS QUESTION (+150 COINS)
+                        </span>
+                        <span id="badgeStandard" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-xs px-3 py-1 rounded-full">
+                            🪙 +50 Coins
+                        </span>
+                        <span id="questionCategory" class="text-xs font-bold text-slate-400 uppercase tracking-wider">English - Level 1</span>
+                    </div>
+
+                    <!-- Active Subject Level Progress Bar -->
+                    <div class="bg-slate-800/80 p-2.5 rounded-2xl border border-slate-700 mb-2">
+                        <div class="flex justify-between text-xs font-bold text-slate-300 mb-1">
+                            <span id="activeLevelLabel" class="text-pink-400 font-extrabold">English Level 1 Mastery</span>
+                            <span id="activeLevelProgressText" class="text-xs font-black text-orange-400">0 / 5 Correct</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                            <div id="activeLevelProgressBar" class="bg-gradient-to-r from-pink-500 to-orange-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Question Prompt -->
+                    <h3 id="questionText" class="text-lg sm:text-2xl font-black text-white leading-relaxed my-4">
+                        Press "Start Next Question" to begin your quiz study session!
+                    </h3>
+                </div>
+
+                <!-- Quiz Options Grid -->
+                <div id="optionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">
+                    <!-- Dynamic Question Buttons will be rendered here -->
+                </div>
+
+                <!-- On-Screen Feedback Banner -->
+                <div id="feedbackBanner" class="hidden my-3 p-4 rounded-2xl text-sm font-bold flex items-center space-x-3 transition-all">
+                    <span id="feedbackIcon" class="text-xl"></span>
+                    <span id="feedbackText"></span>
+                </div>
+
+                <!-- Quiz Bottom Status -->
+                <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
+                    <button onclick="startNextQuestion()" id="nextQuestionBtn" class="w-full bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 hover:opacity-95 text-white font-black py-3.5 px-6 rounded-2xl shadow-xl shadow-pink-500/30 text-base transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i data-lucide="play-circle" class="w-5 h-5"></i>
+                        <span>Start Next Question</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Streak Pet, Shop & Revive (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col space-y-6">
+
+            <!-- Streak Pet Sanctuary Card -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-orange-950/40 rounded-3xl p-6 border border-orange-500/30 shadow-2xl text-center relative overflow-hidden">
+                <div class="absolute top-3 right-3 bg-orange-500/10 text-orange-400 text-[11px] font-bold px-2.5 py-1 rounded-full border border-orange-500/20">
+                    Pet Stage <span id="petStageNum">1</span>
+                </div>
+                
+                <h3 class="text-base font-extrabold text-white flex items-center justify-center space-x-2">
+                    <i data-lucide="heart" class="w-4 h-4 text-pink-400"></i>
+                    <span>Your Streak Pet</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">Studies with you every day!</p>
+
+                <!-- Pet Avatar Display -->
+                <div class="my-6">
+                    <div id="petAvatar" class="text-7xl sm:text-8xl animate-float inline-block drop-shadow-[0_10px_20px_rgba(255,107,0,0.3)]">
+                        🐣
+                    </div>
+                    <h4 id="petName" class="text-lg font-black text-white mt-2">Pip the Hatchling</h4>
+                    <p id="petStatus" class="text-xs text-orange-300 font-semibold mt-1">Status: Happy & Ready to Study!</p>
+                </div>
+
+                <!-- Pet Health / Streak Progress -->
+                <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between text-xs font-bold text-slate-300 mb-1">
+                        <span>Streak Level</span>
+                        <span id="petStreakLevelText">0 Days</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div id="petStreakBar" class="bg-gradient-to-r from-pink-500 to-orange-500 h-full rounded-full transition-all duration-500" style="width: 10%"></div>
+                    </div>
+                </div>
+
+                <!-- Revive Pet Button (Visible when streak is broken) -->
+                <button onclick="revivePet()" id="revivePetBtn" class="mt-4 w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-black py-2.5 px-4 rounded-2xl border border-rose-400/30 shadow-lg text-xs flex items-center justify-center space-x-2 hidden">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Revive Streak Pet (🪙 250 Coins)</span>
+                </button>
+            </div>
+
+            <!-- Item Shop -->
+            <div class="bg-slate-900/90 rounded-3xl p-6 border border-pink-500/30 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="p-2 rounded-xl bg-pink-500/10 text-pink-400">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-white text-base">Study Perk Shop</h3>
+                            <p class="text-xs text-slate-400">Spend coins earned from quizzes</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] uppercase font-black tracking-widest text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                        7 Rewards Available
+                    </span>
+                </div>
+
+                <div class="space-y-3 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
+                    <!-- Buy Break Passes -->
+                    <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex items-center justify-between hover:border-pink-500/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">☕</span>
+                            <div>
+                                <h4 class="text-xs font-extrabold text-white">Extra Break Pass</h4>
+                                <p class="text-[11px] text-slate-400">+1 2-Minute Break</p>
+                            </div>
+                        </div>
+                        <button onclick="buyBreakPass()" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95">
+                            🪙 150 Coins
+                        </button>
+                    </div>
+
+                    <!-- Companion Cosmetic: Phoenix -->
+                    <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex items-center justify-between hover:border-pink-500/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🔥</span>
+                            <div>
+                                <h4 class="text-xs font-extrabold text-white">Flame Phoenix Skin</h4>
+                                <p class="text-[11px] text-slate-400">Fiery companion skin</p>
+                            </div>
+                        </div>
+                        <button onclick="buyPetSkin('phoenix', 200, '🔥', 'Blaze the Phoenix')" id="buyPhoenixBtn" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95">
+                            🪙 200 Coins
+                        </button>
+                    </div>
+
+                    <!-- 2x Coin Surge Boost -->
+                    <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex items-center justify-between hover:border-pink-500/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">⚡</span>
+                            <div>
+                                <h4 class="text-xs font-extrabold text-white">2x Coin Surge Boost</h4>
+                                <p class="text-[11px] text-slate-400">Earn double coins on next correct answer</p>
+                            </div>
+                        </div>
+                        <button onclick="buyCoinBoost()" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95">
+                            🪙 300 Coins
+                        </button>
+                    </div>
+
+                    <!-- Cosmic Dragon Pet -->
+                    <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex items-center justify-between hover:border-pink-500/40 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🐉</span>
+                            <div>
+                                <h4 class="text-xs font-extrabold text-white">Cosmic Dragon Pet</h4>
+                                <p class="text-[11px] text-purple-300 font-medium">Rare Mythical Skin</p>
+                            </div>
+                        </div>
+                        <button onclick="buyPetSkin('dragon', 500, '🐉', 'Draco the Cosmic Dragon')" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95">
+                            🪙 500 Coins
+                        </button>
+                    </div>
+
+                    <!-- Royal Crown Accessory -->
+                    <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-amber-500/30 flex items-center justify-between hover:border-amber-400/60 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">👑</span>
+                            <div>
+                                <h4 class="text-xs font-extrabold text-white">Royal Golden Crown</h4>
+                                <p class="text-[11px] text-amber-300 font-medium">Crown your active pet</p>
+                            </div>
+                        </div>
+                        <button onclick="buyRoyalCrown()" class="bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-500 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95 shadow-md shadow-amber-500/20">
+                            🪙 1,000 Coins
+                        </button>
+                    </div>
+
+                    <!-- Celestial Unicorn Pet -->
+                    <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-pink-500/40 flex items-center justify-between hover:border-pink-400 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🦄</span>
+                            <div>
+                                <div class="flex items-center space-x-1">
+                                    <h4 class="text-xs font-extrabold text-white">Celestial Unicorn</h4>
+                                    <span class="text-[9px] bg-pink-500/20 text-pink-300 px-1.5 py-0.5 rounded font-bold">LEGENDARY</span>
+                                </div>
+                                <p class="text-[11px] text-pink-300 font-medium">Sparkling mythical pet skin</p>
+                            </div>
+                        </div>
+                        <button onclick="buyPetSkin('unicorn', 2500, '🦄', 'Astra the Celestial Unicorn')" class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95 shadow-md shadow-pink-500/20">
+                            🪙 2,500 Coins
+                        </button>
+                    </div>
+
+                    <!-- Galaxy Grandmaster Title & Aura -->
+                    <div class="bg-gradient-to-r from-slate-900 to-indigo-950 p-3.5 rounded-2xl border-2 border-amber-400/60 flex items-center justify-between hover:border-amber-400 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🌌</span>
+                            <div>
+                                <div class="flex items-center space-x-1">
+                                    <h4 class="text-xs font-extrabold text-amber-300">Galaxy Grandmaster</h4>
+                                    <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-black">ULTIMATE</span>
+                                </div>
+                                <p class="text-[11px] text-slate-300 font-medium">Ultimate status title & cosmic pet</p>
+                            </div>
+                        </div>
+                        <button onclick="buyPetSkin('galaxy', 5000, '🌌✨', '🌌 Galaxy Grandmaster')" class="bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 text-white text-xs font-black px-3 py-1.5 rounded-xl hover:opacity-90 transition active:scale-95 shadow-lg shadow-amber-500/30">
+                            🪙 5,000 Coins
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Celebration Modal -->
+    <div id="rewardModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border-2 border-pink-500/50 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center relative shadow-2xl animate-float">
+            <div class="w-20 h-20 bg-gradient-to-tr from-pink-500 to-orange-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-lg shadow-pink-500/40">
+                🎉
+            </div>
+            <h3 class="text-2xl font-black text-white" id="modalTitle">Correct Answer!</h3>
+            <p class="text-sm text-slate-300 mt-2" id="modalMessage">You nailed that question and earned study rewards!</p>
+
+            <div class="bg-slate-800/90 rounded-2xl p-4 my-6 border border-pink-500/20 flex justify-center items-center">
+                <div>
+                    <div class="text-xs text-slate-400 font-bold">Coins Awarded</div>
+                    <div id="modalCoinsEarned" class="text-2xl font-black text-amber-400">+50 🪙</div>
+                </div>
+            </div>
+
+            <button onclick="closeModal()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-black rounded-2xl shadow-xl shadow-pink-500/30 transition transform active:scale-95">
+                Continue Learning!
+            </button>
+        </div>
+    </div>
+
+    <!-- 30-Minute Session Completion Modal -->
+    <div id="sessionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border-2 border-pink-500/50 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center relative shadow-2xl">
+            <div class="w-20 h-20 bg-gradient-to-tr from-pink-500 to-orange-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-lg shadow-pink-500/40 animate-bounce">
+                🏆
+            </div>
+            <h3 class="text-2xl font-black text-white">30-Min Session Complete!</h3>
+            <p class="text-sm text-slate-300 mt-2">You completed 30 minutes on StudyQuest! What would you like to do next?</p>
+
+            <div class="space-y-3 mt-6">
+                <button onclick="resetAndContinueSession()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-black rounded-2xl shadow-xl shadow-pink-500/30 transition transform active:scale-95">
+                    🔄 Reset 30m Timer & Keep Studying
+                </button>
+                <button onclick="finishSessionExit()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-700 transition">
+                    👋 Finish Session for Today
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inactivity Reminder Modal -->
+    <div id="inactivityModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border-2 border-orange-500/50 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center relative shadow-2xl">
+            <div class="w-20 h-20 bg-gradient-to-tr from-orange-500 to-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-lg shadow-orange-500/40">
+                🔔
+            </div>
+            <h3 class="text-2xl font-black text-white">Still Studying?</h3>
+            <p class="text-sm text-slate-300 mt-2">You've been idle for 2 minutes! Keep going so you can earn more coins, protect your streak pet, and hit your goal!</p>
+
+            <button onclick="dismissInactivityModal()" class="mt-6 w-full py-3.5 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-black rounded-2xl shadow-xl shadow-pink-500/30 transition transform active:scale-95">
+                I'm Back! Let's Study 📖
+            </button>
+        </div>
+    </div>
+
+    <!-- Subject Level Up Modal -->
+    <div id="levelUpModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border-2 border-amber-400/60 rounded-3xl p-6 sm:p-8 max-w-md w-full text-center relative shadow-2xl animate-float">
+            <div class="w-20 h-20 bg-gradient-to-tr from-amber-400 via-orange-500 to-pink-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-lg shadow-amber-500/50 animate-bounce">
+                ⭐
+            </div>
+            <span class="text-xs uppercase tracking-widest font-black text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">
+                SUBJECT LEVEL UP!
+            </span>
+            <h3 class="text-2xl font-black text-white mt-3" id="levelUpTitle">English Leveled Up!</h3>
+            <p class="text-sm text-slate-300 mt-2" id="levelUpMessage">You answered all Level 1 questions correctly! Questions in this subject will now be harder.</p>
+
+            <div class="bg-slate-800/90 rounded-2xl p-4 my-5 border border-amber-500/30 flex justify-around items-center">
+                <div>
+                    <div class="text-[11px] text-slate-400 font-bold uppercase">New Level</div>
+                    <div id="levelUpNewLevel" class="text-2xl font-black text-amber-300">Level 2</div>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div>
+                    <div class="text-[11px] text-slate-400 font-bold uppercase">Level Bonus</div>
+                    <div class="text-2xl font-black text-amber-400">+200 🪙</div>
+                </div>
+            </div>
+
+            <button onclick="closeLevelUpModal()" class="w-full py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 text-white font-black rounded-2xl shadow-xl shadow-amber-500/30 transition transform active:scale-95">
+                Challenge Level <span id="levelUpBtnLevel">2</span> Questions! 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- App Engine JavaScript -->
+    <script>
+        // Questions Database organized by Subject and Difficulty Level (1: Easy to 5: Master)
+        const QUESTION_BANK = {
+            english: {
+                1: [
+                    { q: "Which sentence is written in the past tense?", options: ["She is running.", "She will run.", "She ran fast.", "She runs."], answer: 2, bonus: false },
+                    { q: "What is the plural form of 'Child'?", options: ["Childs", "Childrens", "Children", "Childes"], answer: 2, bonus: false },
+                    { q: "Identify the adjective in: 'The brave knight protected the castle.'", options: ["Knight", "Protected", "Brave", "Castle"], answer: 2, bonus: false },
+                    { q: "Which punctuation mark ends an interrogative sentence?", options: ["Exclamation mark", "Period", "Question mark", "Comma"], answer: 2, bonus: false },
+                    { q: "Which pronoun best completes: '___ went to the store together.'", options: ["Them", "They", "Him", "Her"], answer: 1, bonus: false }
+                ],
+                2: [
+                    { q: "Which word is a synonym for 'Vibrant'?", options: ["Dull", "Lively", "Quiet", "Heavy"], answer: 1, bonus: false },
+                    { q: "Which word is an antonym of 'Ancient'?", options: ["Old", "Modern", "Historic", "Aged"], answer: 1, bonus: false },
+                    { q: "Select the correctly spelled word:", options: ["Acommodate", "Accommodate", "Acomodate", "Accomodate"], answer: 1, bonus: false },
+                    { q: "Identify the prefix in the word 'Unhappy':", options: ["Un", "Hap", "Py", "Happy"], answer: 0, bonus: false },
+                    { q: "BONUS: What figure of speech compares two things using 'like' or 'as'?", options: ["Metaphor", "Simile", "Hyperbole", "Personification"], answer: 1, bonus: true }
+                ],
+                3: [
+                    { q: "Which option is an example of an oxymoron?", options: ["Deafening silence", "Loud thunder", "Bright sun", "Cold ice"], answer: 0, bonus: false },
+                    { q: "What is a synonym for 'Reluctant'?", options: ["Eager", "Hesitant", "Excited", "Sure"], answer: 1, bonus: false },
+                    { q: "BONUS: What literary term refers to extreme exaggeration?", options: ["Hyperbole", "Alliteration", "Irony", "Onomatopoeia"], answer: 0, bonus: true },
+                    { q: "BONUS: What literary device repeats initial consonant sounds?", options: ["Alliteration", "Assonance", "Simile", "Metaphor"], answer: 0, bonus: true },
+                    { q: "BONUS: What idiom means 'extremely rarely'?", options: ["Spill the beans", "Once in a blue moon", "Piece of cake", "Bite the bullet"], answer: 1, bonus: true }
+                ],
+                4: [
+                    { q: "What is the meaning of the vocabulary word 'Ephemeral'?", options: ["Everlasting", "Short-lived or fleeting", "Heavy and solid", "Highly noisy"], answer: 1, bonus: false },
+                    { q: "Which sentence contains a dangling modifier?", options: ["Running quickly, he caught the bus.", "While sleeping, the phone rang loudly.", "Walking through the park, the trees were beautiful.", "She read a book while waiting for dinner."], answer: 2, bonus: false },
+                    { q: "Which grammatical mood is expressed in: 'If I were you, I would accept the offer'?", options: ["Subjunctive mood", "Indicative mood", "Imperative mood", "Passive mood"], answer: 0, bonus: false },
+                    { q: "What is a direct synonym for 'Taciturn'?", options: ["Talkative", "Cheerful", "Reserved and quiet", "Aggressive"], answer: 2, bonus: false },
+                    { q: "BONUS: Identify the independent clause in: 'Although it rained heavily, we went for a run.'", options: ["Although it rained", "it rained heavily", "we went for a run", "for a run"], answer: 2, bonus: true }
+                ],
+                5: [
+                    { q: "What figure of speech uses a part of something to represent the whole (e.g., 'all hands on deck')?", options: ["Synecdoche", "Metonymy", "Chiasmus", "Litotes"], answer: 0, bonus: false },
+                    { q: "Which word means 'having keen mental perception and sound judgment'?", options: ["Obsequious", "Fastidious", "Perspicacious", "Pugnacious"], answer: 2, bonus: false },
+                    { q: "What rhetorical device involves repeating a word at the beginning of successive clauses?", options: ["Epistrophe", "Anaphora", "Antithesis", "Zeugma"], answer: 1, bonus: false },
+                    { q: "Identify the example of a Zeugma:", options: ["He broke her heart and his bank account.", "The wind whispered through the tall pines.", "Silence was golden in the library.", "She was as brave as a lion in battle."], answer: 0, bonus: false },
+                    { q: "BONUS: What is the meaning of the formal term 'Grandiloquent'?", options: ["Humble and understated", "Generous with money", "Pompous or bombastic in style", "Extremely fragile"], answer: 2, bonus: true }
+                ]
+            },
+            spanish: {
+                1: [
+                    { q: "How do you say 'Book' in Spanish?", options: ["El libro", "La mesa", "El perro", "La pluma"], answer: 0, bonus: false },
+                    { q: "What is the English translation of 'Buenas tardes'?", options: ["Good morning", "Good afternoon", "Good night", "Goodbye"], answer: 1, bonus: false },
+                    { q: "What color is 'Rojo'?", options: ["Blue", "Red", "Yellow", "Green"], answer: 1, bonus: false },
+                    { q: "How do you say 'Thank you' in Spanish?", options: ["Por favor", "Gracias", "De nada", "Hola"], answer: 1, bonus: false },
+                    { q: "What is the Spanish word for 'Water'?", options: ["El fuego", "La leche", "El agua", "El pan"], answer: 2, bonus: false }
+                ],
+                2: [
+                    { q: "Translate 'Where is the library?' to Spanish:", options: ["¿Dónde está la biblioteca?", "¿Cómo estás?", "¿Qué hora es?", "¿De dónde eres?"], answer: 0, bonus: false },
+                    { q: "What number is 'Siete'?", options: ["Five", "Six", "Seven", "Eight"], answer: 2, bonus: false },
+                    { q: "Translate 'I am a student' -> 'Yo soy _____'", options: ["maestro", "estudiante", "doctor", "amigo"], answer: 1, bonus: false },
+                    { q: "How do you say 'Family' in Spanish?", options: ["La familia", "La casa", "El amigo", "La escuela"], answer: 0, bonus: false },
+                    { q: "BONUS: Which of these means 'To study' in Spanish?", options: ["Comer", "Escribir", "Estudiar", "Hablar"], answer: 2, bonus: true }
+                ],
+                3: [
+                    { q: "BONUS: What verb means 'To have' in Spanish?", options: ["Estar", "Ser", "Tener", "Ir"], answer: 2, bonus: true },
+                    { q: "What does the Spanish verb 'Escribir' mean?", options: ["To read", "To speak", "To write", "To listen"], answer: 2, bonus: false },
+                    { q: "Translate 'The night' to Spanish:", options: ["El día", "La noche", "La tarde", "El mañana"], answer: 1, bonus: false },
+                    { q: "What color is 'Verde'?", options: ["Purple", "Green", "Pink", "Orange"], answer: 1, bonus: false },
+                    { q: "BONUS: What is 'La escuela' in English?", options: ["The library", "The house", "The school", "The store"], answer: 2, bonus: true }
+                ],
+                4: [
+                    { q: "Conjugate 'Hablar' in the present subjunctive for 'nosotros':", options: ["Hablamos", "Hablemos", "Hablaríamos", "Hablaron"], answer: 1, bonus: false },
+                    { q: "What does the Spanish idiom 'Costar un ojo de la cara' mean?", options: ["To take a very long time", "To be extremely painful", "To be extremely expensive", "To be very easy"], answer: 2, bonus: false },
+                    { q: "Translate correctly: 'If I had money, I would buy a car.'", options: ["Si tuviera dinero, compraría un coche.", "Si tengo dinero, compro un coche.", "Si tendría dinero, compraba un coche.", "Si fui dinero, compraré un coche."], answer: 0, bonus: false },
+                    { q: "Which pronoun combination replaces 'Yo di el libro a María'?", options: ["Yo le lo di", "Yo se lo di", "Yo la lo di", "Yo te lo di"], answer: 1, bonus: false },
+                    { q: "BONUS: What is the correct conditional conjugation for 'Ellos (comer)'?", options: ["Comieron", "Comerán", "Comerían", "Comían"], answer: 2, bonus: true }
+                ],
+                5: [
+                    { q: "What does the idiom 'Estar en las nubes' mean figuratively?", options: ["To be angry", "To be daydreaming or distracted", "To be in high spirit", "To be sick"], answer: 1, bonus: false },
+                    { q: "Identify the correct imperfect subjunctive form of 'Hacer' for 'yo':", options: ["Hiciera", "Haga", "Hice", "Hacía"], answer: 0, bonus: false },
+                    { q: "Which sentence correctly demonstrates the passive voice with 'se'?", options: ["Se habla español aquí.", "Se alquilan apartamentos aquí.", "Se venden pan recién hecho.", "Ambas A y B son correctas."], answer: 3, bonus: false },
+                    { q: "Translate the transition phrase 'Notwithstanding' into formal Spanish:", options: ["Por lo tanto", "A pesar de que", "No obstante", "Sin embargo"], answer: 2, bonus: false },
+                    { q: "BONUS: What is the literal meaning of 'A pedir de boca'?", options: ["Exactly as desired / Perfectly", "Very hungry", "Screaming loudly", "To ask politely"], answer: 0, bonus: true }
+                ]
+            },
+            science: {
+                1: [
+                    { q: "What planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], answer: 1, bonus: false },
+                    { q: "What gas do humans need to breathe to stay alive?", options: ["Carbon Dioxide", "Nitrogen", "Oxygen", "Helium"], answer: 2, bonus: false },
+                    { q: "What organ pumps blood throughout the human body?", options: ["Lungs", "Brain", "Heart", "Stomach"], answer: 2, bonus: false },
+                    { q: "Which planet is closest to the Sun?", options: ["Venus", "Earth", "Mercury", "Mars"], answer: 2, bonus: false },
+                    { q: "How many planets are in our solar system?", options: ["7", "8", "9", "10"], answer: 1, bonus: false }
+                ],
+                2: [
+                    { q: "What gas do plants absorb during photosynthesis?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], answer: 2, bonus: false },
+                    { q: "Which part of the cell is known as the powerhouse?", options: ["Nucleus", "Mitochondria", "Ribosome", "Cell Wall"], answer: 1, bonus: false },
+                    { q: "What basic chemical element has the symbol 'H'?", options: ["Helium", "Hydrogen", "Holmium", "Mercury"], answer: 1, bonus: false },
+                    { q: "What force pulls objects toward the Earth?", options: ["Magnetism", "Friction", "Gravity", "Tension"], answer: 2, bonus: false },
+                    { q: "BONUS: What is the boiling point of water in Celsius?", options: ["50°C", "90°C", "100°C", "120°C"], answer: 2, bonus: true }
+                ],
+                3: [
+                    { q: "What speed does light travel in a vacuum approximately?", options: ["300,000 km/s", "150,000 km/s", "1,000,000 km/s", "30,000 km/s"], answer: 0, bonus: false },
+                    { q: "Which gas makes up the largest percentage of Earth's atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Argon"], answer: 1, bonus: false },
+                    { q: "What is the chemical formula for table salt?", options: ["H2O", "CO2", "NaCl", "C6H12O6"], answer: 2, bonus: false },
+                    { q: "BONUS: What is the pH value of pure, neutral water?", options: ["0", "5", "7", "14"], answer: 2, bonus: true },
+                    { q: "BONUS: Which vitamin is naturally produced when human skin is exposed to sunlight?", options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin B12"], answer: 2, bonus: true }
+                ],
+                4: [
+                    { q: "What are atoms of the same element with differing numbers of neutrons called?", options: ["Ions", "Isotopes", "Isomers", "Allotropes"], answer: 1, bonus: false },
+                    { q: "Which RNA molecule brings genetic instructions from DNA to the ribosome?", options: ["mRNA", "tRNA", "rRNA", "snRNA"], answer: 0, bonus: false },
+                    { q: "Which law of thermodynamics states that entropy in an isolated system always increases?", options: ["Zeroth Law", "First Law", "Second Law", "Third Law"], answer: 2, bonus: false },
+                    { q: "What is the correct chemical IUPAC name for Fe2O3?", options: ["Iron Oxide", "Ferrous Oxide", "Iron(III) Oxide", "Iron Dioxide"], answer: 2, bonus: false },
+                    { q: "BONUS: What is standard gravitational acceleration near Earth's surface?", options: ["8.9 m/s²", "9.8 m/s²", "10.5 m/s²", "11.2 m/s²"], answer: 1, bonus: true }
+                ],
+                5: [
+                    { q: "What radius defines the event horizon boundary of a non-rotating black hole?", options: ["Schwarzschild radius", "Hubble radius", "Bohr radius", "Chandrasekhar limit"], answer: 0, bonus: false },
+                    { q: "Which enzyme complex synthesizes ATP during cellular oxidative phosphorylation?", options: ["Hexokinase", "DNA Polymerase", "ATP Synthase", "RuBisCO"], answer: 2, bonus: false },
+                    { q: "Which elementary gauge boson mediates the strong nuclear force in quantum chromodynamics?", options: ["Photon", "Gluon", "W Boson", "Z Boson"], answer: 1, bonus: false },
+                    { q: "What organic reaction decomposes an ester into alcohol and soap using a strong base?", options: ["Esterification", "Hydrogenation", "Saponification", "Halogenation"], answer: 2, bonus: false },
+                    { q: "BONUS: In genetics, what term describes a single gene influencing multiple distinct traits?", options: ["Pleiotropy", "Epistasis", "Polygenic inheritance", "Codominance"], answer: 0, bonus: true }
+                ]
+            },
+            math: {
+                1: [
+                    { q: "What is 12 x 8?", options: ["86", "92", "96", "104"], answer: 2, bonus: false },
+                    { q: "What is 144 divided by 12?", options: ["10", "11", "12", "14"], answer: 2, bonus: false },
+                    { q: "What is the area of a rectangle with length 8cm and width 5cm?", options: ["30 cm²", "40 cm²", "13 cm²", "26 cm²"], answer: 1, bonus: false },
+                    { q: "What is 3/4 converted to a percentage?", options: ["50%", "65%", "75%", "80%"], answer: 2, bonus: false },
+                    { q: "What is the square root of 144?", options: ["10", "11", "12", "14"], answer: 2, bonus: false }
+                ],
+                2: [
+                    { q: "Solve for x: 3x + 5 = 20", options: ["x = 3", "x = 5", "x = 4", "x = 6"], answer: 1, bonus: false },
+                    { q: "Solve for y: 2y - 4 = 10", options: ["y = 5", "y = 6", "y = 7", "y = 8"], answer: 2, bonus: false },
+                    { q: "If a triangle has angles of 50° and 60°, what is the third angle?", options: ["60°", "70°", "80°", "90°"], answer: 1, bonus: false },
+                    { q: "BONUS: Calculate 15% of 200.", options: ["20", "25", "30", "35"], answer: 2, bonus: true },
+                    { q: "BONUS: What is 2 to the power of 4 (2^4)?", options: ["8", "12", "16", "32"], answer: 2, bonus: true }
+                ],
+                3: [
+                    { q: "What is 5 squared minus 4 squared (5² - 4²)?", options: ["7", "9", "12", "16"], answer: 1, bonus: false },
+                    { q: "What is the hypotenuse of a right triangle with leg lengths 3 and 4?", options: ["5", "6", "7", "8"], answer: 0, bonus: false },
+                    { q: "Find the next number in the sequence: 2, 4, 8, 16, __", options: ["24", "28", "32", "36"], answer: 2, bonus: false },
+                    { q: "BONUS: What is the Greatest Common Factor (GCF) of 12 and 18?", options: ["3", "4", "6", "12"], answer: 2, bonus: true },
+                    { q: "BONUS: Evaluate 3 factorial (3!)", options: ["3", "6", "9", "12"], answer: 1, bonus: true }
+                ],
+                4: [
+                    { q: "Solve the quadratic equation: x² - 5x + 6 = 0", options: ["x = 1 and x = 6", "x = 2 and x = 3", "x = -2 and x = -3", "x = 0 and x = 5"], answer: 1, bonus: false },
+                    { q: "What is the exact logarithmic value of log₂(64)?", options: ["4", "5", "6", "8"], answer: 2, bonus: false },
+                    { q: "In a right triangle, if sin(θ) = 3/5, what is cos(θ)?", options: ["4/5", "3/4", "5/4", "3/5"], answer: 0, bonus: false },
+                    { q: "What is the sum of all interior angles in a convex hexagon?", options: ["540°", "600°", "720°", "900°"], answer: 2, bonus: false },
+                    { q: "BONUS: Calculate P(5, 2) — permutations of 5 items taken 2 at a time:", options: ["10", "20", "25", "60"], answer: 1, bonus: true }
+                ],
+                5: [
+                    { q: "What is the derivative d/dx [3x⁴ - 5x² + 7]?", options: ["12x³ - 10x", "12x³ - 10", "7x³ - 10x", "12x² - 5x"], answer: 0, bonus: false },
+                    { q: "Find the determinant of the matrix [[4, 2], [3, 5]]:", options: ["10", "14", "20", "26"], answer: 1, bonus: false },
+                    { q: "Evaluate the indefinite integral ∫ (2x + 3) dx:", options: ["x² + C", "2x² + 3x + C", "x² + 3x + C", "x² + 3 + C"], answer: 2, bonus: false },
+                    { q: "What is the modulus |z| of the complex number z = 3 + 4i?", options: ["3", "5", "7", "25"], answer: 1, bonus: false },
+                    { q: "BONUS: Calculate C(6, 3) — combinations of 6 items taken 3 at a time:", options: ["15", "18", "20", "120"], answer: 2, bonus: true }
+                ]
+            }
+        };
+
+        // State Storage
+        const DEFAULT_STATE = {
+            coins: 100,
+            streak: 1,
+            lastStudyDate: new Date().toDateString(),
+            breakPasses: 3,
+            petStage: 1,
+            petEmoji: '🐣',
+            petName: 'Pip the Hatchling',
+            petNeedsRevive: false,
+            unlockedSkins: ['default'],
+            correctStreak: 0,
+            // Independent Levels per subject
+            subjectLevels: { english: 1, spanish: 1, science: 1, math: 1 },
+            // Array of correctly answered question indices per subject per level e.g. { english: { 1: [0, 2] } }
+            subjectProgress: { english: {}, spanish: {}, science: {}, math: {} }
+        };
+
+        let state = { ...DEFAULT_STATE };
+
+        // App Control Variables
+        let currentSubject = 'english';
+        let currentQuestion = null;
+        let currentQuestionIndex = -1;
+        let questionTimerInterval = null;
+        let questionTimeRemaining = 15;
+        let questionTotalTime = 15;
+        let isQuestionActive = false;
+
+        // History tracking to prevent questions repeating within 10 turns
+        let questionHistory = {
+            english: [],
+            spanish: [],
+            science: [],
+            math: []
+        };
+
+        // 30-Minute Session Timer Variables
+        let sessionTimerInterval = null;
+        let sessionTimeRemaining = 30 * 60; // 30 minutes in seconds
+        let isSessionRunning = false;
+        let wasSessionRunningBeforeBreak = false;
+
+        // Inactivity Timer Control
+        let inactivityTimer = null;
+        const INACTIVITY_LIMIT_MS = 2 * 60 * 1000; // 2 minutes
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadState();
+            checkStreakStatus();
+            updateUI();
+            selectSubject('english');
+            initInactivityTracker();
+            updateSessionDisplay();
+        });
+
+        // --- 30-Minute Session Timer Logic ---
+        function startSessionTimer() {
+            if (isSessionRunning) return;
+            isSessionRunning = true;
+
+            const btn = document.getElementById('sessionTimerBtn');
+            btn.disabled = true;
+            btn.classList.add('opacity-60', 'cursor-not-allowed');
+            document.getElementById('sessionTimerBtnText').textContent = "Session In Progress";
+
+            sessionTimerInterval = setInterval(() => {
+                sessionTimeRemaining--;
+                updateSessionDisplay();
+
+                if (sessionTimeRemaining <= 0) {
+                    clearInterval(sessionTimerInterval);
+                    isSessionRunning = false;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60', 'cursor-not-allowed');
+                    document.getElementById('sessionTimerBtnText').textContent = "Start 30m Goal";
+                    showSessionModal();
+                }
+            }, 1000);
+        }
+
+        function pauseSessionTimer() {
+            if (isSessionRunning) {
+                clearInterval(sessionTimerInterval);
+                isSessionRunning = false;
+                wasSessionRunningBeforeBreak = true;
+                const btnText = document.getElementById('sessionTimerBtnText');
+                if (btnText) {
+                    btnText.textContent = "Paused (On Break)";
+                }
+            }
+        }
+
+        function resumeSessionTimer() {
+            if (wasSessionRunningBeforeBreak) {
+                wasSessionRunningBeforeBreak = false;
+                startSessionTimer();
+            }
+        }
+
+        function resetSessionTimer() {
+            clearInterval(sessionTimerInterval);
+            isSessionRunning = false;
+            wasSessionRunningBeforeBreak = false;
+            sessionTimeRemaining = 30 * 60;
+            updateSessionDisplay();
+
+            const btn = document.getElementById('sessionTimerBtn');
+            btn.disabled = false;
+            btn.classList.remove('opacity-60', 'cursor-not-allowed');
+            document.getElementById('sessionTimerBtnText').textContent = "Start 30m Goal";
+        }
+
+        function updateSessionDisplay() {
+            const mins = Math.floor(sessionTimeRemaining / 60);
+            const secs = sessionTimeRemaining % 60;
+            document.getElementById('sessionTimerDisplay').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function showSessionModal() {
+            document.getElementById('sessionModal').classList.remove('hidden');
+            confetti({
+                particleCount: 120,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function resetAndContinueSession() {
+            document.getElementById('sessionModal').classList.add('hidden');
+            resetSessionTimer();
+            startSessionTimer();
+        }
+
+        function finishSessionExit() {
+            document.getElementById('sessionModal').classList.add('hidden');
+            resetSessionTimer();
+            alert("🌟 Great job studying today! Take a well-deserved break!");
+        }
+
+        // --- Inactivity Tracking ---
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                showInactivityModal();
+            }, INACTIVITY_LIMIT_MS);
+        }
+
+        function initInactivityTracker() {
+            window.addEventListener('mousemove', resetInactivityTimer);
+            window.addEventListener('keydown', resetInactivityTimer);
+            window.addEventListener('click', resetInactivityTimer);
+            window.addEventListener('touchstart', resetInactivityTimer);
+            resetInactivityTimer();
+        }
+
+        function showInactivityModal() {
+            document.getElementById('inactivityModal').classList.remove('hidden');
+        }
+
+        function dismissInactivityModal() {
+            document.getElementById('inactivityModal').classList.add('hidden');
+            resetInactivityTimer();
+        }
+
+        // --- Local State Handling ---
+        function saveState() {
+            localStorage.setItem('studyquest_v2_data', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('studyquest_v2_data');
+            if (saved) {
+                try {
+                    state = { ...DEFAULT_STATE, ...JSON.parse(saved) };
+                } catch(e) {
+                    console.error("Error loading state", e);
+                }
+            }
+        }
+
+        function checkStreakStatus() {
+            const today = new Date().toDateString();
+            if (state.lastStudyDate !== today) {
+                const last = new Date(state.lastStudyDate);
+                const curr = new Date();
+                const diffDays = Math.ceil(Math.abs(curr - last) / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 2) {
+                    state.petNeedsRevive = true;
+                }
+            }
+        }
+
+        function updateUI() {
+            // Stats
+            document.getElementById('coinBalance').textContent = state.coins;
+            document.getElementById('streakDays').textContent = state.streak;
+            document.getElementById('headerPetEmoji').textContent = state.petEmoji;
+            document.getElementById('breakPassCount').textContent = state.breakPasses;
+
+            // Pet UI
+            document.getElementById('petAvatar').textContent = state.petEmoji;
+            document.getElementById('petName').textContent = state.petName;
+            document.getElementById('petStageNum').textContent = state.petStage;
+            document.getElementById('petStreakLevelText').textContent = `${state.streak} Days`;
+            document.getElementById('petStreakBar').style.width = `${Math.min(100, state.streak * 20)}%`;
+
+            const reviveBtn = document.getElementById('revivePetBtn');
+            const petStatus = document.getElementById('petStatus');
+
+            if (state.petNeedsRevive) {
+                petStatus.textContent = "Status: 😴 Streak Broken! Needs Revive.";
+                petStatus.className = "text-xs text-rose-400 font-bold mt-1";
+                reviveBtn.classList.remove('hidden');
+            } else {
+                petStatus.textContent = "Status: ✨ Happy & Ready to Study!";
+                petStatus.className = "text-xs text-orange-300 font-semibold mt-1";
+                reviveBtn.classList.add('hidden');
+            }
+
+            // Update Subject Level Badges & Progress Indicators
+            const subjects = ['english', 'spanish', 'science', 'math'];
+            subjects.forEach(subj => {
+                const lvl = getSubjectLevel(subj);
+                const masteredCount = getMasteredCountForLevel(subj, lvl);
+                const totalQuestions = getQuestionsForLevel(subj, lvl).length;
+
+                const badge = document.getElementById(`badgeLvl${capitalize(subj)}`);
+                if (badge) {
+                    badge.textContent = `Lvl ${lvl}`;
+                    badge.className = subj === currentSubject ? 
+                        "absolute top-2 right-2 bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow" :
+                        "absolute top-2 right-2 bg-slate-700 text-slate-300 text-[9px] font-black px-1.5 py-0.5 rounded-full";
+                }
+
+                const prog = document.getElementById(`prog${capitalize(subj)}`);
+                if (prog) {
+                    prog.textContent = `${masteredCount}/${totalQuestions} Mastered`;
+                }
+            });
+
+            // Active Subject Header Progress Bar
+            const activeLvl = getSubjectLevel(currentSubject);
+            const activeMastered = getMasteredCountForLevel(currentSubject, activeLvl);
+            const activeTotal = getQuestionsForLevel(currentSubject, activeLvl).length;
+            const percent = activeTotal > 0 ? (activeMastered / activeTotal) * 100 : 0;
+
+            document.getElementById('activeLevelLabel').textContent = `${capitalize(currentSubject)} Level ${activeLvl} Mastery`;
+            document.getElementById('activeLevelProgressText').textContent = `${activeMastered} / ${activeTotal} Mastered`;
+            document.getElementById('activeLevelProgressBar').style.width = `${percent}%`;
+
+            // Pet Evolution
+            if (state.streak >= 5 && state.petStage < 2) {
+                state.petStage = 2;
+                state.petEmoji = '🐥';
+                state.petName = 'Pip the Growing Chick';
+            } else if (state.streak >= 10 && state.petStage < 3) {
+                state.petStage = 3;
+                state.petEmoji = '🦅';
+                state.petName = 'Pip the Mighty Eagle';
+            }
+        }
+
+        // Helper Functions for Leveling
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function getSubjectLevel(subj) {
+            if (!state.subjectLevels) state.subjectLevels = { english: 1, spanish: 1, science: 1, math: 1 };
+            return state.subjectLevels[subj] || 1;
+        }
+
+        function getQuestionsForLevel(subj, level) {
+            const subjObj = QUESTION_BANK[subj];
+            if (!subjObj) return [];
+            // If level exceeds highest available, loop/fallback to highest level
+            const maxLvl = Math.max(...Object.keys(subjObj).map(Number));
+            const targetLvl = level > maxLvl ? maxLvl : level;
+            return subjObj[targetLvl] || [];
+        }
+
+        function getMasteredCountForLevel(subj, level) {
+            if (!state.subjectProgress) state.subjectProgress = {};
+            if (!state.subjectProgress[subj]) state.subjectProgress[subj] = {};
+            const masteredArr = state.subjectProgress[subj][level] || [];
+            return masteredArr.length;
+        }
+
+        // Subject Selection
+        function selectSubject(subj) {
+            if (isQuestionActive) {
+                if (!confirm("Changing subjects will reset your current question timer. Continue?")) return;
+                clearInterval(questionTimerInterval);
+                isQuestionActive = false;
+            }
+
+            currentSubject = subj;
+            
+            // Buttons visual update
+            const buttons = {
+                english: 'btnSubjectEnglish',
+                spanish: 'btnSubjectSpanish',
+                science: 'btnSubjectScience',
+                math: 'btnSubjectMath'
+            };
+
+            Object.keys(buttons).forEach(key => {
+                const btn = document.getElementById(buttons[key]);
+                if (key === subj) {
+                    btn.className = "subj-btn bg-slate-800/80 border-2 border-pink-500 p-3 rounded-2xl flex flex-col items-center justify-center transition transform active:scale-95 shadow-md relative";
+                } else {
+                    btn.className = "subj-btn bg-slate-800/40 border border-slate-700 p-3 rounded-2xl flex flex-col items-center justify-center transition transform active:scale-95 hover:border-pink-500/50 relative";
+                }
+            });
+
+            const currentLvl = getSubjectLevel(subj);
+            document.getElementById('questionCategory').textContent = `${subj.toUpperCase()} - LEVEL ${currentLvl}`;
+            
+            updateUI();
+            prepareQuestion();
+        }
+
+        // Prepare & Render Question
+        function prepareQuestion() {
+            const currentLvl = getSubjectLevel(currentSubject);
+            const list = getQuestionsForLevel(currentSubject, currentLvl);
+
+            if (!state.subjectProgress[currentSubject]) state.subjectProgress[currentSubject] = {};
+            if (!state.subjectProgress[currentSubject][currentLvl]) state.subjectProgress[currentSubject][currentLvl] = [];
+
+            const masteredIndices = state.subjectProgress[currentSubject][currentLvl];
+
+            // Pick an unmastered question first, or random if all mastered (until level up completes)
+            let unmastered = list.map((_, idx) => idx).filter(idx => !masteredIndices.includes(idx));
+            
+            if (unmastered.length === 0) {
+                // If all in level answered correctly, select random question
+                unmastered = list.map((_, idx) => idx);
+            }
+
+            const randomIndex = unmastered[Math.floor(Math.random() * unmastered.length)];
+            currentQuestionIndex = randomIndex;
+            currentQuestion = list[randomIndex];
+
+            document.getElementById('questionText').textContent = currentQuestion.q;
+
+            // Hide feedback banner
+            const feedbackBanner = document.getElementById('feedbackBanner');
+            if (feedbackBanner) feedbackBanner.classList.add('hidden');
+
+            // Coin calculation scaling with level difficulty
+            const baseCoins = 25 * currentLvl + 25; // Lvl 1: 50, Lvl 2: 75, Lvl 3: 100, Lvl 4: 125, Lvl 5: 150
+            const bonusCoins = baseCoins * 2;
+
+            // Badges
+            const badgeBonus = document.getElementById('badgeBonus');
+            const badgeStandard = document.getElementById('badgeStandard');
+
+            if (currentQuestion.bonus) {
+                badgeBonus.textContent = `🔥 BONUS QUESTION (+${bonusCoins} COINS)`;
+                badgeBonus.classList.remove('hidden');
+                badgeStandard.classList.add('hidden');
+            } else {
+                badgeStandard.textContent = `🪙 +${baseCoins} Coins`;
+                badgeBonus.classList.add('hidden');
+                badgeStandard.classList.remove('hidden');
+            }
+
+            // Render Option Buttons
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = currentQuestion.options.map((opt, idx) => `
+                <button onclick="answerQuestion(${idx})" class="option-btn bg-slate-800/90 hover:bg-slate-700 border border-slate-700 hover:border-pink-500/60 p-4 rounded-2xl text-left font-bold text-sm text-slate-200 transition transform active:scale-95 flex items-center justify-between">
+                    <span>${opt}</span>
+                    <span class="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs text-slate-400 font-extrabold">${String.fromCharCode(65 + idx)}</span>
+                </button>
+            `).join('');
+
+            // Reset Top Timer Visuals with dynamic time scaling for higher difficulty
+            if (currentSubject === 'math') {
+                questionTotalTime = Math.max(30, 180 - (currentLvl - 1) * 20); // Math timer scales appropriately
+            } else {
+                questionTotalTime = Math.max(12, 18 - currentLvl); // Scaled time for complex higher level questions
+            }
+            questionTimeRemaining = questionTotalTime;
+            
+            document.getElementById('topTimerSubjectLabel').textContent = `Subject: ${currentSubject.toUpperCase()} (Lvl ${currentLvl})`;
+            document.getElementById('topTimerDifficulty').textContent = `Level ${currentLvl}`;
+            updateTimerDisplay();
+        }
+
+        function answerQuestion(selectedIdx) {
+            if (!isQuestionActive) {
+                showFeedback(false, "Please click 'Start Next Question' to activate the timer first!");
+                return;
+            }
+
+            clearInterval(questionTimerInterval);
+            isQuestionActive = false;
+            document.getElementById('nextQuestionBtn').classList.remove('opacity-50', 'pointer-events-none');
+
+            // Disable all option buttons after click
+            const optionBtns = document.querySelectorAll('.option-btn');
+            optionBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed');
+            });
+
+            const currentLvl = getSubjectLevel(currentSubject);
+
+            if (selectedIdx === currentQuestion.answer) {
+                // Correct Answer!
+                const selectedBtn = optionBtns[selectedIdx];
+                if (selectedBtn) {
+                    selectedBtn.className = "option-btn bg-emerald-900/80 border-2 border-emerald-500 p-4 rounded-2xl text-left font-bold text-sm text-emerald-100 transition flex items-center justify-between";
+                }
+
+                // Dynamic reward formula based on level difficulty
+                const baseCoins = 25 * currentLvl + 25;
+                const coinReward = currentQuestion.bonus ? baseCoins * 2 : baseCoins;
+
+                state.coins += coinReward;
+                state.correctStreak++;
+                state.lastStudyDate = new Date().toDateString();
+
+                // Track question mastery in this level
+                if (!state.subjectProgress[currentSubject][currentLvl]) {
+                    state.subjectProgress[currentSubject][currentLvl] = [];
+                }
+
+                if (!state.subjectProgress[currentSubject][currentLvl].includes(currentQuestionIndex)) {
+                    state.subjectProgress[currentSubject][currentLvl].push(currentQuestionIndex);
+                }
+
+                const totalQuestionsInLevel = getQuestionsForLevel(currentSubject, currentLvl).length;
+                const masteredCount = state.subjectProgress[currentSubject][currentLvl].length;
+
+                saveState();
+                updateUI();
+
+                // Check for Level Up trigger!
+                if (masteredCount >= totalQuestionsInLevel) {
+                    levelUpSubject(currentSubject, currentLvl);
+                } else {
+                    showFeedback(true, `✨ Correct Answer! You earned +${coinReward} coins. (${masteredCount}/${totalQuestionsInLevel} mastered in Level ${currentLvl})`);
+                    confetti({
+                        particleCount: 80,
+                        spread: 60,
+                        origin: { y: 0.6 }
+                    });
+                }
+            } else {
+                // Incorrect Answer!
+                state.correctStreak = 0;
+                updateUI();
+
+                // Highlight selected wrong button in RED
+                const wrongBtn = optionBtns[selectedIdx];
+                if (wrongBtn) {
+                    wrongBtn.className = "option-btn bg-rose-900/80 border-2 border-rose-500 p-4 rounded-2xl text-left font-bold text-sm text-rose-100 transition flex items-center justify-between";
+                }
+
+                // Highlight correct button in GREEN
+                const correctBtn = optionBtns[currentQuestion.answer];
+                if (correctBtn) {
+                    correctBtn.className = "option-btn bg-emerald-900/60 border-2 border-emerald-500/80 p-4 rounded-2xl text-left font-bold text-sm text-emerald-200 transition flex items-center justify-between";
+                }
+
+                const correctAnswerText = currentQuestion.options[currentQuestion.answer];
+                showFeedback(false, `❌ Wrong answer! The correct answer was: "${correctAnswerText}".`);
+            }
+        }
+
+        function levelUpSubject(subj, oldLevel) {
+            const newLevel = oldLevel + 1;
+            state.subjectLevels[subj] = newLevel;
+            state.coins += 200; // Bonus coins for leveling up subject!
+            saveState();
+            updateUI();
+
+            // Level Up Celebration Modal
+            document.getElementById('levelUpTitle').textContent = `${capitalize(subj)} Leveled Up!`;
+            document.getElementById('levelUpMessage').textContent = `Congratulations! You mastered all questions in Level ${oldLevel} for ${capitalize(subj)}. Questions will now be more challenging!`;
+            document.getElementById('levelUpNewLevel').textContent = `Level ${newLevel}`;
+            document.getElementById('levelUpBtnLevel').textContent = newLevel;
+            document.getElementById('levelUpModal').classList.remove('hidden');
+
+            confetti({
+                particleCount: 150,
+                spread: 90,
+                origin: { y: 0.5 }
+            });
+        }
+
+        function closeLevelUpModal() {
+            document.getElementById('levelUpModal').classList.add('hidden');
+            selectSubject(currentSubject);
+        }
+
+        function startNextQuestion() {
+            if (isQuestionActive) return;
+
+            // Auto-start or resume 30-min session
+            if (wasSessionRunningBeforeBreak) {
+                resumeSessionTimer();
+            } else if (!isSessionRunning) {
+                startSessionTimer();
+            }
+
+            prepareQuestion();
+            isQuestionActive = true;
+
+            const nextBtn = document.getElementById('nextQuestionBtn');
+            nextBtn.classList.add('opacity-50', 'pointer-events-none');
+
+            // Start Countdown Timer
+            clearInterval(questionTimerInterval);
+            questionTimerInterval = setInterval(() => {
+                questionTimeRemaining--;
+                updateTimerDisplay();
+
+                if (questionTimeRemaining <= 0) {
+                    clearInterval(questionTimerInterval);
+                    isQuestionActive = false;
+                    state.correctStreak = 0;
+                    updateUI();
+
+                    // Disable buttons on timeout
+                    const optionBtns = document.querySelectorAll('.option-btn');
+                    optionBtns.forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.add('cursor-not-allowed', 'opacity-70');
+                    });
+
+                    // Highlight correct answer
+                    if (optionBtns[currentQuestion.answer]) {
+                        optionBtns[currentQuestion.answer].className = "option-btn bg-emerald-900/60 border-2 border-emerald-500/80 p-4 rounded-2xl text-left font-bold text-sm text-emerald-200 transition flex items-center justify-between";
+                    }
+
+                    showFeedback(false, `⏰ Time's up! The correct answer was: "${currentQuestion.options[currentQuestion.answer]}".`);
+                    nextBtn.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(questionTimeRemaining / 60);
+            const secs = questionTimeRemaining % 60;
+            document.getElementById('topTimerText').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            const percent = (questionTimeRemaining / questionTotalTime) * 100;
+            document.getElementById('topTimerBar').style.width = `${percent}%`;
+        }
+
+        function showFeedback(isSuccess, message) {
+            const banner = document.getElementById('feedbackBanner');
+            const icon = document.getElementById('feedbackIcon');
+            const text = document.getElementById('feedbackText');
+
+            if (!banner) return;
+
+            banner.className = "my-3 p-4 rounded-2xl text-sm font-bold flex items-center space-x-3 transition-all";
+
+            if (isSuccess) {
+                banner.classList.add('bg-emerald-950/80', 'border', 'border-emerald-500/50', 'text-emerald-300');
+                icon.textContent = '🎉';
+            } else {
+                banner.classList.add('bg-rose-950/80', 'border', 'border-rose-500/50', 'text-rose-300');
+                icon.textContent = '❌';
+            }
+
+            text.textContent = message;
+            banner.classList.remove('hidden');
+        }
+
+        // Perks & Shop Actions
+        function takeBreak() {
+            if (state.breakPasses > 0) {
+                state.breakPasses--;
+                saveState();
+                updateUI();
+
+                // Pause the 30-minute session goal timer during break
+                pauseSessionTimer();
+
+                alert("☕ 2-Minute Break Pass Activated! Relax and stretch your mind.");
+                
+                // Set top timer to 2 minutes break
+                clearInterval(questionTimerInterval);
+                questionTotalTime = 120;
+                questionTimeRemaining = 120;
+                document.getElementById('topTimerSubjectLabel').textContent = "☕ ON BREAK";
+                
+                questionTimerInterval = setInterval(() => {
+                    questionTimeRemaining--;
+                    updateTimerDisplay();
+                    if (questionTimeRemaining <= 0) {
+                        clearInterval(questionTimerInterval);
+                        alert("Break time is over! Ready to tackle the next question?");
+                        // Resume session goal timer when break completes
+                        resumeSessionTimer();
+                    }
+                }, 1000);
+
+            } else {
+                alert("You're out of Break Passes! Buy more in the Study Perk Shop.");
+            }
+        }
+
+        function buyBreakPass() {
+            if (state.coins >= 150) {
+                state.coins -= 150;
+                state.breakPasses++;
+                saveState();
+                updateUI();
+                alert("🎉 Purchased 1 Extra Break Pass!");
+            } else {
+                alert("You need 150 coins to buy a Break Pass. Keep answering quiz questions!");
+            }
+        }
+
+        function buyCoinBoost() {
+            if (state.coins >= 300) {
+                state.coins -= 300;
+                state.coins += 100; // Bonus cash boost!
+                saveState();
+                updateUI();
+                confetti({ particleCount: 50 });
+                alert("⚡ 2x Coin Surge Boost Redeemed! Added instant 100 bonus coin yield!");
+            } else {
+                alert("You need 300 coins to buy the 2x Coin Surge Boost!");
+            }
+        }
+
+        function buyRoyalCrown() {
+            if (state.coins >= 1000) {
+                state.coins -= 1000;
+                if (!state.petName.includes("👑")) {
+                    state.petName = "👑 " + state.petName;
+                }
+                saveState();
+                updateUI();
+                confetti({ particleCount: 90 });
+                alert("👑 Royal Crown Unlocked! Your pet is now wearing the Royal Crown!");
+            } else {
+                alert("You need 1,000 coins to buy the Royal Golden Crown!");
+            }
+        }
+
+        function buyPetSkin(id, cost, emoji, name) {
+            if (state.coins >= cost) {
+                state.coins -= cost;
+                state.petEmoji = emoji;
+                state.petName = name;
+                saveState();
+                updateUI();
+                
+                confetti({ particleCount: cost >= 1000 ? 120 : 60 });
+                alert(`🎉 Unlocked ${name}! Your new streak companion is active!`);
+            } else {
+                alert(`You need ${cost.toLocaleString()} coins to buy ${name}! Keep answering quiz questions to earn more coins!`);
+            }
+        }
+
+        function revivePet() {
+            if (state.coins >= 250) {
+                state.coins -= 250;
+                state.petNeedsRevive = false;
+                state.lastStudyDate = new Date().toDateString();
+                saveState();
+                updateUI();
+                
+                showModal("Streak Pet Revived! ✨", "Your pet is back and happier than ever!", 0);
+            } else {
+                alert("You need 250 coins to revive your streak pet!");
+            }
+        }
+
+        // Modal Helpers
+        function showModal(title, msg, coins) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = msg;
+            document.getElementById('modalCoinsEarned').textContent = `+${coins} 🪙`;
+            document.getElementById('rewardModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('rewardModal').classList.add('hidden');
+            prepareQuestion();
+        }
+    </script>
+</body>
+</html>

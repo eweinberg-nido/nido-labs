@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Tracker & Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .tab-active {
+      border-bottom: 3px solid #6366f1;
+      color: #4f46e5;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white shadow-md">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap"></i> Balance & Focus
+        </h1>
+        <p class="text-indigo-200 text-xs mt-0.5">4 PM – 8 PM SMART Goal Companion</p>
+      </div>
+      <div class="bg-indigo-700 px-3 py-1 rounded-lg text-right border border-indigo-500">
+        <span class="text-[10px] uppercase text-indigo-200 block font-semibold">Goal Window</span>
+        <span class="text-xs font-medium"><i class="fa-regular fa-clock mr-1"></i> 4:00 PM - 8:00 PM</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-4xl w-full mx-auto p-4 flex-grow flex flex-col">
+
+    <!-- Navigation Tabs at the Top -->
+    <nav class="flex border-b border-slate-200 mb-6 bg-white rounded-t-xl shadow-sm px-2 overflow-x-auto">
+      <button onclick="switchTab('today')" id="tab-today" class="tab-active py-3 px-4 sm:px-5 text-slate-600 hover:text-indigo-600 transition text-sm flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-house text-indigo-500"></i> Home
+      </button>
+      <button onclick="switchTab('homework')" id="tab-homework" class="py-3 px-4 sm:px-5 text-slate-600 hover:text-indigo-600 transition text-sm flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-book-open text-blue-500"></i> Homework & Tests
+      </button>
+      <button onclick="switchTab('calendar')" id="tab-calendar" class="py-3 px-4 sm:px-5 text-slate-600 hover:text-indigo-600 transition text-sm flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-calendar-days text-purple-500"></i> Master Calendar
+      </button>
+      <button onclick="switchTab('screentime')" id="tab-screentime" class="py-3 px-4 sm:px-5 text-slate-600 hover:text-indigo-600 transition text-sm flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-mobile-screen-button text-emerald-500"></i> Screen Time
+      </button>
+    </nav>
+
+    <!-- TAB 1: HOME SCREEN -->
+    <section id="content-today" class="space-y-6 flex-grow flex flex-col">
+      
+      <!-- Hello Banner -->
+      <div class="bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 rounded-2xl p-5 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold flex items-center gap-2">
+            Hello! 👋
+          </h2>
+          <p class="text-indigo-100 text-sm mt-1">
+            Let's stay focused today between 4:00 PM and 8:00 PM. Keep phone time under 90 minutes!
+          </p>
+        </div>
+        <div id="streak-badge" class="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-xl text-xs font-bold border border-white/30 flex items-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-fire text-amber-300 text-lg"></i>
+          <div>
+            <span id="streak-count" class="text-base font-extrabold">0</span> Day Streak
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Vertical Cards Stacked Layout -->
+      <div class="flex flex-col gap-6">
+        
+        <!-- CARD 1 (TOP): Everyday Tasks -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-indigo-500"></i> Everyday Tasks
+            </h3>
+            <span class="text-xs text-slate-400">Today's Habits</span>
+          </div>
+          <p class="text-xs text-slate-400 mb-4">Click to mark tasks done for today. To add or edit daily habits, visit the Homework & Tests tab.</p>
+
+          <!-- Everyday Tasks Display List -->
+          <div id="home-daily-tasks-list" class="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+            <!-- JS inserted -->
+          </div>
+        </div>
+
+        <!-- CARD 2 (MIDDLE): Today & Tomorrow's Homework + Major Projects -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-book-bookmark text-amber-500"></i> Active Assignments
+            </h3>
+            <span class="text-xs text-slate-400">Due Soon</span>
+          </div>
+
+          <p class="text-xs text-slate-400 mb-3">Showing homework due today/tomorrow, overdue items, & upcoming tests/projects.</p>
+
+          <!-- Homework Cards Container -->
+          <div id="home-homework-list" class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+            <!-- JS inserted -->
+          </div>
+        </div>
+
+        <!-- CARD 3 (BOTTOM): Weekly Screen Time Bar Graph -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-column text-emerald-500"></i> Weekly Screen Time
+              </h3>
+              <span class="text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                Goal: &lt; 90 mins/day
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Green rectangle bars show daily minutes recorded during 4 PM – 8 PM block.</p>
+
+            <!-- Chart Container -->
+            <div class="relative pt-6 pb-2 bg-slate-50/50 rounded-xl px-3 border border-slate-100">
+              <!-- 90m Threshold Line -->
+              <div class="absolute left-3 right-3 border-b-2 border-dashed border-emerald-500 z-10" style="bottom: 50%;">
+                <span class="absolute -top-3.5 right-0 text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300 shadow-xs">
+                  90m Cap Line
+                </span>
+              </div>
+
+              <!-- Bar graph columns -->
+              <div id="weekly-graph-bars" class="flex justify-between items-end h-44 pt-4 px-1 border-b border-slate-200 gap-2">
+                <!-- JS inserted green rectangle bars -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Log Box on Home -->
+          <div class="mt-4 pt-3 border-t border-slate-100 bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+            <div class="flex justify-between items-center text-xs mb-1.5">
+              <span class="font-semibold text-slate-700">Today's Phone Time</span>
+              <span id="home-st-text" class="font-bold text-emerald-600">0 / 90 mins</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden mb-2">
+              <div id="home-st-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <button onclick="switchTab('screentime')" class="w-full text-center text-xs text-indigo-600 font-medium hover:underline">
+              Log or update today's screen time &rarr;
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 2: HOMEWORK & TESTS TRACKER -->
+    <section id="content-homework" class="hidden space-y-6">
+      
+      <!-- Manage Everyday Tasks Form -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-indigo-500"></i> Manage Everyday Tasks & Habits
+        </h2>
+        <form id="add-daily-task-form" onsubmit="addDailyTask(event)" class="flex gap-2 mb-4">
+          <input type="text" id="daily-task-input" placeholder="e.g., Read 20 mins, Practice piano, Go for a walk..." required
+            class="flex-grow px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> Add Task
+          </button>
+        </form>
+        <div id="manage-daily-tasks-list" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <!-- JS inserted -->
+        </div>
+      </div>
+
+      <!-- Add Homework / Test / Project Form -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-indigo-500"></i> Add Assignment, Test, or Major Project
+        </h2>
+        <form id="add-hw-form" onsubmit="addHomework(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Title</label>
+            <input type="text" id="hw-title" placeholder="e.g., Chapter 4 Test or History Essay" required
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Class / Subject</label>
+            <input type="text" id="hw-class" placeholder="e.g., Math, Science, History" required
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Type</label>
+            <select id="hw-type" onchange="toggleLeadDaysInput()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="homework">Homework</option>
+              <option value="test">Test / Quiz</option>
+              <option value="project">Major Project</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Due Date</label>
+            <input type="date" id="hw-date" required
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div id="lead-days-container" class="md:col-span-2 hidden">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Days in advance to show on Home Screen</label>
+            <input type="number" id="hw-lead-days" min="1" max="30" value="4"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="md:col-span-4 flex justify-end">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1">
+              <i class="fa-solid fa-plus"></i> Save Item
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Homework List Header & Filters -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">Manage All Items</h2>
+            <p class="text-xs text-slate-500">Automatically sorted by due date</p>
+          </div>
+          <div class="text-xs bg-slate-100 p-1.5 rounded-lg flex gap-1">
+            <button onclick="filterHomework('all')" id="filter-all" class="px-2.5 py-1 rounded-md bg-white font-medium shadow-sm">All</button>
+            <button onclick="filterHomework('to do')" id="filter-todo" class="px-2.5 py-1 rounded-md text-slate-600">To Do</button>
+            <button onclick="filterHomework('in progress')" id="filter-progress" class="px-2.5 py-1 rounded-md text-slate-600">In Progress</button>
+            <button onclick="filterHomework('done')" id="filter-done" class="px-2.5 py-1 rounded-md text-slate-600">Done</button>
+          </div>
+        </div>
+
+        <!-- Homework Table / Cards -->
+        <div id="full-homework-list" class="space-y-3">
+          <!-- JS inserted -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- TAB 3: MASTER CALENDAR -->
+    <section id="content-calendar" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-days text-purple-600"></i> Master Monthly Calendar
+            </h2>
+            <p class="text-xs text-slate-500">Overview of all your homework, upcoming tests, and projects</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="changeMonth(-1)" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="calendar-month-year" class="font-bold text-slate-800 text-sm min-w-[120px] text-center">Month Year</span>
+            <button onclick="changeMonth(1)" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap gap-4 text-xs mb-4 pb-3 border-b border-slate-100">
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Homework</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Test / Quiz</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Major Project</span>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="grid grid-cols-7 gap-1 text-center font-semibold text-xs text-slate-400 mb-2">
+          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+        <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+          <!-- JS inserted calendar days -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- TAB 4: SCREEN TIME TRACKER -->
+    <section id="content-screentime" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <h2 class="text-lg font-bold text-slate-800 mb-1">4 PM – 8 PM Phone Time Tracker</h2>
+        <p class="text-xs text-slate-500 mb-4">Log how many minutes you spent on your phone during your 4-hour focus block. Goal: Under 90 minutes!</p>
+
+        <!-- Log Form -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+          <form id="st-log-form" onsubmit="logScreenTime(event)" class="flex flex-col sm:flex-row gap-3 items-end">
+            <div class="flex-grow w-full">
+              <label class="block text-xs font-semibold text-slate-500 mb-1">Minutes Spent Today (4 PM – 8 PM)</label>
+              <input type="number" id="st-minutes" min="0" max="240" placeholder="e.g., 45" required
+                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="w-full sm:w-auto">
+              <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-floppy-disk"></i> Save Today's Time
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Visual Goal Progress -->
+        <div class="p-4 rounded-xl border border-slate-200 bg-white">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-semibold text-slate-700">Today's Budget Usage</span>
+            <span id="st-status-tag" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">Not Logged</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden mb-2">
+            <div id="st-detail-bar" class="bg-emerald-500 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-slate-400 font-mono">
+            <span>0m</span>
+            <span>45m</span>
+            <span class="text-emerald-700 font-bold">90m (Goal Cap)</span>
+            <span>150m</span>
+            <span>240m (4 hrs)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen Time Log History -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Recent Daily Log History</h3>
+        <div id="st-history" class="space-y-2">
+          <!-- JS inserted -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-4 py-2.5 rounded-lg text-sm shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2 z-50">
+    <i class="fa-solid fa-info-circle text-indigo-400"></i> <span id="toast-message">Message</span>
+  </div>
+
+  <script>
+    // Local Storage Keys
+    const STORAGE_KEY_HW = 'smart_goal_hw_list';
+    const STORAGE_KEY_DAILY = 'smart_goal_daily_list';
+    const STORAGE_KEY_ST = 'smart_goal_st_logs';
+
+    let homeworks = [];
+    let dailyTasks = [];
+    let screenTimeLogs = {}; // format: { 'YYYY-MM-DD': minutes }
+    let currentFilter = 'all';
+
+    let calendarCurrentDate = new Date();
+
+    // Get today's ISO date string
+    function getTodayISO() {
+      const today = new Date();
+      return today.toISOString().split('T')[0];
+    }
+
+    // Helper: Add days to ISO date
+    function addDaysToISO(isoDateStr, days) {
+      const d = new Date(isoDateStr + 'T00:00:00');
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split('T')[0];
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      renderAll();
+      
+      const dateInput = document.getElementById('hw-date');
+      if (dateInput) dateInput.value = getTodayISO();
+    });
+
+    // Save & Load
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY_HW, JSON.stringify(homeworks));
+      localStorage.setItem(STORAGE_KEY_DAILY, JSON.stringify(dailyTasks));
+      localStorage.setItem(STORAGE_KEY_ST, JSON.stringify(screenTimeLogs));
+    }
+
+    function loadData() {
+      try {
+        homeworks = JSON.parse(localStorage.getItem(STORAGE_KEY_HW)) || [
+          { id: 1, title: 'Read Chapter 3', subject: 'English', dueDate: getTodayISO(), status: 'to do', type: 'homework', leadDays: 4 },
+          { id: 2, title: 'Math Worksheet 4.2', subject: 'Math', dueDate: addDaysToISO(getTodayISO(), 1), status: 'in progress', type: 'homework', leadDays: 4 },
+          { id: 3, title: 'Unit 2 History Exam', subject: 'History', dueDate: addDaysToISO(getTodayISO(), 3), status: 'to do', type: 'test', leadDays: 4 }
+        ];
+        dailyTasks = JSON.parse(localStorage.getItem(STORAGE_KEY_DAILY)) || [
+          { id: 1, text: 'Clean off study desk', completed: false },
+          { id: 2, text: 'Spend 20 mins reading or drawing', completed: false }
+        ];
+        screenTimeLogs = JSON.parse(localStorage.getItem(STORAGE_KEY_ST)) || {};
+      } catch (e) {
+        homeworks = [];
+        dailyTasks = [];
+        screenTimeLogs = {};
+      }
+    }
+
+    // UI Tab Navigation
+    function switchTab(tabName) {
+      const tabs = ['today', 'homework', 'calendar', 'screentime'];
+      tabs.forEach(t => {
+        document.getElementById(`content-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.remove('tab-active');
+      });
+
+      document.getElementById(`content-${tabName}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+
+      if (tabName === 'calendar') {
+        renderCalendar();
+      }
+    }
+
+    // Toast Notice
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-message');
+      msgEl.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // Main Render Pipeline
+    function renderAll() {
+      renderHomeTasks();
+      renderHomeHomework();
+      renderWeeklyGraph();
+      renderFullHomeworkTab();
+      renderManageDailyTasks();
+      renderScreenTimeTab();
+      updateStreak();
+    }
+
+    function toggleLeadDaysInput() {
+      const type = document.getElementById('hw-type').value;
+      const container = document.getElementById('lead-days-container');
+      if (type === 'test' || type === 'project') {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+
+    // --- 1. HOME SCREEN LOGIC ---
+
+    function renderHomeTasks() {
+      const container = document.getElementById('home-daily-tasks-list');
+      if (dailyTasks.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">No daily tasks yet. Add habits in the Homework & Tests tab!</div>`;
+        return;
+      }
+
+      container.innerHTML = dailyTasks.map(task => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl transition ${task.completed ? 'opacity-50' : ''}">
+          <label class="flex items-center gap-3 cursor-pointer flex-grow select-none">
+            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleDailyTask(${task.id})"
+              class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300">
+            <span class="text-xs ${task.completed ? 'line-through text-slate-400' : 'text-slate-700 font-medium'}">${escapeHtml(task.text)}</span>
+          </label>
+        </div>
+      `).join('');
+    }
+
+    function renderHomeHomework() {
+      const container = document.getElementById('home-homework-list');
+      const today = getTodayISO();
+      const tomorrow = addDaysToISO(today, 1);
+
+      const homeItems = homeworks.filter(hw => {
+        const isDone = hw.status === 'done';
+        const isOverdue = new Date(hw.dueDate + 'T00:00:00') < new Date(today + 'T00:00:00') && !isDone;
+        const isDueTodayOrTomorrow = hw.dueDate === today || hw.dueDate === tomorrow;
+
+        if (isOverdue) return true;
+
+        if (hw.type === 'test' || hw.type === 'project') {
+          const leadDays = hw.leadDays || 4;
+          const showFromDate = addDaysToISO(hw.dueDate, -leadDays);
+          return today >= showFromDate;
+        }
+
+        return isDueTodayOrTomorrow;
+      });
+
+      homeItems.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+      if (homeItems.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">No homework due today or tomorrow! 🎉</div>`;
+        return;
+      }
+
+      container.innerHTML = homeItems.map(hw => createHwItemMarkup(hw, false)).join('');
+    }
+
+    function renderWeeklyGraph() {
+      const container = document.getElementById('weekly-graph-bars');
+      const todayMins = screenTimeLogs[getTodayISO()] || 0;
+
+      // Update today's status bar under 90 minutes cap
+      document.getElementById('home-st-text').textContent = `${todayMins} / 90 mins`;
+      const barPct = Math.min((todayMins / 90) * 100, 100);
+      const homeBar = document.getElementById('home-st-bar');
+      homeBar.style.width = `${barPct}%`;
+      homeBar.className = todayMins > 90 ? "bg-red-500 h-2.5 rounded-full transition-all duration-300" : "bg-emerald-500 h-2.5 rounded-full transition-all duration-300";
+
+      const days = [];
+      const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const iso = d.toISOString().split('T')[0];
+        const dayName = dayLabels[d.getDay()];
+        const mins = screenTimeLogs[iso] !== undefined ? screenTimeLogs[iso] : 0;
+        days.push({ iso, dayName, mins, isToday: i === 0 });
+      }
+
+      // Render green rectangle bars (Max height scaled relative to 180 mins so 90 mins = 50% height line)
+      const MAX_GRAPH_MINS = 180;
+
+      container.innerHTML = days.map(day => {
+        const heightPct = Math.min((day.mins / MAX_GRAPH_MINS) * 100, 100);
+        const isOver = day.mins > 90;
+        
+        // Green rectangle styling for goal compliance
+        let barColor = 'bg-emerald-500 border-emerald-600 hover:bg-emerald-400';
+        if (isOver) {
+          barColor = 'bg-red-500 border-red-600 hover:bg-red-400';
+        } else if (day.mins === 0) {
+          barColor = 'bg-slate-200 border-slate-300';
+        }
+
+        return `
+          <div class="flex flex-col items-center flex-1 h-full justify-end group relative">
+            
+            <!-- Exact time text on top of bar -->
+            <span class="text-[11px] font-extrabold mb-1 ${isOver ? 'text-red-600' : (day.mins > 0 ? 'text-emerald-700' : 'text-slate-400')}">
+              ${day.mins}m
+            </span>
+
+            <!-- Solid Green Rectangle Bar -->
+            <div class="w-full max-w-[42px] bg-slate-100 rounded-md flex items-end h-full p-0.5 border border-slate-200/80 shadow-xs">
+              <div class="w-full ${barColor} rounded-md transition-all duration-500 border flex justify-center items-center" 
+                   style="height: ${Math.max(heightPct, day.mins > 0 ? 8 : 4)}%">
+              </div>
+            </div>
+
+            <!-- Day Label -->
+            <span class="text-[11px] mt-1.5 font-semibold ${day.isToday ? 'text-indigo-600 underline decoration-2' : 'text-slate-500'}">
+              ${day.dayName}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+
+    // --- 2. HOMEWORK & TESTS TRACKER LOGIC ---
+
+    function addDailyTask(e) {
+      e.preventDefault();
+      const input = document.getElementById('daily-task-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      dailyTasks.push({
+        id: Date.now(),
+        text,
+        completed: false
+      });
+
+      saveData();
+      renderAll();
+      input.value = '';
+      showToast('Everyday task added!');
+    }
+
+    function toggleDailyTask(id) {
+      const task = dailyTasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveData();
+        renderAll();
+      }
+    }
+
+    function deleteDailyTask(id) {
+      dailyTasks = dailyTasks.filter(t => t.id !== id);
+      saveData();
+      renderAll();
+    }
+
+    function renderManageDailyTasks() {
+      const container = document.getElementById('manage-daily-tasks-list');
+      if (dailyTasks.length === 0) {
+        container.innerHTML = `<div class="col-span-2 text-slate-400 text-xs text-center py-2">No tasks added yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = dailyTasks.map(task => `
+        <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+          <span class="text-xs font-medium text-slate-700">${escapeHtml(task.text)}</span>
+          <button onclick="deleteDailyTask(${task.id})" class="text-slate-400 hover:text-red-500 text-xs px-2 py-1">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function addHomework(e) {
+      e.preventDefault();
+      const title = document.getElementById('hw-title').value.trim();
+      const subject = document.getElementById('hw-class').value.trim();
+      const dueDate = document.getElementById('hw-date').value;
+      const type = document.getElementById('hw-type').value;
+      const leadDays = parseInt(document.getElementById('hw-lead-days').value, 10) || 4;
+
+      if (!title || !subject || !dueDate) return;
+
+      homeworks.push({
+        id: Date.now(),
+        title,
+        subject,
+        dueDate,
+        type,
+        leadDays,
+        status: 'to do'
+      });
+
+      saveData();
+      renderAll();
+
+      document.getElementById('add-hw-form').reset();
+      document.getElementById('hw-date').value = getTodayISO();
+      toggleLeadDaysInput();
+      showToast('Item saved successfully!');
+    }
+
+    function updateHwStatus(id, newStatus) {
+      const hw = homeworks.find(item => item.id === id);
+      if (hw) {
+        hw.status = newStatus;
+        saveData();
+        renderAll();
+      }
+    }
+
+    function deleteHomework(id) {
+      homeworks = homeworks.filter(item => item.id !== id);
+      saveData();
+      renderAll();
+      showToast('Item deleted');
+    }
+
+    function filterHomework(filter) {
+      currentFilter = filter;
+      ['all', 'todo', 'progress', 'done'].forEach(f => {
+        const btn = document.getElementById(`filter-${f}`);
+        if (btn) btn.className = "px-2.5 py-1 rounded-md text-slate-600";
+      });
+      const activeBtnMap = { 'all': 'filter-all', 'to do': 'filter-todo', 'in progress': 'filter-progress', 'done': 'filter-done' };
+      if (activeBtnMap[filter]) {
+        document.getElementById(activeBtnMap[filter]).className = "px-2.5 py-1 rounded-md bg-white font-medium shadow-sm text-indigo-600";
+      }
+
+      renderFullHomeworkTab();
+    }
+
+    function renderFullHomeworkTab() {
+      const container = document.getElementById('full-homework-list');
+      homeworks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+      const filtered = homeworks.filter(hw => {
+        if (currentFilter === 'all') return true;
+        return hw.status === currentFilter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-slate-400 text-sm">No assignments found for this filter.</div>`;
+      } else {
+        container.innerHTML = filtered.map(hw => createHwItemMarkup(hw, true)).join('');
+      }
+    }
+
+    function createHwItemMarkup(hw, allowDelete = false) {
+      const isDone = hw.status === 'done';
+      const today = getTodayISO();
+      const isToday = hw.dueDate === today;
+      const isOverdue = new Date(hw.dueDate + 'T00:00:00') < new Date(today + 'T00:00:00') && !isDone;
+
+      let cardStyle = "border-slate-200 hover:border-slate-300 bg-white";
+      let dateBadge = "bg-slate-100 text-slate-600";
+
+      if (isOverdue) {
+        cardStyle = "border-red-300 bg-red-50/50";
+        dateBadge = "bg-red-500 text-white font-bold";
+      } else if (isToday) {
+        dateBadge = "bg-amber-100 text-amber-700 font-bold";
+      }
+
+      if (isDone) {
+        cardStyle = "bg-slate-50 border-slate-200 opacity-60 grayscale-[40%]";
+      }
+
+      let typeBadge = `<span class="text-[10px] px-2 py-0.5 rounded font-semibold bg-indigo-50 text-indigo-600">${escapeHtml(hw.subject)}</span>`;
+      if (hw.type === 'test') {
+        typeBadge += `<span class="text-[10px] px-2 py-0.5 rounded font-semibold bg-purple-100 text-purple-700"><i class="fa-solid fa-pen-to-square mr-1"></i>Test</span>`;
+      } else if (hw.type === 'project') {
+        typeBadge += `<span class="text-[10px] px-2 py-0.5 rounded font-semibold bg-amber-100 text-amber-800"><i class="fa-solid fa-diagram-project mr-1"></i>Project</span>`;
+      }
+
+      return `
+        <div class="p-3.5 border rounded-xl transition ${cardStyle}">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex-grow">
+              <div class="flex items-center gap-1.5 mb-1 flex-wrap">
+                ${typeBadge}
+                <span class="text-[10px] px-2 py-0.5 rounded ${dateBadge}">
+                  ${isOverdue ? 'Overdue: ' + hw.dueDate : (isToday ? 'Due Today' : hw.dueDate)}
+                </span>
+              </div>
+              <h4 class="font-semibold text-slate-800 text-sm ${isDone ? 'line-through text-slate-400' : (isOverdue ? 'text-red-700' : '')}">${escapeHtml(hw.title)}</h4>
+            </div>
+
+            <div class="flex items-center gap-2 justify-between sm:justify-end">
+              <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100/70 text-xs">
+                <button onclick="updateHwStatus(${hw.id}, 'to do')" 
+                  class="px-2.5 py-1 rounded-md transition ${hw.status === 'to do' ? 'bg-amber-500 text-white font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'}">
+                  To Do
+                </button>
+                <button onclick="updateHwStatus(${hw.id}, 'in progress')" 
+                  class="px-2.5 py-1 rounded-md transition ${hw.status === 'in progress' ? 'bg-blue-500 text-white font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'}">
+                  In Progress
+                </button>
+                <button onclick="updateHwStatus(${hw.id}, 'done')" 
+                  class="px-2.5 py-1 rounded-md transition ${hw.status === 'done' ? 'bg-emerald-600 text-white font-semibold shadow-xs' : 'text-slate-500 hover:text-slate-800'}">
+                  Done
+                </button>
+              </div>
+
+              ${allowDelete ? `
+              <button onclick="deleteHomework(${hw.id})" class="text-slate-300 hover:text-red-500 p-1.5 transition">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+
+    // --- 3. MASTER CALENDAR LOGIC ---
+
+    function changeMonth(delta) {
+      calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const year = calendarCurrentDate.getFullYear();
+      const month = calendarCurrentDate.getMonth();
+
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+
+      for (let i = 0; i < firstDay; i++) {
+        grid.innerHTML += `<div class="h-24 bg-slate-50/50 rounded-lg border border-slate-100"></div>`;
+      }
+
+      const todayIso = getTodayISO();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const currentIso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = currentIso === todayIso;
+
+        const dayItems = homeworks.filter(hw => hw.dueDate === currentIso);
+
+        let itemsHtml = dayItems.map(item => {
+          let color = "bg-blue-500";
+          if (item.type === 'test') color = "bg-purple-600";
+          if (item.type === 'project') color = "bg-amber-500";
+
+          return `
+            <div class="${color} text-white text-[10px] px-1.5 py-0.5 rounded truncate mb-1 shadow-2xs ${item.status === 'done' ? 'opacity-40 line-through' : ''}" title="${escapeHtml(item.title)} (${item.subject})">
+              ${escapeHtml(item.title)}
+            </div>
+          `;
+        }).join('');
+
+        grid.innerHTML += `
+          <div class="h-24 p-1.5 border border-slate-200 rounded-lg bg-white overflow-hidden flex flex-col justify-start text-left ${isToday ? 'ring-2 ring-indigo-500 font-bold' : ''}">
+            <span class="text-xs ${isToday ? 'text-indigo-600' : 'text-slate-600'} mb-1">${day}</span>
+            <div class="overflow-y-auto flex-grow">${itemsHtml}</div>
+          </div>
+        `;
+      }
+    }
+
+
+    // --- 4. SCREEN TIME LOGIC ---
+
+    function logScreenTime(e) {
+      e.preventDefault();
+      const input = document.getElementById('st-minutes');
+      const mins = parseInt(input.value, 10);
+      if (isNaN(mins)) return;
+
+      screenTimeLogs[getTodayISO()] = mins;
+
+      saveData();
+      renderAll();
+      showToast('Screen time logged for today!');
+    }
+
+    function renderScreenTimeTab() {
+      const today = getTodayISO();
+      const todayMins = screenTimeLogs[today] !== undefined ? screenTimeLogs[today] : 0;
+      const isLogged = screenTimeLogs[today] !== undefined;
+
+      const detailBar = document.getElementById('st-detail-bar');
+      const statusTag = document.getElementById('st-status-tag');
+      
+      const detailPercent = Math.min((todayMins / 240) * 100, 100);
+      detailBar.style.width = `${detailPercent}%`;
+
+      if (!isLogged) {
+        statusTag.textContent = "Not Logged Today";
+        statusTag.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600";
+        detailBar.className = "bg-slate-300 h-4 rounded-full transition-all duration-300";
+      } else if (todayMins <= 90) {
+        statusTag.textContent = "Goal Achieved! (<= 90m)";
+        statusTag.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+        detailBar.className = "bg-emerald-500 h-4 rounded-full transition-all duration-300";
+      } else {
+        statusTag.textContent = "Over Goal (> 90m)";
+        statusTag.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700";
+        detailBar.className = "bg-red-500 h-4 rounded-full transition-all duration-300";
+      }
+
+      const historyContainer = document.getElementById('st-history');
+      const dates = Object.keys(screenTimeLogs).sort((a, b) => new Date(b) - new Date(a));
+
+      if (dates.length === 0) {
+        historyContainer.innerHTML = `<div class="text-center py-4 text-slate-400 text-sm">No daily records logged yet.</div>`;
+      } else {
+        historyContainer.innerHTML = dates.map(date => {
+          const mins = screenTimeLogs[date];
+          const passed = mins <= 90;
+          return `
+            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-slate-50">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid ${passed ? 'fa-circle-check text-emerald-500' : 'fa-circle-exclamation text-red-400'}"></i>
+                <span class="text-sm font-medium text-slate-700">${date === today ? 'Today (' + date + ')' : date}</span>
+              </div>
+              <span class="text-sm font-bold ${passed ? 'text-emerald-600' : 'text-red-600'}">${mins} mins spent</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function updateStreak() {
+      let streak = 0;
+      let checkDate = new Date();
+
+      while (true) {
+        const iso = checkDate.toISOString().split('T')[0];
+        if (screenTimeLogs[iso] !== undefined && screenTimeLogs[iso] <= 90) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          if (iso === getTodayISO() && screenTimeLogs[iso] === undefined) {
+            checkDate.setDate(checkDate.getDate() - 1);
+            continue;
+          }
+          break;
+        }
+      }
+
+      document.getElementById('streak-count').textContent = streak;
+    }
+
+    // HTML escape utility
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+  </script>
+</body>
+</html>

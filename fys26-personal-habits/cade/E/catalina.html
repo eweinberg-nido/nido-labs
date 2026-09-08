@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sleep Zoo - Melatonin & Habit Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b1329;
+      color: #f8fafc;
+      user-select: none;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    #zooCanvas {
+      image-rendering: crisp-edges;
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 overflow-x-hidden">
+
+  <!-- TOP HEADER / NAV -->
+  <header class="w-full bg-slate-900/90 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/30">
+          🌙
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg sm:text-xl text-white tracking-tight flex items-center gap-2">
+            SleepZoo <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">SMART Goal</span>
+          </h1>
+          <p class="text-xs text-slate-400">Melatonin Routine & Safari Park Simulator</p>
+        </div>
+      </div>
+
+      <!-- Action & Navigation Bar -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition bg-indigo-600 text-white">
+          <i class="fa-solid fa-calendar-days"></i> <span class="hidden md:inline">Dashboard</span>
+        </button>
+        <button onclick="switchTab('zoo')" id="nav-zoo" class="px-3 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
+          <i class="fa-solid fa-hippo"></i> <span class="hidden md:inline">My Zoo</span>
+        </button>
+        <button onclick="switchTab('shop')" id="nav-shop" class="px-3 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2">
+          <i class="fa-solid fa-store"></i> <span class="hidden md:inline">Zoo Shop</span>
+        </button>
+        
+        <!-- Points Indicator Widget -->
+        <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-xl text-sm font-bold shadow-inner">
+          <i class="fa-solid fa-coins text-amber-400 animate-pulse"></i>
+          <span id="points-display">0</span> <span class="text-xs text-amber-400/70 font-normal">pts</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 flex-grow">
+
+    <!-- 1. DASHBOARD TAB -->
+    <div id="tab-dashboard" class="space-y-6">
+
+      <!-- SMART Goal Daily Status Banner -->
+      <div class="glass-card rounded-2xl p-5 border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 relative overflow-hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+              <i class="fa-solid fa-clock"></i> Today's Schedule Assistant
+            </div>
+            <h2 id="today-routine-title" class="text-xl sm:text-2xl font-bold text-white">Loading Routine...</h2>
+          <p id="today-routine-sub" class="text-sm text-slate-300 mt-1">Goal: Take melatonin at 8:00 PM & sleep by 9:30 PM.</p>
+        </div>
+        
+        <button onclick="openCheckInModal()" class="w-full md:w-auto px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-camera-retro text-lg"></i>
+          CHECK-IN NOW (+500 Pts)
+        </button>
+      </div>
+
+      <!-- Routine Timeline Steps -->
+        <div class="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-slate-800/80 text-center text-xs">
+          <div id="step-1" class="p-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <div class="text-slate-400 font-medium">1. Melatonin</div>
+            <div id="step-1-time" class="font-bold text-indigo-300 mt-0.5">8:00 PM</div>
+          </div>
+          <div id="step-2" class="p-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <div class="text-slate-400 font-medium">2. Lie in Bed</div>
+            <div class="font-bold text-indigo-300 mt-0.5">9:00 PM</div>
+          </div>
+          <div id="step-3" class="p-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <div class="text-slate-400 font-medium">3. Sleeping</div>
+            <div class="font-bold text-indigo-300 mt-0.5">9:30 PM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID: CALENDAR & STATS GRAPH -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- CALENDAR COMPONENT (2 COLS) -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-5 border border-slate-800">
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-calendar text-indigo-400 text-lg"></i>
+              <h3 class="text-lg font-bold text-white">Monthly Habit Calendar</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <span id="calendar-month-year" class="text-sm font-bold px-2 text-indigo-200">Month 2026</span>
+              <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Days Grid Header -->
+          <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-400 text-xs mb-2">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+            <!-- Rendered JS -->
+          </div>
+
+          <!-- Calendar Legend -->
+          <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400 mt-5 pt-3 border-t border-slate-800">
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> On-Time Take</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Late Take</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span> Missed</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-700"></span> Today</div>
+          </div>
+        </div>
+
+        <!-- STATS & GOAL METRICS (1 COL) -->
+        <div class="space-y-6">
+          <div class="glass-card rounded-2xl p-5 border border-slate-800">
+            <h3 class="text-base font-bold text-white mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i> Routine Performance
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-xs text-slate-300 mb-1">
+                  <span>Weekly On-Time Goal</span>
+                  <span id="stat-weekly-percent" class="font-bold text-emerald-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                  <div id="stat-progress-bar" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
+                </div>
+              </div>
+
+              <!-- Mini Stats Grid -->
+              <div class="grid grid-cols-2 gap-3 pt-2">
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400">Current Streak</div>
+                  <div class="text-xl font-extrabold text-amber-400 mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-fire text-sm"></i> <span id="stat-streak">0</span> Days
+                  </div>
+                </div>
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                  <div class="text-xs text-slate-400">Zoo Enclosures</div>
+                  <div class="text-xl font-extrabold text-indigo-400 mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-paw text-sm"></i> <span id="stat-animal-count">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly Habit Graph -->
+          <div class="glass-card rounded-2xl p-5 border border-slate-800">
+            <h3 class="text-sm font-bold text-white mb-2 flex items-center justify-between">
+              <span><i class="fa-solid fa-clock-rotate-left text-indigo-400 mr-1"></i> Intake Time Chart</span>
+              <span class="text-xs font-normal text-slate-400">Last 7 Days</span>
+            </h3>
+            <div class="h-40 relative">
+              <canvas id="habitChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 2. ZOO GAME TAB -->
+    <div id="tab-zoo" class="hidden space-y-4">
+      
+      <!-- Zoo Control Header -->
+      <div class="glass-card rounded-2xl p-4 border border-slate-800 flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-hippo text-emerald-400"></i> Realistic Safari Park Simulation
+          </h2>
+          <p class="text-xs text-slate-400">Click on any animal enclosure to interact, pet them, and view fun facts!</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-person-walking text-blue-400"></i> Visitors: <span id="zoo-visitors-count" class="font-bold text-white">0</span>
+          </div>
+          <button onclick="switchTab('shop')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-cart-plus"></i> Buy Animals & Decor
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN CANVAS GAME DISPLAY -->
+      <div class="relative glass-card rounded-2xl p-2 sm:p-4 border border-slate-800 overflow-hidden flex justify-center items-center bg-slate-950">
+        <!-- Zoo Game Canvas -->
+        <canvas id="zooCanvas" width="1000" height="640" class="rounded-xl border border-slate-800 shadow-2xl max-w-full h-auto cursor-pointer"></canvas>
+      </div>
+
+      <!-- Quick Animal Roster Strip -->
+      <div class="glass-card rounded-2xl p-4 border border-slate-800">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Living Enclosures in Your Zoo</h4>
+        <div id="zoo-roster-list" class="flex items-center gap-3 overflow-x-auto pb-2">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. ZOO SHOP TAB -->
+    <div id="tab-shop" class="hidden space-y-6">
+      
+      <div class="glass-card rounded-2xl p-5 border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-store text-amber-400"></i> Zoo Builder Shop
+          </h2>
+          <p class="text-sm text-slate-300">Unlock dynamic caged habitats, roaming animals, lush trees & lanterns!</p>
+        </div>
+        <div class="bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-xl flex items-center gap-2">
+          <span class="text-xs text-amber-300">Available Balance:</span>
+          <span id="shop-points-display" class="font-extrabold text-amber-400 text-lg">0 Pts</span>
+        </div>
+      </div>
+
+      <!-- Shop Category Selector -->
+      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+        <button onclick="filterShop('animals')" id="shop-cat-animals" class="px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white transition">
+          🦁 Enclosures & Animals
+        </button>
+        <button onclick="filterShop('upgrades')" id="shop-cat-upgrades" class="px-4 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          ⭐ Habitat Upgrades
+        </button>
+        <button onclick="filterShop('decor')" id="shop-cat-decor" class="px-4 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          🌿 Attractions & Decor
+        </button>
+      </div>
+
+      <!-- Shop Items Grid -->
+      <div id="shop-items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Rendered JS -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ANIMAL INFO INSPECTOR MODAL -->
+  <div id="animal-info-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-sm w-full rounded-2xl p-6 border border-slate-700 shadow-2xl relative text-center">
+      <button onclick="closeAnimalModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="w-20 h-20 mx-auto rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-4xl mb-3 shadow-inner" id="modal-animal-icon">
+        🐒
+      </div>
+
+      <h3 id="modal-animal-name" class="text-xl font-extrabold text-white">Chimpanzee</h3>
+      <div id="modal-animal-type" class="text-xs text-amber-400 font-bold uppercase tracking-wider mb-2">Playful Monkey Pen</div>
+
+      <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 text-left space-y-2 mb-3 text-xs">
+        <div class="flex justify-between"><span class="text-slate-400">Status:</span><span class="text-emerald-400 font-bold">Happy & Swingy</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Population:</span><span id="modal-animal-count" class="text-indigo-300 font-bold">1 In Enclosure</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Installed Upgrades:</span><span id="modal-animal-upgrades" class="text-amber-300 font-bold">None</span></div>
+        <div class="pt-2 border-t border-slate-800 text-slate-300 italic" id="modal-animal-fact">
+          "Monkeys build cozy sleeping nests high up in trees every night to sleep peacefully!"
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="petCurrentAnimal()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-heart text-rose-400"></i> Pet Animal (+10 Happiness)
+        </button>
+        <button onclick="switchTab('shop'); filterShop('upgrades'); closeAnimalModal();" class="w-full py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Upgrade This Habitat
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- FOOTER -->
+  <footer class="w-full bg-slate-900/80 border-t border-slate-800 py-4 px-4 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div>SMART Habit Tracker & Safari Zoo Simulator</div>
+      <div>Melatonin Target: 8:00 PM (Tuesdays @ 8:15 PM)</div>
+    </div>
+  </footer>
+
+  <!-- CHECK-IN MODAL WITH PROOF PHOTO -->
+  <div id="checkin-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
+      <button onclick="closeCheckInModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg font-bold border border-emerald-500/30">
+          💊
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-white">Log Melatonin Intake</h3>
+          <p class="text-xs text-slate-400">Verify your routine to earn Zoo Points!</p>
+        </div>
+      </div>
+
+      <form id="checkin-form" onsubmit="handleCheckIn(event)" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Check-in Date</label>
+            <input type="date" id="checkin-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Intake Time</label>
+            <input type="time" id="checkin-time" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Proof Photo (Melatonin Box)</label>
+          <div class="border-2 border-dashed border-slate-700 rounded-xl p-4 text-center bg-slate-900/50 hover:border-indigo-500 transition cursor-pointer relative">
+            <input type="file" id="checkin-photo" accept="image/*" capture="environment" onchange="previewPhoto(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+            <div id="photo-placeholder" class="space-y-1">
+              <i class="fa-solid fa-camera text-slate-400 text-2xl"></i>
+              <div class="text-xs text-slate-300 font-medium">Click to take or upload box photo</div>
+              <div class="text-[10px] text-slate-500">Upload proof to confirm intake</div>
+            </div>
+            <img id="photo-preview" class="hidden w-full h-36 object-cover rounded-lg border border-slate-700">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Notes / Mood (Optional)</label>
+          <input type="text" id="checkin-notes" placeholder="e.g. Arrived home on time, took melatonin..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- Dynamic On-Time Points Preview -->
+        <div id="points-preview" class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 flex justify-between items-center">
+          <span>Estimated Earnings:</span>
+          <span class="font-extrabold text-indigo-400 text-sm">+500 Pts</span>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition">
+          Confirm & Earn Points
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    /* ==========================================================================
+       1. DATA STRUCTURE & LOCAL STORAGE LOGIC
+       ========================================================================== */
+    const STORAGE_KEY = 'SLEEP_ZOO_DATA_V7';
+
+    // Optimized 8-Enclosure Slot Grid (4 Columns x 2 Rows) with wide walkable paths
+    const ENCLOSURE_SLOTS = [
+      // Top Row (Row 1)
+      { x: 35,  y: 40,  width: 200, height: 170 },
+      { x: 275, y: 40,  width: 200, height: 170 },
+      { x: 525, y: 40,  width: 200, height: 170 },
+      { x: 765, y: 40,  width: 200, height: 170 },
+      // Bottom Row (Row 2)
+      { x: 35,  y: 370, width: 200, height: 170 },
+      { x: 275, y: 370, width: 200, height: 170 },
+      { x: 525, y: 370, width: 200, height: 170 },
+      { x: 765, y: 370, width: 200, height: 170 }
+    ];
+
+    let appState = {
+      points: 1000,
+      logs: {},
+      zoo: {
+        enclosures: [
+          { id: 'enc_1', type: 'monkey', name: 'Jungle Monkey Canopy', x: 35, y: 40, width: 200, height: 170, color: '#15803d', animalName: 'Koko', count: 1, upgrades: ['fairy_lights'] },
+          { id: 'enc_2', type: 'lion', name: 'African Savannah Rock', x: 275, y: 40, width: 200, height: 170, color: '#d97706', animalName: 'Simba', count: 1, upgrades: [] },
+          { id: 'enc_3', type: 'tiger', name: 'Bamboo River Sanctuary', x: 525, y: 40, width: 200, height: 170, color: '#ea580c', animalName: 'Rajah', count: 1, upgrades: [] }
+        ],
+        decorations: [
+          { id: 'd1', type: 'lamp', x: 250, y: 285 },
+          { id: 'd2', type: 'lamp', x: 500, y: 285 },
+          { id: 'd3', type: 'fountain', x: 380, y: 285 },
+          { id: 'd4', type: 'flower', x: 630, y: 245 },
+          { id: 'd5', type: 'icecream', x: 610, y: 285 }
+        ]
+      }
+    };
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: 'bg-emerald-500/90 border-emerald-400 text-slate-950',
+        warning: 'bg-amber-500/90 border-amber-400 text-slate-950',
+        info: 'bg-indigo-600/90 border-indigo-400 text-white'
+      };
+      toast.className = `px-4 py-3 rounded-xl border text-xs font-bold shadow-xl backdrop-blur-md transition-all transform translate-y-2 opacity-0 flex items-center gap-2 pointer-events-auto ${bgColors[type] || bgColors.info}`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          appState = JSON.parse(saved);
+        } catch(e) {
+          console.error("Failed to parse local storage data", e);
+        }
+      } else {
+        saveData();
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      updateUI();
+    }
+
+    /* ==========================================================================
+       2. EXPANDED SHOP CATALOG
+       ========================================================================== */
+    const SHOP_CATALOG = [
+      // ANIMALS
+      { id: 'monkey', name: 'Jungle Monkey Canopy', category: 'animals', cost: 10, color: '#22c55e', icon: '🐒', fact: "Monkeys construct comfortable tree beds high above ground every evening to enjoy safe, deep sleep!" },
+      { id: 'lion', name: 'African Savannah Rock', category: 'animals', cost: 10, color: '#f59e0b', icon: '🦁', fact: "Lions rest during hot afternoons so they have maximum energy at night!" },
+      { id: 'tiger', name: 'Bamboo River Sanctuary', category: 'animals', cost: 15, color: '#ff6b00', icon: '🐯', fact: "Tigers love taking relaxing baths in shallow streams before curling up for a night of rest!" },
+      { id: 'giraffe', name: 'High Canopy Giraffe Yard', category: 'animals', cost: 12, color: '#84cc16', icon: '🦒', fact: "Giraffes have long necks to reach high tree leaves and curl up gracefully when resting!" },
+      { id: 'penguin', name: 'Arctic Ice Glacier Cove', category: 'animals', cost: 5, color: '#38bdf8', icon: '🐧', fact: "Penguins waddle together on ice blocks to stay warm and get restful sleep!" },
+      { id: 'koala', name: 'Eucalyptus Tree Canopy', category: 'animals', cost: 8, color: '#a855f7', icon: '🐨', fact: "Koalas sleep up to 20 hours a day to digest eucalyptus leaves!" },
+      { id: 'panda', name: 'Bamboo Zen Grove', category: 'animals', cost: 12, color: '#10b981', icon: '🐼', fact: "Pandas spend half their day sleeping and the other half eating fresh bamboo!" },
+      { id: 'elephant', name: 'Mud Wallow Savannah Yard', category: 'animals', cost: 15, color: '#ec4899', icon: '🐘', fact: "Elephants take deep catnaps during the day and rest leaning against trees!" },
+
+      // HABITAT UPGRADES
+      { id: 'golden_fence', name: 'Gleaming Golden Fencing', category: 'upgrades', cost: 10, icon: '👑', desc: 'Replaces wood with majestic metallic gold fences and glowing gems.' },
+      { id: 'waterfall', name: 'Luxury Oasis Waterfall', category: 'upgrades', cost: 12, icon: '🌊', desc: 'Adds a flowing crystal waterfall and natural spring splash inside habitat.' },
+      { id: 'feeder', name: 'Automated Snack Dispenser', category: 'upgrades', cost: 8, icon: '🍲', desc: 'Keeps animals well-fed and joyful around the clock.' },
+      { id: 'fairy_lights', name: 'Enchanted Evening Lights', category: 'upgrades', cost: 6, icon: '✨', desc: 'Illuminates enclosure with twinkling warm string lights for nocturnal bliss.' },
+      { id: 'plush_beds', name: 'Royal Velvet Rest Pad', category: 'upgrades', cost: 8, icon: '🛌', desc: 'Provides cozy ergonomic cushions that animals love lounging on.' },
+
+      // PRETTIER & EXPANDED DECORATIONS
+      { id: 'fountain', name: 'Royal Marble Fountain', category: 'decor', cost: 5, icon: '⛲', desc: 'Grand splashing water fountain for visitors to admire.' },
+      { id: 'icecream', name: 'Safari Ice Cream Cart', category: 'decor', cost: 4, icon: '🍦', desc: 'Delightful treat stand attracting happy park visitors.' },
+      { id: 'palm', name: 'Tropical Palm Tree', category: 'decor', cost: 3, icon: '🌴', desc: 'Tall swaying tropical palm to shade park walkways.' },
+      { id: 'garden_arch', name: 'Floral Archway Gate', category: 'decor', cost: 4, icon: '⛩️', desc: 'A stunning rose & leaf canopy over walkways.' },
+      { id: 'statue', name: 'Golden Safari Monument', category: 'decor', cost: 8, icon: '🗿', desc: 'Gleaming statue celebrating your zoo progress.' },
+      { id: 'crystal_pond', name: 'Shimmering Lotus Pond', category: 'decor', cost: 6, icon: '🪷', desc: 'Tranquil water feature with blooming lilies.' },
+      { id: 'tree', name: 'Shade Tree', category: 'decor', cost: 2, icon: '🌲', desc: 'Lush evergreen tree.' },
+      { id: 'flower', name: 'Rose Flower Bed', category: 'decor', cost: 2, icon: '🌸', desc: 'Colorful garden flowers.' },
+      { id: 'bench', name: 'Visitor Bench', category: 'decor', cost: 3, icon: '🪑', desc: 'Cozy seating for guests.' },
+      { id: 'lamp', name: 'Lantern Post', category: 'decor', cost: 2, icon: '💡', desc: 'Warm park lamp post.' }
+    ];
+
+    /* ==========================================================================
+       3. NAVIGATION & UI MANAGEMENT
+       ========================================================================== */
+    let selectedUpgradeEnclosureId = null;
+
+    function filterShop(category) {
+      ['animals', 'upgrades', 'decor'].forEach(c => {
+        const btn = document.getElementById(`shop-cat-${c}`);
+        if (btn) {
+          btn.className = category === c 
+            ? 'px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white transition shadow-md'
+            : 'px-4 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+        }
+      });
+
+      renderShopItems(category);
+    }
+
+    function renderShopItems(category) {
+      const grid = document.getElementById('shop-items-grid');
+      grid.innerHTML = '';
+
+      const items = SHOP_CATALOG.filter(i => i.category === category);
+
+      items.forEach(item => {
+        const canAfford = appState.points >= item.cost;
+        const card = document.createElement('div');
+        card.className = "glass-card rounded-2xl p-4 border border-slate-800 flex flex-col justify-between hover:border-indigo-500/50 transition relative overflow-hidden group";
+
+        let previewBadge = '✨ Decor';
+        if (item.category === 'animals') previewBadge = '🏰 Caged Habitat';
+        if (item.category === 'upgrades') previewBadge = '⭐ Habitat Upgrade';
+
+        let extraActionHtml = '';
+        if (item.category === 'upgrades') {
+          // Add dropdown to pick which enclosure to upgrade
+          let options = appState.zoo.enclosures.map(e => {
+            const hasIt = (e.upgrades || []).includes(item.id);
+            return `<option value="${e.id}" ${hasIt ? 'disabled' : ''}>${e.name} ${hasIt ? '(Installed)' : ''}</option>`;
+          }).join('');
+
+          if (appState.zoo.enclosures.length === 0) {
+            options = `<option value="">Build an enclosure first!</option>`;
+          }
+
+          extraActionHtml = `
+            <div class="mt-2">
+              <label class="block text-[10px] text-slate-400 mb-1">Target Enclosure:</label>
+              <select id="select-enc-${item.id}" class="w-full bg-slate-900 text-white border border-slate-700 rounded-lg text-xs p-1.5 focus:outline-none focus:border-amber-500">
+                ${options}
+              </select>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">${previewBadge}</span>
+              <span class="text-2xl group-hover:scale-110 transition-transform">${item.icon || '🐾'}</span>
+            </div>
+            <h4 class="font-bold text-white text-sm sm:text-base">${item.name}</h4>
+            <p class="text-xs text-slate-400 mt-1">${item.desc || (item.category === 'animals' ? 'Adds a fenced enclosure with custom vector animals' : 'Decorates park & attracts visitors')}</p>
+            ${extraActionHtml}
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center">
+            <span class="font-extrabold text-amber-400 text-sm"><i class="fa-solid fa-coins text-xs"></i> ${item.cost} pts</span>
+            <button onclick="buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} 
+              class="px-3 py-1.5 rounded-xl font-bold text-xs transition ${canAfford ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}">
+              ${item.category === 'upgrades' ? 'Install' : 'Build'}
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function buyShopItem(itemId) {
+      const item = SHOP_CATALOG.find(i => i.id === itemId);
+      if (!item || appState.points < item.cost) return;
+
+      if (item.category === 'animals') {
+        let existingEnc = appState.zoo.enclosures.find(e => e.type === item.id);
+
+        if (existingEnc) {
+          appState.points -= item.cost;
+          existingEnc.count = (existingEnc.count || 1) + 1;
+          saveData();
+          showToast(`🎉 Added another animal to your ${existingEnc.name}! Total: ${existingEnc.count}`, "success");
+          return;
+        }
+
+        if (appState.zoo.enclosures.length >= ENCLOSURE_SLOTS.length) {
+          showToast(`Your zoo park is at max capacity (${ENCLOSURE_SLOTS.length} enclosures max)!`, "warning");
+          return;
+        }
+
+        appState.points -= item.cost;
+        const slot = ENCLOSURE_SLOTS[appState.zoo.enclosures.length];
+
+        appState.zoo.enclosures.push({
+          id: 'enc_' + Date.now(),
+          type: item.id,
+          name: item.name,
+          count: 1,
+          upgrades: [],
+          x: slot.x,
+          y: slot.y,
+          width: slot.width,
+          height: slot.height,
+          color: item.color,
+          animalName: item.name.split(' ')[0]
+        });
+        showToast(`🎉 Built the ${item.name}! Check 'My Zoo' to view it.`, "success");
+      } 
+      else if (item.category === 'upgrades') {
+        const selectEl = document.getElementById(`select-enc-${item.id}`);
+        const encId = selectEl ? selectEl.value : null;
+
+        if (!encId) {
+          showToast("Please build an enclosure first to apply upgrades!", "warning");
+          return;
+        }
+
+        const targetEnc = appState.zoo.enclosures.find(e => e.id === encId);
+        if (!targetEnc) return;
+
+        targetEnc.upgrades = targetEnc.upgrades || [];
+        if (targetEnc.upgrades.includes(item.id)) {
+          showToast("This upgrade is already installed in this habitat!", "warning");
+          return;
+        }
+
+        appState.points -= item.cost;
+        targetEnc.upgrades.push(item.id);
+        showToast(`⭐ Installed ${item.name} in ${targetEnc.name}!`, "success");
+      }
+      else {
+        // Decor
+        appState.points -= item.cost;
+        const posX = 120 + Math.random() * 760;
+        const posY = 250 + (Math.random() - 0.5) * 60;
+        appState.zoo.decorations.push({
+          id: 'd_' + Date.now(),
+          type: item.id,
+          x: posX,
+          y: posY
+        });
+        showToast(`🌿 Placed ${item.name} along the park walkways!`, "success");
+      }
+
+      saveData();
+    }
+
+    function openAnimalModal(enc) {
+      selectedEnclosureForModal = enc;
+      const catInfo = SHOP_CATALOG.find(c => c.id === enc.type) || {};
+      const count = enc.count || 1;
+
+      document.getElementById('modal-animal-icon').textContent = catInfo.icon || '🐒';
+      document.getElementById('modal-animal-name').textContent = `${enc.animalName} Family`;
+      document.getElementById('modal-animal-type').textContent = enc.name;
+      document.getElementById('modal-animal-count').textContent = `${count} ${count === 1 ? 'Animal' : 'Animals'} in Enclosure`;
+
+      const upgList = (enc.upgrades || []).map(uId => {
+        const uItem = SHOP_CATALOG.find(s => s.id === uId);
+        return uItem ? `${uItem.icon} ${uItem.name}` : uId;
+      });
+      document.getElementById('modal-animal-upgrades').textContent = upgList.length > 0 ? upgList.join(', ') : 'None installed yet';
+
+      document.getElementById('modal-animal-fact').textContent = `"${catInfo.fact || 'Sleeping well gives animals and humans energy to play!'}"`;
+
+      document.getElementById('animal-info-modal').classList.remove('hidden');
+    }
+
+    /* ==========================================================================
+       9. ADVANCED CANVAS SIMULATION ENGINE WITH UPGRADES & NEW DECOR
+       ========================================================================== */
+    const SHOP_CATALOG = [
+      { id: 'monkey', name: 'Jungle Monkey Canopy', category: 'animals', cost: 10, color: '#22c55e', icon: '🐒', fact: "Monkeys construct comfortable tree beds high above ground every evening to enjoy safe, deep sleep!" },
+      { id: 'lion', name: 'African Savannah Rock', category: 'animals', cost: 10, color: '#f59e0b', icon: '🦁', fact: "Lions rest during hot afternoons so they have maximum energy at night!" },
+      { id: 'tiger', name: 'Bamboo River Sanctuary', category: 'animals', cost: 15, color: '#ff6b00', icon: '🐯', fact: "Tigers love taking relaxing baths in shallow streams before curling up for a night of rest!" },
+      { id: 'giraffe', name: 'High Canopy Giraffe Yard', category: 'animals', cost: 12, color: '#84cc16', icon: '🦒', fact: "Giraffes have long necks to reach high tree leaves and curl up gracefully when resting!" },
+      { id: 'penguin', name: 'Arctic Ice Glacier Cove', category: 'animals', cost: 5, color: '#38bdf8', icon: '🐧', fact: "Penguins waddle together on ice blocks to stay warm and get restful sleep!" },
+      { id: 'koala', name: 'Eucalyptus Tree Canopy', category: 'animals', cost: 8, color: '#a855f7', icon: '🐨', fact: "Koalas sleep up to 20 hours a day to digest eucalyptus leaves!" },
+      { id: 'panda', name: 'Bamboo Zen Grove', category: 'animals', cost: 12, color: '#10b981', icon: '🐼', fact: "Pandas spend half their day sleeping and the other half eating fresh bamboo!" },
+      { id: 'elephant', name: 'Mud Wallow Savannah Yard', category: 'animals', cost: 15, color: '#ec4899', icon: '🐘', fact: "Elephants take deep catnaps during the day and rest leaning against trees!" },
+
+      // DECORATIONS
+      { id: 'tree', name: 'Shade Tree', category: 'decor', cost: 2, icon: '🌲' },
+      { id: 'flower', name: 'Flower Bed', category: 'decor', cost: 2, icon: '🌸' },
+      { id: 'bench', name: 'Visitor Bench', category: 'decor', cost: 3, icon: '🪑' },
+      { id: 'lamp', name: 'Lantern Post', category: 'decor', cost: 2, icon: '💡' }
+    ];
+
+    /* ==========================================================================
+       3. NAVIGATION & UI MANAGEMENT
+       ========================================================================== */
+    let activeTab = 'dashboard';
+    let currentDateView = new Date();
+
+    function switchTab(tab) {
+      activeTab = tab;
+      ['dashboard', 'zoo', 'shop'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const nav = document.getElementById(`nav-${t}`);
+        if (t === tab) {
+          el.classList.remove('hidden');
+          nav.className = "px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition bg-indigo-600 text-white shadow-md";
+        } else {
+          el.classList.add('hidden');
+          nav.className = "px-3 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-800 transition flex items-center gap-2";
+        }
+      });
+
+      if (tab === 'zoo') {
+        initZooCanvas();
+      }
+    }
+
+    function updateUI() {
+      document.getElementById('points-display').textContent = appState.points;
+      document.getElementById('shop-points-display').textContent = `${appState.points} Pts`;
+
+      // Update SMART Routine Header
+      const now = new Date();
+      const isTuesday = now.getDay() === 2; // Tuesday = 2
+      const titleEl = document.getElementById('today-routine-title');
+      const subEl = document.getElementById('today-routine-sub');
+      const step1Time = document.getElementById('step-1-time');
+
+      if (isTuesday) {
+        titleEl.textContent = "Tuesday Routine (Arrive Home ~8:15 PM)";
+        subEl.textContent = "Adjusted Goal: Take melatonin at 8:15 PM. Lie down by 9:00 PM.";
+        step1Time.textContent = "8:15 PM";
+      } else {
+        titleEl.textContent = "Standard Daily Sleep Routine";
+        subEl.textContent = "Goal: Take melatonin at 8:00 PM. Lie in bed by 9:00 PM.";
+        step1Time.textContent = "8:00 PM";
+      }
+
+      // Update Stats
+      const encCount = appState.zoo.enclosures.length;
+      document.getElementById('stat-animal-count').textContent = encCount;
+      document.getElementById('zoo-visitors-count').textContent = 6 + (encCount * 4) + (appState.zoo.decorations.length * 2);
+
+      renderCalendar();
+      renderStats();
+      renderShopItems('animals');
+      renderZooRoster();
+    }
+
+    /* ==========================================================================
+       4. CALENDAR & HABIT LOGGING
+       ========================================================================== */
+    function formatDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function changeMonth(delta) {
+      currentDateView.setMonth(currentDateView.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+
+      const year = currentDateView.getFullYear();
+      const month = currentDateView.getMonth();
+
+      document.getElementById('calendar-month-year').textContent = 
+        new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const todayStr = formatDateKey(new Date());
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = "h-12 rounded-xl bg-slate-900/30 border border-slate-900/50 opacity-40";
+        grid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dateObj = new Date(year, month, day);
+        const dateStr = formatDateKey(dateObj);
+        const log = appState.logs[dateStr];
+
+        const dayCell = document.createElement('div');
+        dayCell.className = "h-12 rounded-xl border flex flex-col justify-between p-1.5 transition cursor-pointer hover:border-indigo-400 relative overflow-hidden group";
+
+        const isToday = dateStr === todayStr;
+
+        if (log) {
+          if (log.onTime) {
+            dayCell.classList.add('bg-emerald-500/20', 'border-emerald-500/50', 'text-emerald-200');
+          } else {
+            dayCell.classList.add('bg-amber-500/20', 'border-amber-500/50', 'text-amber-200');
+          }
+        } else if (dateObj < new Date() && !isToday) {
+          dayCell.classList.add('bg-slate-900/60', 'border-slate-800', 'text-slate-500');
+        } else {
+          dayCell.classList.add('bg-slate-900/80', 'border-slate-800', 'text-slate-300');
+        }
+
+        if (isToday) {
+          dayCell.classList.add('ring-2', 'ring-indigo-500');
+        }
+
+        let indicator = '';
+        if (log) {
+          indicator = log.onTime ? '💊' : '⚠️';
+        } else if (dateObj < new Date() && !isToday) {
+          indicator = '❌';
+        }
+
+        dayCell.innerHTML = `
+          <div class="flex justify-between items-center text-xs font-bold">
+            <span>${day}</span>
+            <span class="text-xs">${indicator}</span>
+          </div>
+          <div class="text-[9px] truncate font-mono opacity-80">${log ? log.time : ''}</div>
+        `;
+
+        if (log && log.photoData) {
+          dayCell.title = `Logged at ${log.time}${log.notes ? ' - ' + log.notes : ''}`;
+        }
+
+        dayCell.onclick = () => openCheckInModal(dateStr);
+
+        grid.appendChild(dayCell);
+      }
+    }
+
+    /* ==========================================================================
+       5. CHECK-IN MODAL & PROOF VERIFICATION
+       ========================================================================== */
+    let uploadedPhotoBase64 = null;
+
+    function openCheckInModal(customDateStr = null) {
+      const modal = document.getElementById('checkin-modal');
+      const timeInput = document.getElementById('checkin-time');
+      const dateInput = document.getElementById('checkin-date');
+      
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      timeInput.value = `${hours}:${mins}`;
+
+      if (customDateStr) {
+        dateInput.value = customDateStr;
+      } else {
+        dateInput.value = formatDateKey(now);
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeCheckInModal() {
+      document.getElementById('checkin-modal').classList.add('hidden');
+      document.getElementById('checkin-form').reset();
+      document.getElementById('photo-preview').classList.add('hidden');
+      document.getElementById('photo-placeholder').classList.remove('hidden');
+      uploadedPhotoBase64 = null;
+    }
+
+    function previewPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedPhotoBase64 = e.target.result;
+          const imgPreview = document.getElementById('photo-preview');
+          imgPreview.src = uploadedPhotoBase64;
+          imgPreview.classList.remove('hidden');
+          document.getElementById('photo-placeholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleCheckIn(event) {
+      event.preventDefault();
+      const dateStr = document.getElementById('checkin-date').value;
+      const timeVal = document.getElementById('checkin-time').value;
+      const notesVal = document.getElementById('checkin-notes').value;
+
+      if (!dateStr) {
+        showToast("Please select a valid date for check-in!", "warning");
+        return;
+      }
+
+      if (!uploadedPhotoBase64) {
+        showToast("Please upload or capture a photo of your melatonin box as proof!", "warning");
+        return;
+      }
+
+      // Check if chosen date is a Tuesday (adjust routine target accordingly)
+      const selectedDate = new Date(dateStr + 'T00:00:00');
+      const isTuesday = selectedDate.getDay() === 2;
+
+      const [h, m] = timeVal.split(':').map(Number);
+      const minutesTaken = h * 60 + m;
+
+      const targetMinutes = isTuesday ? (20 * 60 + 15) : (20 * 60);
+      const isOnTime = minutesTaken <= (targetMinutes + 25) && minutesTaken >= (targetMinutes - 60);
+
+      const pointsEarned = isOnTime ? 500 : 200;
+
+      appState.logs[dateStr] = {
+        time: timeVal,
+        photoData: uploadedPhotoBase64,
+        onTime: isOnTime,
+        pointsEarned: pointsEarned,
+        notes: notesVal
+      };
+
+      appState.points += pointsEarned;
+
+      saveData();
+      closeCheckInModal();
+
+      showToast(isOnTime ? `🎯 Melatonin on time for ${dateStr}! Earned +500 Zoo Points!` : `⚠️ Intake logged for ${dateStr}! Earned +200 Zoo Points.`, isOnTime ? "success" : "warning");
+    }
+
+    /* ==========================================================================
+       6. STATS & GRAPH
+       ========================================================================== */
+    let habitChart = null;
+
+    function renderStats() {
+      const last7Days = [];
+      const now = new Date();
+      let onTimeCount = 0;
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(now.getDate() - i);
+        const key = formatDateKey(d);
+        const log = appState.logs[key];
+        last7Days.push({
+          label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          log: log
+        });
+        if (log && log.onTime) onTimeCount++;
+      }
+
+      const percentage = Math.round((onTimeCount / 7) * 100);
+      document.getElementById('stat-weekly-percent').textContent = `${percentage}%`;
+      document.getElementById('stat-progress-bar').style.width = `${percentage}%`;
+
+      let streak = 0;
+      let checkDate = new Date();
+      while (true) {
+        const key = formatDateKey(checkDate);
+        const log = appState.logs[key];
+        if (log && log.onTime) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      document.getElementById('stat-streak').textContent = streak;
+
+      const ctx = document.getElementById('habitChart').getContext('2d');
+      if (habitChart) habitChart.destroy();
+
+      const labels = last7Days.map(d => d.label);
+      const dataPoints = last7Days.map(d => {
+        if (!d.log) return null;
+        const [h, m] = d.log.time.split(':').map(Number);
+        return h + (m / 60);
+      });
+
+      habitChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Intake Time',
+            data: dataPoints,
+            borderColor: '#818cf8',
+            backgroundColor: 'rgba(129, 140, 248, 0.2)',
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: last7Days.map(d => d.log ? (d.log.onTime ? '#10b981' : '#f59e0b') : '#64748b'),
+            pointRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              min: 18,
+              max: 23,
+              ticks: {
+                color: '#94a3b8',
+                callback: function(val) { return val + ':00'; }
+              },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    /* ==========================================================================
+       7. SHOPPING SYSTEM (NON-OVERLAPPING GRID PLACEMENT)
+       ========================================================================== */
+    function filterShop(category) {
+      document.getElementById('shop-cat-animals').className = category === 'animals' 
+        ? 'px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white transition'
+        : 'px-4 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+
+      document.getElementById('shop-cat-decor').className = category === 'decor' 
+        ? 'px-4 py-2 rounded-xl font-bold text-xs bg-indigo-600 text-white transition'
+        : 'px-4 py-2 rounded-xl font-bold text-xs bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+
+      renderShopItems(category);
+    }
+
+    function renderShopItems(category) {
+      const grid = document.getElementById('shop-items-grid');
+      grid.innerHTML = '';
+
+      const items = SHOP_CATALOG.filter(i => i.category === category);
+
+      items.forEach(item => {
+        const canAfford = appState.points >= item.cost;
+        const card = document.createElement('div');
+        card.className = "glass-card rounded-2xl p-4 border border-slate-800 flex flex-col justify-between hover:border-indigo-500/50 transition";
+
+        let previewBadge = item.category === 'animals' ? `🏰 Caged Habitat` : `✨ Decor`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">${previewBadge}</span>
+              <span class="text-2xl">${item.icon || '🐾'}</span>
+            </div>
+            <h4 class="font-bold text-white text-base">${item.name}</h4>
+            <p class="text-xs text-slate-400 mt-1">${item.category === 'animals' ? 'Adds a fenced enclosure with custom vector animals' : 'Decorates park & attracts visitors'}</p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center">
+            <span class="font-extrabold text-amber-400 text-sm"><i class="fa-solid fa-coins text-xs"></i> ${item.cost} pts</span>
+            <button onclick="buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} 
+              class="px-3 py-1.5 rounded-xl font-bold text-xs transition ${canAfford ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}">
+              Build
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function buyShopItem(itemId) {
+      const item = SHOP_CATALOG.find(i => i.id === itemId);
+      if (!item || appState.points < item.cost) return;
+
+      if (item.category === 'animals') {
+        let existingEnc = appState.zoo.enclosures.find(e => e.type === item.id);
+
+        if (existingEnc) {
+          appState.points -= item.cost;
+          existingEnc.count = (existingEnc.count || 1) + 1;
+          saveData();
+          showToast(`🎉 Added another animal to your ${existingEnc.name}! Total: ${existingEnc.count}`, "success");
+          return;
+        }
+
+        if (appState.zoo.enclosures.length >= ENCLOSURE_SLOTS.length) {
+          showToast(`Your zoo park is at max capacity (${ENCLOSURE_SLOTS.length} enclosures max)!`, "warning");
+          return;
+        }
+
+        appState.points -= item.cost;
+        const slot = ENCLOSURE_SLOTS[appState.zoo.enclosures.length];
+
+        appState.zoo.enclosures.push({
+          id: 'enc_' + Date.now(),
+          type: item.id,
+          name: item.name,
+          count: 1,
+          x: slot.x,
+          y: slot.y,
+          width: slot.width,
+          height: slot.height,
+          color: item.color,
+          animalName: item.name.split(' ')[0]
+        });
+      } else {
+        appState.points -= item.cost;
+        const posX = 200 + Math.random() * 600;
+        const posY = 240 + Math.random() * 80;
+        appState.zoo.decorations.push({
+          id: 'd_' + Date.now(),
+          type: item.id,
+          x: posX,
+          y: posY
+        });
+      }
+
+      saveData();
+      showToast(`🎉 You built the ${item.name}! Check 'My Zoo' to view it.`, "success");
+    }
+
+    function renderZooRoster() {
+      const container = document.getElementById('zoo-roster-list');
+      container.innerHTML = '';
+
+      if (appState.zoo.enclosures.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 italic">No animal enclosures yet! Earn points by taking melatonin to buy your first cage.</div>`;
+        return;
+      }
+
+      appState.zoo.enclosures.forEach(enc => {
+        const catInfo = SHOP_CATALOG.find(c => c.id === enc.type) || {};
+        const count = enc.count || 1;
+        const badge = document.createElement('div');
+        badge.className = "flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-xs flex-shrink-0 cursor-pointer hover:border-indigo-500 transition";
+        badge.onclick = () => openAnimalModal(enc);
+        badge.innerHTML = `
+          <span class="text-lg">${catInfo.icon || '🦁'}</span>
+          <div>
+            <div class="font-bold text-white">${enc.name} ${count > 1 ? `<span class="text-amber-400 font-extrabold text-[11px] ml-1">(x${count})</span>` : ''}</div>
+            <div class="text-[10px] text-emerald-400">Click to Inspect</div>
+          </div>
+        `;
+        container.appendChild(badge);
+      });
+    }
+
+    /* ==========================================================================
+       8. ANIMAL INSPECTION MODAL LOGIC
+       ========================================================================== */
+    let selectedEnclosureForModal = null;
+
+    function openAnimalModal(enc) {
+      selectedEnclosureForModal = enc;
+      const catInfo = SHOP_CATALOG.find(c => c.id === enc.type) || {};
+      const count = enc.count || 1;
+
+      document.getElementById('modal-animal-icon').textContent = catInfo.icon || '🐒';
+      document.getElementById('modal-animal-name').textContent = `${enc.animalName} Family`;
+      document.getElementById('modal-animal-type').textContent = enc.name;
+      document.getElementById('modal-animal-count').textContent = `${count} ${count === 1 ? 'Animal' : 'Animals'} in Enclosure`;
+      document.getElementById('modal-animal-fact').textContent = `"${catInfo.fact || 'Sleeping well gives animals and humans energy to play!'}"`;
+
+      document.getElementById('animal-info-modal').classList.remove('hidden');
+    }
+
+    function closeAnimalModal() {
+      document.getElementById('animal-info-modal').classList.add('hidden');
+      selectedEnclosureForModal = null;
+    }
+
+    function petCurrentAnimal() {
+      if (!selectedEnclosureForModal) return;
+      const matchingAnims = simulatedAnimals.filter(a => a.encId === selectedEnclosureForModal.id);
+      matchingAnims.forEach(anim => {
+        anim.happyTimer = 180;
+      });
+      closeAnimalModal();
+      showToast("❤️ You petted the animals! They feel happy and energetic.", "success");
+    }
+
+    /* ==========================================================================
+       9. ADVANCED CANVAS SIMULATION ENGINE & CUSTOM HABITATS
+       ========================================================================== */
+    let canvas, ctx;
+    let animFrameId = null;
+
+    let simulatedAnimals = [];
+    let visitors = [];
+
+    // Connected Walkway Graph (Nodes & Adjacent Neighbors)
+    const WALKWAY_NODES = [
+      // Main Horizontal Central Avenue (y: 285)
+      { x: 20, y: 285, neighbors: [1] },                 // 0
+      { x: 240, y: 285, neighbors: [0, 2, 5, 8] },       // 1
+      { x: 490, y: 285, neighbors: [1, 3, 6, 9] },       // 2
+      { x: 730, y: 285, neighbors: [2, 4, 7, 10] },      // 3
+      { x: 980, y: 285, neighbors: [3] },                // 4
+
+      // Top Avenue (y: 20)
+      { x: 240, y: 20, neighbors: [1, 6] },              // 5
+      { x: 490, y: 20, neighbors: [2, 5, 7] },           // 6
+      { x: 730, y: 20, neighbors: [3, 6] },              // 7
+
+      // Bottom Avenue (y: 560)
+      { x: 240, y: 560, neighbors: [1, 9] },             // 8
+      { x: 490, y: 560, neighbors: [2, 8, 10] },         // 9
+      { x: 730, y: 560, neighbors: [3, 9] }              // 10
+    ];
+
+    function initZooCanvas() {
+      canvas = document.getElementById('zooCanvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+
+      simulatedAnimals = [];
+      appState.zoo.enclosures.forEach(enc => {
+        const count = enc.count || 1;
+        for (let i = 0; i < count; i++) {
+          simulatedAnimals.push({
+            encId: enc.id,
+            type: enc.type,
+            x: enc.x + 30 + Math.random() * (enc.width - 60),
+            y: enc.y + 35 + Math.random() * (enc.height - 60),
+            vx: (Math.random() - 0.5) * 0.6,
+            vy: (Math.random() - 0.5) * 0.6,
+            happyTimer: 0,
+            walkFrame: Math.random() * 10
+          });
+        }
+      });
+
+      visitors = [];
+      const visitorCount = 8 + appState.zoo.enclosures.length * 2;
+      for (let i = 0; i < visitorCount; i++) {
+        const startNodeIdx = Math.floor(Math.random() * WALKWAY_NODES.length);
+        const node = WALKWAY_NODES[startNodeIdx];
+        const nextNodeIdx = node.neighbors[Math.floor(Math.random() * node.neighbors.length)];
+        visitors.push({
+          x: node.x + (Math.random() - 0.5) * 10,
+          y: node.y + (Math.random() - 0.5) * 10,
+          targetNode: nextNodeIdx,
+          speed: 0.5 + Math.random() * 0.5,
+          color: ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][i % 6],
+          thought: ''
+        });
+      }
+
+      // Click Enclosure Handler
+      canvas.onclick = function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const clickX = (e.clientX - rect.left) * scaleX;
+        const clickY = (e.clientY - rect.top) * scaleY;
+
+        appState.zoo.enclosures.forEach(enc => {
+          if (clickX >= enc.x && clickX <= enc.x + enc.width &&
+              clickY >= enc.y && clickY <= enc.y + enc.height) {
+            openAnimalModal(enc);
+          }
+        });
+      };
+
+      if (!animFrameId) {
+        gameLoop();
+      }
+    }
+
+    function gameLoop() {
+      updateZooGame();
+      drawZooGame();
+      animFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    function updateZooGame() {
+      // Animal Roaming
+      simulatedAnimals.forEach(a => {
+        const enc = appState.zoo.enclosures.find(e => e.id === a.encId);
+        if (!enc) return;
+
+        a.x += a.vx;
+        a.y += a.vy;
+
+        const minX = enc.x + 25;
+        const maxX = enc.x + enc.width - 25;
+        const minY = enc.y + 35;
+        const maxY = enc.y + enc.height - 25;
+
+        if (a.x < minX || a.x > maxX) a.vx *= -1;
+        if (a.y < minY || a.y > maxY) a.vy *= -1;
+
+        a.walkFrame += 0.08;
+
+        if (Math.random() < 0.01) {
+          a.vx = (Math.random() - 0.5) * 0.6;
+          a.vy = (Math.random() - 0.5) * 0.6;
+        }
+
+        if (a.happyTimer > 0) a.happyTimer--;
+      });
+
+      // Visitors Walking along Connected Walkway Paths with Enclosure Collision Avoidance
+      visitors.forEach(v => {
+        const target = WALKWAY_NODES[v.targetNode];
+        if (!target) return;
+
+        const dx = target.x - v.x;
+        const dy = target.y - v.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < 10) {
+          const nextIndex = target.neighbors[Math.floor(Math.random() * target.neighbors.length)];
+          v.targetNode = nextIndex;
+          if (Math.random() < 0.3) {
+            v.thought = ['😍', '🐒', '🦁', '📸', '❤️', '🍿'][Math.floor(Math.random() * 6)];
+          } else {
+            v.thought = '';
+          }
+        } else {
+          v.x += (dx / dist) * v.speed;
+          v.y += (dy / dist) * v.speed;
+        }
+
+        // Strict boundary collision detection to keep visitors out of cages
+        const padding = 10;
+        appState.zoo.enclosures.forEach(enc => {
+          const minX = enc.x - padding;
+          const maxX = enc.x + enc.width + padding;
+          const minY = enc.y - padding;
+          const maxY = enc.y + enc.height + padding;
+
+          if (v.x >= minX && v.x <= maxX && v.y >= minY && v.y <= maxY) {
+            const distLeft = v.x - minX;
+            const distRight = maxX - v.x;
+            const distTop = v.y - minY;
+            const distBottom = maxY - v.y;
+
+            const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+            if (minDist === distLeft) v.x = minX;
+            else if (minDist === distRight) v.x = maxX;
+            else if (minDist === distTop) v.y = minY;
+            else v.y = maxY;
+
+            if (target && target.neighbors) {
+              v.targetNode = target.neighbors[Math.floor(Math.random() * target.neighbors.length)];
+            }
+          }
+        });
+      });
+    }
+
+    function drawZooGame() {
+      if (!ctx) return;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // 1. Lush Green Park Turf
+      const grassGrad = ctx.createLinearGradient(0, 0, w, h);
+      grassGrad.addColorStop(0, '#15803d');
+      grassGrad.addColorStop(1, '#14532d');
+      ctx.fillStyle = grassGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Subtle Meadow Grass Detail Dots
+      ctx.fillStyle = '#22c55e20';
+      for (let i = 0; i < 80; i++) {
+        const rx = (i * 137) % w;
+        const ry = (i * 211) % h;
+        ctx.beginPath();
+        ctx.arc(rx, ry, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 2. Cobblestone Walkway Network
+      ctx.fillStyle = '#a1a1aa'; // Main stone path color
+      ctx.strokeStyle = '#71717a';
+      ctx.lineWidth = 2;
+
+      // Central Horizontal Avenue (Y: 240..330)
+      ctx.fillRect(0, 240, w, 90);
+      ctx.strokeRect(0, 240, w, 90);
+
+      // Vertical Walkways Between Enclosure Columns
+      ctx.fillRect(235, 0, 40, h);
+      ctx.fillRect(485, 0, 40, h);
+      ctx.fillRect(725, 0, 40, h);
+
+      // Path Tile Grid Texturing
+      ctx.strokeStyle = '#85858d33';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 25) {
+        ctx.beginPath();
+        ctx.moveTo(x, 240);
+        ctx.lineTo(x, 330);
+        ctx.stroke();
+      }
+
+      // Decorative Walkway Borders
+      ctx.fillStyle = '#f59e0b';
+      for (let x = 10; x < w; x += 60) {
+        ctx.fillRect(x, 236, 12, 4);
+        ctx.fillRect(x, 330, 12, 4);
+      }
+
+      // 3. Draw Specialized Animal Habitats
+      appState.zoo.enclosures.forEach(enc => {
+        drawCustomHabitat(ctx, enc);
+      });
+
+      // 4. Enhanced Park Decorations along Walkways
+      appState.zoo.decorations.forEach(d => {
+        if (d.type === 'tree') {
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(d.x - 4, d.y, 8, 18);
+          ctx.fillStyle = '#16a34a';
+          ctx.beginPath();
+          ctx.arc(d.x, d.y - 8, 20, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (d.type === 'palm') {
+          ctx.fillStyle = '#854d0e';
+          ctx.fillRect(d.x - 3, d.y - 5, 6, 22);
+          ctx.fillStyle = '#22c55e';
+          ctx.beginPath();
+          ctx.ellipse(d.x - 12, d.y - 12, 14, 5, -0.4, 0, Math.PI * 2);
+          ctx.ellipse(d.x + 12, d.y - 12, 14, 5, 0.4, 0, Math.PI * 2);
+          ctx.ellipse(d.x, d.y - 16, 6, 14, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (d.type === 'lamp') {
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(d.x - 2, d.y - 14, 4, 20);
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(d.x, d.y - 16, 6, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (d.type === 'bench') {
+          ctx.fillStyle = '#92400e';
+          ctx.fillRect(d.x - 14, d.y - 4, 28, 8);
+        } else if (d.type === 'flower') {
+          ctx.fillStyle = '#f43f5e';
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (d.type === 'fountain') {
+          // Splashing Fountain
+          ctx.fillStyle = '#94a3b8';
+          ctx.beginPath();
+          ctx.ellipse(d.x, d.y, 22, 12, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.ellipse(d.x, d.y, 16, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Water nozzle & jet
+          ctx.fillStyle = '#e0f2fe';
+          const spray = Math.sin(Date.now() / 200) * 3;
+          ctx.fillRect(d.x - 2, d.y - 18 + spray, 4, 18);
+        } else if (d.type === 'icecream') {
+          // Icecream Cart
+          ctx.fillStyle = '#f43f5e';
+          ctx.fillRect(d.x - 12, d.y - 10, 24, 16);
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(d.x, d.y - 18, 14, Math.PI, 0);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '10px sans-serif';
+          ctx.fillText('🍦', d.x - 5, d.y - 1);
+        } else if (d.type === 'garden_arch') {
+          ctx.strokeStyle = '#15803d';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, 16, Math.PI, 0);
+          ctx.stroke();
+          ctx.fillStyle = '#f43f5e';
+          ctx.beginPath();
+          ctx.arc(d.x - 14, d.y - 8, 4, 0, Math.PI * 2);
+          ctx.arc(d.x + 14, d.y - 8, 4, 0, Math.PI * 2);
+          ctx.arc(d.x, d.y - 16, 4, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (d.type === 'statue') {
+          ctx.fillStyle = '#64748b';
+          ctx.fillRect(d.x - 10, d.y - 4, 20, 12);
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = '14px sans-serif';
+          ctx.fillText('🦁', d.x - 7, d.y - 6);
+        } else if (d.type === 'crystal_pond') {
+          ctx.fillStyle = '#0284c7';
+          ctx.beginPath();
+          ctx.ellipse(d.x, d.y, 20, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#22c55e';
+          ctx.beginPath();
+          ctx.arc(d.x - 6, d.y - 2, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // 5. Draw Cute Animated Animals inside habitats
+      simulatedAnimals.forEach(a => {
+        drawCuteAnimal(ctx, a.type, a.x, a.y, a.happyTimer > 0, a.walkFrame);
+      });
+
+      // 6. Draw Visitors Walking on Paths
+      visitors.forEach(v => {
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(v.x, v.y + 10, 6, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = v.color;
+        ctx.fillRect(v.x - 4, v.y - 4, 8, 9);
+
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.arc(v.x, v.y - 8, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (v.thought) {
+          ctx.font = '11px sans-serif';
+          ctx.fillText(v.thought, v.x + 6, v.y - 12);
+        }
+      });
+    }
+
+    /* CUSTOM HABITAT RENDERER PER ANIMAL TYPE WITH INSTALLED UPGRADES */
+    function drawCustomHabitat(ctx, enc) {
+      const { x, y, width: w, height: h, type, name, upgrades = [] } = enc;
+
+      ctx.save();
+
+      // BASE GROUND TERRAIN
+      if (type === 'monkey') {
+        ctx.fillStyle = '#0f381e';
+        ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = '#165b32';
+        ctx.beginPath();
+        ctx.arc(x + 45, y + 45, 35, 0, Math.PI * 2);
+        ctx.arc(x + w - 45, y + h - 45, 40, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Vines & Trees
+        ctx.strokeStyle = '#854d0e';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(x + 20, y + h); ctx.lineTo(x + 55, y + 30);
+        ctx.moveTo(x + w - 20, y + h); ctx.lineTo(x + w - 55, y + 30);
+        ctx.stroke();
+
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(x + 55, y + 35, 5, 0, Math.PI * 2);
+        ctx.arc(x + w - 55, y + 35, 5, 0, Math.PI * 2);
+        ctx.fill();
+      } 
+      else if (type === 'lion') {
+        ctx.fillStyle = '#fef3c7';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.fillStyle = '#b45309';
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + 55, 50, 28, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(x + 25, y + h - 35, 30, 14);
+      }
+      else if (type === 'tiger') {
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.fillStyle = '#06b6d4';
+        ctx.beginPath();
+        ctx.moveTo(x, y + 40);
+        ctx.bezierCurveTo(x + w / 3, y + 80, x + (2 * w) / 3, y + 20, x + w, y + 60);
+        ctx.lineTo(x + w, y + 90);
+        ctx.bezierCurveTo(x + (2 * w) / 3, y + 50, x + w / 3, y + 110, x, y + 70);
+        ctx.fill();
+      }
+      else if (type === 'giraffe') {
+        ctx.fillStyle = '#84cc16';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(x + w / 2 - 7, y + 20, 14, h - 30);
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.arc(x + w / 2, y + 32, 36, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      else if (type === 'penguin') {
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.fillStyle = '#e0f2fe';
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + h / 2 + 10, 65, 38, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(x + 15, y + 20, 40, 24);
+        ctx.fillRect(x + w - 55, y + 20, 40, 24);
+      }
+      else if (type === 'koala') {
+        ctx.fillStyle = '#14532d';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(x + 40, y + 50, 28, 0, Math.PI * 2);
+        ctx.arc(x + w - 40, y + 50, 28, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      else if (type === 'panda') {
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 5;
+        for (let bx = x + 25; bx < x + w; bx += 28) {
+          ctx.beginPath();
+          ctx.moveTo(bx, y + 15);
+          ctx.lineTo(bx, y + h - 15);
+          ctx.stroke();
+        }
+      }
+      else if (type === 'elephant') {
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(x, y, w, h);
+
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + h / 2, 55, 32, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      else {
+        ctx.fillStyle = '#fef3c7';
+        ctx.fillRect(x, y, w, h);
+      }
+
+      // HABITAT UPGRADES RENDERING
+      if (upgrades.includes('waterfall')) {
+        // Splashing Waterfall in corner
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(x + w - 35, y + 15, 20, h - 30);
+        ctx.fillStyle = '#e0f2fe';
+        const wave = Math.sin(Date.now() / 150) * 3;
+        ctx.beginPath();
+        ctx.arc(x + w - 25 + wave, y + h - 20, 12, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (upgrades.includes('feeder')) {
+        // Automatic Feeder Tray
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(x + 15, y + h - 30, 22, 16);
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(x + 26, y + h - 22, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (upgrades.includes('plush_beds')) {
+        // Royal Velvet Cushion Pad
+        ctx.fillStyle = '#8b5cf6';
+        ctx.beginPath();
+        ctx.roundRect(x + 20, y + 20, 36, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = '#a78bfa';
+        ctx.beginPath();
+        ctx.roundRect(x + 23, y + 23, 30, 16, 4);
+        ctx.fill();
+      }
+
+      // FENCE BORDER OVERLAY (Customized if Golden Fence upgrade is owned)
+      const hasGoldFence = upgrades.includes('golden_fence');
+      ctx.strokeStyle = hasGoldFence ? '#fbbf24' : '#78350f';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(x, y, w, h);
+
+      // Fence Posts
+      ctx.fillStyle = hasGoldFence ? '#d97706' : '#451a03';
+      for (let px = x; px <= x + w; px += 30) {
+        ctx.fillRect(px - 2, y - 2, 4, h + 4);
+        if (hasGoldFence) {
+          // Gem ornament top on gold fence
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(px, y - 4, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#d97706';
+        }
+      }
+
+      // Enchanted Fairy Lights Upgrade around Top Rail
+      if (upgrades.includes('fairy_lights')) {
+        const colors = ['#fef08a', '#f43f5e', '#38bdf8', '#a855f7'];
+        let idx = 0;
+        for (let lx = x + 10; lx < x + w - 10; lx += 15) {
+          ctx.fillStyle = colors[idx % colors.length];
+          ctx.beginPath();
+          ctx.arc(lx, y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          idx++;
+        }
+      }
+
+      // ENCLOSURE TITLE HEADER BANNER
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(x + 10, y - 12, w - 20, 18);
+      ctx.strokeStyle = hasGoldFence ? '#f59e0b' : (enc.color || '#3b82f6');
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 10, y - 12, w - 20, 18);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px Plus Jakarta Sans';
+      ctx.textAlign = 'center';
+      ctx.fillText((hasGoldFence ? '👑 ' : '') + name.toUpperCase(), x + w / 2, y - 1);
+
+      ctx.restore();
+    }
+
+    /* CUTE ANIMATED ANIMAL VECTOR SPRITE DRAWING ENGINE (REDESIGNED FOR MAXIMUM CUTENESS & VISIBILITY) */
+    function drawCuteAnimal(ctx, type, x, y, isHappy, walkFrame) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      const bob = Math.sin(walkFrame || 0) * 2.5;
+
+      // Ground Drop Shadow under animal for crisp visibility & depth
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(0, 12, 13, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Floating heart when petted/happy
+      if (isHappy) {
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('❤️', -6, -28 + bob);
+      }
+
+      // Helper function for high-contrast anime/cute sparkling eye
+      function drawCuteEye(ex, ey) {
+        ctx.fillStyle = '#020617';
+        ctx.beginPath();
+        ctx.arc(ex, ey, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Sparkle reflection
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(ex - 0.8, ey - 0.8, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Helper for cute blushing cheek
+      function drawBlush(cx, cy) {
+        ctx.fillStyle = 'rgba(244, 114, 182, 0.65)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 1. MONKEY
+      if (type === 'monkey') {
+        // Curly Tail
+        ctx.strokeStyle = '#a16207';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(-6, 6);
+        ctx.quadraticCurveTo(-16, -6, -12, -16);
+        ctx.stroke();
+
+        // Ears
+        ctx.fillStyle = '#a16207';
+        ctx.beginPath();
+        ctx.arc(-11, -8 + bob, 4, 0, Math.PI * 2);
+        ctx.arc(11, -8 + bob, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body & Head
+        ctx.fillStyle = '#a16207';
+        ctx.beginPath();
+        ctx.arc(0, 5 + bob, 10, 0, Math.PI * 2);
+        ctx.arc(0, -7 + bob, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Peach Oval Face Patch
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath();
+        ctx.ellipse(0, -6 + bob, 6.5, 5.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 6 + bob, 6, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes & Muzzle
+        drawCuteEye(-3, -8 + bob);
+        drawCuteEye(3, -8 + bob);
+        drawBlush(-4.5, -5 + bob);
+        drawBlush(4.5, -5 + bob);
+
+        // Cute Smile
+        ctx.strokeStyle = '#78350f';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(0, -5 + bob, 2, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+      }
+
+      // 2. LION
+      else if (type === 'lion') {
+        // Big Fluffy Dark Chocolate Mane
+        ctx.fillStyle = '#451a03';
+        ctx.beginPath();
+        ctx.arc(0, -8 + bob, 15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body & Head
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath();
+        ctx.arc(0, 5 + bob, 10, 0, Math.PI * 2);
+        ctx.arc(0, -8 + bob, 9.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White Muzzle
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.ellipse(0, -5 + bob, 4.5, 3.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cute Nose & Eyes
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.arc(0, -6.5 + bob, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawCuteEye(-3.5, -9.5 + bob);
+        drawCuteEye(3.5, -9.5 + bob);
+        drawBlush(-5.5, -6.5 + bob);
+        drawBlush(5.5, -6.5 + bob);
+      }
+
+      // 3. TIGER
+      else if (type === 'tiger') {
+        // Body & Head (Fiery Orange)
+        ctx.fillStyle = '#ff6b00';
+        ctx.beginPath();
+        ctx.arc(0, 5 + bob, 10, 0, Math.PI * 2);
+        ctx.arc(0, -7 + bob, 9.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White Chest & Muzzle
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(0, 6 + bob, 6, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, -4.5 + bob, 4.5, 3.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Black Stripes
+        ctx.strokeStyle = '#020617';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-8, -8 + bob); ctx.lineTo(-4, -7 + bob);
+        ctx.moveTo(8, -8 + bob); ctx.lineTo(4, -7 + bob);
+        ctx.moveTo(-1, -14 + bob); ctx.lineTo(-1, -11 + bob);
+        ctx.stroke();
+
+        drawCuteEye(-3.5, -8.5 + bob);
+        drawCuteEye(3.5, -8.5 + bob);
+        drawBlush(-5, -5.5 + bob);
+        drawBlush(5, -5.5 + bob);
+      }
+
+      // 4. GIRAFFE
+      else if (type === 'giraffe') {
+        // Body
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(0, 8 + bob, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Long Neck & Head
+        ctx.fillRect(-3.5, -14 + bob, 7, 20);
+        ctx.beginPath();
+        ctx.arc(0, -15 + bob, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Horns
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(-3, -22 + bob, 2, 6);
+        ctx.fillRect(1, -22 + bob, 2, 6);
+
+        // Chestnut Spots
+        ctx.fillRect(-2, -8 + bob, 4, 3);
+        ctx.fillRect(-2, -2 + bob, 4, 3);
+
+        drawCuteEye(-2.8, -16 + bob);
+        drawCuteEye(2.8, -16 + bob);
+        drawBlush(-4, -13.5 + bob);
+        drawBlush(4, -13.5 + bob);
+      }
+
+      // 5. PENGUIN
+      else if (type === 'penguin') {
+        // Bright Orange Webbed Feet
+        ctx.fillStyle = '#ff6b00';
+        ctx.fillRect(-6, 12 + bob, 5, 3);
+        ctx.fillRect(1, 12 + bob, 5, 3);
+
+        // Black Oval Body
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.ellipse(0, 2 + bob, 9, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Snowy White Tummy
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(0, 3 + bob, 6, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Orange Beak
+        ctx.fillStyle = '#ff6b00';
+        ctx.beginPath();
+        ctx.moveTo(-3, -3 + bob);
+        ctx.lineTo(3, -3 + bob);
+        ctx.lineTo(0, 1 + bob);
+        ctx.closePath();
+        ctx.fill();
+
+        drawCuteEye(-3.5, -6 + bob);
+        drawCuteEye(3.5, -6 + bob);
+        drawBlush(-5, -3 + bob);
+        drawBlush(5, -3 + bob);
+      }
+
+      // 6. KOALA
+      else if (type === 'koala') {
+        // Fluffy Silvery Ears
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(-10, -10 + bob, 6, 0, Math.PI * 2);
+        ctx.arc(10, -10 + bob, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(-10, -10 + bob, 3.5, 0, Math.PI * 2);
+        ctx.arc(10, -10 + bob, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body & Head (Silvery Lavender)
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(0, 5 + bob, 10, 0, Math.PI * 2);
+        ctx.arc(0, -6 + bob, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Big Oval Nose
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.ellipse(0, -4 + bob, 3, 4.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawCuteEye(-4, -7 + bob);
+        drawCuteEye(4, -7 + bob);
+        drawBlush(-5.5, -3.5 + bob);
+        drawBlush(5.5, -3.5 + bob);
+      }
+
+      // 7. PANDA
+      else if (type === 'panda') {
+        // Black Ears
+        ctx.fillStyle = '#020617';
+        ctx.beginPath();
+        ctx.arc(-8, -13 + bob, 4, 0, Math.PI * 2);
+        ctx.arc(8, -13 + bob, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White Fluffy Head & Body
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, 5 + bob, 10, 0, Math.PI * 2);
+        ctx.arc(0, -6 + bob, 9.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Black Arm Band & Legs
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(-9, 1 + bob, 18, 5);
+
+        // Black Patch Eyes
+        ctx.beginPath();
+        ctx.ellipse(-3.5, -6 + bob, 2.5, 3.5, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(3.5, -6 + bob, 2.5, 3.5, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        drawCuteEye(-3.5, -6.5 + bob);
+        drawCuteEye(3.5, -6.5 + bob);
+        drawBlush(-5.5, -3 + bob);
+        drawBlush(5.5, -3 + bob);
+
+        // Holding a cute bamboo leaf
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(4, 2 + bob); ctx.lineTo(11, -6 + bob);
+        ctx.stroke();
+      }
+
+      // 8. ELEPHANT
+      else if (type === 'elephant') {
+        // Big Floppy Ears with Pink Center
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.ellipse(-12, -6 + bob, 7, 10, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(12, -6 + bob, 7, 10, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath();
+        ctx.ellipse(-12, -6 + bob, 4, 6, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(12, -6 + bob, 4, 6, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Silvery-Blue Body & Head
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.arc(0, 5 + bob, 11, 0, Math.PI * 2);
+        ctx.arc(0, -6 + bob, 9.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // White Tusks
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-3, -2 + bob); ctx.lineTo(-6, 3 + bob);
+        ctx.moveTo(3, -2 + bob); ctx.lineTo(6, 3 + bob);
+        ctx.stroke();
+
+        // Curved Trunk (Up for Good Luck!)
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 4.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(0, -3 + bob);
+        ctx.quadraticCurveTo(5, 4 + bob, 3, 11 + bob);
+        ctx.stroke();
+
+        drawCuteEye(-3.8, -8.5 + bob);
+        drawCuteEye(3.8, -8.5 + bob);
+        drawBlush(-6, -5 + bob);
+        drawBlush(6, -5 + bob);
+      }
+
+      // FALLBACK
+      else {
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.arc(0, 0 + bob, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    /* ==========================================================================
+       INIT ON DOM READY
+       ========================================================================== */
+    window.onload = function() {
+      loadData();
+      updateUI();
+      setInterval(updateUI, 60000);
+    };
+  </script>
+</body>
+</html>

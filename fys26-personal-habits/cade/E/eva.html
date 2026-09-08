@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Sparkle Homework Reminder & SMART Goal Tracker ✨</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Quicksand & Pacifico -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pink: {
+                            50: '#fff0f6',
+                            100: '#ffe3ec',
+                            200: '#fcc2d7',
+                            300: '#faa2c1',
+                            400: '#f783ac',
+                            500: '#f06595',
+                            600: '#e64980',
+                            700: '#d6336c',
+                            800: '#c2255c',
+                            900: '#9c1e47',
+                        },
+                        sparkleGold: '#ffd700',
+                        sparkleMagenta: '#ff1493'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                        cursive: ['Pacifico', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #ffd1dc 0%, #ffe3ec 35%, #fff0f5 70%, #fcc2d7 100%);
+            font-family: 'Quicksand', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Glitter Canvas Overlay */
+        #glitter-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Custom Shimmer and Sparkle Effects */
+        .glitter-border {
+            border: 3px solid #f783ac;
+            box-shadow: 0 0 15px rgba(240, 101, 149, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        .glitter-text {
+            background: linear-gradient(45deg, #ff1493, #ff69b4, #e64980, #ff1493);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shine 3s linear infinite;
+        }
+
+        .sparkle-btn {
+            background: linear-gradient(135deg, #f06595 0%, #e64980 50%, #d6336c 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(230, 73, 128, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sparkle-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                60deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 70%
+            );
+            transform: rotate(30deg);
+            animation: btnSparkle 4s infinite;
+        }
+
+        .sparkle-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(230, 73, 128, 0.6);
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        @keyframes btnSparkle {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            20% { transform: translateX(100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        /* Cute Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ffe3ec;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f783ac;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e64980;
+        }
+
+        .checkbox-sparkle:checked {
+            background-color: #e64980;
+            border-color: #d6336c;
+        }
+    </style>
+</head>
+<body class="text-gray-800 relative pb-12">
+
+    <!-- Interactive Canvas for Particle Glitter Explosions & Ambient Sparkles -->
+    <canvas id="glitter-canvas"></canvas>
+
+    <div class="max-w-5xl mx-auto px-4 pt-6 relative z-10">
+
+        <!-- Top Header Banner -->
+        <header class="glitter-border rounded-3xl p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-400 to-pink-200 flex items-center justify-center shadow-lg text-3xl transform hover:rotate-12 transition-transform">
+                    📚✨
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-cursive glitter-text tracking-wide">
+                        Sparkle Homework Reminder
+                    </h1>
+                    <p class="text-pink-600 font-semibold text-sm mt-1">
+                        💖 Stay on top of your studies & shine bright everyday!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Streak & Alarm Quick Stats -->
+            <div class="flex items-center gap-3">
+                <div class="bg-pink-100/90 border border-pink-300 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm">
+                    <span class="text-2xl animate-bounce">🔥</span>
+                    <div class="text-left">
+                        <div class="text-xs text-pink-700 font-bold uppercase tracking-wider">Daily Streak</div>
+                        <div class="text-lg font-bold text-pink-900"><span id="streak-count">0</span> Days</div>
+                    </div>
+                </div>
+
+                <button id="reminder-settings-btn" onclick="openReminderModal()" class="bg-white border-2 border-pink-300 text-pink-600 hover:bg-pink-50 p-3 rounded-2xl transition shadow-sm flex items-center gap-2 font-bold text-sm">
+                    <i class="fa-solid fa-bell text-pink-500 text-lg"></i>
+                    <span class="hidden sm:inline">Set Alarm</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Affirmation Bar -->
+        <div class="bg-gradient-to-r from-pink-200 via-pink-100 to-pink-200 border border-pink-300 rounded-2xl p-3 mb-6 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3 text-sm text-pink-800 font-semibold">
+                <span class="text-xl">✨</span>
+                <span id="daily-affirmation">Loading your daily glitter quote...</span>
+            </div>
+            <button onclick="generateNewAffirmation()" class="text-pink-600 hover:text-pink-800 text-xs font-bold underline px-2">
+                New Quote 💕
+            </button>
+        </div>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+            <!-- SMART Goal Widget (Left Column - 1 col) -->
+            <div class="lg:col-span-1 bg-white/90 backdrop-blur border-2 border-pink-300 rounded-3xl p-5 shadow-lg flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-pink-800 flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-pink-500"></i>
+                            My SMART Goal
+                        </h2>
+                        <button onclick="openSmartGoalModal()" class="text-xs bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold px-3 py-1 rounded-full transition">
+                            <i class="fa-solid fa-pen text-xs mr-1"></i> Edit
+                        </button>
+                    </div>
+
+                    <!-- Goal Summary -->
+                    <div class="bg-pink-50/80 border border-pink-200 rounded-2xl p-4 mb-4">
+                        <p id="smart-goal-statement" class="text-sm font-semibold text-pink-900 italic">
+                            "Complete all daily math & history homework before 6:00 PM to maintain an A grade."
+                        </p>
+                    </div>
+
+                    <!-- SMART Criteria Breakdown Badges -->
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-start gap-2 bg-white p-2 rounded-xl border border-pink-100">
+                            <span class="font-bold text-pink-600 w-5">S:</span>
+                            <span id="smart-s" class="text-gray-600">Specific: Finish assigned worksheets daily</span>
+                        </div>
+                        <div class="flex items-start gap-2 bg-white p-2 rounded-xl border border-pink-100">
+                            <span class="font-bold text-pink-600 w-5">M:</span>
+                            <span id="smart-m" class="text-gray-600">Measurable: 5 tasks per week checked off</span>
+                        </div>
+                        <div class="flex items-start gap-2 bg-white p-2 rounded-xl border border-pink-100">
+                            <span class="font-bold text-pink-600 w-5">A:</span>
+                            <span id="smart-a" class="text-gray-600">Achievable: 30-45 mins dedicated study window</span>
+                        </div>
+                        <div class="flex items-start gap-2 bg-white p-2 rounded-xl border border-pink-100">
+                            <span class="font-bold text-pink-600 w-5">R:</span>
+                            <span id="smart-r" class="text-gray-600">Relevant: Keeps grades high & reduces stress</span>
+                        </div>
+                        <div class="flex items-start gap-2 bg-white p-2 rounded-xl border border-pink-100">
+                            <span class="font-bold text-pink-600 w-5">T:</span>
+                            <span id="smart-t" class="text-gray-600">Time-bound: By 6:00 PM every weekday</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goal Progress Bar -->
+                <div class="mt-4 pt-3 border-t border-pink-100">
+                    <div class="flex justify-between text-xs font-bold text-pink-700 mb-1">
+                        <span>Weekly Target Progress</span>
+                        <span id="goal-progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-pink-100 rounded-full h-3 overflow-hidden p-0.5 border border-pink-200">
+                        <div id="goal-progress-bar" class="bg-gradient-to-r from-pink-400 to-sparkleMagenta h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Homework Center & Timer (Right Column - 2 cols) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Alarm & Timer Widget Header -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    <!-- Next Homework Reminder Box -->
+                    <div class="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+                        <div class="absolute -right-4 -bottom-4 text-pink-400 opacity-20 text-8xl font-bold select-none">⏰</div>
+                        <div>
+                            <div class="flex items-center justify-between text-pink-100 text-xs font-bold uppercase tracking-wider mb-1">
+                                <span>Daily Homework Alarm</span>
+                                <span id="alarm-status-badge" class="bg-pink-700/80 px-2 py-0.5 rounded-full text-[10px]">Active</span>
+                            </div>
+                            <div class="text-2xl font-bold font-sans tracking-tight text-white mb-1" id="alarm-time-display">
+                                04:30 PM Daily
+                            </div>
+                            <p class="text-xs text-pink-100" id="alarm-countdown-text">
+                                Countdown: Calculating time left...
+                            </p>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="triggerTestAlarm()" class="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-xl backdrop-blur transition border border-white/30 flex items-center gap-1">
+                                <i class="fa-solid fa-play text-xs"></i> Test Sound
+                            </button>
+                            <button onclick="openReminderModal()" class="bg-white text-pink-600 hover:bg-pink-50 text-xs font-bold px-3 py-1.5 rounded-xl transition shadow flex items-center gap-1">
+                                <i class="fa-solid fa-clock"></i> Change Time
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sparkle Focus Timer (Pomodoro) -->
+                    <div class="bg-white/90 backdrop-blur border-2 border-pink-300 rounded-3xl p-5 shadow-lg flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-pink-600 uppercase tracking-wider">Sparkle Focus Timer</span>
+                            <span class="text-xs text-pink-400 font-semibold" id="timer-mode">25 Min Study</span>
+                        </div>
+                        <div class="text-center py-1">
+                            <span id="study-timer-display" class="text-3xl font-extrabold text-pink-800 font-mono tracking-wider">25:00</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <button id="timer-toggle-btn" onclick="toggleStudyTimer()" class="sparkle-btn text-white text-xs font-bold px-4 py-2 rounded-xl flex-1 text-center">
+                                <i class="fa-solid fa-play mr-1"></i> Start Focus
+                            </button>
+                            <button onclick="resetStudyTimer()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold px-3 py-2 rounded-xl transition">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Homework Task List Card -->
+                <div class="bg-white/90 backdrop-blur border-2 border-pink-300 rounded-3xl p-6 shadow-lg">
+
+                    <!-- Toolbar / Filters / Add Button -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-pink-100">
+                        <div>
+                            <h2 class="text-xl font-bold text-pink-900 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-pink-500"></i> Homework List
+                            </h2>
+                            <p class="text-xs text-pink-600 font-medium">Check off items to explode sparkles & build your streak!</p>
+                        </div>
+
+                        <button onclick="openAddTaskModal()" class="sparkle-btn text-white font-bold text-sm px-5 py-2.5 rounded-2xl flex items-center justify-center gap-2 shadow-md">
+                            <i class="fa-solid fa-plus"></i> Add New Homework
+                        </button>
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button onclick="setFilter('all')" id="filter-all" class="filter-tab-btn active bg-pink-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-sm transition">
+                            All Tasks (<span id="count-all">0</span>)
+                        </button>
+                        <button onclick="setFilter('pending')" id="filter-pending" class="filter-tab-btn bg-pink-100 text-pink-700 hover:bg-pink-200 text-xs font-bold px-3.5 py-1.5 rounded-xl transition">
+                            To Do (<span id="count-pending">0</span>)
+                        </button>
+                        <button onclick="setFilter('completed')" id="filter-completed" class="filter-tab-btn bg-pink-100 text-pink-700 hover:bg-pink-200 text-xs font-bold px-3.5 py-1.5 rounded-xl transition">
+                            Completed (<span id="count-completed">0</span>)
+                        </button>
+                        <button onclick="setFilter('urgent')" id="filter-urgent" class="filter-tab-btn bg-pink-100 text-pink-700 hover:bg-pink-200 text-xs font-bold px-3.5 py-1.5 rounded-xl transition">
+                            High Priority 🌟
+                        </button>
+                    </div>
+
+                    <!-- Task List Container -->
+                    <div id="homework-task-list" class="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                        <!-- Tasks dynamically populated via JS -->
+                    </div>
+
+                    <!-- Empty State Message -->
+                    <div id="empty-state" class="hidden text-center py-10">
+                        <div class="text-5xl mb-2">🌸</div>
+                        <h3 class="text-pink-800 font-bold text-base">All clear for now!</h3>
+                        <p class="text-xs text-pink-500 mt-1">No homework in this view. Click 'Add New Homework' to create one!</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Footer Info -->
+        <footer class="text-center text-xs text-pink-600 font-semibold py-4 border-t border-pink-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                ✨ Sparkle Homework Widget &bull; SMART Goal Helper
+            </div>
+            <div>
+                Local Storage Powered &bull; <button onclick="clearAllData()" class="underline hover:text-pink-800">Reset All Data</button>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- MODAL 1: ADD / EDIT TASK MODAL -->
+    <div id="task-modal" class="fixed inset-0 bg-pink-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border-2 border-pink-300 rounded-3xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
+                    <span class="text-xl">✍️</span> <span id="modal-title">Add Homework Task</span>
+                </h3>
+                <button onclick="closeTaskModal()" class="text-gray-400 hover:text-pink-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <form id="task-form" onsubmit="handleTaskFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="task-id">
+                
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Homework Title *</label>
+                    <input type="text" id="task-title" required placeholder="e.g. Math Worksheet Page 42" class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Subject</label>
+                        <select id="task-subject" class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                            <option value="Math">📐 Math</option>
+                            <option value="English">📖 English</option>
+                            <option value="Science">🔬 Science</option>
+                            <option value="History">🏛️ History</option>
+                            <option value="Art">🎨 Art</option>
+                            <option value="Language">🌍 Language</option>
+                            <option value="Other">✨ Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Priority</label>
+                        <select id="task-priority" class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                            <option value="Normal">🌸 Normal</option>
+                            <option value="High">⭐ High</option>
+                            <option value="Urgent">🔥 Urgent!</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Due Date</label>
+                        <input type="date" id="task-due-date" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Due Time</label>
+                        <input type="time" id="task-due-time" required value="18:00" class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Notes / Instructions</label>
+                    <textarea id="task-notes" rows="2" placeholder="e.g. Check odd numbered problems only..." class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-pink-700 hover:bg-pink-100 transition">Cancel</button>
+                    <button type="submit" class="sparkle-btn text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md">Save Homework</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SMART GOAL MODAL -->
+    <div id="smart-modal" class="fixed inset-0 bg-pink-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border-2 border-pink-300 rounded-3xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
+                    <i class="fa-solid fa-bullseye text-pink-500"></i> Edit SMART Homework Goal
+                </h3>
+                <button onclick="closeSmartGoalModal()" class="text-gray-400 hover:text-pink-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <form id="smart-form" onsubmit="handleSmartGoalSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Goal Summary</label>
+                    <input type="text" id="input-smart-summary" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1"><span class="text-pink-600">S</span>pecific (What exactly will you do?)</label>
+                    <input type="text" id="input-smart-s" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1"><span class="text-pink-600">M</span>easurable (How many tasks per week?)</label>
+                    <input type="text" id="input-smart-m" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1"><span class="text-pink-600">A</span>chievable (How will you make time?)</label>
+                    <input type="text" id="input-smart-a" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1"><span class="text-pink-600">R</span>elevant (Why is this important?)</label>
+                    <input type="text" id="input-smart-r" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1"><span class="text-pink-600">T</span>ime-Bound (What is your daily target time?)</label>
+                    <input type="text" id="input-smart-t" required class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeSmartGoalModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-pink-700 hover:bg-pink-100 transition">Cancel</button>
+                    <button type="submit" class="sparkle-btn text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md">Update Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: REMINDER ALARM SETTINGS MODAL -->
+    <div id="reminder-modal" class="fixed inset-0 bg-pink-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border-2 border-pink-300 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-pink-900 flex items-center gap-2">
+                    <i class="fa-solid fa-bell text-pink-500"></i> Reminder Settings
+                </h3>
+                <button onclick="closeReminderModal()" class="text-gray-400 hover:text-pink-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-pink-800 uppercase mb-1">Daily Reminder Time</label>
+                    <input type="time" id="alarm-time-input" value="16:30" class="w-full border border-pink-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50">
+                </div>
+
+                <div class="flex items-center justify-between p-3 bg-pink-50 rounded-xl">
+                    <span class="text-xs font-bold text-pink-800">Sound Chime Alert</span>
+                    <input type="checkbox" id="alarm-sound-toggle" checked class="w-4 h-4 text-pink-600 rounded">
+                </div>
+
+                <div class="flex items-center justify-between p-3 bg-pink-50 rounded-xl">
+                    <span class="text-xs font-bold text-pink-800">Browser Notifications</span>
+                    <button onclick="requestNotificationPermission()" class="text-xs bg-pink-200 hover:bg-pink-300 text-pink-800 font-bold px-2.5 py-1 rounded-lg">
+                        Enable
+                    </button>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick="closeReminderModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-pink-700 hover:bg-pink-100 transition">Cancel</button>
+                    <button onclick="saveReminderSettings()" class="sparkle-btn text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md">Save Alarm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM ALARM TOAST NOTIFICATION -->
+    <div id="alarm-toast" class="fixed top-5 right-5 z-50 bg-gradient-to-r from-pink-500 to-pink-600 text-white border-2 border-white p-4 rounded-2xl shadow-2xl hidden transform transition-all duration-300 flex items-center gap-3 max-w-sm">
+        <div class="text-3xl animate-bounce">💖</div>
+        <div>
+            <h4 class="font-bold text-sm">Homework Reminder! ✨</h4>
+            <p class="text-xs text-pink-100">Time to check your homework tasks and shine bright!</p>
+        </div>
+        <button onclick="closeAlarmToast()" class="text-white hover:text-pink-200 font-bold text-lg ml-auto">&times;</button>
+    </div>
+
+    <script>
+        /* --------------------------------------------------
+         * APP STATE & LOCAL STORAGE INITIALIZATION
+         * -------------------------------------------------- */
+        const STORAGE_KEY = 'sparkle_homework_app_data_v1';
+
+        let appData = {
+            tasks: [],
+            smartGoal: {
+                summary: "Complete all daily homework before 6:00 PM to maintain high grades and feel prepared.",
+                s: "Finish assigned homework worksheets & reading every school day.",
+                m: "Check off 5 study sessions per week in this app.",
+                a: "Set aside a 45-minute distraction-free study block right after school.",
+                r: "Reduces last-minute test stress and builds strong study habits.",
+                t: "Daily deadline of 6:00 PM every weekday."
+            },
+            streak: {
+                count: 1,
+                lastCheckedDate: new Date().toISOString().split('T')[0]
+            },
+            settings: {
+                alarmTime: "16:30",
+                alarmEnabled: true,
+                soundEnabled: true
+            }
+        };
+
+        let currentFilter = 'all';
+        let studyTimerInterval = null;
+        let studyTimerSeconds = 25 * 60;
+        let isTimerRunning = false;
+
+        const affirmations = [
+            "You are capable of doing amazing things! ✨",
+            "Small steps lead to huge achievements! 🌸",
+            "Glitter up your brain with knowledge today! 💖",
+            "Stay focused, stay fabulous! 🌟",
+            "Your hard work will pay off, shine on! 💫",
+            "Believe in yourself and your sparkle power! 💕",
+            "Homework today = Success tomorrow! 📚"
+        ];
+
+        /* --------------------------------------------------
+         * WEB AUDIO SYNTHESIZER (Sparkle Sound Effects)
+         * -------------------------------------------------- */
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSparkleSound() {
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+                notes.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.08);
+
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime + index * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.08 + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(audioCtx.currentTime + index * 0.08);
+                    osc.stop(audioCtx.currentTime + index * 0.08 + 0.35);
+                });
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        function playAlarmChime() {
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880, now + 0.2); // A5
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        /* --------------------------------------------------
+         * CANVAS GLITTER PARTICLE SYSTEM
+         * -------------------------------------------------- */
+        const canvas = document.getElementById('glitter-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, isExplosion = false) {
+                this.x = x !== undefined ? x : Math.random() * canvas.width;
+                this.y = y !== undefined ? y : Math.random() * canvas.height;
+                this.size = Math.random() * 4 + 1.5;
+                this.speedX = isExplosion ? (Math.random() - 0.5) * 8 : (Math.random() - 0.5) * 0.8;
+                this.speedY = isExplosion ? (Math.random() - 0.5) * 8 : (Math.random() - 0.5) * 0.8 - 0.3;
+                this.color = ['#ff69b4', '#ff1493', '#ffd700', '#ffffff', '#f783ac'][Math.floor(Math.random() * 5)];
+                this.alpha = 1;
+                this.decay = isExplosion ? Math.random() * 0.02 + 0.015 : Math.random() * 0.005 + 0.002;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.alpha -= this.decay;
+                this.angle += this.spin;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillStyle = this.color;
+
+                // Draw 4-point star shape for glitter look
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size * 2);
+                ctx.quadraticCurveTo(0, 0, this.size * 2, 0);
+                ctx.quadraticCurveTo(0, 0, 0, this.size * 2);
+                ctx.quadraticCurveTo(0, 0, -this.size * 2, 0);
+                ctx.quadraticCurveTo(0, 0, 0, -this.size * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // Initialize background sparkles
+        for (let i = 0; i < 40; i++) {
+            particles.push(new Particle());
+        }
+
+        function triggerGlitterExplosion(x, y) {
+            playSparkleSound();
+            for (let i = 0; i < 45; i++) {
+                particles.push(new Particle(x, y, true));
+            }
+        }
+
+        // Mouse click sparkle listener
+        window.addEventListener('click', (e) => {
+            // Slight sparkle effect on any click
+            if (Math.random() > 0.4) {
+                for (let i = 0; i < 5; i++) {
+                    particles.push(new Particle(e.clientX, e.clientY, true));
+                }
+            }
+        });
+
+        function animateGlitter() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Maintain ambient background count
+            if (particles.length < 35) {
+                particles.push(new Particle());
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateGlitter);
+        }
+        animateGlitter();
+
+        /* --------------------------------------------------
+         * CORE APP LOGIC & LOCAL STORAGE PERSISTENCE
+         * -------------------------------------------------- */
+        function loadSavedData() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    appData = { ...appData, ...parsed };
+                } catch (e) {
+                    console.error('Error loading localStorage:', e);
+                }
+            } else {
+                // Seed default sample tasks
+                const today = new Date().toISOString().split('T')[0];
+                appData.tasks = [
+                    {
+                        id: '1',
+                        title: 'Math Worksheet Ch 4',
+                        subject: 'Math',
+                        priority: 'High',
+                        dueDate: today,
+                        dueTime: '17:00',
+                        notes: 'Do odd numbers 1 to 25',
+                        completed: false
+                    },
+                    {
+                        id: '2',
+                        title: 'English Reading - Ch 3 & 4',
+                        subject: 'English',
+                        priority: 'Normal',
+                        dueDate: today,
+                        dueTime: '18:00',
+                        notes: 'Write 3 main takeaways',
+                        completed: true
+                    }
+                ];
+                saveData();
+            }
+            checkDailyStreak();
+            renderAll();
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function renderAll() {
+            renderStreak();
+            renderSMARTGoal();
+            renderTasks();
+            renderAlarmDisplay();
+        }
+
+        /* --------------------------------------------------
+         * TASK MANAGEMENT
+         * -------------------------------------------------- */
+        function renderTasks() {
+            const listEl = document.getElementById('homework-task-list');
+            const emptyEl = document.getElementById('empty-state');
+            listEl.innerHTML = '';
+
+            let filtered = appData.tasks.filter(t => {
+                if (currentFilter === 'pending') return !t.completed;
+                if (currentFilter === 'completed') return t.completed;
+                if (currentFilter === 'urgent') return t.priority === 'High' || t.priority === 'Urgent';
+                return true;
+            });
+
+            // Update Counts
+            document.getElementById('count-all').innerText = appData.tasks.length;
+            document.getElementById('count-pending').innerText = appData.tasks.filter(t => !t.completed).length;
+            document.getElementById('count-completed').innerText = appData.tasks.filter(t => t.completed).length;
+
+            if (filtered.length === 0) {
+                emptyEl.classList.remove('hidden');
+            } else {
+                emptyEl.classList.add('hidden');
+            }
+
+            filtered.forEach(task => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition-all duration-300 flex items-start justify-between gap-3 ${
+                    task.completed 
+                        ? 'bg-pink-50/50 border-pink-200 opacity-75' 
+                        : 'bg-white border-pink-200 shadow-sm hover:shadow-md'
+                }`;
+
+                const priorityBadge = task.priority === 'Urgent' 
+                    ? '<span class="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">🔥 Urgent</span>'
+                    : task.priority === 'High'
+                    ? '<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">⭐ High</span>'
+                    : '<span class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🌸 Normal</span>';
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                            onchange="toggleTaskComplete('${task.id}', event)"
+                            class="checkbox-sparkle mt-1 w-5 h-5 rounded-lg border-2 border-pink-400 text-pink-600 focus:ring-pink-400 cursor-pointer transition">
+                        
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="font-bold text-sm text-pink-900 ${task.completed ? 'line-through text-pink-400' : ''} truncate">
+                                    ${escapeHtml(task.title)}
+                                </h4>
+                                ${priorityBadge}
+                                <span class="bg-pink-100/80 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                    ${task.subject}
+                                </span>
+                            </div>
+
+                            ${task.notes ? `<p class="text-xs text-gray-500 mt-1 line-clamp-2">${escapeHtml(task.notes)}</p>` : ''}
+
+                            <div class="flex items-center gap-3 text-[11px] text-pink-600 mt-2 font-semibold">
+                                <span><i class="fa-regular fa-calendar mr-1"></i> Due: ${task.dueDate} at ${task.dueTime}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <button onclick="openEditTaskModal('${task.id}')" class="text-pink-400 hover:text-pink-600 p-1.5 rounded-lg text-xs transition">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteTask('${task.id}')" class="text-pink-300 hover:text-red-500 p-1.5 rounded-lg text-xs transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+                listEl.appendChild(card);
+            });
+
+            updateSmartGoalProgress();
+        }
+
+        function toggleTaskComplete(id, event) {
+            const task = appData.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed && event) {
+                    triggerGlitterExplosion(event.clientX, event.clientY);
+                }
+                saveData();
+                renderAll();
+            }
+        }
+
+        function deleteTask(id) {
+            appData.tasks = appData.tasks.filter(t => t.id !== id);
+            saveData();
+            renderAll();
+        }
+
+        function openAddTaskModal() {
+            document.getElementById('modal-title').innerText = "Add Homework Task";
+            document.getElementById('task-id').value = '';
+            document.getElementById('task-form').reset();
+            document.getElementById('task-due-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function openEditTaskModal(id) {
+            const task = appData.tasks.find(t => t.id === id);
+            if (!task) return;
+
+            document.getElementById('modal-title').innerText = "Edit Homework Task";
+            document.getElementById('task-id').value = task.id;
+            document.getElementById('task-title').value = task.title;
+            document.getElementById('task-subject').value = task.subject;
+            document.getElementById('task-priority').value = task.priority;
+            document.getElementById('task-due-date').value = task.dueDate;
+            document.getElementById('task-due-time').value = task.dueTime;
+            document.getElementById('task-notes').value = task.notes || '';
+
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+        }
+
+        function handleTaskFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('task-id').value;
+            const title = document.getElementById('task-title').value;
+            const subject = document.getElementById('task-subject').value;
+            const priority = document.getElementById('task-priority').value;
+            const dueDate = document.getElementById('task-due-date').value;
+            const dueTime = document.getElementById('task-due-time').value;
+            const notes = document.getElementById('task-notes').value;
+
+            if (id) {
+                const task = appData.tasks.find(t => t.id === id);
+                if (task) {
+                    task.title = title;
+                    task.subject = subject;
+                    task.priority = priority;
+                    task.dueDate = dueDate;
+                    task.dueTime = dueTime;
+                    task.notes = notes;
+                }
+            } else {
+                appData.tasks.push({
+                    id: Date.now().toString(),
+                    title,
+                    subject,
+                    priority,
+                    dueDate,
+                    dueTime,
+                    notes,
+                    completed: false
+                });
+            }
+
+            saveData();
+            closeTaskModal();
+            renderAll();
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-pink-500', 'text-white');
+                btn.classList.add('bg-pink-100', 'text-pink-700');
+            });
+            const activeBtn = document.getElementById(`filter-${filter}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-pink-100', 'text-pink-700');
+                activeBtn.classList.add('bg-pink-500', 'text-white');
+            }
+            renderTasks();
+        }
+
+        /* --------------------------------------------------
+         * ALARM & REMINDER COUNTDOWN SYSTEM
+         * -------------------------------------------------- */
+        function openReminderModal() {
+            document.getElementById('alarm-time-input').value = appData.settings.alarmTime;
+            document.getElementById('alarm-sound-toggle').checked = appData.settings.soundEnabled;
+            document.getElementById('reminder-modal').classList.remove('hidden');
+        }
+
+        function closeReminderModal() {
+            document.getElementById('reminder-modal').classList.add('hidden');
+        }
+
+        function saveReminderSettings() {
+            appData.settings.alarmTime = document.getElementById('alarm-time-input').value;
+            appData.settings.soundEnabled = document.getElementById('alarm-sound-toggle').checked;
+            saveData();
+            closeReminderModal();
+            renderAlarmDisplay();
+        }
+
+        function renderAlarmDisplay() {
+            const timeStr = appData.settings.alarmTime;
+            if (!timeStr) return;
+
+            const [hours, minutes] = timeStr.split(':');
+            const hNum = parseInt(hours, 10);
+            const ampm = hNum >= 12 ? 'PM' : 'AM';
+            const h12 = hNum % 12 || 12;
+            const formattedTime = `${h12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+
+            document.getElementById('alarm-time-display').innerText = `${formattedTime} Daily`;
+            updateAlarmCountdown();
+        }
+
+        function updateAlarmCountdown() {
+            const timeStr = appData.settings.alarmTime;
+            if (!timeStr) return;
+
+            const now = new Date();
+            const [hours, minutes] = timeStr.split(':');
+            const target = new Date();
+            target.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+            if (target <= now) {
+                target.setDate(target.getDate() + 1);
+            }
+
+            const diffMs = target - now;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const h = Math.floor(diffMins / 60);
+            const m = diffMins % 60;
+
+            document.getElementById('alarm-countdown-text').innerText = `Next Alarm in ${h}h ${m}m!`;
+
+            // Trigger alarm if within current minute
+            if (diffMs <= 1000 && appData.settings.alarmEnabled) {
+                triggerAlarmNotification();
+            }
+        }
+
+        setInterval(updateAlarmCountdown, 30000); // Check every 30 seconds
+
+        function triggerTestAlarm() {
+            if (appData.settings.soundEnabled) playAlarmChime();
+            showAlarmToast();
+            triggerGlitterExplosion(window.innerWidth / 2, window.innerHeight / 2);
+        }
+
+        function triggerAlarmNotification() {
+            if (appData.settings.soundEnabled) playAlarmChime();
+            showAlarmToast();
+
+            if (Notification.permission === 'granted') {
+                new Notification('✨ Sparkle Homework Reminder ✨', {
+                    body: 'It is time to check your homework tasks and hit your SMART goal!',
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3209/3209886.png'
+                });
+            }
+        }
+
+        function showAlarmToast() {
+            const toast = document.getElementById('alarm-toast');
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 6000);
+        }
+
+        function closeAlarmToast() {
+            document.getElementById('alarm-toast').classList.add('hidden');
+        }
+
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        triggerGlitterExplosion(window.innerWidth / 2, window.innerHeight / 2);
+                    }
+                });
+            }
+        }
+
+        /* --------------------------------------------------
+         * SMART GOAL MANAGEMENT
+         * -------------------------------------------------- */
+        function openSmartGoalModal() {
+            const g = appData.smartGoal;
+            document.getElementById('input-smart-summary').value = g.summary;
+            document.getElementById('input-smart-s').value = g.s;
+            document.getElementById('input-smart-m').value = g.m;
+            document.getElementById('input-smart-a').value = g.a;
+            document.getElementById('input-smart-r').value = g.r;
+            document.getElementById('input-smart-t').value = g.t;
+            document.getElementById('smart-modal').classList.remove('hidden');
+        }
+
+        function closeSmartGoalModal() {
+            document.getElementById('smart-modal').classList.add('hidden');
+        }
+
+        function handleSmartGoalSubmit(e) {
+            e.preventDefault();
+            appData.smartGoal = {
+                summary: document.getElementById('input-smart-summary').value,
+                s: document.getElementById('input-smart-s').value,
+                m: document.getElementById('input-smart-m').value,
+                a: document.getElementById('input-smart-a').value,
+                r: document.getElementById('input-smart-r').value,
+                t: document.getElementById('input-smart-t').value,
+            };
+            saveData();
+            closeSmartGoalModal();
+            renderSMARTGoal();
+        }
+
+        function renderSMARTGoal() {
+            const g = appData.smartGoal;
+            document.getElementById('smart-goal-statement').innerText = `"${g.summary}"`;
+            document.getElementById('smart-s').innerText = `Specific: ${g.s}`;
+            document.getElementById('smart-m').innerText = `Measurable: ${g.m}`;
+            document.getElementById('smart-a').innerText = `Achievable: ${g.a}`;
+            document.getElementById('smart-r').innerText = `Relevant: ${g.r}`;
+            document.getElementById('smart-t').innerText = `Time-bound: ${g.t}`;
+            updateSmartGoalProgress();
+        }
+
+        function updateSmartGoalProgress() {
+            const total = appData.tasks.length;
+            const completed = appData.tasks.filter(t => t.completed).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('goal-progress-percent').innerText = `${percentage}%`;
+            document.getElementById('goal-progress-bar').style.width = `${percentage}%`;
+        }
+
+        /* --------------------------------------------------
+         * STREAK COUNTER LOGIC
+         * -------------------------------------------------- */
+        function checkDailyStreak() {
+            const today = new Date().toISOString().split('T')[0];
+            const last = appData.streak.lastCheckedDate;
+
+            if (last) {
+                const lastDate = new Date(last);
+                const currentDate = new Date(today);
+                const diffTime = Math.abs(currentDate - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    // Consecutive day!
+                    appData.streak.count += 1;
+                    appData.streak.lastCheckedDate = today;
+                } else if (diffDays > 1) {
+                    // Streak broken, reset to 1
+                    appData.streak.count = 1;
+                    appData.streak.lastCheckedDate = today;
+                }
+            } else {
+                appData.streak.lastCheckedDate = today;
+                appData.streak.count = 1;
+            }
+            saveData();
+        }
+
+        function renderStreak() {
+            document.getElementById('streak-count').innerText = appData.streak.count || 1;
+        }
+
+        /* --------------------------------------------------
+         * FOCUS STUDY TIMER (POMODORO)
+         * -------------------------------------------------- */
+        function toggleStudyTimer() {
+            const btn = document.getElementById('timer-toggle-btn');
+            if (isTimerRunning) {
+                clearInterval(studyTimerInterval);
+                isTimerRunning = false;
+                btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> Resume`;
+            } else {
+                isTimerRunning = true;
+                btn.innerHTML = `<i class="fa-solid fa-pause mr-1"></i> Pause`;
+                studyTimerInterval = setInterval(() => {
+                    if (studyTimerSeconds > 0) {
+                        studyTimerSeconds--;
+                        renderStudyTimer();
+                    } else {
+                        clearInterval(studyTimerInterval);
+                        isTimerRunning = false;
+                        playAlarmChime();
+                        triggerGlitterExplosion(window.innerWidth / 2, window.innerHeight / 2);
+                        btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> Start Focus`;
+                        studyTimerSeconds = 25 * 60;
+                        renderStudyTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetStudyTimer() {
+            clearInterval(studyTimerInterval);
+            isTimerRunning = false;
+            studyTimerSeconds = 25 * 60;
+            document.getElementById('timer-toggle-btn').innerHTML = `<i class="fa-solid fa-play mr-1"></i> Start Focus`;
+            renderStudyTimer();
+        }
+
+        function renderStudyTimer() {
+            const m = Math.floor(studyTimerSeconds / 60);
+            const s = studyTimerSeconds % 60;
+            document.getElementById('study-timer-display').innerText = 
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        /* --------------------------------------------------
+         * AFFIRMATIONS & UTILITIES
+         * -------------------------------------------------- */
+        function generateNewAffirmation() {
+            const index = Math.floor(Math.random() * affirmations.length);
+            document.getElementById('daily-affirmation').innerText = affirmations[index];
+            triggerGlitterExplosion(window.innerWidth / 2, 100);
+        }
+
+        function clearAllData() {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            loadSavedData();
+            generateNewAffirmation();
+            renderStudyTimer();
+        };
+    </script>
+</body>
+</html>
