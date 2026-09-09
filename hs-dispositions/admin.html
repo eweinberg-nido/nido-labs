@@ -24,6 +24,34 @@
         .modal-content { background: white; padding: 2rem; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
         .evidence-box { background: #f9f9f9; padding: 10px; border-left: 4px solid var(--nido-blue); margin-top: 5px; }
         .syllabus-link { display: inline-block; margin-top: 4px; font-size: 0.8rem; font-weight: bold; color: var(--nido-blue); text-decoration: none; }
+        .header-nav { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .header-nav a { color: white; text-decoration: none; }
+        .header-nav a:hover { text-decoration: underline; }
+        /* Divider keeps the two links from reading as one run of text now that
+           "Course Syllabi" has no trailing arrow to close it off. */
+        .header-nav .nav-back { border-left: 1px solid rgba(255, 255, 255, 0.4); padding-left: 1.5rem; }
+        /* Below ~385px the two links wrap onto separate lines, which would leave
+           the divider floating beside the second one. */
+        @media (max-width: 480px) {
+            .header-nav .nav-back { border-left: none; padding-left: 0; }
+        }
+        /* .form-* classes are used throughout this page but were never defined,
+           so modal fields rendered at browser defaults. Match index.html. */
+        .modal-content .form-group { margin-bottom: 1rem; }
+        .modal-content .form-label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
+        .modal-content .form-control {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: var(--font-gotham);
+            font-size: 1rem;
+        }
+        .modal-content .form-control:focus {
+            outline: none;
+            border-color: var(--nido-blue);
+            box-shadow: 0 0 0 3px rgba(0, 35, 101, 0.12);
+        }
         .syllabus-link:hover { text-decoration: underline; }
     </style>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -31,9 +59,9 @@
 <body>
     <header class="bg-nido-blue text-white" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <h1 class="font-bold" style="margin: 0; font-size: 1.5rem;">Admin Dashboard - Dispositions</h1>
-        <nav style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <a href="syllabi.html" style="color: white; text-decoration: none;">Course Syllabi &rarr;</a>
-            <a href="index.html" style="color: white; text-decoration: none;">&larr; Back to Main Site</a>
+        <nav class="header-nav">
+            <a href="syllabi.html">Course Syllabi</a>
+            <a href="index.html" class="nav-back">&larr; Back to Main Site</a>
         </nav>
     </header>
 
@@ -172,6 +200,12 @@
                     <label class="form-label">Course:</label>
                     <select id="edit-course" class="form-control" required></select>
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label" for="edit-syllabus">Syllabus Link <small style="font-weight: normal; color: #666;">(optional &mdash; Google Drive)</small></label>
+                <input type="url" id="edit-syllabus" class="form-control" placeholder="https://drive.google.com/...">
+                <a id="edit-syllabus-open" class="syllabus-link hidden" target="_blank" rel="noopener noreferrer">Open current link &nearr;</a>
             </div>
 
             <div style="margin-top: 1.5rem;">

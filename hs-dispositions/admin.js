@@ -21,6 +21,9 @@ let isAdmin = false;
 let allEntries = [];
 let coursesData = [];
 let editingId = null;
+// The syllabus URL the edit modal opened with, so we only re-stamp the
+// "updated" fields when an admin actually changes the link.
+let editingSyllabusUrl = '';
 
 const allDispositions = ["Empathy", "Reflection", "Curiosity", "Perseverance", "Self-Direction"];
 
@@ -672,9 +675,40 @@ document.getElementById('add-entry-btn').addEventListener('click', () => {
     openEditModal(null);
 });
 
+function isValidUrl(url) {
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    } catch (e) {
+        return false;
+    }
+}
+
+function isLikelyDriveLink(url) {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+        return /(^|\.)(drive|docs|sites)\.google\.com$/.test(parsed.hostname);
+    } catch (e) {
+        return false;
+    }
+}
+
 function openEditModal(entry) {
     editingId = entry ? entry.id : null;
     document.getElementById('modal-title').innerText = entry ? 'Edit Entry' : 'Add New Entry';
+
+    editingSyllabusUrl = (entry && entry.syllabusUrl) || '';
+    const syllabusInput = document.getElementById('edit-syllabus');
+    const syllabusOpen = document.getElementById('edit-syllabus-open');
+    syllabusInput.value = editingSyllabusUrl;
+    if (editingSyllabusUrl) {
+        syllabusOpen.href = editingSyllabusUrl;
+        syllabusOpen.classList.remove('hidden');
+    } else {
+        syllabusOpen.removeAttribute('href');
+        syllabusOpen.classList.add('hidden');
+    }
     
     document.getElementById('edit-teacher-name').value = entry ? entry.userName : '';
     document.getElementById('edit-teacher-email').value = entry ? entry.userEmail : '';
@@ -713,6 +747,18 @@ document.getElementById('modal-save-btn').addEventListener('click', async () => 
         return;
     }
 
+    const syllabusUrl = document.getElementById('edit-syllabus').value.trim();
+
+    if (syllabusUrl && !isValidUrl(syllabusUrl)) {
+        alert("The syllabus link does not look like a valid URL. It should start with https://");
+        document.getElementById('edit-syllabus').focus();
+        return;
+    }
+
+    if (syllabusUrl && !isLikelyDriveLink(syllabusUrl)) {
+        if (!confirm("The syllabus link is not a Google Drive / Docs link. Save it anyway?")) return;
+    }
+
     const data = {
         userName,
         userEmail,
@@ -721,6 +767,14 @@ document.getElementById('modal-save-btn').addEventListener('click', async () => 
         dispositions,
         timestamp: new Date().toISOString()
     };
+
+    // Leave the syllabus fields untouched unless the admin edited the link, so
+    // that editing dispositions does not overwrite the teacher's attribution.
+    if (syllabusUrl !== editingSyllabusUrl) {
+        data.syllabusUrl = syllabusUrl || null;
+        data.syllabusUpdatedAt = syllabusUrl ? new Date().toISOString() : null;
+        data.syllabusUpdatedBy = syllabusUrl ? (currentUser ? currentUser.email : null) : null;
+    }
 
     try {
         if (editingId) {
