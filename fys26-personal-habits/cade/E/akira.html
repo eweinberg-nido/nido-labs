@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Companion & Smart Reminders</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            pink: '#FFD1DC',
+                            purple: '#E2D4F0',
+                            blue: '#CBE4F9',
+                            green: '#CDF0EA',
+                            yellow: '#FFF5BA',
+                            orange: '#FDE2E4',
+                            lavender: '#E8DFF5',
+                            mint: '#D8F3DC',
+                            coral: '#FFDAC1'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8f6fd 0%, #f0f4ff 50%, #fcf4f7 100%);
+            min-height: 100vh;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .pulse-notification {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.02); }
+        }
+        .toast-bounce {
+            animation: toastIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes toastIn {
+            from { transform: translateY(-30px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="font-sans text-slate-700 antialiased pb-16 relative">
+
+    <!-- Toast & Alarm Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="max-w-6xl mx-auto px-4 pt-6 pb-4">
+        <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-200 via-pink-200 to-blue-200 flex items-center justify-center text-2xl shadow-inner">
+                    ⏰
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">Study Companion & Reminders</h1>
+                    <p class="text-xs font-medium text-slate-400">SMART Homework Tracker with Real-Time Alerts</p>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-3 flex-wrap justify-center sm:justify-end">
+                <!-- Browser Permission Badge -->
+                <button id="notifPermBtn" onclick="requestNotificationPermission()" class="px-3.5 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition flex items-center gap-2">
+                    <i class="fa-solid fa-bell text-amber-500"></i>
+                    <span id="notifBtnText">Enable Reminders</span>
+                </button>
+
+                <!-- Points Widget -->
+                <div class="flex items-center gap-2 bg-purple-50 px-3.5 py-2 rounded-2xl border border-purple-100">
+                    <div class="text-lg">🏆</div>
+                    <div>
+                        <div class="text-[9px] font-bold text-purple-400 uppercase tracking-wider">Points</div>
+                        <div class="text-sm font-extrabold text-purple-700 leading-none">
+                            <span id="userPoints">0</span> <span class="text-[10px] text-purple-400">PTS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="openModal('calendarModal')" class="px-3 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 border border-slate-200">
+                    <i class="fa-solid fa-calendar-days text-blue-500"></i>
+                    <span class="hidden sm:inline">Cal Sync</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 mt-2">
+        
+        <!-- Left Sidebar (4 Cols) -->
+        <aside class="lg:col-span-4 space-y-6">
+            
+            <!-- Quick Daily Alarm Settings -->
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-purple-100">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                    <h2 class="font-extrabold text-slate-800 text-xs tracking-wide flex items-center gap-2 uppercase">
+                        <i class="fa-solid fa-clock text-purple-500"></i>
+                        <span>Daily Study Reminder</span>
+                    </h2>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="dailyReminderToggle" onchange="toggleDailyReminder()" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500"></div>
+                    </label>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed mb-3">Get an automatic check-in notification every weekday to plan your homework.</p>
+                <div class="flex items-center gap-2">
+                    <input type="time" id="dailyReminderTime" value="16:00" onchange="updateDailyReminderTime()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:border-purple-400 bg-slate-50">
+                    <span class="text-xs text-slate-400 font-medium">Daily Alarm Time</span>
+                </div>
+            </div>
+
+            <!-- Subjects Folder Selector -->
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-100">
+                    <h2 class="font-extrabold text-slate-800 text-xs tracking-wide flex items-center gap-2 uppercase">
+                        <i class="fa-solid fa-folder-closed text-purple-400"></i>
+                        <span>Classes & Folders</span>
+                    </h2>
+                    <button onclick="openModal('addSubjectModal')" class="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-xl transition">
+                        + Folder
+                    </button>
+                </div>
+
+                <div id="subjectsList" class="space-y-1.5 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Dynamic Folders -->
+                </div>
+            </div>
+
+            <!-- Active Focus Timer Widget -->
+            <div id="timerWidget" class="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-purple-200 hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-purple-600 bg-purple-100 px-2.5 py-1 rounded-lg">Focus Session</span>
+                    <span id="activeSubjectBadge" class="text-xs font-semibold px-2 py-0.5 rounded-md">Subject</span>
+                </div>
+                <h3 id="activeTaskTitle" class="font-bold text-slate-800 text-sm truncate">Homework Task</h3>
+                
+                <div class="text-center my-3 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div id="timerDisplay" class="text-3xl font-extrabold text-slate-800 tracking-wider font-mono">00:00:00</div>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Stay focused on your task! 🧠</p>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="toggleTimerBtn" onclick="toggleTimer()" class="flex-1 py-2 rounded-xl bg-emerald-400 text-white font-bold text-xs hover:bg-emerald-500 transition shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-pause"></i> Pause
+                    </button>
+                    <button onclick="completeCurrentTask()" class="flex-1 py-2 rounded-xl bg-purple-500 text-white font-bold text-xs hover:bg-purple-600 transition shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> Finish
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheduled Reminders Radar Widget -->
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                    <h2 class="font-extrabold text-slate-800 text-xs tracking-wide flex items-center gap-2 uppercase">
+                        <i class="fa-solid fa-bell text-amber-400"></i>
+                        <span>Upcoming Reminders</span>
+                    </h2>
+                    <span id="reminderCountBadge" class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 Set</span>
+                </div>
+                <div id="scheduledRemindersList" class="space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar">
+                    <!-- Dynamic scheduled alerts list -->
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Right Main Dashboard (8 Cols) -->
+        <section class="lg:col-span-8 space-y-6">
+
+            <!-- Dynamic System Notification Banner -->
+            <div id="notificationBanner" class="hidden rounded-3xl p-5 bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 border border-purple-200/60 shadow-sm pulse-notification">
+                <div class="flex items-start gap-3.5">
+                    <div class="text-3xl" id="bannerEmoji">🔔</div>
+                    <div class="flex-1">
+                        <h3 id="notifTitle" class="font-bold text-slate-800 text-sm">Study Reminder</h3>
+                        <p id="notifBody" class="text-xs text-slate-600 mt-0.5 leading-relaxed">Time to check off your assignments for today!</p>
+                        <div class="mt-3 flex gap-2">
+                            <button onclick="openModal('addTaskModal')" class="px-3.5 py-1.5 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-700 transition">
+                                + Add Assignment
+                            </button>
+                            <button onclick="dismissNotification()" class="px-3.5 py-1.5 bg-white/80 text-slate-600 rounded-xl text-xs font-semibold hover:bg-white transition border border-slate-200">
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Homework Management Card -->
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h2 id="currentFolderTitle" class="font-extrabold text-xl text-slate-800 flex items-center gap-2">
+                            <span>🌈 All Homework Tasks</span>
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Organized by class folders with timed alerts</p>
+                    </div>
+
+                    <button onclick="openModal('addTaskModal')" class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xs hover:opacity-95 transition shadow-md shadow-purple-200 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add Assignment</span>
+                    </button>
+                </div>
+
+                <!-- Filter Navigation Tabs -->
+                <div class="flex items-center gap-1.5 bg-slate-100/70 p-1.5 rounded-2xl overflow-x-auto mb-4">
+                    <button onclick="setFilter('all')" id="filterAll" class="filter-tab flex-1 py-1.5 px-3 rounded-xl text-xs font-bold bg-white text-slate-800 shadow-sm transition">All Tasks</button>
+                    <button onclick="setFilter('reminders')" id="filterReminders" class="filter-tab flex-1 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition"><i class="fa-solid fa-bell text-amber-500 mr-1"></i>Reminders Set</button>
+                    <button onclick="setFilter('dueToday')" id="filterToday" class="filter-tab flex-1 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition">Due Today</button>
+                    <button onclick="setFilter('completed')" id="filterCompleted" class="filter-tab flex-1 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition">Completed</button>
+                </div>
+
+                <!-- Task Cards List -->
+                <div id="taskList" class="space-y-2.5 min-h-[240px]">
+                    <!-- Dynamic Task Cards -->
+                </div>
+            </div>
+
+            <!-- SMART Goal Progress Card -->
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">🎯</div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm">SMART Goal Tracker</h3>
+                            <p id="smartGoalSummary" class="text-xs text-slate-400 truncate max-w-xs sm:max-w-md">Complete homework on time with custom reminders</p>
+                        </div>
+                    </div>
+                    <button onclick="openModal('smartGoalModal')" class="text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-xl transition">
+                        Edit Goal
+                    </button>
+                </div>
+
+                <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5 border border-slate-100">
+                    <div id="smartGoalProgressBar" class="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-slate-400 font-semibold mt-2">
+                    <span id="smartGoalProgressText">0 / 10 Completed</span>
+                    <span id="smartGoalTargetDate">Target: End of Term</span>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- Modal: Add / Edit Homework Assignment with Reminders -->
+    <div id="addTaskModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-extrabold text-slate-800 text-base flex items-center gap-2">
+                    <span>✨ Add Homework & Reminder</span>
+                </h3>
+                <button onclick="closeModal('addTaskModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="addTaskForm" onsubmit="handleAddTask(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Assignment Title</label>
+                    <input type="text" id="taskTitle" required placeholder="e.g., Read Ch. 3 or Math Worksheet" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Class Folder</label>
+                        <select id="taskSubject" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                            <!-- Dynamic Folder Options -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Due Date</label>
+                        <input type="date" id="taskDueDate" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                    </div>
+                </div>
+
+                <!-- REMINDER SETTINGS BOX -->
+                <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-extrabold text-amber-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bell text-amber-500"></i>
+                            <span>Schedule Alarm Reminder</span>
+                        </label>
+                        <input type="checkbox" id="enableReminderCheck" onchange="toggleReminderInputs()" class="accent-purple-500 w-4 h-4 cursor-pointer">
+                    </div>
+
+                    <div id="reminderInputsGroup" class="space-y-2 hidden">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Reminder Date</label>
+                                <input type="date" id="reminderDate" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-200 text-xs focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Reminder Time</label>
+                                <input type="time" id="reminderTime" value="17:00" class="w-full px-2.5 py-1.5 rounded-lg border border-amber-200 text-xs focus:outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Quick Presets -->
+                        <div class="flex items-center gap-1.5 flex-wrap pt-1">
+                            <span class="text-[10px] font-bold text-slate-400">Quick Set:</span>
+                            <button type="button" onclick="setQuickReminder(15)" class="text-[10px] bg-white border border-amber-200 text-amber-800 font-bold px-2 py-0.5 rounded-md hover:bg-amber-100">+15 mins</button>
+                            <button type="button" onclick="setQuickReminder(60)" class="text-[10px] bg-white border border-amber-200 text-amber-800 font-bold px-2 py-0.5 rounded-md hover:bg-amber-100">+1 hour</button>
+                            <button type="button" onclick="setQuickReminder(180)" class="text-[10px] bg-white border border-amber-200 text-amber-800 font-bold px-2 py-0.5 rounded-md hover:bg-amber-100">+3 hours</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Est. Time (Mins)</label>
+                        <input type="number" id="taskEstTime" min="5" max="300" value="30" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Sound Alert</label>
+                        <select id="taskSoundChoice" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                            <option value="chime">Gentle Chime 🔔</option>
+                            <option value="bell">Study Bell ⏰</option>
+                            <option value="fanfare">Victory Sound 🎺</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Notes / Details</label>
+                    <textarea id="taskNotes" rows="2" placeholder="Page numbers, chapter notes, or instructions..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400"></textarea>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeModal('addTaskModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 text-xs hover:bg-slate-50 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-xs hover:bg-purple-600 transition shadow-sm">Save Homework</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Custom Folder Creation -->
+    <div id="addSubjectModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-extrabold text-slate-800 text-base">📁 Add Custom Class Folder</h3>
+                <button onclick="closeModal('addSubjectModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="addSubjectForm" onsubmit="handleAddSubject(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Class Name</label>
+                    <input type="text" id="subjectName" required placeholder="e.g., Computer Science" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Emoji Icon</label>
+                        <input type="text" id="subjectEmoji" maxlength="2" value="📚" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-center focus:outline-none focus:border-purple-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Pastel Theme</label>
+                        <select id="subjectColor" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                            <option value="pastel-pink">Pastel Pink</option>
+                            <option value="pastel-purple">Pastel Purple</option>
+                            <option value="pastel-blue">Pastel Blue</option>
+                            <option value="pastel-green">Pastel Green</option>
+                            <option value="pastel-yellow">Pastel Yellow</option>
+                            <option value="pastel-orange">Pastel Orange</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeModal('addSubjectModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 text-xs hover:bg-slate-50 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-xs hover:bg-purple-600 transition shadow-sm">Create Folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Calendar Integration Sync -->
+    <div id="calendarModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-extrabold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-blue-500"></i>
+                    <span>Calendar Test & Quiz Sync</span>
+                </h3>
+                <button onclick="closeModal('calendarModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-500 leading-relaxed">
+                Import your school .ics calendar file to sync test dates directly into your homework companion.
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Upload .ics Calendar File</label>
+                    <input type="file" id="icsFileInput" accept=".ics" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-600 hover:file:bg-purple-100">
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="closeModal('calendarModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 text-xs hover:bg-slate-50 transition">Close</button>
+                <button onclick="saveCalendarIntegration()" class="flex-1 py-2.5 rounded-xl bg-blue-500 text-white font-bold text-xs hover:bg-blue-600 transition shadow-sm">Sync Calendar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: SMART Goal Setup -->
+    <div id="smartGoalModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-extrabold text-slate-800 text-base flex items-center gap-2">
+                    <span>🎯 Set SMART Goal</span>
+                </h3>
+                <button onclick="closeModal('smartGoalModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="smartGoalForm" onsubmit="handleSaveSmartGoal(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Specific Goal Statement</label>
+                    <input type="text" id="smartSpecific" required placeholder="e.g., Complete 10 homework assignments on time" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Target Tasks</label>
+                        <input type="number" id="smartTargetCount" min="1" max="100" value="10" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Target Date</label>
+                        <input type="date" id="smartTargetDateInput" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-400">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeModal('smartGoalModal')" class="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 text-xs hover:bg-slate-50 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-xs hover:bg-purple-600 transition shadow-sm">Save Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION LOGIC -->
+    <script>
+        // --- APP STATE ---
+        let appState = {
+            points: 0,
+            selectedFolder: 'all',
+            activeFilter: 'all',
+            dailyReminderEnabled: true,
+            dailyReminderTime: '16:00', // 4:00 PM default
+            lastDailyNotifiedDate: '',
+            subjects: [
+                { id: 'english', name: 'English', emoji: '📖', color: 'pastel-pink' },
+                { id: 'math', name: 'Math', emoji: '📐', color: 'pastel-blue' },
+                { id: 'science', name: 'Science', emoji: '🔬', color: 'pastel-green' },
+                { id: 'fys', name: 'FYS', emoji: '🎓', color: 'pastel-purple' },
+                { id: 'spanish', name: 'Spanish', emoji: '🌮', color: 'pastel-yellow' },
+                { id: 'pe', name: 'P.E.', emoji: '⚽', color: 'pastel-mint' }
+            ],
+            tasks: [
+                {
+                    id: 'task_1',
+                    title: 'FYS Goal Reflection Worksheet',
+                    subjectId: 'fys',
+                    dueDate: getFormattedDate(0),
+                    estTime: 20,
+                    notes: 'Finish goal reflection sheet',
+                    completed: false,
+                    timeSpentSeconds: 0,
+                    reminderEnabled: true,
+                    reminderDate: getFormattedDate(0),
+                    reminderTime: getOffsetTimeString(5), // 5 minutes from now
+                    reminderTriggered: false,
+                    soundChoice: 'chime'
+                },
+                {
+                    id: 'task_2',
+                    title: 'Read English Ch. 4 & 5',
+                    subjectId: 'english',
+                    dueDate: getFormattedDate(1),
+                    estTime: 35,
+                    notes: 'Take brief summary notes',
+                    completed: false,
+                    timeSpentSeconds: 0,
+                    reminderEnabled: true,
+                    reminderDate: getFormattedDate(0),
+                    reminderTime: '18:00',
+                    reminderTriggered: false,
+                    soundChoice: 'bell'
+                }
+            ],
+            smartGoal: {
+                specific: 'Complete 10 homework assignments on time',
+                targetCount: 10,
+                targetDate: getFormattedDate(30)
+            },
+            activeTimer: {
+                taskId: null,
+                isRunning: false,
+                seconds: 0,
+                interval: null
+            }
+        };
+
+        // --- AUDIO SYNTHESIZER (NO EXTERNAL FILES REQUIRED) ---
+        function playChimeSound(type = 'chime') {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+
+                if (type === 'chime') {
+                    const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    freqs.forEach((f, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(f, ctx.currentTime + i * 0.12);
+                        gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.6);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(ctx.currentTime + i * 0.12);
+                        osc.stop(ctx.currentTime + i * 0.12 + 0.6);
+                    });
+                } else if (type === 'bell') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 1.2);
+                } else if (type === 'fanfare') {
+                    const notes = [440, 554.37, 659.25, 880];
+                    notes.forEach((f, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(f, ctx.currentTime + i * 0.1);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.4);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(ctx.currentTime + i * 0.1);
+                        osc.stop(ctx.currentTime + i * 0.1 + 0.4);
+                    });
+                }
+            } catch (e) {
+                console.log('Audio playback initialized on user interaction.', e);
+            }
+        }
+
+        // --- STREAMING_CHUNK:Initializing browser notification permissions and scheduling engine... ---
+        // --- BROWSER NOTIFICATION ENGINE ---
+        function checkNotificationPermission() {
+            const btn = document.getElementById('notifPermBtn');
+            const text = document.getElementById('notifBtnText');
+
+            if (!('Notification' in window)) {
+                text.innerText = 'Notifs Unsupported';
+                btn.className = 'px-3.5 py-2 rounded-2xl bg-slate-100 text-slate-400 font-bold text-xs flex items-center gap-2 cursor-not-allowed';
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                text.innerText = 'Reminders Active ✅';
+                btn.className = 'px-3.5 py-2 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs flex items-center gap-2';
+            } else if (Notification.permission === 'denied') {
+                text.innerText = 'Notifs Blocked';
+                btn.className = 'px-3.5 py-2 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs flex items-center gap-2';
+            } else {
+                text.innerText = 'Enable Reminders 🔔';
+                btn.className = 'px-3.5 py-2 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition flex items-center gap-2 cursor-pointer';
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showToast('Browser Notifications', 'Your browser does not support push notifications, but in-app chimes are active!', 'info');
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                checkNotificationPermission();
+                if (permission === 'granted') {
+                    showToast('Notifications Enabled! 🎉', 'You will now receive homework reminder alerts.', 'success');
+                    playChimeSound('chime');
+                } else {
+                    showToast('Alerts Set to In-App', 'In-app banners & sounds will alert you when homework is due.', 'info');
+                }
+            });
+        }
+
+        function sendSystemNotification(title, body, iconEmoji = '⏰') {
+            // In-app visual Toast + Audio Chime
+            showToast(title, body, 'alarm', iconEmoji);
+
+            // Native Browser Notification if allowed
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'https://placehold.co/128x128/E2D4F0/4B5563?text=⏰'
+                    });
+                } catch (e) {
+                    console.log('Native notification error:', e);
+                }
+            }
+        }
+
+        // --- STREAMING_CHUNK:Creating toast notification UI and alarm trigger mechanism... -->
+        function showToast(title, message, type = 'info', icon = '🔔') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto bg-white/95 backdrop-blur-md border border-purple-200 shadow-xl rounded-2xl p-4 toast-bounce flex items-start gap-3 border-l-4 border-l-purple-500';
+
+            toast.innerHTML = `
+                <div class="text-2xl">${icon}</div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-extrabold text-xs text-slate-800">${title}</h4>
+                    <p class="text-[11px] text-slate-600 mt-0.5">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-slate-500 text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 6000);
+        }
+
+        // --- BACKGROUND REMINDER SCHEDULER LOOP ---
+        function checkScheduledReminders() {
+            const now = new Date();
+            const currentDateStr = getFormattedDate(0);
+            const currentHours = String(now.getHours()).padStart(2, '0');
+            const currentMins = String(now.getMinutes()).padStart(2, '0');
+            const currentTimeStr = `${currentHours}:${currentMins}`;
+
+            // Check Individual Task Reminders
+            appState.tasks.forEach(task => {
+                if (task.reminderEnabled && !task.completed && !task.reminderTriggered) {
+                    if (task.reminderDate === currentDateStr && task.reminderTime <= currentTimeStr) {
+                        task.reminderTriggered = true;
+                        saveToLocalStorage();
+
+                        const subject = appState.subjects.find(s => s.id === task.subjectId);
+                        const folderName = subject ? subject.name : 'Class';
+
+                        playChimeSound(task.soundChoice || 'chime');
+                        sendSystemNotification(
+                            `⏰ Homework Reminder: ${task.title}`,
+                            `${folderName} assignment is due soon (${formatDisplayDate(task.dueDate)}). Time to focus!`,
+                            '📚'
+                        );
+                        renderAll();
+                    }
+                }
+            });
+
+            // Check Daily 4:00 PM (or custom time) Study Check-in Reminder
+            if (appState.dailyReminderEnabled) {
+                if (appState.dailyReminderTime === currentTimeStr && appState.lastDailyNotifiedDate !== currentDateStr) {
+                    appState.lastDailyNotifiedDate = currentDateStr;
+                    saveToLocalStorage();
+
+                    const pendingCount = appState.tasks.filter(t => !t.completed).length;
+                    playChimeSound('bell');
+                    sendSystemNotification(
+                        `📌 Daily Homework Check-In`,
+                        `You have ${pendingCount} pending homework assignments. Review your folders today!`,
+                        '✨'
+                    );
+                    showBannerNotification('📅 Daily Homework Check-In', `You have ${pendingCount} pending tasks to finish today. Let's get them done!`);
+                }
+            }
+        }
+
+        // --- STREAMING_CHUNK:Handling state initializations and localStorage synchronization... -->
+        // --- INIT & LOCAL STORAGE ---
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            checkNotificationPermission();
+            renderAll();
+
+            // Run reminder check every 10 seconds
+            setInterval(checkScheduledReminders, 10000);
+            checkScheduledReminders();
+        });
+
+        function saveToLocalStorage() {
+            localStorage.setItem('fys_homework_reminders_app', JSON.stringify({
+                points: appState.points,
+                subjects: appState.subjects,
+                tasks: appState.tasks,
+                smartGoal: appState.smartGoal,
+                dailyReminderEnabled: appState.dailyReminderEnabled,
+                dailyReminderTime: appState.dailyReminderTime,
+                lastDailyNotifiedDate: appState.lastDailyNotifiedDate
+            }));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('fys_homework_reminders_app');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appState.points = parsed.points || 0;
+                    appState.subjects = parsed.subjects || appState.subjects;
+                    appState.tasks = parsed.tasks || appState.tasks;
+                    appState.smartGoal = parsed.smartGoal || appState.smartGoal;
+                    appState.dailyReminderEnabled = parsed.dailyReminderEnabled !== undefined ? parsed.dailyReminderEnabled : true;
+                    appState.dailyReminderTime = parsed.dailyReminderTime || '16:00';
+                    appState.lastDailyNotifiedDate = parsed.lastDailyNotifiedDate || '';
+                } catch (e) {
+                    console.error("Error reading saved state:", e);
+                }
+            }
+        }
+
+        // --- DATE HELPER UTILS ---
+        function getFormattedDate(offsetDays = 0) {
+            const d = new Date();
+            d.setDate(d.getDate() + offsetDays);
+            return d.toISOString().split('T')[0];
+        }
+
+        function getOffsetTimeString(offsetMinutes = 15) {
+            const d = new Date();
+            d.setMinutes(d.getMinutes() + offsetMinutes);
+            const h = String(d.getHours()).padStart(2, '0');
+            const m = String(d.getMinutes()).padStart(2, '0');
+            return `${h}:${m}`;
+        }
+
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '';
+            const today = getFormattedDate(0);
+            const tomorrow = getFormattedDate(1);
+            if (dateStr === today) return 'Today 🌟';
+            if (dateStr === tomorrow) return 'Tomorrow';
+
+            const [year, month, day] = dateStr.split('-');
+            const date = new Date(year, month - 1, day);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function format12HourTime(timeStr) {
+            if (!timeStr) return '';
+            const [h, m] = timeStr.split(':');
+            let hour = parseInt(h);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12 || 12;
+            return `${hour}:${m} ${ampm}`;
+        }
+
+        function getPastelBgClass(colorKey) {
+            const map = {
+                'pastel-pink': 'bg-pink-100 border-pink-200 text-pink-800',
+                'pastel-purple': 'bg-purple-100 border-purple-200 text-purple-800',
+                'pastel-blue': 'bg-blue-100 border-blue-200 text-blue-800',
+                'pastel-green': 'bg-emerald-100 border-emerald-200 text-emerald-800',
+                'pastel-yellow': 'bg-amber-100 border-amber-200 text-amber-800',
+                'pastel-orange': 'bg-orange-100 border-orange-200 text-orange-800',
+                'pastel-mint': 'bg-teal-100 border-teal-200 text-teal-800'
+            };
+            return map[colorKey] || 'bg-slate-100 border-slate-200 text-slate-800';
+        }
+
+        // --- STREAMING_CHUNK:Rendering task lists, filter views, and scheduled reminders... -->
+        // --- RENDER LOGIC ---
+        function renderAll() {
+            document.getElementById('userPoints').innerText = appState.points;
+            document.getElementById('dailyReminderToggle').checked = appState.dailyReminderEnabled;
+            document.getElementById('dailyReminderTime').value = appState.dailyReminderTime;
+
+            renderSubjects();
+            renderTasks();
+            renderScheduledReminders();
+            renderSmartGoal();
+            updateSubjectDropdowns();
+        }
+
+        function renderSubjects() {
+            const container = document.getElementById('subjectsList');
+            container.innerHTML = '';
+
+            // 'All' Folder
+            const isAllActive = appState.selectedFolder === 'all';
+            const allElem = document.createElement('div');
+            allElem.className = `p-2.5 rounded-2xl cursor-pointer transition flex items-center justify-between border ${
+                isAllActive ? 'bg-slate-800 border-slate-800 text-white shadow-sm' : 'bg-slate-50 hover:bg-slate-100 border-slate-100 text-slate-700'
+            }`;
+            allElem.onclick = () => selectFolder('all');
+            
+            const totalPending = appState.tasks.filter(t => !t.completed).length;
+
+            allElem.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <span class="text-base">🌈</span>
+                    <span class="font-bold text-xs">All Assignments</span>
+                </div>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full ${isAllActive ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-600'}">${totalPending}</span>
+            `;
+            container.appendChild(allElem);
+
+            // Subject Folders
+            appState.subjects.forEach(subj => {
+                const isActive = appState.selectedFolder === subj.id;
+                const pendingCount = appState.tasks.filter(t => t.subjectId === subj.id && !t.completed).length;
+                
+                const elem = document.createElement('div');
+                elem.className = `p-2.5 rounded-2xl cursor-pointer transition flex items-center justify-between border ${
+                    isActive ? 'border-purple-300 ring-2 ring-purple-200 bg-white shadow-sm' : 'border-slate-100 bg-slate-50/50 hover:bg-slate-100'
+                }`;
+                elem.onclick = () => selectFolder(subj.id);
+
+                elem.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-base">${subj.emoji}</span>
+                        <span class="font-bold text-xs text-slate-800">${subj.name}</span>
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${getPastelBgClass(subj.color)}">${pendingCount}</span>
+                `;
+                container.appendChild(elem);
+            });
+        }
+
+        function selectFolder(folderId) {
+            appState.selectedFolder = folderId;
+            const titleElem = document.getElementById('currentFolderTitle');
+            if (folderId === 'all') {
+                titleElem.innerHTML = '<span>🌈 All Homework Tasks</span>';
+            } else {
+                const subj = appState.subjects.find(s => s.id === folderId);
+                titleElem.innerHTML = `<span>${subj ? subj.emoji + ' ' + subj.name : 'Folder'} Homework</span>`;
+            }
+            renderSubjects();
+            renderTasks();
+        }
+
+        function setFilter(filterName) {
+            appState.activeFilter = filterName;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.className = 'filter-tab flex-1 py-1.5 px-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition';
+            });
+            const map = {
+                'all': 'filterAll',
+                'reminders': 'filterReminders',
+                'dueToday': 'filterToday',
+                'completed': 'filterCompleted'
+            };
+            const activeBtn = document.getElementById(map[filterName]);
+            if (activeBtn) {
+                activeBtn.className = 'filter-tab flex-1 py-1.5 px-3 rounded-xl text-xs font-bold bg-white text-slate-800 shadow-sm transition';
+            }
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskList');
+            container.innerHTML = '';
+
+            let filtered = appState.tasks;
+
+            if (appState.selectedFolder !== 'all') {
+                filtered = filtered.filter(t => t.subjectId === appState.selectedFolder);
+            }
+
+            const todayStr = getFormattedDate(0);
+
+            if (appState.activeFilter === 'reminders') {
+                filtered = filtered.filter(t => t.reminderEnabled && !t.completed);
+            } else if (appState.activeFilter === 'dueToday') {
+                filtered = filtered.filter(t => !t.completed && t.dueDate === todayStr);
+            } else if (appState.activeFilter === 'completed') {
+                filtered = filtered.filter(t => t.completed);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
+                        <div class="text-3xl mb-1.5">🎉</div>
+                        <p class="font-bold text-slate-600 text-xs">No homework assignments found!</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Click "Add Assignment" to enter a task with custom reminders.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(task => {
+                const subject = appState.subjects.find(s => s.id === task.subjectId) || { name: 'General', emoji: '📌', color: 'pastel-purple' };
+                const isOverdue = !task.completed && task.dueDate < todayStr;
+                const isTimerActiveForThis = appState.activeTimer.taskId === task.id;
+
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    task.completed 
+                        ? 'bg-slate-50/70 border-slate-100 opacity-60' 
+                        : isOverdue 
+                        ? 'bg-rose-50/40 border-rose-200 shadow-sm' 
+                        : 'bg-white border-slate-100 hover:border-purple-200 shadow-sm'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <button onclick="toggleTaskComplete('${task.id}')" class="mt-0.5 text-lg transition hover:scale-110">
+                            ${task.completed ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-regular fa-circle text-slate-300"></i>'}
+                        </button>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${getPastelBgClass(subject.color)}">
+                                    ${subject.emoji} ${subject.name}
+                                </span>
+                                ${task.reminderEnabled && !task.completed ? `
+                                    <span class="text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                                        <i class="fa-solid fa-bell text-amber-500 text-[8px]"></i>
+                                        <span>${formatDisplayDate(task.reminderDate)} @ ${format12HourTime(task.reminderTime)}</span>
+                                    </span>
+                                ` : ''}
+                                ${isOverdue ? '<span class="text-[9px] font-extrabold bg-rose-500 text-white px-1.5 py-0.5 rounded-md">OVERDUE</span>' : ''}
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-xs mt-1 truncate ${task.completed ? 'line-through text-slate-400' : ''}">${task.title}</h4>
+                            ${task.notes ? `<p class="text-[11px] text-slate-400 truncate mt-0.5">${task.notes}</p>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                        <div class="text-right">
+                            <div class="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                                <i class="fa-regular fa-calendar text-slate-400"></i>
+                                <span>${formatDisplayDate(task.dueDate)}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-medium">
+                                ${task.timeSpentSeconds ? Math.floor(task.timeSpentSeconds / 60) + 'm logged' : 'Est. ' + task.estTime + 'm'}
+                            </div>
+                        </div>
+
+                        ${!task.completed ? `
+                            <button onclick="startHomeworkTimer('${task.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                                isTimerActiveForThis 
+                                    ? 'bg-purple-600 text-white shadow-md' 
+                                    : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                            }">
+                                <i class="fa-solid ${isTimerActiveForThis ? 'fa-stop' : 'fa-play'} text-[10px]"></i>
+                                <span>${isTimerActiveForThis ? 'Focusing' : 'Focus'}</span>
+                            </button>
+                        ` : ''}
+
+                        <button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-rose-400 text-xs p-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // --- STREAMING_CHUNK:Rendering dynamic sidebar reminders list and SMART goals... -->
+        function renderScheduledReminders() {
+            const container = document.getElementById('scheduledRemindersList');
+            container.innerHTML = '';
+
+            const activeReminders = appState.tasks.filter(t => t.reminderEnabled && !t.completed);
+            document.getElementById('reminderCountBadge').innerText = `${activeReminders.length} Active`;
+
+            if (activeReminders.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-3">No active task alarms.</p>`;
+                return;
+            }
+
+            activeReminders.forEach(task => {
+                const subj = appState.subjects.find(s => s.id === task.subjectId);
+                const elem = document.createElement('div');
+                elem.className = 'p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between gap-2';
+                
+                elem.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="text-xs font-bold text-amber-950 truncate">${task.title}</div>
+                        <div class="text-[10px] font-semibold text-amber-700 flex items-center gap-1 mt-0.5">
+                            <span>${subj ? subj.emoji : '📌'} ${formatDisplayDate(task.reminderDate)} @ ${format12HourTime(task.reminderTime)}</span>
+                        </div>
+                    </div>
+                    <button onclick="snoozeReminder('${task.id}', 15)" title="Snooze 15m" class="text-[10px] bg-white text-amber-800 font-bold px-2 py-1 rounded-lg border border-amber-200 hover:bg-amber-100 transition whitespace-nowrap">
+                        +15m
+                    </button>
+                `;
+                container.appendChild(elem);
+            });
+        }
+
+        function renderSmartGoal() {
+            const goal = appState.smartGoal;
+            document.getElementById('smartGoalSummary').innerText = goal.specific;
+            
+            const completed = appState.tasks.filter(t => t.completed).length;
+            const pct = Math.min(100, Math.round((completed / goal.targetCount) * 100));
+
+            document.getElementById('smartGoalProgressBar').style.width = `${pct}%`;
+            document.getElementById('smartGoalProgressText').innerText = `${completed} / ${goal.targetCount} Completed`;
+            document.getElementById('smartGoalTargetDate').innerText = `Target: ${formatDisplayDate(goal.targetDate)}`;
+        }
+
+        function updateSubjectDropdowns() {
+            const select = document.getElementById('taskSubject');
+            select.innerHTML = '';
+            appState.subjects.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.innerText = `${s.emoji} ${s.name}`;
+                select.appendChild(opt);
+            });
+        }
+
+        // --- STREAMING_CHUNK:Adding event handlers, timer controls, and snooze functions... -->
+        // --- HANDLERS & ACTIONS ---
+        function toggleReminderInputs() {
+            const isChecked = document.getElementById('enableReminderCheck').checked;
+            const group = document.getElementById('reminderInputsGroup');
+            if (isChecked) {
+                group.classList.remove('hidden');
+                document.getElementById('reminderDate').value = document.getElementById('taskDueDate').value || getFormattedDate(0);
+            } else {
+                group.classList.add('hidden');
+            }
+        }
+
+        function setQuickReminder(offsetMinutes) {
+            document.getElementById('enableReminderCheck').checked = true;
+            toggleReminderInputs();
+            document.getElementById('reminderDate').value = getFormattedDate(0);
+            document.getElementById('reminderTime').value = getOffsetTimeString(offsetMinutes);
+        }
+
+        function handleAddTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('taskTitle').value;
+            const subjectId = document.getElementById('taskSubject').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const estTime = parseInt(document.getElementById('taskEstTime').value) || 30;
+            const notes = document.getElementById('taskNotes').value;
+            const soundChoice = document.getElementById('taskSoundChoice').value;
+
+            const reminderEnabled = document.getElementById('enableReminderCheck').checked;
+            const reminderDate = document.getElementById('reminderDate').value || dueDate;
+            const reminderTime = document.getElementById('reminderTime').value || '17:00';
+
+            const newTask = {
+                id: 'task_' + Date.now(),
+                title,
+                subjectId,
+                dueDate,
+                estTime,
+                notes,
+                completed: false,
+                timeSpentSeconds: 0,
+                reminderEnabled,
+                reminderDate,
+                reminderTime,
+                reminderTriggered: false,
+                soundChoice
+            };
+
+            appState.tasks.unshift(newTask);
+            saveToLocalStorage();
+            renderAll();
+            closeModal('addTaskModal');
+            document.getElementById('addTaskForm').reset();
+            document.getElementById('reminderInputsGroup').classList.add('hidden');
+
+            if (reminderEnabled) {
+                showToast('Reminder Set! ⏰', `Alert scheduled for ${formatDisplayDate(reminderDate)} at ${format12HourTime(reminderTime)}`, 'info', '🔔');
+            }
+        }
+
+        function snoozeReminder(taskId, minutes) {
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            task.reminderEnabled = true;
+            task.reminderTriggered = false;
+            task.reminderDate = getFormattedDate(0);
+            task.reminderTime = getOffsetTimeString(minutes);
+
+            saveToLocalStorage();
+            renderAll();
+            showToast('Reminder Snoozed 💤', `Snoozed for ${minutes} minutes (${format12HourTime(task.reminderTime)})`, 'info');
+        }
+
+        function toggleDailyReminder() {
+            appState.dailyReminderEnabled = document.getElementById('dailyReminderToggle').checked;
+            saveToLocalStorage();
+            if (appState.dailyReminderEnabled) {
+                showToast('Daily Reminder Active', `You'll get an alert every day at ${format12HourTime(appState.dailyReminderTime)}`, 'info', '⏰');
+            }
+        }
+
+        function updateDailyReminderTime() {
+            appState.dailyReminderTime = document.getElementById('dailyReminderTime').value;
+            saveToLocalStorage();
+            showToast('Reminder Time Updated', `Daily check-in set to ${format12HourTime(appState.dailyReminderTime)}`, 'info');
+        }
+
+        function handleAddSubject(e) {
+            e.preventDefault();
+            const name = document.getElementById('subjectName').value;
+            const emoji = document.getElementById('subjectEmoji').value || '📚';
+            const color = document.getElementById('subjectColor').value;
+
+            appState.subjects.push({
+                id: 'subj_' + Date.now(),
+                name,
+                emoji,
+                color
+            });
+
+            saveToLocalStorage();
+            renderAll();
+            closeModal('addSubjectModal');
+            document.getElementById('addSubjectForm').reset();
+        }
+
+        function deleteTask(taskId) {
+            if (appState.activeTimer.taskId === taskId) {
+                stopTimer();
+            }
+            appState.tasks = appState.tasks.filter(t => t.id !== taskId);
+            saveToLocalStorage();
+            renderAll();
+        }
+
+        function toggleTaskComplete(taskId) {
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            task.completed = !task.completed;
+            const todayStr = getFormattedDate(0);
+
+            if (task.completed) {
+                if (task.dueDate >= todayStr) {
+                    appState.points += 10;
+                    triggerConfetti();
+                    playChimeSound('fanfare');
+                } else {
+                    appState.points = Math.max(0, appState.points - 5);
+                }
+                if (appState.activeTimer.taskId === taskId) {
+                    stopTimer();
+                }
+            }
+
+            saveToLocalStorage();
+            renderAll();
+        }
+
+        // --- STREAMING_CHUNK:Structuring study timer controls and modal helpers... -->
+        // --- FOCUS TIMER ---
+        function startHomeworkTimer(taskId) {
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (appState.activeTimer.taskId === taskId && appState.activeTimer.isRunning) {
+                stopTimer();
+                return;
+            }
+
+            if (appState.activeTimer.interval) {
+                clearInterval(appState.activeTimer.interval);
+            }
+
+            const subject = appState.subjects.find(s => s.id === task.subjectId);
+
+            appState.activeTimer.taskId = taskId;
+            appState.activeTimer.isRunning = true;
+            appState.activeTimer.seconds = task.timeSpentSeconds || 0;
+
+            document.getElementById('timerWidget').classList.remove('hidden');
+            document.getElementById('activeTaskTitle').innerText = task.title;
+            document.getElementById('activeSubjectBadge').innerText = subject ? subject.name : 'Homework';
+            document.getElementById('activeSubjectBadge').className = `text-xs font-semibold px-2 py-0.5 rounded-md ${getPastelBgClass(subject?.color)}`;
+
+            updateTimerDisplay();
+
+            appState.activeTimer.interval = setInterval(() => {
+                appState.activeTimer.seconds++;
+                task.timeSpentSeconds = appState.activeTimer.seconds;
+                updateTimerDisplay();
+            }, 1000);
+
+            renderTasks();
+        }
+
+        function toggleTimer() {
+            if (!appState.activeTimer.taskId) return;
+
+            const btn = document.getElementById('toggleTimerBtn');
+            if (appState.activeTimer.isRunning) {
+                clearInterval(appState.activeTimer.interval);
+                appState.activeTimer.isRunning = false;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Resume';
+                btn.className = 'flex-1 py-2 rounded-xl bg-amber-400 text-white font-bold text-xs hover:bg-amber-500 transition shadow-sm flex items-center justify-center gap-1.5';
+            } else {
+                appState.activeTimer.isRunning = true;
+                const task = appState.tasks.find(t => t.id === appState.activeTimer.taskId);
+                appState.activeTimer.interval = setInterval(() => {
+                    appState.activeTimer.seconds++;
+                    if (task) task.timeSpentSeconds = appState.activeTimer.seconds;
+                    updateTimerDisplay();
+                }, 1000);
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+                btn.className = 'flex-1 py-2 rounded-xl bg-emerald-400 text-white font-bold text-xs hover:bg-emerald-500 transition shadow-sm flex items-center justify-center gap-1.5';
+            }
+        }
+
+        function stopTimer() {
+            if (appState.activeTimer.interval) {
+                clearInterval(appState.activeTimer.interval);
+            }
+            appState.activeTimer = { taskId: null, isRunning: false, seconds: 0, interval: null };
+            document.getElementById('timerWidget').classList.add('hidden');
+            saveToLocalStorage();
+            renderTasks();
+        }
+
+        function completeCurrentTask() {
+            if (appState.activeTimer.taskId) {
+                toggleTaskComplete(appState.activeTimer.taskId);
+                stopTimer();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const sec = appState.activeTimer.seconds;
+            const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+            const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${h}:${m}:${s}`;
+        }
+
+        function showBannerNotification(title, body) {
+            const banner = document.getElementById('notificationBanner');
+            document.getElementById('notifTitle').innerText = title;
+            document.getElementById('notifBody').innerText = body;
+            banner.classList.remove('hidden');
+        }
+
+        function dismissNotification() {
+            document.getElementById('notificationBanner').classList.add('hidden');
+        }
+
+        // --- SMART GOAL & REWARDS ---
+        function handleSaveSmartGoal(e) {
+            e.preventDefault();
+            appState.smartGoal.specific = document.getElementById('smartSpecific').value;
+            appState.smartGoal.targetCount = parseInt(document.getElementById('smartTargetCount').value) || 10;
+            appState.smartGoal.targetDate = document.getElementById('smartTargetDateInput').value;
+
+            saveToLocalStorage();
+            renderSmartGoal();
+            closeModal('smartGoalModal');
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 70,
+                    spread: 60,
+                    origin: { y: 0.7 },
+                    colors: ['#FFD1DC', '#E2D4F0', '#CBE4F9', '#CDF0EA']
+                });
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'addTaskModal') {
+                document.getElementById('taskDueDate').value = getFormattedDate(1);
+            } else if (id === 'smartGoalModal') {
+                document.getElementById('smartSpecific').value = appState.smartGoal.specific;
+                document.getElementById('smartTargetCount').value = appState.smartGoal.targetCount;
+                document.getElementById('smartTargetDateInput').value = appState.smartGoal.targetDate;
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

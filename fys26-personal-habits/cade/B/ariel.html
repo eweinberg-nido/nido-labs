@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atleta de Fe 🏎️📖 | Habit Tracker & Planificador de Alto Rendimiento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        theme: {
+                            50: 'var(--color-50)',
+                            100: 'var(--color-100)',
+                            500: 'var(--color-500)',
+                            600: 'var(--color-600)',
+                            700: 'var(--color-700)',
+                            800: 'var(--color-800)',
+                            900: 'var(--color-900)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-main: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(226, 232, 240, 0.8);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #7c3aed;
+            --primary-hover: #6d28d9;
+            --primary-light: rgba(124, 58, 237, 0.12);
+            --hero-from: #5b21b6;
+            --hero-via: #6d28d9;
+            --hero-to: #312e81;
+            --accent: #f59e0b;
+            --step2-accent: #6366f1;
+            --step3-accent: #ec4899;
+        }
+
+        .dark {
+            --bg-main: #090d16;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --primary-light: rgba(139, 92, 246, 0.18);
+            --hero-from: #3b0764;
+            --hero-via: #5b21b6;
+            --hero-to: #1e1b4b;
+            --accent: #fbbf24;
+            --step2-accent: #818cf8;
+            --step3-accent: #f472b6;
+        }
+
+        /* Estilos globales aplicados dynamicamente */
+        body {
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .glass-card {
+            background: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
+            backdrop-filter: blur(14px);
+        }
+
+        .theme-hero-bg {
+            background: linear-gradient(135deg, var(--hero-from), var(--hero-via), var(--hero-to)) !important;
+        }
+
+        .theme-primary-bg {
+            background-color: var(--primary) !important;
+        }
+        .theme-primary-bg:hover {
+            background-color: var(--primary-hover) !important;
+        }
+        .theme-primary-text {
+            color: var(--primary) !important;
+        }
+        .theme-primary-border {
+            border-color: var(--primary) !important;
+        }
+        .theme-primary-light-bg {
+            background-color: var(--primary-light) !important;
+        }
+
+        /* Temas Predeterminados Modifican Todas las Variables */
+        .theme-violet {
+            --primary: #7c3aed; --primary-hover: #6d28d9; --primary-light: rgba(124, 58, 237, 0.15);
+            --hero-from: #4c1d95; --hero-via: #6d28d9; --hero-to: #312e81;
+        }
+        .theme-emerald {
+            --primary: #059669; --primary-hover: #047857; --primary-light: rgba(5, 150, 105, 0.15);
+            --hero-from: #064e3b; --hero-via: #047857; --hero-to: #022c22;
+        }
+        .theme-ocean {
+            --primary: #0284c7; --primary-hover: #0369a1; --primary-light: rgba(2, 132, 199, 0.15);
+            --hero-from: #0c4a6e; --hero-via: #0369a1; --hero-to: #082f49;
+        }
+        .theme-sunset {
+            --primary: #e11d48; --primary-hover: #be123c; --primary-light: rgba(225, 29, 72, 0.15);
+            --hero-from: #881337; --hero-via: #be123c; --hero-to: #4c0519;
+        }
+        .theme-beige {
+            --bg-main: #f7f3ed;
+            --card-bg: rgba(255, 252, 247, 0.9);
+            --card-border: #e8ded1;
+            --text-main: #3d2612;
+            --text-muted: #785a41;
+            --primary: #b45309; --primary-hover: #8c532b; --primary-light: rgba(180, 83, 9, 0.15);
+            --hero-from: #6e3d1d; --hero-via: #8c532b; --hero-to: #4a2811;
+        }
+        .dark .theme-beige {
+            --bg-main: #18110b;
+            --card-bg: rgba(36, 26, 18, 0.85);
+            --card-border: rgba(217, 119, 6, 0.15);
+            --text-main: #fceedd;
+            --text-muted: #b89b82;
+            --primary: #d97706; --primary-hover: #b45309; --primary-light: rgba(217, 119, 6, 0.2);
+            --hero-from: #4a2811; --hero-via: #6e3d1d; --hero-to: #291204;
+        }
+        .theme-cream {
+            --bg-main: #faf8f2;
+            --card-bg: rgba(255, 254, 250, 0.95);
+            --card-border: #eee7d5;
+            --text-main: #2e2619;
+            --text-muted: #6e624f;
+            --primary: #a16207; --primary-hover: #854d0e; --primary-light: rgba(161, 98, 7, 0.15);
+            --hero-from: #713f12; --hero-via: #854d0e; --hero-to: #422006;
+        }
+        .dark .theme-cream {
+            --bg-main: #14100a;
+            --card-bg: rgba(31, 26, 18, 0.85);
+            --card-border: rgba(202, 138, 4, 0.15);
+            --text-main: #faf3e6;
+            --text-muted: #ad9e87;
+            --primary: #ca8a04; --primary-hover: #a16207; --primary-light: rgba(202, 138, 4, 0.2);
+            --hero-from: #422006; --hero-via: #713f12; --hero-to: #210f02;
+        }
+
+        /* --- NUEVAS PALETAS CÁLIDAS INTEGRALES --- */
+        .theme-terracotta {
+            --bg-main: #fdf6f0;
+            --card-bg: rgba(255, 248, 242, 0.92);
+            --card-border: #f0d8c8;
+            --text-main: #4a2113;
+            --text-muted: #8c5a45;
+            --primary: #c85a32; --primary-hover: #a64320; --primary-light: rgba(200, 90, 50, 0.15);
+            --hero-from: #802e15; --hero-via: #a64320; --hero-to: #4d1808;
+        }
+        .dark .theme-terracotta {
+            --bg-main: #1c0e08;
+            --card-bg: rgba(38, 20, 13, 0.88);
+            --card-border: rgba(200, 90, 50, 0.25);
+            --text-main: #fcece4;
+            --text-muted: #c49a88;
+            --primary: #e06d43; --primary-hover: #c85a32; --primary-light: rgba(224, 109, 67, 0.2);
+            --hero-from: #4d1808; --hero-via: #802e15; --hero-to: #290b03;
+        }
+
+        .theme-amber {
+            --bg-main: #fdfbf7;
+            --card-bg: rgba(255, 253, 247, 0.94);
+            --card-border: #f3e5c8;
+            --text-main: #3a2800;
+            --text-muted: #785a1a;
+            --primary: #d97706; --primary-hover: #b45309; --primary-light: rgba(217, 119, 6, 0.15);
+            --hero-from: #78350f; --hero-via: #b45309; --hero-to: #451a03;
+        }
+        .dark .theme-amber {
+            --bg-main: #171004;
+            --card-bg: rgba(36, 25, 10, 0.88);
+            --card-border: rgba(217, 119, 6, 0.25);
+            --text-main: #fef3c7;
+            --text-muted: #d97706;
+            --primary: #f59e0b; --primary-hover: #d97706; --primary-light: rgba(245, 158, 11, 0.2);
+            --hero-from: #451a03; --hero-via: #78350f; --hero-to: #240d02;
+        }
+
+        .theme-autumn {
+            --bg-main: #faf4ed;
+            --card-bg: rgba(255, 250, 244, 0.92);
+            --card-border: #ebd3be;
+            --text-main: #361705;
+            --text-muted: #7c4c2d;
+            --primary: #ea580c; --primary-hover: #c2410c; --primary-light: rgba(234, 88, 12, 0.15);
+            --hero-from: #7c2d12; --hero-via: #9a3412; --hero-to: #431407;
+        }
+        .dark .theme-autumn {
+            --bg-main: #180a03;
+            --card-bg: rgba(38, 18, 9, 0.88);
+            --card-border: rgba(234, 88, 12, 0.25);
+            --text-main: #ffedd5;
+            --text-muted: #fdba74;
+            --primary: #f97316; --primary-hover: #ea580c; --primary-light: rgba(249, 115, 22, 0.2);
+            --hero-from: #431407; --hero-via: #7c2d12; --hero-to: #270902;
+        }
+
+        .theme-peach {
+            --bg-main: #fff8f6;
+            --card-bg: rgba(255, 245, 242, 0.92);
+            --card-border: #fcdbd3;
+            --text-main: #4a1f1b;
+            --text-muted: #945851;
+            --primary: #f43f5e; --primary-hover: #e11d48; --primary-light: rgba(244, 63, 94, 0.15);
+            --hero-from: #881337; --hero-via: #be123c; --hero-to: #4c0519;
+        }
+        .dark .theme-peach {
+            --bg-main: #1a0a0d;
+            --card-bg: rgba(38, 16, 20, 0.88);
+            --card-border: rgba(244, 63, 94, 0.25);
+            --text-main: #ffe4e6;
+            --text-muted: #fda4af;
+            --primary: #fb7185; --primary-hover: #f43f5e; --primary-light: rgba(251, 113, 133, 0.2);
+            --hero-from: #4c0519; --hero-via: #881337; --hero-to: #26020c;
+        }
+
+        .theme-cyberpunk {
+            --bg-main: #0d0221;
+            --card-bg: rgba(26, 12, 53, 0.85);
+            --card-border: rgba(255, 0, 127, 0.3);
+            --text-main: #00f5d4;
+            --text-muted: #7b2cbf;
+            --primary: #ff007f; --primary-hover: #d90429; --primary-light: rgba(255, 0, 127, 0.2);
+            --hero-from: #3a0ca3; --hero-via: #7209b7; --hero-to: #f72585;
+            --accent: #00f5d4;
+        }
+
+        .transition-all-custom {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen transition-colors duration-300 theme-violet">
+
+    <header class="sticky top-0 z-50 glass-card border-b px-4 py-3">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl theme-primary-bg text-white flex items-center justify-center shadow-lg transition-all">
+                    <i class="fa-solid font-bold fa-flag-checkered text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl leading-tight theme-primary-text">
+                        Atleta de Fe 🏎️📖 | Planificador & Tracker
+                    </h1>
+                    <p class="text-xs opacity-80 font-medium hidden sm:block">
+                        9º Grado • Alto Rendimiento • Dios Primero
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción: Modo Claro/Oscuro & Paletas -->
+            <div class="flex items-center space-x-2">
+                <!-- Dropdown de Colores y Creador Personalizado -->
+                <div class="relative group">
+                    <button class="p-2.5 rounded-xl bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5" title="Cambiar Tema de Color">
+                        <i class="fa-solid fa-palette text-sm sm:text-base theme-primary-text"></i>
+                        <span class="text-xs font-bold hidden md:inline">Colores & Fondo</span>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-60 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 hidden group-hover:block z-50 max-h-[80vh] overflow-y-auto">
+                        <p class="text-xs font-bold text-slate-400 px-2 py-1 uppercase tracking-wider">Paletas Cálidas 🔥</p>
+                        <button onclick="setThemeColor('theme-terracotta')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-orange-700 inline-block"></span>
+                            <span>Terracota Cálido 🧱</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-amber')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-amber-500 inline-block"></span>
+                            <span>Ámbar Miel 🍯</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-autumn')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-orange-600 inline-block"></span>
+                            <span>Otoño Hoja 🍁</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-peach')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-rose-400 inline-block"></span>
+                            <span>Melocotón Suave 🍑</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-beige')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-amber-700 inline-block"></span>
+                            <span>Beige Estético ☕</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-cream')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-yellow-600 inline-block"></span>
+                            <span>Crema Marfil ✨</span>
+                        </button>
+
+                        <p class="text-xs font-bold text-slate-400 px-2 pt-2 py-1 uppercase tracking-wider border-t border-slate-200 dark:border-slate-800 mt-1">Otras Paletas</p>
+                        <button onclick="setThemeColor('theme-violet')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-violet-600 inline-block"></span>
+                            <span>Violeta Celestial</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-emerald')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-emerald-600 inline-block"></span>
+                            <span>Verde Esperanza</span>
+                        </button>
+                        <button onclick="setThemeColor('theme-sunset')" class="w-full flex items-center space-x-2 px-3 py-1.5 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold">
+                            <span class="w-3.5 h-3.5 rounded-full bg-rose-600 inline-block"></span>
+                            <span>Atardecer Fuego</span>
+                        </button>
+
+                        <!-- SECCIÓN RÁPIDA DE CAMBIO DE FONDO INDEPENDIENTE -->
+                        <div class="border-t border-slate-200 dark:border-slate-800 my-1.5 pt-2">
+                            <p class="text-[11px] font-bold text-slate-400 px-2 pb-1 uppercase tracking-wider">Cambiar Solo Fondo 🎨</p>
+                            <div class="grid grid-cols-3 gap-1 px-1">
+                                <button onclick="setCustomBackground('#fdf6f0', '#rgba(255, 248, 242, 0.9)', '#4a2113')" class="py-1 px-1.5 bg-[#fdf6f0] text-[#4a2113] border border-orange-200 rounded-lg text-[10px] font-bold text-center">
+                                    Arena
+                                </button>
+                                <button onclick="setCustomBackground('#faf4ed', '#rgba(255, 250, 244, 0.95)', '#361705')" class="py-1 px-1.5 bg-[#faf4ed] text-[#361705] border border-amber-200 rounded-lg text-[10px] font-bold text-center">
+                                    Marfil
+                                </button>
+                                <button onclick="setCustomBackground('#1c0e08', 'rgba(38, 20, 13, 0.88)', '#fcece4')" class="py-1 px-1.5 bg-[#1c0e08] text-[#fcece4] border border-orange-900 rounded-lg text-[10px] font-bold text-center">
+                                    Moka Noche
+                                </button>
+                                <button onclick="setCustomBackground('#171004', 'rgba(36, 25, 10, 0.88)', '#fef3c7')" class="py-1 px-1.5 bg-[#171004] text-[#fef3c7] border border-amber-900 rounded-lg text-[10px] font-bold text-center">
+                                    Ámbar Osc.
+                                </button>
+                                <button onclick="setCustomBackground('#0f172a', 'rgba(30, 41, 59, 0.85)', '#f8fafc')" class="py-1 px-1.5 bg-[#0f172a] text-[#f8fafc] border border-slate-700 rounded-lg text-[10px] font-bold text-center">
+                                    Oscuro
+                                </button>
+                                <button onclick="setCustomBackground('#f8fafc', 'rgba(255, 255, 255, 0.9)', '#0f172a')" class="py-1 px-1.5 bg-[#f8fafc] text-[#0f172a] border border-slate-200 rounded-lg text-[10px] font-bold text-center">
+                                    Claro
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-200 dark:border-slate-800 my-1 pt-1.5">
+                            <button onclick="openCustomColorPickerModal()" class="w-full flex items-center justify-center space-x-2 px-3 py-2 text-xs rounded-xl theme-primary-light-bg theme-primary-text font-extrabold">
+                                <i class="fa-solid fa-sliders"></i>
+                                <span>Personalizador Total (A-Z) 🎨</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón Modo Noche/Día -->
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all" title="Modo Día / Noche">
+                    <i id="theme-icon" class="fa-solid fa-moon text-sm sm:text-base"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+        <section class="relative overflow-hidden rounded-3xl theme-hero-bg text-white p-6 sm:p-8 shadow-2xl transition-all duration-300">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl">
+                <i class="fa-solid fa-cross"></i>
+            </div>
+            <div class="relative z-10 space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md">
+                        <i class="fa-solid fa-bolt mr-1"></i> Versículo de Fuerza & Disciplina
+                    </span>
+                    <span id="streak-badge" class="px-3 py-1 rounded-full bg-amber-400 text-slate-900 text-xs font-extrabold flex items-center space-x-1 shadow-md">
+                        <i class="fa-solid fa-fire"></i>
+                        <span id="streak-count">0 Días en Racha</span>
+                    </span>
+                </div>
+                <blockquote id="daily-verse" class="text-lg sm:text-xl font-bold italic leading-relaxed">
+                    "¿No sabéis que los que corren en el estadio, todos a la verdad corren, pero uno solo se lleva el premio? Corred de tal manera que lo obtengáis."
+                </blockquote>
+                <p id="daily-verse-ref" class="text-sm opacity-90 font-semibold">— 1 Corintios 9:24</p>
+            </div>
+        </section>
+
+        <!-- STREAMING_CHUNK:Diseñando la sección principal de la Regla de Oro (Biblia -> Tareas -> Redes) -->
+        <section class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl font-extrabold flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-theme-600"></i>
+                        La Regla de Oro del Día
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Lee tu Biblia <strong>antes</strong> de hacer tareas o caer en Instagram.
+                    </p>
+                </div>
+                <div id="status-pill" class="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold border border-amber-500/20 flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Pendiente para hoy</span>
+                </div>
+            </div>
+
+            <!-- Pasos del Hábito Obligatorio -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Paso 1: Biblia Primero -->
+                <div id="card-step-1" class="glass-card rounded-2xl p-5 border-2 theme-primary-border relative overflow-hidden transition-all-custom shadow-lg">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="w-8 h-8 rounded-xl theme-primary-bg text-white font-black text-sm flex items-center justify-center">1</span>
+                        <span class="text-xs font-bold theme-primary-text uppercase tracking-wider">Paso Sagrado</span>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <h3 class="font-extrabold text-base flex items-center gap-2">
+                            <i class="fa-solid fa-book-bible theme-primary-text text-lg"></i>
+                            Biblia Primero
+                        </h3>
+                        <p class="text-xs opacity-80">
+                            Pasa tu tiempo conectando con Dios antes de tocar la tarea o el celular.
+                        </p>
+                    </div>
+
+                    <!-- OPCIÓN NUEVA: Verificación de Celular Alejado -->
+                    <div class="theme-primary-light-bg border border-slate-200 dark:border-slate-800 rounded-xl p-3 mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold flex items-center gap-1.5">
+                                <i class="fa-solid fa-mobile-screen-button text-amber-500"></i>
+                                ¿Dejaste el celular lejos?
+                            </span>
+                            <span id="phone-status-tag" class="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-500">
+                                Sin responder
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="checkPhoneAway(true)" id="btn-phone-yes" class="flex-1 py-1.5 px-2 bg-slate-200 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white text-xs font-bold rounded-lg transition">
+                                <i class="fa-solid fa-check text-emerald-500 mr-1"></i> Sí, está lejos
+                            </button>
+                            <button onclick="checkPhoneAway(false)" id="btn-phone-no" class="flex-1 py-1.5 px-2 bg-slate-200 dark:bg-slate-800 hover:bg-rose-600 hover:text-white text-xs font-bold rounded-lg transition">
+                                <i class="fa-solid fa-xmark text-rose-500 mr-1"></i> Aún no
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Temporizador rápido de lectura -->
+                    <div class="bg-slate-100/70 dark:bg-slate-900/60 rounded-xl p-3 mb-4 text-center">
+                        <div class="flex justify-center items-center gap-1.5 mb-2">
+                            <span class="text-[10px] font-bold opacity-60 mr-1">Tiempo:</span>
+                            <button onclick="setTimerDuration(5)" class="timer-btn px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-200 dark:bg-slate-800">5m</button>
+                            <button onclick="setTimerDuration(10)" class="timer-btn active-timer-btn px-2 py-0.5 text-[11px] font-bold rounded-md theme-primary-bg text-white">10m</button>
+                            <button onclick="setTimerDuration(15)" class="timer-btn px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-200 dark:bg-slate-800">15m</button>
+                            <button onclick="setTimerDuration(20)" class="timer-btn px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-200 dark:bg-slate-800">20m</button>
+                        </div>
+                        <div id="timer-display" class="font-mono text-2xl font-black">10:00</div>
+                        <div class="flex justify-center gap-2 mt-2">
+                            <button onclick="toggleTimer()" id="btn-timer-start" class="px-3 py-1 theme-primary-bg text-white rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-play mr-1"></i> Iniciar
+                            </button>
+                            <button onclick="resetTimer()" class="px-3 py-1 bg-slate-200 dark:bg-slate-800 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-rotate-right mr-1"></i> Reiniciar
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="completeStep(1)" id="btn-step-1" class="w-full py-2.5 px-4 rounded-xl theme-primary-bg text-white text-xs font-bold shadow-md transition">
+                        <i class="fa-solid fa-check mr-1"></i> ¡Completado Lectura Bíblica!
+                    </button>
+                </div>
+
+                <!-- Paso 2: Tareas de 9º Grado -->
+                <div id="card-step-2" class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800 opacity-60 transition-all-custom">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="w-8 h-8 rounded-xl bg-slate-300 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-black text-sm flex items-center justify-center">2</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Enfoque Académico</span>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <h3 class="font-extrabold text-base flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-indigo-500 text-lg"></i>
+                            Tareas de 9º Grado
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            Con la mente clara y la bendición de Dios, termina tus deberes.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3 mb-4 text-center">
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Bloque de estudio de alto rendimiento</p>
+                    </div>
+
+                    <button onclick="completeStep(2)" id="btn-step-2" disabled class="w-full py-2.5 px-4 rounded-xl bg-slate-300 dark:bg-slate-800 text-slate-500 cursor-not-allowed text-xs font-bold transition">
+                        <i class="fa-solid fa-lock mr-1"></i> Completa Biblia Primero
+                    </button>
+                </div>
+
+                <!-- Paso 3: Descanso & Instagram -->
+                <div id="card-step-3" class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800 opacity-60 transition-all-custom">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="w-8 h-8 rounded-xl bg-slate-300 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-black text-sm flex items-center justify-center">3</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recompensa Libre</span>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <h3 class="font-extrabold text-base flex items-center gap-2">
+                            <i class="fa-brands fa-instagram text-pink-500 text-lg"></i>
+                            Celular sin Culpabilidad
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            Disfruta redes y descansa en paz sabiendo que cumpliste con Dios y la escuela.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3 mb-4 text-center">
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                            <i class="fa-solid fa-moon mr-1"></i> Dormirás tranquilo
+                        </p>
+                    </div>
+
+                    <button onclick="completeStep(3)" id="btn-step-3" disabled class="w-full py-2.5 px-4 rounded-xl bg-slate-300 dark:bg-slate-800 text-slate-500 cursor-not-allowed text-xs font-bold transition">
+                        <i class="fa-solid fa-lock mr-1"></i> Bloqueado
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Columna Izquierda: Horario de Noche Atleta (Time Management) -->
+            <div class="lg:col-span-2 glass-card rounded-3xl p-6 border border-slate-200 dark:border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-extrabold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-stopwatch text-theme-600"></i>
+                            Horario Nocturno de Atleta
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                            Optimizado para llegada tardía de tus entrenamientos de carreras.
+                        </p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-theme-500/10 text-theme-600 dark:text-theme-400 text-xs font-bold">
+                        Carreras 🏎️
+                    </span>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Bloque 1 -->
+                    <div class="flex items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="w-16 text-center font-mono font-bold text-xs text-slate-400">
+                            Llegada
+                        </div>
+                        <div class="w-2 h-8 rounded-full bg-slate-300 dark:bg-slate-700 mx-3"></div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-bold">Regreso del Entrenamiento</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Ducha, cena rápida y desconexión física.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 2 - DESTACADO -->
+                    <div class="flex items-center p-3 rounded-2xl bg-theme-500/10 border border-theme-500/30">
+                        <div class="w-16 text-center font-mono font-bold text-xs text-theme-600 dark:text-theme-400">
+                            PRIORIDAD
+                        </div>
+                        <div class="w-2 h-8 rounded-full bg-theme-500 mx-3"></div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-bold text-theme-700 dark:text-theme-300">Biblia Primero (10 - 15 min)</h4>
+                            <p class="text-[11px] text-theme-600/80 dark:text-theme-400/80">Carga tu espíritu antes que tus deberes.</p>
+                        </div>
+                        <span class="text-theme-500 font-bold text-xs"><i class="fa-solid fa-check-double"></i></span>
+                    </div>
+
+                    <!-- Bloque 3 -->
+                    <div class="flex items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="w-16 text-center font-mono font-bold text-xs text-slate-400">
+                            Estudio
+                        </div>
+                        <div class="w-2 h-8 rounded-full bg-indigo-500 mx-3"></div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-bold">Tareas de 9º Grado (Enfoque total)</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Aprovecha la concentración en bloques cortos.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 4 -->
+                    <div class="flex items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="w-16 text-center font-mono font-bold text-xs text-slate-400">
+                            Relax
+                        </div>
+                        <div class="w-2 h-8 rounded-full bg-pink-500 mx-3"></div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-bold">Instagram / Redes Libres de Culpa</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Establece un límite de 20 min para proteger tu descanso.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bloque 5 -->
+                    <div class="flex items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="w-16 text-center font-mono font-bold text-xs text-emerald-500">
+                            Sueño
+                        </div>
+                        <div class="w-2 h-8 rounded-full bg-emerald-500 mx-3"></div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-bold">Descanso Reparador de Atleta</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Dormir temprano recupera tus músculos y reflejos de carreras.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6 border border-slate-200 dark:border-slate-800 space-y-4">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-theme-600"></i>
+                    Diario de Lectura
+                </h3>
+                
+                <form id="journal-form" onsubmit="saveJournalEntry(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pasaje / Capítulo de Hoy</label>
+                        <input type="text" id="bible-chapter" placeholder="Ej: Salmos 23, Proverbios 3..." required class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs focus:ring-2 focus:ring-theme-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">¿Qué aprendiste o aplicaste hoy?</label>
+                        <textarea id="bible-notes" rows="3" placeholder="Una frase o reflexión que Dios puso en tu corazón..." required class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs focus:ring-2 focus:ring-theme-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition">
+                        Guardar Reflexión Diario
+                    </button>
+                </form>
+
+                <!-- Historial corto de notas -->
+                <div class="pt-2">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Reflexiones Recientes</h4>
+                    <div id="journal-history" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        <!-- Se llena dinámicamente con JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-card rounded-3xl p-6 border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-amber-500"></i>
+                    Logros & Calendario Mensual Completo
+                </h3>
+                <span class="text-xs text-slate-500 dark:text-slate-400">Tu constancia mes a mes</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div id="badge-1" class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-center opacity-40 transition-all">
+                    <div class="w-10 h-10 mx-auto mb-1 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <h4 class="text-xs font-bold">Primer Paso</h4>
+                    <p class="text-[10px] text-slate-400">1º Día Bíblico</p>
+                </div>
+                <div id="badge-7" class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-center opacity-40 transition-all">
+                    <div class="w-10 h-10 mx-auto mb-1 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <h4 class="text-xs font-bold">Semana Imparable</h4>
+                    <p class="text-[10px] text-slate-400">7 Días Seguidos</p>
+                </div>
+                <div id="badge-14" class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-center opacity-40 transition-all">
+                    <div class="w-10 h-10 mx-auto mb-1 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h4 class="text-xs font-bold">Guerrero de Fe</h4>
+                    <p class="text-[10px] text-slate-400">14 Días Seguidos</p>
+                </div>
+                <div id="badge-30" class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-center opacity-40 transition-all">
+                    <div class="w-10 h-10 mx-auto mb-1 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <h4 class="text-xs font-bold">Atleta Campeón</h4>
+                    <p class="text-[10px] text-slate-400">30 Días Cumplidos</p>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+                    <h4 id="calendar-month-title" class="text-base font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar-days text-theme-600"></i>
+                        <span>Cargando mes...</span>
+                    </h4>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeCalendarMonth(-1)" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1">
+                            <i class="fa-solid fa-chevron-left"></i> Anterior
+                        </button>
+                        <button onclick="changeCalendarMonth(1)" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1">
+                            Siguiente <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra de Estadísticas de Progreso del Mes -->
+                <div id="calendar-stats"></div>
+
+                <!-- Encabezados de días de la semana -->
+                <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-black text-slate-400 uppercase tracking-wider py-1">
+                    <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+                </div>
+
+                <!-- Rejilla del Calendario Ampliada con vista de todos los días -->
+                <div id="monthly-calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+                    <!-- Generado dinámicamente -->
+                </div>
+
+                <!-- Leyenda de colores -->
+                <div class="flex flex-wrap items-center justify-center gap-4 pt-2 text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-lg bg-emerald-500 inline-block shadow-sm"></span> Día Cumplido</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-lg bg-rose-500/20 border border-rose-500/40 inline-block"></span> No registrado</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-lg bg-theme-500/20 border-2 border-theme-500 inline-block"></span> Día Actual (Hoy)</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 inline-block"></span> Próximo</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- NUEVA SECCIÓN: MINI GEMINI CONSEJERO CRISTIANO ATLETA -->
+        <section class="glass-card rounded-3xl p-6 border border-theme-500/30 space-y-4 shadow-xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-theme-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-base leading-tight">Mini Gemini: Consejero Cristiano Atleta</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Pregúntale lo que quieras sobre disciplina, fe, cansancio o estudio.</p>
+                    </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-theme-500/10 text-theme-600 dark:text-theme-400 text-[10px] font-extrabold">
+                    IA Cristiana ✨
+                </span>
+            </div>
+
+            <!-- Botones de preguntas rápidas de sugerencia -->
+            <div class="flex flex-wrap gap-2">
+                <button onclick="setGeminiPrompt('¿Cómo vencer la pereza al llegar cansado de entrenar carreras?')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-theme-500/10 hover:text-theme-600 text-[11px] text-slate-600 dark:text-slate-300 transition">
+                    🏃 Pereza tras entrenar
+                </button>
+                <button onclick="setGeminiPrompt('¿Qué personajes de la Biblia destacaron por su disciplina deportiva o física?')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-theme-500/10 hover:text-theme-600 text-[11px] text-slate-600 dark:text-slate-300 transition">
+                    📖 Ejemplos Bíblicos
+                </button>
+                <button onclick="setGeminiPrompt('¿Cómo evitar la tentación de ver Instagram cuando debería estudiar y orar?')" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-theme-500/10 hover:text-theme-600 text-[11px] text-slate-600 dark:text-slate-300 transition">
+                    📱 Evitar Doomscrolling
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="relative">
+                    <textarea id="gemini-input" rows="2" placeholder="Escribe tu duda aquí... Ej: Tengo un examen mañana y estoy agotado, ¿qué me enseña la Biblia?" class="w-full px-3 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs focus:ring-2 focus:ring-theme-500 outline-none resize-none pr-12"></textarea>
+                    <button onclick="askGeminiAdvisor()" id="gemini-send-btn" class="absolute right-2 bottom-3 p-2 rounded-xl bg-theme-600 hover:bg-theme-700 text-white text-xs transition shadow-md">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                <!-- Cargando -->
+                <div id="gemini-loading" class="hidden text-center py-4 text-xs font-bold text-theme-600 dark:text-theme-400 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-spinner fa-spin text-lg"></i>
+                    <span>Consultando la Palabra de Dios y preparando tu consejo...</span>
+                </div>
+
+                <!-- Respuesta de Mini Gemini -->
+                <div id="gemini-response" class="hidden p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs space-y-2 leading-relaxed text-slate-700 dark:text-slate-200">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal de Mensaje / Notificación Custom (Sin utilizar alert) -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div id="modal-icon" class="w-14 h-14 mx-auto rounded-full bg-theme-100 dark:bg-theme-900/50 text-theme-600 dark:text-theme-400 flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+            <h3 id="modal-title" class="text-lg font-extrabold">¡Excelente Trabajo!</h3>
+            <p id="modal-message" class="text-xs text-slate-500 dark:text-slate-400">Has completado tu lectura bíblica.</p>
+            <button onclick="closeModal()" class="w-full py-2.5 px-4 rounded-xl bg-theme-600 hover:bg-theme-700 text-white font-bold text-xs shadow-lg transition">
+                Continuar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Estado global de la aplicación
+        let state = {
+            streak: 0,
+            completedToday: {
+                step1: false,
+                step2: false,
+                step3: false
+            },
+            phoneAway: null, // true, false or null
+            selectedTimerMinutes: 10,
+            lastCompletedDate: null,
+            completedDates: {}, // Registro por fecha: 'YYYY-MM-DD': true/false
+            journals: [],
+            themeColor: 'theme-violet',
+            darkMode: true,
+            calendarViewDate: new Date()
+        };
+
+        // Temporizador de lectura bíblica
+        let timerSeconds = 600; // 10 minutos por defecto
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        // Carga inicial
+        window.onload = function() {
+            loadState();
+            setupDailyVerse();
+            renderCalendar();
+            renderJournalHistory();
+            updateUI();
+        };
+
+        // Cambiar paleta de colores bonitos
+        function setThemeColor(themeName) {
+            document.body.classList.remove('theme-violet', 'theme-emerald', 'theme-ocean', 'theme-sunset', 'theme-beige', 'theme-cream');
+            document.body.classList.add(themeName);
+            state.themeColor = themeName;
+            saveState();
+        }
+
+        // Selección de tiempo del temporizador (5, 10, 15, 20 mins)
+        function setTimerDuration(mins) {
+            state.selectedTimerMinutes = mins;
+            timerSeconds = mins * 60;
+            resetTimer();
+
+            // Actualizar apariencia de botones
+            document.querySelectorAll('.timer-btn').forEach(btn => {
+                btn.className = 'timer-btn px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+            });
+            event.target.className = 'timer-btn active-timer-btn px-2 py-0.5 text-[11px] font-bold rounded-md bg-theme-600 text-white';
+            saveState();
+        }
+
+        // Verificación Celular Alejado
+        function checkPhoneAway(isAway) {
+            state.phoneAway = isAway;
+            const tag = document.getElementById('phone-status-tag');
+            const yesBtn = document.getElementById('btn-phone-yes');
+            const noBtn = document.getElementById('btn-phone-no');
+
+            if (isAway) {
+                tag.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400";
+                tag.innerText = "¡Alejado! 🎯";
+                yesBtn.className = "flex-1 py-1.5 px-2 bg-emerald-600 text-white text-xs font-bold rounded-lg transition shadow";
+                noBtn.className = "flex-1 py-1.5 px-2 bg-slate-200 dark:bg-slate-800 text-slate-400 text-xs font-bold rounded-lg transition opacity-50";
+
+                showModal("¡Excelente Decisión! 📱🚫", "Al poner tu teléfono en otra habitación eliminas las interrupciones. Ahora tu mente está 100% enfocada para Dios.");
+            } else {
+                tag.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-600 dark:text-rose-400";
+                tag.innerText = "Cerca 📲";
+                noBtn.className = "flex-1 py-1.5 px-2 bg-rose-600 text-white text-xs font-bold rounded-lg transition shadow";
+                yesBtn.className = "flex-1 py-1.5 px-2 bg-slate-200 dark:bg-slate-800 text-slate-400 text-xs font-bold rounded-lg transition opacity-50";
+
+                showModal("¡Un Pequeño Esfuerzo Atleta! 💡", "Tener el teléfono al lado es la trampa #1 para caer en Instagram sin darte cuenta. ¡Llévalo a tu mesa o cargador lejano solo por estos 15 minutos! Tu tiempo con Dios lo vale.");
+            }
+            saveState();
+        }
+
+        // Lógica del Temporizador de Lectura
+        function toggleTimer() {
+            const btn = document.getElementById('btn-timer-start');
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btn.innerHTML = '<i class="fa-solid fa-play mr-1"></i> Continuar';
+            } else {
+                isTimerRunning = true;
+                btn.innerHTML = '<i class="fa-solid fa-pause mr-1"></i> Pausar';
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        showModal("¡Tiempo de Lectura Completado! 📖", "¡Excelente trabajo alimentando tu espíritu antes de tus deberes escolares!");
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = state.selectedTimerMinutes * 60;
+            updateTimerDisplay();
+            document.getElementById('btn-timer-start').innerHTML = '<i class="fa-solid fa-play mr-1"></i> Iniciar';
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timer-display').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Marcar pasos completados en el día
+        function completeStep(stepNumber) {
+            const todayKey = new Date().toISOString().split('T')[0];
+            const today = new Date().toDateString();
+
+            if (stepNumber === 1) {
+                state.completedToday.step1 = true;
+                state.completedDates[todayKey] = true;
+                
+                // Si es la primera vez que completa hoy, incrementa la racha
+                if (state.lastCompletedDate !== today) {
+                    state.streak += 1;
+                    state.lastCompletedDate = today;
+                }
+
+                showModal("¡Biblia Primero Completado! 🙏", "Has puesto a Dios en primer lugar. Ahora tienes la mente despejada para realizar tus tareas de 9º Grado.");
+            } else if (stepNumber === 2) {
+                state.completedToday.step2 = true;
+                showModal("¡Tareas Concluidas! 📚", "¡Gran trabajo de disciplina escolar! Ahora tu tiempo en Instagram y redes sociales está desbloqueado sin ninguna culpa.");
+            } else if (stepNumber === 3) {
+                state.completedToday.step3 = true;
+                showModal("¡Día Superado Atleta! 🏎️✨", "Te vas a la cama con paz mental, habiendo priorizado lo más importante y listo para rendir al máximo mañana.");
+            }
+
+            saveState();
+            updateUI();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const calendarGrid = document.getElementById('monthly-calendar-grid');
+            const title = document.getElementById('calendar-month-title');
+            const statsContainer = document.getElementById('calendar-stats');
+            if (!calendarGrid) return;
+
+            calendarGrid.innerHTML = '';
+            const viewDate = new Date(state.calendarViewDate);
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            title.innerHTML = `<i class="fa-regular fa-calendar-days text-theme-600"></i> <span>${monthNames[month]} ${year}</span>`;
+
+            // Obtener primer día de la semana y total de días
+            const firstDayIndex = new Date(year, month, 1).getDay(); // 0=Dom, 1=Lun...
+            const startingDay = (firstDayIndex === 0) ? 6 : firstDayIndex - 1; // Convertir a 0=Lun, 6=Dom
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const prevMonthTotalDays = new Date(year, month, 0).getDate();
+
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            let completedCount = 0;
+            let pastDaysCount = 0;
+
+            // Días del mes anterior para alinear correctamente los días de la semana
+            for (let i = startingDay - 1; i >= 0; i--) {
+                const dayNum = prevMonthTotalDays - i;
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "min-h-[48px] sm:min-h-[58px] p-2 rounded-2xl bg-slate-100/40 dark:bg-slate-900/30 text-slate-300 dark:text-slate-700 text-xs font-semibold flex flex-col justify-between opacity-30 select-none";
+                emptyCell.innerHTML = `<span>${dayNum}</span>`;
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Días del mes actual con diseño claro y visible de cada día
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayDate = new Date(year, month, day);
+                dayDate.setHours(23, 59, 59, 999);
+
+                const isToday = dateKey === todayStr;
+                const isPast = dayDate < new Date() && !isToday;
+                const isCompleted = state.completedDates[dateKey] === true;
+
+                if (isCompleted) completedCount++;
+                if (isPast || isToday) pastDaysCount++;
+
+                const dayCell = document.createElement('button');
+                dayCell.onclick = () => openDayDetails(dateKey, day, monthNames[month], isCompleted);
+
+                let cellStyle = "min-h-[50px] sm:min-h-[60px] p-2 rounded-2xl flex flex-col justify-between items-start text-xs font-bold transition-all transform hover:scale-[1.03] active:scale-95 border text-left relative group cursor-pointer ";
+
+                if (isCompleted) {
+                    cellStyle += "bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-emerald-400 shadow-md shadow-emerald-500/20";
+                } else if (isToday) {
+                    cellStyle += "bg-theme-500/15 text-theme-600 dark:text-theme-300 border-theme-500 ring-2 ring-theme-500/40 shadow-md";
+                } else if (isPast) {
+                    cellStyle += "bg-rose-500/10 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:bg-rose-500/20";
+                } else {
+                    cellStyle += "bg-slate-50 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700";
+                }
+
+                dayCell.className = cellStyle;
+                dayCell.innerHTML = `
+                    <div class="flex items-center justify-between w-full">
+                        <span class="text-xs font-extrabold ${isCompleted ? 'text-white' : ''}">${day}</span>
+                        ${isToday ? '<span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-theme-600 text-white shadow-sm">Hoy</span>' : ''}
+                    </div>
+                    <div class="w-full flex justify-end items-end mt-1">
+                        ${isCompleted 
+                            ? '<span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-[10px]"><i class="fa-solid fa-check"></i></span>' 
+                            : (isPast 
+                                ? '<span class="w-5 h-5 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center text-[10px]"><i class="fa-solid fa-xmark"></i></span>'
+                                : '<span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700"></span>')}
+                    </div>
+                `;
+
+                calendarGrid.appendChild(dayCell);
+            }
+
+            // Rellenar días del mes siguiente para mantener cuadrícula perfecta
+            const totalCellsRendered = startingDay + totalDays;
+            const remainingCells = (totalCellsRendered > 35 ? 42 : 35) - totalCellsRendered;
+            for (let day = 1; day <= remainingCells; day++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "min-h-[48px] sm:min-h-[58px] p-2 rounded-2xl bg-slate-100/40 dark:bg-slate-900/30 text-slate-300 dark:text-slate-700 text-xs font-semibold flex flex-col justify-between opacity-30 select-none";
+                emptyCell.innerHTML = `<span>${day}</span>`;
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Actualizar resumen de progreso del mes
+            if (statsContainer) {
+                const pct = totalDays > 0 ? Math.round((completedCount / totalDays) * 100) : 0;
+                statsContainer.innerHTML = `
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-theme-600"></i>
+                            <span>Progreso del Mes: <strong class="text-theme-600 dark:text-theme-400">${completedCount} de ${totalDays} días</strong> (${pct}%)</span>
+                        </div>
+                        <div class="w-28 bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden hidden sm:block">
+                            <div class="bg-gradient-to-r from-theme-500 to-emerald-500 h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Abrir modal con detalles del día seleccionado
+        function openDayDetails(dateKey, day, monthName, isCompleted) {
+            const statusMsg = isCompleted 
+                ? `¡El día ${day} de ${monthName} cumpliste exitosamente tu lectura bíblica!` 
+                : `El día ${day} de ${monthName} no marcaste la lectura bíblica. ¡Sigue adelante con fe y disciplina!`;
+            showModal(`Día ${day} de ${monthName}`, statusMsg);
+        }
+
+        function changeCalendarMonth(delta) {
+            const current = new Date(state.calendarViewDate);
+            current.setMonth(current.getMonth() + delta);
+            state.calendarViewDate = current;
+            renderCalendar();
+        }
+
+        // Lógica de Mini Gemini Consejero Cristiano
+        function setGeminiPrompt(text) {
+            document.getElementById('gemini-input').value = text;
+        }
+
+        async function askGeminiAdvisor() {
+            const inputEl = document.getElementById('gemini-input');
+            const prompt = inputEl.value.trim();
+            if (!prompt) return;
+
+            const loadingEl = document.getElementById('gemini-loading');
+            const responseEl = document.getElementById('gemini-response');
+            const sendBtn = document.getElementById('gemini-send-btn');
+
+            loadingEl.classList.remove('hidden');
+            responseEl.classList.add('hidden');
+            sendBtn.disabled = true;
+
+            const systemPrompt = `Eres un mentor y consejero cristiano sabio, empático y entusiasta para un joven de 15 años en 9º grado que es atleta de alto rendimiento de carreras de autos. Responde sus dudas sobre fe, escuela, cansancio, disciplina o tentaciones de celular de forma motivadora, clara y cercana. Incluye siempre 1 o 2 ejemplos o versículos prácticos de la Biblia adaptados a su nivel. Usa emojis y formato estructurado con párrafos cortos.`;
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (aiText) {
+                    // Formatear párrafos sencillos
+                    const formattedText = aiText.replace(/\n\n/g, '</p><p class="mt-2">').replace(/\n/g, '<br>');
+                    responseEl.innerHTML = `<div class="font-semibold text-theme-600 dark:text-theme-400 mb-1"><i class="fa-solid fa-comment-dots mr-1"></i> Consejero Atleta:</div><p>${formattedText}</p>`;
+                    responseEl.classList.remove('hidden');
+                } else {
+                    responseEl.innerHTML = '<p class="text-rose-500">No pude obtener respuesta en este momento. Intenta de nuevo.</p>';
+                    responseEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                responseEl.innerHTML = '<p class="text-rose-500">Ocurrió un error al consultar a Mini Gemini. Revisa tu conexión a internet.</p>';
+                responseEl.classList.remove('hidden');
+            } finally {
+                loadingEl.classList.add('hidden');
+                sendBtn.disabled = false;
+            }
+        }
+
+        // Actualizar interfaz según el estado actual
+        function updateUI() {
+            // Contadores de racha
+            document.getElementById('streak-count').innerText = `${state.streak} Días en Racha`;
+            
+            const step1Card = document.getElementById('card-step-1');
+            const step2Card = document.getElementById('card-step-2');
+            const step3Card = document.getElementById('card-step-3');
+
+            const btn1 = document.getElementById('btn-step-1');
+            const btn2 = document.getElementById('btn-step-2');
+            const btn3 = document.getElementById('btn-step-3');
+
+            const statusPill = document.getElementById('status-pill');
+
+            // Actualizar Estado Paso 1 (Biblia)
+            if (state.completedToday.step1) {
+                btn1.className = "w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold transition";
+                btn1.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> ¡Completado!';
+                step1Card.classList.add('border-emerald-500/50');
+
+                // Desbloquear Paso 2
+                step2Card.classList.remove('opacity-60');
+                step2Card.classList.add('border-indigo-500/50', 'shadow-lg');
+                btn2.disabled = false;
+                btn2.className = "w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition cursor-pointer";
+                btn2.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Marcar Tareas Hechas';
+            } else {
+                btn1.className = "w-full py-2.5 px-4 rounded-xl bg-theme-600 hover:bg-theme-700 text-white text-xs font-bold shadow-md shadow-theme-600/30 transition";
+                btn1.innerHTML = '<i class="fa-solid fa-check mr-1"></i> ¡Completado Lectura Bíblica!';
+            }
+
+            // Actualizar Estado Paso 2 (Tareas)
+            if (state.completedToday.step2) {
+                btn2.className = "w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold transition";
+                btn2.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> ¡Completado!';
+
+                // Desbloquear Paso 3
+                step3Card.classList.remove('opacity-60');
+                step3Card.classList.add('border-pink-500/50', 'shadow-lg');
+                btn3.disabled = false;
+                btn3.className = "w-full py-2.5 px-4 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold shadow-md transition cursor-pointer";
+                btn3.innerHTML = '<i class="fa-solid fa-heart mr-1"></i> Disfrutar Tiempo Libre';
+            }
+
+            // Actualizar Estado Paso 3 (Celular/Relax)
+            if (state.completedToday.step3) {
+                btn3.className = "w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold transition";
+                btn3.innerHTML = '<i class="fa-solid fa-face-smile-beam mr-1"></i> Rutina Terminada';
+                
+                statusPill.className = "self-start sm:self-auto px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20 flex items-center gap-1.5";
+                statusPill.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>¡Todo Cumplido Hoy!</span>';
+            }
+
+            // Actualizar Medallas
+            if (state.streak >= 1) document.getElementById('badge-1').classList.remove('opacity-40');
+            if (state.streak >= 7) document.getElementById('badge-7').classList.remove('opacity-40');
+            if (state.streak >= 14) document.getElementById('badge-14').classList.remove('opacity-40');
+            if (state.streak >= 30) document.getElementById('badge-30').classList.remove('opacity-40');
+
+            // Actualizar Celular Alejado
+            if (state.phoneAway !== null) {
+                checkPhoneAway(state.phoneAway);
+            }
+        }
+
+        // Carga y guardado local
+        function saveState() {
+            localStorage.setItem('athlete_faith_habit_tracker', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('athlete_faith_habit_tracker');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                    
+                    // Comprobar día actual
+                    const today = new Date().toDateString();
+                    if (state.lastCompletedDate && state.lastCompletedDate !== today) {
+                        state.completedToday = { step1: false, step2: false, step3: false };
+                        state.phoneAway = null;
+                    }
+
+                    if (state.themeColor) setThemeColor(state.themeColor);
+                    if (state.selectedTimerMinutes) timerSeconds = state.selectedTimerMinutes * 60;
+                    applyDarkMode();
+                } catch(e) {
+                    console.error("Error al cargar estado local", e);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+        <!-- MODAL DE PERSONALIZACIÓN TOTAL DE COLORES -->
+        <div id="custom-color-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="glass-card rounded-3xl p-6 max-w-md w-full space-y-5 shadow-2xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-extrabold text-lg flex items-center gap-2 theme-primary-text">
+                        <i class="fa-solid fa-palette"></i>
+                        Personalizar Colores & Fondo
+                    </h3>
+                    <button onclick="closeCustomColorModal()" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs hover:opacity-80">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs opacity-80">
+                    Ajusta el color principal y escoge cualquier tono de fondo que prefieras.
+                </p>
+
+                <!-- BOTONES DE FONDOS PREFABRICADOS RÁPIDOS -->
+                <div class="space-y-1.5">
+                    <span class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 block">Fondos Rápido Recomendados Cálidos:</span>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button onclick="applyQuickBg('#fdf6f0', '#3a1f18')" class="p-2 rounded-xl bg-[#fdf6f0] border border-orange-200 text-[#3a1f18] text-[10px] font-bold">Terracota Claro</button>
+                        <button onclick="applyQuickBg('#faf4ed', '#3a2512')" class="p-2 rounded-xl bg-[#faf4ed] border border-amber-200 text-[#3a2512] text-[10px] font-bold">Arena Marfil</button>
+                        <button onclick="applyQuickBg('#1c0e08', '#fcece4')" class="p-2 rounded-xl bg-[#1c0e08] border border-orange-900 text-[#fcece4] text-[10px] font-bold">Moka Oscuro</button>
+                        <button onclick="applyQuickBg('#171004', '#fef3c7')" class="p-2 rounded-xl bg-[#171004] border border-amber-900 text-[#fef3c7] text-[10px] font-bold">Ámbar Noche</button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-xs font-bold">
+                    <!-- Selector Color Principal -->
+                    <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-paint-brush theme-primary-text"></i> Color Principal / Botones
+                        </span>
+                        <input type="color" id="picker-primary" value="#c85a32" onchange="updateCustomColorsFromPicker()" class="w-9 h-9 rounded-xl border-0 cursor-pointer bg-transparent">
+                    </div>
+
+                    <!-- Selector Fondo Principal INDEPENDIENTE -->
+                    <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-desktop text-amber-500"></i> Color de Fondo Completo
+                        </span>
+                        <input type="color" id="picker-bg" value="#fdf6f0" onchange="updateCustomColorsFromPicker()" class="w-9 h-9 rounded-xl border-0 cursor-pointer bg-transparent">
+                    </div>
+
+                    <!-- Selector Tarjetas / Modales -->
+                    <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-square"></i> Color de Tarjetas (Vidrio)
+                        </span>
+                        <input type="color" id="picker-card" value="#fff8f2" onchange="updateCustomColorsFromPicker()" class="w-9 h-9 rounded-xl border-0 cursor-pointer bg-transparent">
+                    </div>
+
+                    <!-- Selector Hero Banner Inic. -->
+                    <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> Banner Superior (Gradiente)
+                        </span>
+                        <input type="color" id="picker-hero" value="#802e15" onchange="updateCustomColorsFromPicker()" class="w-9 h-9 rounded-xl border-0 cursor-pointer bg-transparent">
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="resetCustomColors()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold text-xs hover:opacity-90">
+                        Restablecer Tema
+                    </button>
+                    <button onclick="closeCustomColorModal()" class="flex-1 py-2.5 px-3 rounded-xl theme-primary-bg text-white font-bold text-xs hover:opacity-90 shadow-lg">
+                        ¡Guardar Mis Colores!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // Abrir y cerrar modal de personalización
+        function openCustomColorPickerModal() {
+            document.getElementById('custom-color-modal').classList.remove('hidden');
+        }
+
+        function closeCustomColorModal() {
+            document.getElementById('custom-color-modal').classList.add('hidden');
+        }
+
+        // Cambiar el fondo de forma directa e independiente
+        function setCustomBackground(bgHex, cardRgba, textHex) {
+            document.documentElement.style.setProperty('--bg-main', bgHex);
+            if (cardRgba) document.documentElement.style.setProperty('--card-bg', cardRgba);
+            if (textHex) document.documentElement.style.setProperty('--text-main', textHex);
+
+            const bgPicker = document.getElementById('picker-bg');
+            if (bgPicker) bgPicker.value = bgHex;
+
+            if (!state.customColors) {
+                const computedPrimary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#c85a32';
+                state.customColors = { primary: computedPrimary, bg: bgHex, cardBg: cardRgba || '#ffffff', heroBg: '#802e15' };
+            } else {
+                state.customColors.bg = bgHex;
+            }
+            state.themeColor = 'custom';
+            saveState();
+        }
+
+        // Botón rápido de fondo desde el modal de personalización
+        function applyQuickBg(bgHex, textHex) {
+            document.getElementById('picker-bg').value = bgHex;
+            document.getElementById('picker-card').value = bgHex;
+            updateCustomColorsFromPicker();
+        }
+
+        // Aplicar colores personalizados individualmente a las variables CSS raíz
+        function updateCustomColorsFromPicker() {
+            const primary = document.getElementById('picker-primary').value;
+            const bg = document.getElementById('picker-bg').value;
+            const cardBg = document.getElementById('picker-card').value;
+            const heroBg = document.getElementById('picker-hero').value;
+
+            // Convertir hex a rgba para transparencias de tarjetas glass
+            const cardRgba = hexToRgba(cardBg, 0.88);
+            const primaryLight = hexToRgba(primary, 0.18);
+
+            document.documentElement.style.setProperty('--primary', primary);
+            document.documentElement.style.setProperty('--primary-hover', adjustColorBrightness(primary, -20));
+            document.documentElement.style.setProperty('--primary-light', primaryLight);
+            document.documentElement.style.setProperty('--bg-main', bg);
+            document.documentElement.style.setProperty('--card-bg', cardRgba);
+            document.documentElement.style.setProperty('--hero-from', heroBg);
+            document.documentElement.style.setProperty('--hero-via', primary);
+            document.documentElement.style.setProperty('--hero-to', adjustColorBrightness(heroBg, -40));
+
+            // Guardar configuración personalizada en state
+            state.customColors = { primary, bg, cardBg, heroBg };
+            state.themeColor = 'custom';
+            saveState();
+        }
+
+        function resetCustomColors() {
+            document.documentElement.removeAttribute('style');
+            state.customColors = null;
+            setThemeColor('theme-terracotta');
+            closeCustomColorModal();
+        }
+
+        // Modificar setThemeColor para limpiar estilos inline cuando elige un preset
+        function setThemeColor(themeName) {
+            document.documentElement.removeAttribute('style');
+            document.body.classList.remove('theme-violet', 'theme-emerald', 'theme-ocean', 'theme-sunset', 'theme-beige', 'theme-cream', 'theme-cyberpunk', 'theme-terracotta', 'theme-amber', 'theme-autumn', 'theme-peach');
+            document.body.classList.add(themeName);
+            state.themeColor = themeName;
+            state.customColors = null;
+            saveState();
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('athlete_faith_habit_tracker');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                    
+                    const today = new Date().toDateString();
+                    if (state.lastCompletedDate && state.lastCompletedDate !== today) {
+                        state.completedToday = { step1: false, step2: false, step3: false };
+                        state.phoneAway = null;
+                    }
+
+                    if (state.themeColor === 'custom' && state.customColors) {
+                        if (document.getElementById('picker-primary')) {
+                            document.getElementById('picker-primary').value = state.customColors.primary || '#c85a32';
+                            document.getElementById('picker-bg').value = state.customColors.bg || '#fdf6f0';
+                            document.getElementById('picker-card').value = state.customColors.cardBg || '#fff8f2';
+                            document.getElementById('picker-hero').value = state.customColors.heroBg || '#802e15';
+                        }
+                        updateCustomColorsFromPicker();
+                    } else if (state.themeColor) {
+                        setThemeColor(state.themeColor);
+                    }
+                    if (state.selectedTimerMinutes) timerSeconds = state.selectedTimerMinutes * 60;
+                    applyDarkMode();
+                } catch(e) {
+                    console.error("Error al cargar estado local", e);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

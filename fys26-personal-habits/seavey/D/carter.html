@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carter's Workspace V5 🕷️</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ef4444;
+    }
+
+    /* Custom range slider styling with Spidey Red accents */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      background: #e2e8f0;
+      height: 8px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+      cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #dc2626;
+    }
+
+    /* Draggable Image Sticker styling */
+    .draggable-sticker {
+      position: absolute;
+      cursor: grab;
+      user-select: none;
+      z-index: 50;
+      transition: box-shadow 0.2s ease, transform 0.1s ease;
+    }
+    .draggable-sticker:active {
+      cursor: grabbing;
+      transform: scale(1.05);
+    }
+    .draggable-sticker img {
+      pointer-events: none;
+      max-width: 90px;
+      max-height: 90px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+    }
+    .draggable-sticker .remove-hint {
+      display: none;
+    }
+    .draggable-sticker:hover .remove-hint {
+      display: block;
+    }
+
+    /* Web pattern background accents */
+    .corner-web-top-left {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 150px;
+      height: 150px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.22;
+    }
+    .corner-web-top-right {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.22;
+      transform: scaleX(-1);
+    }
+
+    /* Chibi Spidey gentle bounce animation */
+    @keyframes subtle-swing {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(3deg); }
+    }
+    .chibi-spidey {
+      animation: subtle-swing 3s ease-in-out infinite;
+    }
+
+    .spidey-glow {
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+
+  <!-- Cute Corner Web Accents with Spider-Man Red Touch -->
+  <svg class="corner-web-top-left" viewBox="0 0 100 100" fill="none" stroke="#ef4444" stroke-width="1.2">
+    <path d="M0 0 L100 0 L0 100 Z" fill="none" opacity="0.05" />
+    <path d="M0 0 L100 100" stroke="#0284c7" />
+    <path d="M0 0 L70 100" />
+    <path d="M0 0 L100 70" stroke="#0284c7" />
+    <path d="M20 0 Q20 20 0 20" />
+    <path d="M40 0 Q40 40 0 40" stroke="#0284c7" />
+    <path d="M60 0 Q60 60 0 60" />
+    <path d="M80 0 Q80 80 0 80" stroke="#0284c7" />
+  </svg>
+  <svg class="corner-web-top-right" viewBox="0 0 100 100" fill="none" stroke="#ef4444" stroke-width="1.2">
+    <path d="M0 0 L100 0 L0 100 Z" fill="none" opacity="0.05" />
+    <path d="M0 0 L100 100" stroke="#0284c7" />
+    <path d="M0 0 L70 100" />
+    <path d="M0 0 L100 70" stroke="#0284c7" />
+    <path d="M20 0 Q20 20 0 20" />
+    <path d="M40 0 Q40 40 0 40" stroke="#0284c7" />
+    <path d="M60 0 Q60 60 0 60" />
+    <path d="M80 0 Q80 80 0 80" stroke="#0284c7" />
+  </svg>
+
+  <!-- Container for overlay image stickers -->
+  <div id="sticker-layer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-20">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <!-- Chibi Spidey Icon Header Badge -->
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-red-50 to-sky-50 border border-red-200 text-red-500 flex items-center justify-center shadow-xs overflow-hidden relative">
+          <svg class="w-8 h-8 chibi-spidey" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="26" fill="#ef4444" />
+            <path d="M32 6 L32 58 M6 32 L58 32 M14 14 L50 50 M14 50 L50 14" stroke="#991b1b" stroke-width="1.5" opacity="0.6"/>
+            <path d="M14 26 C16 16 28 18 28 28 C28 32 18 34 14 26 Z" fill="white" stroke="#1e293b" stroke-width="2.5"/>
+            <path d="M50 26 C48 16 36 18 36 28 C36 32 46 34 50 26 Z" fill="white" stroke="#1e293b" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-800 leading-tight flex items-center gap-1.5">
+            <span id="display-profile-name">Carter's Workspace</span>
+            <span class="text-[11px] text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full font-mono font-bold">V5 🕷️</span>
+          </h1>
+          <p class="text-xs text-slate-500" id="display-profile-motto">Goal: Finish homework within 1-2 days 🕷️🕸️</p>
+        </div>
+      </div>
+
+      <!-- Streak Badge -->
+      <div class="flex items-center gap-2 bg-gradient-to-r from-red-50 to-amber-50 border border-red-100 px-3.5 py-1.5 rounded-2xl shadow-2xs">
+        <span class="text-lg">🔥</span>
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-wider text-red-500">Daily Streak</div>
+          <div class="text-xs font-extrabold text-slate-800"><span id="streak-count-display">1</span> Days Active</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 flex-1 w-full z-10">
+    
+    <!-- Navigation Tabs -->
+    <nav class="flex space-x-2 border-b border-slate-200/80 mb-6 overflow-x-auto pb-1 scrollbar-none">
+      <button onclick="switchTab('tasks')" id="tab-tasks" class="tab-btn active text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 bg-red-500 text-white shadow-xs">
+        <i class="fa-solid fa-list-check"></i> Homework & Tasks
+      </button>
+      <button onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+        <i class="fa-regular fa-calendar-days"></i> Full Schedule
+      </button>
+      <button onclick="switchTab('timer')" id="tab-timer" class="tab-btn text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+        <i class="fa-solid fa-stopwatch"></i> Focus Clock
+      </button>
+      <button onclick="switchTab('stickers')" id="tab-stickers" class="tab-btn text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+        <i class="fa-solid fa-note-sticky"></i> Stickers & Rewards
+      </button>
+      <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+        <i class="fa-solid fa-sliders"></i> Settings & Audio
+      </button>
+    </nav>
+
+    <!-- TAB 1: HOMEWORK & TASKS -->
+    <section id="content-tasks" class="tab-content space-y-6">
+      
+      <!-- Class Folders Bar -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-folder-open text-red-500"></i> Class Folders
+          </h2>
+          <button onclick="openFolderModal()" class="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> New Folder
+          </button>
+        </div>
+        <div class="flex items-center gap-2 overflow-x-auto pb-1" id="folders-bar">
+          <!-- Dynamic Folders rendered here -->
+        </div>
+      </div>
+
+      <!-- Quick Add Task Form -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-circle-plus text-red-500"></i> Add New Homework Assignment
+        </h3>
+        <form onsubmit="handleAddTask(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input type="text" id="task-title-input" placeholder="Assignment title (e.g. Read Ch. 4)..." required class="md:col-span-2 px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+          <select id="task-folder-select" class="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            <!-- Dynamic folders dropdown -->
+          </select>
+          <input type="date" id="task-date-input" required class="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+          <div class="md:col-span-3">
+            <input type="text" id="task-reward-input" placeholder="Motivation reward (e.g. Watch 1 Episode of Anime)..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+          </div>
+          <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl text-xs transition shadow-xs flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> Add Task
+          </button>
+        </form>
+      </div>
+
+      <!-- Task List Container -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2" id="current-folder-title">
+            <i class="fa-solid fa-layer-group text-sky-500"></i> All Homework Tasks
+          </h3>
+          <span class="text-xs text-slate-400 font-semibold" id="task-count-badge">0 tasks</span>
+        </div>
+        <div id="tasks-container" class="divide-y divide-slate-100 min-h-[160px]">
+          <!-- Dynamic Task Cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: FULL SCHEDULE CALENDAR -->
+    <section id="content-calendar" class="tab-content hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="calendar-month-title">
+            <i class="fa-regular fa-calendar-check text-red-500"></i> Month Year
+          </h2>
+          <div class="flex items-center gap-2">
+            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-xs text-slate-600">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button onclick="resetToCurrentMonth()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Today</button>
+            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-xs text-slate-600">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Days of Week Header -->
+        <div class="grid grid-cols-7 text-center font-bold text-xs text-slate-400 uppercase py-2 border-b border-slate-100">
+          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+
+        <!-- Month Grid -->
+        <div class="grid grid-cols-7 gap-1.5" id="calendar-month-grid">
+          <!-- Dynamic days -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: TIMER & STOPWATCH SECTION -->
+    <section id="content-timer" class="tab-content hidden space-y-6">
+      <div class="max-w-xl mx-auto bg-white border border-slate-100 shadow-sm rounded-2xl p-6 text-center space-y-6 relative">
+        
+        <!-- Mode Switcher -->
+        <div class="inline-flex p-1 bg-slate-100 rounded-xl font-medium text-xs">
+          <button id="mode-btn-timer" onclick="setClockMode('timer')" class="px-4 py-1.5 rounded-lg font-bold text-red-600 bg-white shadow-xs transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-hourglass-half"></i> Countdown Timer
+          </button>
+          <button id="mode-btn-stopwatch" onclick="setClockMode('stopwatch')" class="px-4 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-stopwatch"></i> Stopwatch
+          </button>
+        </div>
+
+        <div>
+          <span id="clock-badge-label" class="text-xs uppercase font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">Study Focus Sprint</span>
+          <h2 id="clock-heading" class="text-2xl font-bold text-slate-800 mt-2">Beat Homework Anxiety</h2>
+          <p id="clock-subheading" class="text-xs text-slate-500 mt-1">Focus on your goals, then enjoy your Marvel/Anime reward break!</p>
+        </div>
+
+        <!-- Clock Display -->
+        <div class="relative w-48 h-48 mx-auto flex items-center justify-center bg-gradient-to-br from-red-50/50 to-sky-50/50 rounded-full border-4 border-red-200 shadow-inner spidey-glow">
+          <div class="text-4xl font-extrabold text-slate-800 font-mono tracking-tight" id="timer-display">25:00</div>
+        </div>
+
+        <!-- Clock Controls -->
+        <div class="flex justify-center items-center gap-3">
+          <button onclick="toggleClock()" id="timer-start-btn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-play"></i> Start
+          </button>
+          <button onclick="resetClock()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i> Reset
+          </button>
+        </div>
+
+        <!-- Custom Timer Duration Inputs -->
+        <div id="custom-duration-container" class="pt-4 border-t border-slate-100 space-y-3">
+          <label class="block text-xs font-semibold text-slate-400 uppercase">Custom Duration</label>
+          <div class="flex justify-center items-center gap-2 max-w-xs mx-auto">
+            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+              <input type="number" id="custom-mins" min="0" max="180" value="25" class="w-12 bg-transparent text-center font-bold text-slate-700 text-sm focus:outline-none">
+              <span class="text-xs text-slate-400 font-semibold">m</span>
+            </div>
+            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+              <input type="number" id="custom-secs" min="0" max="59" value="0" class="w-12 bg-transparent text-center font-bold text-slate-700 text-sm focus:outline-none">
+              <span class="text-xs text-slate-400 font-semibold">s</span>
+            </div>
+            <button onclick="applyCustomTimer()" class="bg-red-500 hover:bg-red-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition">
+              Set
+            </button>
+          </div>
+
+          <!-- Presets -->
+          <div class="flex justify-center gap-2 pt-1">
+            <button onclick="setTimerPreset(15)" class="px-3 py-1 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition">15m Quick</button>
+            <button onclick="setTimerPreset(25)" class="px-3 py-1 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition">25m Standard</button>
+            <button onclick="setTimerPreset(45)" class="px-3 py-1 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition">45m Deep</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 4: STICKERS & REWARDS -->
+    <section id="content-stickers" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Draggable Stickers -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+              <i class="fa-solid fa-face-smile text-red-500"></i> Workspace Stickers
+            </h3>
+            <span class="text-xs font-semibold text-slate-400" id="sticker-count">0 active</span>
+          </div>
+          <p class="text-xs text-slate-500">Upload custom PNG transparent images or stickers to drag & position anywhere over your workspace!</p>
+          
+          <div class="flex gap-2">
+            <label class="cursor-pointer bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-2">
+              <i class="fa-solid fa-upload"></i> Upload Image Sticker
+              <input type="file" accept="image/*" onchange="handleStickerUpload(event)" class="hidden">
+            </label>
+            <button onclick="clearAllStickers()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-500 hover:bg-slate-50 font-medium">Clear All</button>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 pt-2" id="sticker-gallery">
+            <!-- Dynamic sticker thumbnails -->
+          </div>
+        </div>
+
+        <!-- Custom Motivation Rewards -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i class="fa-solid fa-gift text-red-500"></i> Motivation Reward Bank
+          </h3>
+          <p class="text-xs text-slate-500">Define rewards to give yourself after completing study focus sprints!</p>
+
+          <form onsubmit="handleAddReward(event)" class="flex gap-2">
+            <input type="text" id="reward-input" placeholder="e.g. Watch 1 Marvel movie scene..." required class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-red-400">
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition">Add</button>
+          </form>
+
+          <ul id="rewards-list" class="space-y-2">
+            <!-- Dynamic Rewards -->
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 5: SETTINGS & SOFT RAIN SOUNDSCAPE -->
+    <section id="content-settings" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Profile Customization -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+            <i class="fa-solid fa-user-gear text-red-500"></i> Hero Profile
+          </h3>
+          <form onsubmit="handleSaveProfile(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Workspace Title / Name</label>
+              <input type="text" id="setting-name" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Grade / System Subtitle</label>
+              <input type="text" id="setting-title" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Personal Goal / Motto</label>
+              <input type="text" id="setting-motto" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            </div>
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+              Save Profile Changes
+            </button>
+          </form>
+        </div>
+
+        <!-- Web Audio API Soft Rain Ambient Soundscape -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+            <i class="fa-solid fa-cloud-rain text-red-500"></i> Focus Ambient Sound
+          </h3>
+          <p class="text-xs text-slate-500">
+            Synthesize a soothing Soft Rain background directly in your browser!
+          </p>
+
+          <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div class="flex items-center justify-between bg-white px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-cloud-showers-heavy text-sky-500"></i> Soft Rain Soundscape</span>
+              <span class="text-xs text-red-500 font-bold uppercase">Active</span>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center text-xs text-slate-500 mb-1">
+                <span class="font-semibold uppercase">Volume</span>
+                <span id="noise-vol-label" class="font-bold text-red-500">50%</span>
+              </div>
+              <input type="range" id="noise-vol-slider" min="0" max="100" value="50" oninput="updateNoiseVolume(this.value)">
+            </div>
+
+            <button id="noise-toggle-btn" onclick="toggleWhiteNoise()" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-play"></i> Play Soft Rain
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Create Class Folder Modal -->
+  <div id="folder-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl border border-slate-100">
+      <div class="flex justify-between items-center">
+        <h4 class="font-bold text-slate-800 text-base">Create Class Folder</h4>
+        <button onclick="closeFolderModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreateFolder(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Class Name</label>
+          <input type="text" id="folder-name-input" required placeholder="e.g. AP Physics" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Folder Icon</label>
+          <select id="folder-icon-input" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            <option value="fa-book">📚 Book / English</option>
+            <option value="fa-calculator">🧮 Math</option>
+            <option value="fa-flask">🧪 Science</option>
+            <option value="fa-language">🗣️ Spanish / Language</option>
+            <option value="fa-laptop-code">💻 Computer Science</option>
+            <option value="fa-palette">🎨 Arts</option>
+            <option value="fa-folder">📁 Other</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeFolderModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 font-medium hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-red-500 text-white text-xs font-medium hover:bg-red-600">Create Folder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Add Event Calendar Modal -->
+  <div id="calendar-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl border border-slate-100">
+      <div class="flex justify-between items-center">
+        <h4 class="font-bold text-slate-800 text-base" id="modal-date-label">Add Homework for Date</h4>
+        <button onclick="closeCalendarModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleQuickCalendarAdd(event)" class="space-y-3">
+        <input type="hidden" id="modal-selected-date">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Homework Title</label>
+          <input type="text" id="modal-task-title" required placeholder="e.g. Science Chapter Review" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Class Folder</label>
+          <select id="modal-task-folder" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+            <!-- Dynamic Folder List -->
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Motivation Reward</label>
+          <input type="text" id="modal-task-reward" placeholder="e.g. Watch 1 Marvel scene" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeCalendarModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 font-medium hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-red-500 text-white text-xs font-medium hover:bg-red-600">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Celebratory Streak Modal -->
+  <div id="streak-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-xl border border-red-100">
+      <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
+        🔥
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 text-xl">Daily Streak Maintained!</h3>
+        <p class="text-sm text-slate-500 mt-1">
+          You've logged into your workspace <span id="modal-streak-num" class="font-bold text-red-600">1</span> day(s) in a row!
+        </p>
+      </div>
+      <button onclick="closeStreakModal()" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-xl transition text-sm">
+        Awesome, let's work!
+      </button>
+    </div>
+  </div>
+
+  <!-- Timer Complete Modal -->
+  <div id="timer-complete-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-xl border border-red-200">
+      <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner chibi-spidey">
+        🕷️
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 text-xl">Focus Sprint Complete!</h3>
+        <p class="text-xs text-red-600 font-bold mt-1 font-mono">🎶 "Spider-Man, Spider-Man, does whatever a spider can!" 🎶</p>
+        <p class="text-xs text-slate-500 mt-2">
+          Great job! Take a well-deserved reward break! 🍿⚔️
+        </p>
+      </div>
+      <button onclick="closeTimerCompleteModal()" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-xl transition text-sm shadow-sm">
+        Claim Reward & Take Break
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-100 py-3 text-center text-xs text-slate-400 mt-auto z-10 flex items-center justify-center gap-1">
+    Carter's Personal Productivity Workspace &bull; Built for High School Success 🕷️🕸️
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'carters_workspace_v5_state';
+
+    let appState = {
+      profile: {
+        name: "Carter's Workspace",
+        title: "High School Sophomore",
+        motto: "Goal: Finish homework within 1-2 days 🕷️🕸️"
+      },
+      folders: [
+        { id: 'math', name: 'Math', icon: 'fa-calculator' },
+        { id: 'science', name: 'Science', icon: 'fa-flask' },
+        { id: 'english', name: 'English', icon: 'fa-book' },
+        { id: 'spanish', name: 'Spanish', icon: 'fa-language' }
+      ],
+      activeFolderId: 'all',
+      tasks: [
+        { id: '1', title: 'Algebra II Worksheet #4', folderId: 'math', dueDate: new Date().toISOString().split('T')[0], reward: 'Watch 1 episode of Marvel Spidey', progress: 50, completed: false },
+        { id: '2', title: 'Biology Lab Report Draft', folderId: 'science', dueDate: new Date().toISOString().split('T')[0], reward: '20 mins Video Games', progress: 100, completed: true }
+      ],
+      rewards: [
+        { id: 'r1', name: 'Watch 1 episode of Marvel or Anime' },
+        { id: 'r2', name: '20 minutes gaming break' },
+        { id: 'r3', name: 'Favorite snack treat 🍿' }
+      ],
+      stickers: [],
+      streakCount: 1,
+      lastLoginDate: new Date().toISOString().split('T')[0]
+    };
+
+    let currentCalDate = new Date();
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    }
+
+    function loadState() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          appState = Object.assign({}, appState, JSON.parse(stored));
+        } catch(e) {
+          console.error("State loading error:", e);
+        }
+      }
+      checkDailyStreak();
+      applyProfileInfo();
+    }
+
+    function applyProfileInfo() {
+      document.getElementById('display-profile-name').innerText = appState.profile.name;
+      document.getElementById('display-profile-motto').innerText = appState.profile.motto;
+      document.getElementById('streak-count-display').innerText = appState.streakCount;
+
+      document.getElementById('setting-name').value = appState.profile.name;
+      document.getElementById('setting-title').value = appState.profile.title;
+      document.getElementById('setting-motto').value = appState.profile.motto;
+    }
+
+    function checkDailyStreak() {
+      const today = new Date().toISOString().split('T')[0];
+      if (appState.lastLoginDate !== today) {
+        const last = new Date(appState.lastLoginDate);
+        const curr = new Date(today);
+        const diffDays = Math.round((curr - last) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+          appState.streakCount += 1;
+          setTimeout(() => showStreakModal(appState.streakCount), 600);
+        } else if (diffDays > 1) {
+          appState.streakCount = 1;
+        }
+        appState.lastLoginDate = today;
+        saveState();
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 text-slate-600 hover:bg-slate-100";
+      });
+
+      document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
+
+      const targetBtn = document.getElementById(`tab-${tabId}`);
+      if (targetBtn) {
+        targetBtn.className = "tab-btn active text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 bg-red-500 text-white shadow-xs";
+      }
+
+      const targetSec = document.getElementById(`content-${tabId}`);
+      if (targetSec) {
+        targetSec.classList.remove('hidden');
+      }
+
+      if (tabId === 'calendar') {
+        renderFullMonthCalendar();
+      }
+    }
+
+    function renderFoldersBar() {
+      const container = document.getElementById('folders-bar');
+      const selectDropdown = document.getElementById('task-folder-select');
+      const modalDropdown = document.getElementById('modal-task-folder');
+
+      container.innerHTML = '';
+      selectDropdown.innerHTML = '';
+      modalDropdown.innerHTML = '';
+
+      // "All Tasks" Folder Button
+      const allBtn = document.createElement('button');
+      allBtn.onclick = () => selectFolder('all');
+      allBtn.className = `px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border whitespace-nowrap ${
+        appState.activeFolderId === 'all'
+          ? 'bg-red-500 text-white border-red-500 shadow-xs'
+          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+      }`;
+      allBtn.innerHTML = `<i class="fa-solid fa-asterisk"></i> All Class Tasks`;
+      container.appendChild(allBtn);
+
+      appState.folders.forEach(f => {
+        // Folder Tab Button
+        const btn = document.createElement('button');
+        btn.onclick = () => selectFolder(f.id);
+        btn.className = `px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border whitespace-nowrap ${
+          appState.activeFolderId === f.id
+            ? 'bg-red-500 text-white border-red-500 shadow-xs'
+            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+        }`;
+        btn.innerHTML = `<i class="fa-solid ${f.icon || 'fa-folder'}"></i> ${f.name}`;
+        container.appendChild(btn);
+
+        // Select Options
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.innerText = f.name;
+        selectDropdown.appendChild(opt);
+
+        const modalOpt = document.createElement('option');
+        modalOpt.value = f.id;
+        modalOpt.innerText = f.name;
+        modalDropdown.appendChild(modalOpt);
+      });
+    }
+
+    function selectFolder(id) {
+      appState.activeFolderId = id;
+      renderFoldersBar();
+      renderTasks();
+    }
+
+    function openFolderModal() {
+      document.getElementById('folder-modal').classList.remove('hidden');
+    }
+
+    function closeFolderModal() {
+      document.getElementById('folder-modal').classList.add('hidden');
+      document.getElementById('folder-name-input').value = '';
+    }
+
+    function handleCreateFolder(e) {
+      e.preventDefault();
+      const name = document.getElementById('folder-name-input').value.trim();
+      const icon = document.getElementById('folder-icon-input').value;
+      if (!name) return;
+
+      const newFolder = {
+        id: 'folder-' + Date.now(),
+        name,
+        icon
+      };
+
+      appState.folders.push(newFolder);
+      appState.activeFolderId = newFolder.id;
+      saveState();
+      renderFoldersBar();
+      renderTasks();
+      closeFolderModal();
+    }
+
+    function handleAddTask(e) {
+      e.preventDefault();
+      const title = document.getElementById('task-title-input').value.trim();
+      const folderId = document.getElementById('task-folder-select').value;
+      const dueDate = document.getElementById('task-date-input').value;
+      const reward = document.getElementById('task-reward-input').value.trim() || 'Break time!';
+
+      if (!title || !dueDate) return;
+
+      const newTask = {
+        id: Date.now().toString(),
+        title,
+        folderId,
+        dueDate,
+        reward,
+        progress: 0,
+        completed: false
+      };
+
+      appState.tasks.push(newTask);
+      saveState();
+      renderTasks();
+
+      document.getElementById('task-title-input').value = '';
+      document.getElementById('task-reward-input').value = '';
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('tasks-container');
+      const countBadge = document.getElementById('task-count-badge');
+      const titleHeader = document.getElementById('current-folder-title');
+
+      container.innerHTML = '';
+
+      let filtered = appState.tasks;
+      if (appState.activeFolderId !== 'all') {
+        filtered = appState.tasks.filter(t => t.folderId === appState.activeFolderId);
+        const currentFolder = appState.folders.find(f => f.id === appState.activeFolderId);
+        titleHeader.innerHTML = `<i class="fa-solid ${currentFolder?.icon || 'fa-folder'} text-red-500"></i> ${currentFolder?.name || 'Class'} Tasks`;
+      } else {
+        titleHeader.innerHTML = `<i class="fa-solid fa-layer-group text-sky-500"></i> All Homework Tasks`;
+      }
+
+      countBadge.innerText = `${filtered.length} tasks`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 space-y-2">
+            <i class="fa-solid fa-square-check text-3xl text-slate-200"></i>
+            <p class="text-xs">No tasks in this category! Enjoy your free time or add a task above.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(task => {
+        const folder = appState.folders.find(f => f.id === task.folderId);
+        const card = document.createElement('div');
+        card.className = "p-4 hover:bg-slate-50/60 transition flex flex-col md:flex-row md:items-center justify-between gap-3";
+
+        card.innerHTML = `
+          <div class="flex items-start gap-3 flex-1">
+            <button onclick="toggleTask('${task.id}')" class="mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition ${
+              task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 hover:border-red-400 text-transparent'
+            }">
+              <i class="fa-solid fa-check text-xs"></i>
+            </button>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-sm text-slate-800 ${task.completed ? 'line-through text-slate-400' : ''}">${task.title}</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                  <i class="fa-solid ${folder?.icon || 'fa-folder'} text-[9px] mr-1 text-red-500"></i>${folder?.name || 'General'}
+                </span>
+                <span class="text-[10px] font-semibold text-slate-400">
+                  <i class="fa-regular fa-clock mr-1"></i>Due ${task.dueDate}
+                </span>
+              </div>
+              ${task.reward ? `<p class="text-xs text-red-600 font-medium">🎁 Reward: ${task.reward}</p>` : ''}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-red-500 transition px-2 py-1">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function toggleTask(id) {
+      const task = appState.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        if (task.completed) {
+          triggerConfetti();
+        }
+        saveState();
+        renderTasks();
+        renderFullMonthCalendar();
+      }
+    }
+
+    function deleteTask(id) {
+      appState.tasks = appState.tasks.filter(t => t.id !== id);
+      saveState();
+      renderTasks();
+      renderFullMonthCalendar();
+    }
+
+    function changeMonth(delta) {
+      currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+      renderFullMonthCalendar();
+    }
+
+    function resetToCurrentMonth() {
+      currentCalDate = new Date();
+      renderFullMonthCalendar();
+    }
+
+    function renderFullMonthCalendar() {
+      const grid = document.getElementById('calendar-month-grid');
+      const title = document.getElementById('calendar-month-title');
+      if (!grid || !title) return;
+
+      grid.innerHTML = '';
+
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth();
+
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      title.innerHTML = `<i class="fa-regular fa-calendar-check text-red-500"></i> ${monthNames[month]} ${year}`;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = "bg-slate-50/40 rounded-xl min-h-[90px]";
+        grid.appendChild(emptyCell);
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = dayString === todayStr;
+
+        const cell = document.createElement('div');
+        cell.className = `border rounded-xl p-2 flex flex-col justify-start min-h-[90px] cursor-pointer transition hover:border-red-300 hover:shadow-xs group ${
+          isToday ? 'bg-red-50/70 border-red-300' : 'bg-white border-slate-100'
+        }`;
+        cell.onclick = () => openCalendarModal(dayString);
+
+        cell.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold ${isToday ? 'bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full' : 'text-slate-700'}">${day}</span>
+            <i class="fa-solid fa-plus text-[10px] text-slate-300 group-hover:text-red-500 transition"></i>
+          </div>
+          <div class="space-y-1 overflow-y-auto max-h-[60px] text-left w-full" id="cal-cell-${dayString}">
+          </div>
+        `;
+
+        grid.appendChild(cell);
+      }
+
+      appState.tasks.forEach(task => {
+        if (!task.dueDate) return;
+        const cellContainer = document.getElementById(`cal-cell-${task.dueDate}`);
+        if (cellContainer) {
+          const badge = document.createElement('div');
+          badge.className = `text-[10px] p-1 rounded-md font-semibold truncate shadow-2xs ${
+            task.completed ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+          }`;
+          badge.innerText = task.title;
+          cellContainer.appendChild(badge);
+        }
+      });
+    }
+
+    function openCalendarModal(dateStr) {
+      document.getElementById('modal-selected-date').value = dateStr;
+      document.getElementById('modal-date-label').innerText = `Add Homework for ${dateStr}`;
+      document.getElementById('calendar-modal').classList.remove('hidden');
+    }
+
+    function closeCalendarModal() {
+      document.getElementById('calendar-modal').classList.add('hidden');
+      document.getElementById('modal-task-title').value = '';
+      document.getElementById('modal-task-reward').value = '';
+    }
+
+    function handleQuickCalendarAdd(e) {
+      e.preventDefault();
+      const title = document.getElementById('modal-task-title').value.trim();
+      const folderId = document.getElementById('modal-task-folder').value;
+      const dueDate = document.getElementById('modal-selected-date').value;
+      const reward = document.getElementById('modal-task-reward').value.trim() || 'Free time!';
+
+      if (!title || !dueDate) return;
+
+      const newTask = {
+        id: Date.now().toString(),
+        title,
+        folderId,
+        dueDate,
+        reward,
+        progress: 0,
+        completed: false
+      };
+
+      appState.tasks.push(newTask);
+      saveState();
+      renderTasks();
+      renderFullMonthCalendar();
+      closeCalendarModal();
+    }
+
+    let clockMode = 'timer'; // 'timer' or 'stopwatch'
+    
+    // Timer state
+    let timerDuration = 25 * 60;
+    let timerRemaining = 25 * 60;
+    let timerInterval = null;
+    let lastTickTime = null;
+
+    // Stopwatch state
+    let stopwatchElapsed = 0; // in seconds
+    let stopwatchInterval = null;
+    let lastStopwatchTickTime = null;
+
+    function setClockMode(mode) {
+      if (clockMode === mode) return;
+
+      pauseAllClocks();
+      clockMode = mode;
+
+      const timerBtn = document.getElementById('mode-btn-timer');
+      const stopwatchBtn = document.getElementById('mode-btn-stopwatch');
+      const durationContainer = document.getElementById('custom-duration-container');
+      const badgeLabel = document.getElementById('clock-badge-label');
+      const heading = document.getElementById('clock-heading');
+      const subheading = document.getElementById('clock-subheading');
+
+      if (mode === 'timer') {
+        timerBtn.className = "px-4 py-1.5 rounded-lg font-bold text-red-600 bg-white shadow-xs transition-all flex items-center gap-1.5";
+        stopwatchBtn.className = "px-4 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5";
+        durationContainer.classList.remove('hidden');
+        badgeLabel.innerText = "Study Focus Sprint";
+        heading.innerText = "Beat Homework Anxiety";
+        subheading.innerText = "Focus on your goals, then enjoy your Marvel/Anime reward break!";
+        updateTimerDisplay();
+      } else {
+        stopwatchBtn.className = "px-4 py-1.5 rounded-lg font-bold text-red-600 bg-white shadow-xs transition-all flex items-center gap-1.5";
+        timerBtn.className = "px-4 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5";
+        durationContainer.classList.add('hidden');
+        badgeLabel.innerText = "Count Up Stopwatch";
+        heading.innerText = "Track Total Homework Time";
+        subheading.innerText = "Measure exact study durations for assignments and projects!";
+        updateStopwatchDisplay();
+      }
+
+      document.getElementById('timer-start-btn').innerHTML = '<i class="fa-solid fa-play"></i> Start';
+    }
+
+    function pauseAllClocks() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+      }
+    }
+
+    function toggleClock() {
+      if (clockMode === 'timer') {
+        toggleTimer();
+      } else {
+        toggleStopwatch();
+      }
+    }
+
+    function resetClock() {
+      if (clockMode === 'timer') {
+        resetTimer();
+      } else {
+        resetStopwatch();
+      }
+    }
+
+    function applyCustomTimer() {
+      const mins = parseInt(document.getElementById('custom-mins').value, 10) || 0;
+      const secs = parseInt(document.getElementById('custom-secs').value, 10) || 0;
+      
+      const totalSecs = (mins * 60) + secs;
+      if (totalSecs <= 0) return;
+
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('timer-start-btn').innerHTML = '<i class="fa-solid fa-play"></i> Start';
+
+      timerDuration = totalSecs;
+      timerRemaining = timerDuration;
+      updateTimerDisplay();
+    }
+
+    function setTimerPreset(minutes) {
+      document.getElementById('custom-mins').value = minutes;
+      document.getElementById('custom-secs').value = 0;
+      applyCustomTimer();
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timer-display');
+      const mins = Math.floor(timerRemaining / 60);
+      const secs = timerRemaining % 60;
+      display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateStopwatchDisplay() {
+      const display = document.getElementById('timer-display');
+      const mins = Math.floor(stopwatchElapsed / 60);
+      const secs = stopwatchElapsed % 60;
+      display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timer-start-btn');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Resume';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+        lastTickTime = Date.now();
+        
+        timerInterval = setInterval(() => {
+          const now = Date.now();
+          const delta = Math.floor((now - lastTickTime) / 1000);
+          
+          if (delta >= 1) {
+            timerRemaining = Math.max(0, timerRemaining - delta);
+            lastTickTime = now;
+            updateTimerDisplay();
+
+            if (timerRemaining === 0) {
+              clearInterval(timerInterval);
+              timerInterval = null;
+              btn.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+              playTimerSound();
+              triggerConfetti();
+              showTimerCompleteModal();
+            }
+          }
+        }, 500);
+      }
+    }
+
+    function toggleStopwatch() {
+      const btn = document.getElementById('timer-start-btn');
+      if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Resume';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+        lastStopwatchTickTime = Date.now();
+        
+        stopwatchInterval = setInterval(() => {
+          const now = Date.now();
+          const delta = Math.floor((now - lastStopwatchTickTime) / 1000);
+          
+          if (delta >= 1) {
+            stopwatchElapsed += delta;
+            lastStopwatchTickTime = now;
+            updateStopwatchDisplay();
+          }
+        }, 500);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('timer-start-btn').innerHTML = '<i class="fa-solid fa-play"></i> Start';
+      timerRemaining = timerDuration;
+      updateTimerDisplay();
+    }
+
+    function resetStopwatch() {
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = null;
+      document.getElementById('timer-start-btn').innerHTML = '<i class="fa-solid fa-play"></i> Start';
+      stopwatchElapsed = 0;
+      updateStopwatchDisplay();
+    }
+
+    function showTimerCompleteModal() {
+      document.getElementById('timer-complete-modal').classList.remove('hidden');
+    }
+
+    function closeTimerCompleteModal() {
+      document.getElementById('timer-complete-modal').classList.add('hidden');
+    }
+
+    function playTimerSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
+        // Spider-Man Theme Opener Synth Tune:
+        const notes = [
+          { freq: 261.63, dur: 0.22, type: 'sawtooth' },
+          { freq: 311.13, dur: 0.22, type: 'sawtooth' },
+          { freq: 392.00, dur: 0.50, type: 'square' },
+          { freq: 0,      dur: 0.12 },
+          { freq: 261.63, dur: 0.22, type: 'sawtooth' },
+          { freq: 311.13, dur: 0.22, type: 'sawtooth' },
+          { freq: 392.00, dur: 0.50, type: 'square' },
+          { freq: 0,      dur: 0.15 },
+          { freq: 349.23, dur: 0.22, type: 'sawtooth' },
+          { freq: 415.30, dur: 0.22, type: 'sawtooth' },
+          { freq: 523.25, dur: 0.35, type: 'square' },
+          { freq: 415.30, dur: 0.22, type: 'sawtooth' },
+          { freq: 0,      dur: 0.10 },
+          { freq: 392.00, dur: 0.25, type: 'sawtooth' },
+          { freq: 311.13, dur: 0.25, type: 'sawtooth' },
+          { freq: 261.63, dur: 0.70, type: 'square' }
+        ];
+
+        let currentTime = ctx.currentTime + 0.05;
+
+        notes.forEach(note => {
+          if (note.freq > 0) {
+            const osc = ctx.createOscillator();
+            const subOsc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = note.type || 'square';
+            osc.frequency.setValueAtTime(note.freq, currentTime);
+
+            subOsc.type = 'triangle';
+            subOsc.frequency.setValueAtTime(note.freq / 2, currentTime);
+
+            gain.gain.setValueAtTime(0, currentTime);
+            gain.gain.linearRampToValueAtTime(0.25, currentTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, currentTime + note.dur);
+
+            osc.connect(gain);
+            subOsc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(currentTime);
+            subOsc.start(currentTime);
+            osc.stop(currentTime + note.dur);
+            subOsc.stop(currentTime + note.dur);
+          }
+          currentTime += note.dur;
+        });
+      } catch (e) {
+        console.log("Spider-Man audio synth play error", e);
+      }
+    }
+
+    function handleStickerUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const stickerData = {
+          id: 'sticker-' + Date.now(),
+          src: evt.target.result,
+          x: Math.floor(window.innerWidth / 2 - 40),
+          y: Math.floor(window.innerHeight / 2 - 40)
+        };
+
+        appState.stickers.push(stickerData);
+        saveState();
+        renderStickerGallery();
+        renderDraggableStickerOnScreen(stickerData);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+
+    function renderStickerGallery() {
+      const gallery = document.getElementById('sticker-gallery');
+      const count = document.getElementById('sticker-count');
+      if (!gallery || !count) return;
+
+      gallery.innerHTML = '';
+      count.innerText = `${appState.stickers.length} active`;
+
+      appState.stickers.forEach(s => {
+        const thumb = document.createElement('div');
+        thumb.className = "relative w-12 h-12 rounded-xl border border-slate-200 p-1 bg-slate-50 flex items-center justify-center group";
+        thumb.innerHTML = `
+          <img src="${s.src}" class="max-w-full max-h-full object-contain">
+          <button onclick="removeSticker('${s.id}')" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+            ×
+          </button>
+        `;
+        gallery.appendChild(thumb);
+      });
+    }
+
+    function renderAllScreenStickers() {
+      const layer = document.getElementById('sticker-layer');
+      if (!layer) return;
+      layer.innerHTML = '';
+      appState.stickers.forEach(s => renderDraggableStickerOnScreen(s));
+    }
+
+    function renderDraggableStickerOnScreen(sticker) {
+      const layer = document.getElementById('sticker-layer');
+      if (!layer) return;
+
+      const el = document.createElement('div');
+      el.id = sticker.id;
+      el.className = "draggable-sticker pointer-events-auto flex flex-col items-center";
+      el.style.left = sticker.x + 'px';
+      el.style.top = sticker.y + 'px';
+
+      el.innerHTML = `
+        <span class="remove-hint text-[9px] bg-slate-800 text-white px-1.5 py-0.5 rounded shadow mb-1">Double click to delete</span>
+        <img src="${sticker.src}">
+      `;
+
+      let isDragging = false;
+      let startX, startY, initialX, initialY;
+
+      el.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = el.offsetLeft;
+        initialY = el.offsetTop;
+        el.style.zIndex = 100;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const newX = Math.max(0, initialX + dx);
+        const newY = Math.max(0, initialY + dy);
+        el.style.left = newX + 'px';
+        el.style.top = newY + 'px';
+        sticker.x = newX;
+        sticker.y = newY;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          el.style.zIndex = 50;
+          saveState();
+        }
+      });
+
+      el.addEventListener('dblclick', () => {
+        removeSticker(sticker.id);
+      });
+
+      layer.appendChild(el);
+    }
+
+    function removeSticker(id) {
+      appState.stickers = appState.stickers.filter(s => s.id !== id);
+      saveState();
+      renderStickerGallery();
+      renderAllScreenStickers();
+    }
+
+    function clearAllStickers() {
+      appState.stickers = [];
+      saveState();
+      renderStickerGallery();
+      renderAllScreenStickers();
+    }
+
+    function handleAddReward(e) {
+      e.preventDefault();
+      const input = document.getElementById('reward-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      appState.rewards.push({ id: Date.now().toString(), name: val });
+      saveState();
+      renderRewards();
+      input.value = '';
+    }
+
+    function deleteReward(id) {
+      appState.rewards = appState.rewards.filter(r => r.id !== id);
+      saveState();
+      renderRewards();
+    }
+
+    function renderRewards() {
+      const list = document.getElementById('rewards-list');
+      if (!list) return;
+
+      list.innerHTML = '';
+
+      appState.rewards.forEach(r => {
+        const li = document.createElement('li');
+        li.className = "flex justify-between items-center bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl text-xs text-slate-700";
+        li.innerHTML = `
+          <span>🎁 ${r.name}</span>
+          <button onclick="deleteReward('${r.id}')" class="text-slate-300 hover:text-red-500">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function handleSaveProfile(e) {
+      e.preventDefault();
+      appState.profile.name = document.getElementById('setting-name').value.trim();
+      appState.profile.title = document.getElementById('setting-title').value.trim();
+      appState.profile.motto = document.getElementById('setting-motto').value.trim();
+
+      saveState();
+      applyProfileInfo();
+      triggerConfetti();
+    }
+
+    let audioCtx = null;
+    let noiseNode = null;
+    let gainNode = null;
+    let isNoisePlaying = false;
+
+    function toggleWhiteNoise() {
+      const btn = document.getElementById('noise-toggle-btn');
+      if (isNoisePlaying) {
+        stopWhiteNoise();
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Play Soft Rain';
+      } else {
+        startWhiteNoise();
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i> Stop Soft Rain';
+      }
+    }
+
+    function startWhiteNoise() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const bufferSize = audioCtx.sampleRate * 2;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      // Filtered soft rain noise synthesis algorithm
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        lastOut = (lastOut * 0.95) + (white * 0.05);
+        data[i] = lastOut * 2.5;
+      }
+
+      noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = buffer;
+      noiseNode.loop = true;
+
+      gainNode = audioCtx.createGain();
+      const vol = document.getElementById('noise-vol-slider').value / 100;
+      gainNode.gain.setValueAtTime(vol * 0.2, audioCtx.currentTime);
+
+      noiseNode.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      noiseNode.start();
+      isNoisePlaying = true;
+    }
+
+    function stopWhiteNoise() {
+      if (noiseNode) {
+        try {
+          noiseNode.stop();
+          noiseNode.disconnect();
+        } catch (e) {}
+        noiseNode = null;
+      }
+      isNoisePlaying = false;
+    }
+
+    function updateNoiseVolume(val) {
+      document.getElementById('noise-vol-label').innerText = val + '%';
+      if (gainNode && audioCtx) {
+        gainNode.gain.setValueAtTime((val / 100) * 0.2, audioCtx.currentTime);
+      }
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    function showStreakModal(count) {
+      document.getElementById('modal-streak-num').innerText = count;
+      document.getElementById('streak-modal').classList.remove('hidden');
+      triggerConfetti();
+    }
+
+    function closeStreakModal() {
+      document.getElementById('streak-modal').classList.add('hidden');
+    }
+
+    window.onload = function() {
+      loadState();
+      renderFoldersBar();
+      renderTasks();
+      renderRewards();
+      renderStickerGallery();
+      renderAllScreenStickers();
+      updateTimerDisplay();
+    };
+  </script>
+</body>
+</html>

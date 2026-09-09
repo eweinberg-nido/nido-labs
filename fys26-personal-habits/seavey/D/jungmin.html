@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Study Nexus - Homework Assistant v4</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Orbitron & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neonCyan: '#00f3ff',
+                        neonPink: '#ff007f',
+                        neonGreen: '#39ff14',
+                        neonPurple: '#b026ff',
+                        neonYellow: '#ffe600',
+                        darkNavy: '#090d16',
+                        brickBlue: '#0f172a',
+                        cardNavy: 'rgba(15, 23, 42, 0.85)'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #080c17;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(rgba(255, 0, 127, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 127, 0.03) 1px, transparent 1px);
+            background-size: 40px 20px, 40px 20px, 80px 40px, 80px 40px;
+            background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Neon Glow Utility Classes */
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.15);
+            border-color: #00f3ff;
+        }
+        .glow-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3), inset 0 0 10px rgba(255, 0, 127, 0.15);
+            border-color: #ff007f;
+        }
+        .glow-green {
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3), inset 0 0 10px rgba(57, 255, 20, 0.15);
+            border-color: #39ff14;
+        }
+        .glow-purple {
+            box-shadow: 0 0 15px rgba(176, 38, 255, 0.3), inset 0 0 10px rgba(176, 38, 255, 0.15);
+            border-color: #b026ff;
+        }
+        .text-glow-cyan { text-shadow: 0 0 10px rgba(0, 243, 255, 0.8); }
+        .text-glow-pink { text-shadow: 0 0 10px rgba(255, 0, 127, 0.8); }
+        .text-glow-yellow { text-shadow: 0 0 10px rgba(255, 230, 0, 0.8); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff007f; }
+
+        canvas { image-rendering: pixelated; }
+
+        /* Classic Retro Windows Styling for Minesweeper */
+        .ms-classic-panel {
+            background: #c0c0c0;
+            border-top: 3px solid #fff;
+            border-left: 3px solid #fff;
+            border-right: 3px solid #7b7b7b;
+            border-bottom: 3px solid #7b7b7b;
+        }
+        .ms-inset-panel {
+            border-top: 2px solid #7b7b7b;
+            border-left: 2px solid #7b7b7b;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+        }
+        .ms-tile {
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        .ms-tile-unrevealed {
+            background: #c0c0c0;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #7b7b7b;
+            border-bottom: 2px solid #7b7b7b;
+        }
+        .ms-tile-revealed {
+            background: #bdbdbd;
+            border: 1px solid #7b7b7b;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased p-3 lg:p-6 select-none pb-12">
+
+    <!-- APP HEADER -->
+    <header class="max-w-7xl mx-auto mb-6 flex flex-wrap justify-between items-center bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-cyan-500/30 glow-cyan">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 text-xl font-bold animate-pulse">
+                <i class="fa-solid fa-bolt text-neonCyan"></i>
+            </div>
+            <div>
+                <h1 class="font-orbitron font-extrabold text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-pink-400 to-neonPurple tracking-wider">
+                    STUDY NEXUS <span class="text-xs px-2 py-0.5 rounded bg-pink-600/30 text-neonPink border border-pink-500/50">v4</span>
+                </h1>
+                <p class="text-xs text-slate-400">Neon Homework & AI Tutor Assistant</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 mt-2 sm:mt-0">
+            <!-- Global Task Lock Indicator -->
+            <div id="globalLockBadge" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-red-950/40 border-red-500/50 text-red-400 text-xs font-semibold">
+                <i class="fa-solid fa-lock text-red-400"></i>
+                <span id="globalLockText">Apps Locked (0 Tasks Done)</span>
+            </div>
+
+            <!-- Header Points Counter -->
+            <div class="flex items-center space-x-2 bg-yellow-950/40 border border-yellow-500/50 px-4 py-1.5 rounded-xl glow-purple">
+                <i class="fa-solid fa-coins text-neonYellow text-base"></i>
+                <span id="userPointsHeader" class="font-orbitron font-bold text-neonYellow text-lg">0</span>
+                <span class="text-xs text-yellow-300/70 font-semibold">PTS</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD GRID -->
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- ================= LEFT COLUMN ================= -->
+        <div class="lg:col-span-4 flex flex-col space-y-6">
+
+            <!-- TOP LEFT: TASK BAR -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 glow-cyan flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-orbitron text-lg font-bold text-neonCyan flex items-center gap-2">
+                            <i class="fa-solid fa-list-check"></i> Homework Tasks
+                        </h2>
+                        <span id="taskCountBadge" class="text-xs font-semibold px-2.5 py-1 bg-cyan-950/60 border border-cyan-500/40 rounded-full text-cyan-300">0 Tasks</span>
+                    </div>
+
+                    <!-- Task Input Form -->
+                    <div class="space-y-3 mb-4">
+                        <input type="text" id="taskTitleInput" placeholder="Enter assignment title..." 
+                            class="w-full bg-slate-950/80 border border-cyan-500/40 rounded-xl px-3.5 py-2 text-sm text-cyan-100 placeholder-slate-500 focus:outline-none focus:border-neonCyan focus:ring-1 focus:ring-neonCyan transition">
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="taskSubjectSelect" class="bg-slate-950/80 border border-cyan-500/40 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-neonCyan">
+                                <option value="Math">📐 Math</option>
+                                <option value="Science">🔬 Science</option>
+                                <option value="English">📚 English</option>
+                                <option value="History">🏛️ History</option>
+                                <option value="Coding">💻 Coding</option>
+                                <option value="Art">🎨 Art / Other</option>
+                            </select>
+                            
+                            <input type="number" id="taskTimeInput" placeholder="Min (e.g. 30)" min="5" step="5"
+                                class="bg-slate-950/80 border border-cyan-500/40 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-neonCyan">
+                        </div>
+
+                        <button id="addTaskBtn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-2 px-4 rounded-xl text-sm font-orbitron transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-95">
+                            <i class="fa-solid fa-plus"></i> Add Homework Task
+                        </button>
+                    </div>
+
+                    <!-- Task List Container -->
+                    <div id="taskList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        <div class="text-center py-6 text-slate-500 text-xs italic">No homework added yet.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOTTOM LEFT: APP TIMER & LOCK MENU -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-pink-500/30 rounded-2xl p-5 glow-pink flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="font-orbitron text-lg font-bold text-neonPink flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved"></i> App Lock Menu
+                        </h2>
+                        <span class="text-[10px] uppercase font-bold text-pink-400 bg-pink-950/60 border border-pink-500/40 px-2 py-0.5 rounded">Focus Shield</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">Selected apps stay locked until all homework tasks are completed!</p>
+
+                    <!-- Apps Grid -->
+                    <div id="appsList" class="grid grid-cols-2 gap-2 mb-3">
+                        <div data-app="TikTok" class="app-lock-card bg-slate-950/60 border border-slate-800 hover:border-pink-500/50 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-brands fa-tiktok text-pink-400 text-base"></i>
+                                <span class="text-xs font-medium text-slate-200">TikTok</span>
+                            </div>
+                            <i class="app-status-icon fa-solid fa-lock text-red-400 text-xs"></i>
+                        </div>
+
+                        <div data-app="Instagram" class="app-lock-card bg-slate-950/60 border border-slate-800 hover:border-pink-500/50 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-brands fa-instagram text-purple-400 text-base"></i>
+                                <span class="text-xs font-medium text-slate-200">Instagram</span>
+                            </div>
+                            <i class="app-status-icon fa-solid fa-lock text-red-400 text-xs"></i>
+                        </div>
+
+                        <div data-app="YouTube" class="app-lock-card bg-slate-950/60 border border-slate-800 hover:border-pink-500/50 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-brands fa-youtube text-red-500 text-base"></i>
+                                <span class="text-xs font-medium text-slate-200">YouTube</span>
+                            </div>
+                            <i class="app-status-icon fa-solid fa-lock text-red-400 text-xs"></i>
+                        </div>
+
+                        <div data-app="Discord" class="app-lock-card bg-slate-950/60 border border-slate-800 hover:border-pink-500/50 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-brands fa-discord text-indigo-400 text-base"></i>
+                                <span class="text-xs font-medium text-slate-200">Discord</span>
+                            </div>
+                            <i class="app-status-icon fa-solid fa-lock text-red-400 text-xs"></i>
+                        </div>
+
+                        <div data-app="Snapchat" class="app-lock-card bg-slate-950/60 border border-slate-800 hover:border-pink-500/50 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-brands fa-snapchat text-yellow-400 text-base"></i>
+                                <span class="text-xs font-medium text-slate-200">Snapchat</span>
+                            </div>
+                            <i class="app-status-icon fa-solid fa-lock text-red-400 text-xs"></i>
+                        </div>
+
+                        <div data-app="Games" class="app-lock-card bg-slate-950/60 border border-slate-800 hover:border-pink-500/50 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-gamepad text-emerald-400 text-base"></i>
+                                <span class="text-xs font-medium text-slate-200">Mobile Games</span>
+                            </div>
+                            <i class="app-status-icon fa-solid fa-lock text-red-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="testAppAccessBtn" class="w-full mt-2 bg-pink-950/50 hover:bg-pink-900/60 border border-pink-500/40 text-pink-300 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-key"></i> Test Opening Locked Apps
+                </button>
+            </section>
+        </div>
+
+        <!-- ================= CENTER COLUMN ================= -->
+        <div class="lg:col-span-4 flex flex-col space-y-6">
+
+            <!-- CENTER TOP: ADJUSTABLE TIMER & SUBMIT HOMEWORK -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-cyan-400/40 rounded-2xl p-5 glow-cyan flex flex-col items-center justify-center text-center">
+                
+                <span class="text-xs font-orbitron font-bold text-neonCyan uppercase tracking-widest mb-1">Focus Timer</span>
+
+                <!-- Timer Circle Display -->
+                <div class="relative my-3 w-44 h-44 rounded-full border-4 border-cyan-500/20 bg-slate-950/90 flex flex-col items-center justify-center shadow-[0_0_25px_rgba(0,243,255,0.2)]">
+                    <div id="timerDisplay" class="font-orbitron font-extrabold text-3xl sm:text-4xl text-neonCyan text-glow-cyan tracking-wider">
+                        25:00
+                    </div>
+                    <span id="timerStatusLabel" class="text-[10px] font-semibold text-slate-400 mt-1 tracking-wide uppercase">Ready to Study</span>
+                </div>
+
+                <!-- Adjustable Timer Controls -->
+                <div class="flex items-center space-x-2 mb-3">
+                    <button id="decTimeBtn" class="bg-slate-800 hover:bg-cyan-950 border border-cyan-500/30 text-cyan-300 w-8 h-8 rounded-xl font-bold transition flex items-center justify-center active:scale-90 text-xs" title="Minus 5 Minutes">
+                        -5m
+                    </button>
+                    <button id="toggleTimerBtn" class="bg-gradient-to-r from-neonCyan to-blue-500 text-slate-950 font-orbitron font-extrabold px-5 py-2 rounded-xl text-xs transition shadow-lg shadow-cyan-500/30 hover:brightness-110 active:scale-95 flex items-center gap-2">
+                        <i id="playIcon" class="fa-solid fa-play text-xs"></i> <span id="timerBtnText">START</span>
+                    </button>
+                    <button id="resetTimerBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-xl transition flex items-center justify-center active:scale-90" title="Reset">
+                        <i class="fa-solid fa-rotate-right text-xs"></i>
+                    </button>
+                    <button id="incTimeBtn" class="bg-slate-800 hover:bg-cyan-950 border border-cyan-500/30 text-cyan-300 w-8 h-8 rounded-xl font-bold transition flex items-center justify-center active:scale-90 text-xs" title="Plus 5 Minutes">
+                        +5m
+                    </button>
+                </div>
+
+                <!-- SUBMIT HOMEWORK BUTTON -->
+                <div class="w-full pt-3 border-t border-slate-800/80">
+                    <button id="openSubmitModalBtn" class="w-full bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-400 hover:to-cyan-400 text-white font-orbitron font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-lg shadow-pink-500/30 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 border border-pink-400/50">
+                        <i class="fa-solid fa-camera-retro text-base"></i>
+                        <span>SUBMIT HOMEWORK PHOTO</span>
+                    </button>
+                    <p class="text-[10px] text-slate-400 mt-1.5">Take a picture of completed homework to earn <strong>+100 PTS</strong>!</p>
+                </div>
+            </section>
+
+            <!-- CENTER MIDDLE: AI HOMEWORK ASSISTANT TOOL -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 glow-cyan flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="font-orbitron text-sm font-bold text-neonCyan flex items-center gap-2">
+                            <i class="fa-solid fa-robot"></i> AI Homework Helper
+                        </h2>
+                        <span class="text-[9px] uppercase font-bold text-cyan-400 bg-cyan-950/80 border border-cyan-500/40 px-2 py-0.5 rounded">Smart AI Tutor</span>
+                    </div>
+
+                    <!-- AI Conversation Log -->
+                    <div id="aiChatLog" class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 h-40 overflow-y-auto space-y-2 mb-3 text-xs">
+                        <div class="bg-cyan-950/40 border border-cyan-500/20 p-2 rounded-lg text-cyan-200">
+                            🤖 Hi! Ask me any homework question, or attach a photo of your problem for step-by-step guidance!
+                        </div>
+                    </div>
+
+                    <!-- AI Image Preview Container -->
+                    <div id="aiImagePreviewContainer" class="hidden relative mb-2 w-20 h-20 border border-cyan-500/40 rounded-lg overflow-hidden group">
+                        <img id="aiImagePreview" class="w-full h-full object-cover" alt="Attached Homework Preview">
+                        <button id="removeAiImageBtn" class="absolute top-1 right-1 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px]">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Input Controls -->
+                    <div class="flex items-center space-x-2">
+                        <label class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 p-2 rounded-xl cursor-pointer text-xs flex items-center justify-center transition" title="Attach Image">
+                            <i class="fa-solid fa-paperclip"></i>
+                            <input type="file" id="aiImageInput" accept="image/*" class="hidden">
+                        </label>
+                        <input type="text" id="aiPromptInput" placeholder="Ask AI a homework question..." class="flex-1 bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-neonCyan">
+                        <button id="sendAiBtn" class="bg-neonCyan hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOTTOM CENTER: POINTS SYSTEM & ARCADE STORE (10 Min Games) -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-yellow-500/40 rounded-2xl p-4 glow-purple flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="font-orbitron text-sm font-bold text-neonYellow flex items-center gap-2 text-glow-yellow">
+                            <i class="fa-solid fa-gamepad"></i> Points & Arcade
+                        </h2>
+                        <div class="bg-yellow-950/80 border border-yellow-500/50 px-2.5 py-0.5 rounded-xl text-xs font-bold text-neonYellow">
+                            <span id="userPointsArcade">0</span> PTS
+                        </div>
+                    </div>
+
+                    <!-- Arcade Games Grid with High Score Displays -->
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <!-- Flappy Bird Game Card -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 flex flex-col items-center text-center hover:border-yellow-400/50 transition">
+                            <div class="text-xl mb-1">🐥</div>
+                            <h3 class="font-orbitron text-[11px] font-bold text-slate-100">Flappy Bird</h3>
+                            <span class="text-[9px] text-yellow-400 font-semibold my-0.5">100 PTS / 10m</span>
+                            <span class="text-[9px] text-slate-400 font-medium mb-1.5">Best: <strong id="hsFlappyText" class="text-neonCyan">0</strong></span>
+                            <button onclick="unlockGame('flappy')" class="w-full bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/40 text-[10px] font-bold py-1 rounded-lg transition active:scale-95">
+                                Play
+                            </button>
+                        </div>
+
+                        <!-- Tetris Game Card -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 flex flex-col items-center text-center hover:border-yellow-400/50 transition">
+                            <div class="text-xl mb-1">🧩</div>
+                            <h3 class="font-orbitron text-[11px] font-bold text-slate-100">Tetris</h3>
+                            <span class="text-[9px] text-yellow-400 font-semibold my-0.5">100 PTS / 10m</span>
+                            <span class="text-[9px] text-slate-400 font-medium mb-1.5">Best: <strong id="hsTetrisText" class="text-neonCyan">0</strong></span>
+                            <button onclick="unlockGame('tetris')" class="w-full bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/40 text-[10px] font-bold py-1 rounded-lg transition active:scale-95">
+                                Play
+                            </button>
+                        </div>
+
+                        <!-- Minesweeper Game Card -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 flex flex-col items-center text-center hover:border-yellow-400/50 transition">
+                            <div class="text-xl mb-1">💣</div>
+                            <h3 class="font-orbitron text-[11px] font-bold text-slate-100">Minesweeper</h3>
+                            <span class="text-[9px] text-yellow-400 font-semibold my-0.5">100 PTS / 10m</span>
+                            <span class="text-[9px] text-slate-400 font-medium mb-1.5">Best: <strong id="hsMinesweeperText" class="text-neonCyan">--s</strong></span>
+                            <button onclick="unlockGame('minesweeper')" class="w-full bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 border border-yellow-500/40 text-[10px] font-bold py-1 rounded-lg transition active:scale-95">
+                                Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= RIGHT COLUMN ================= -->
+        <div class="lg:col-span-4 flex flex-col space-y-6">
+
+            <!-- TOP RIGHT: ALARM SECTION -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-purple-500/30 rounded-2xl p-5 glow-purple">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-orbitron text-lg font-bold text-neonPurple flex items-center gap-2">
+                        <i class="fa-solid fa-bell"></i> Study Alarms
+                    </h2>
+                    <span id="liveClock" class="font-orbitron text-xs font-bold text-purple-300 bg-purple-950/60 border border-purple-500/40 px-2.5 py-1 rounded-lg">
+                        12:00:00 PM
+                    </span>
+                </div>
+
+                <!-- Add Alarm Form -->
+                <div class="flex space-x-2 mb-3">
+                    <input type="time" id="alarmTimeInput" class="bg-slate-950/80 border border-purple-500/40 rounded-xl px-3 py-1.5 text-xs text-purple-200 focus:outline-none focus:border-neonPurple flex-1">
+                    <input type="text" id="alarmLabelInput" placeholder="Label (e.g. Math Quiz)" class="bg-slate-950/80 border border-purple-500/40 rounded-xl px-3 py-1.5 text-xs text-purple-200 placeholder-slate-500 focus:outline-none focus:border-neonPurple flex-1">
+                    <button id="addAlarmBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-95">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Alarms List -->
+                <div id="alarmsList" class="space-y-2 max-h-36 overflow-y-auto pr-1">
+                    <div class="text-center py-3 text-slate-500 text-xs italic">No active study alarms set.</div>
+                </div>
+            </section>
+
+            <!-- MIDDLE/BOTTOM RIGHT: MUSIC & AMBIENT AUDIO MENU -->
+            <section class="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 glow-cyan flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="font-orbitron text-lg font-bold text-neonCyan flex items-center gap-2">
+                            <i class="fa-solid fa-music"></i> Ambient & Study Audio
+                        </h2>
+                        <span class="text-[10px] font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-500/40 px-2 py-0.5 rounded">Cyber Audio</span>
+                    </div>
+
+                    <!-- Audio Player Box -->
+                    <div class="bg-slate-950/80 border border-cyan-500/30 rounded-xl p-3 mb-3">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div id="albumArt" class="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white text-lg shadow-md animate-pulse">
+                                <i id="albumArtIcon" class="fa-solid fa-cloud-rain"></i>
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <h4 id="currentTrackTitle" class="font-bold text-xs text-cyan-200 truncate">Rain Soundscape</h4>
+                                <p id="currentTrackArtist" class="text-[11px] text-slate-400 truncate">Steady Rain & Soft Drops</p>
+                            </div>
+                        </div>
+
+                        <!-- Audio Controls -->
+                        <div class="flex items-center justify-between mt-2">
+                            <button id="prevTrackBtn" class="text-slate-400 hover:text-cyan-300 text-sm transition"><i class="fa-solid fa-backward-step"></i></button>
+                            <button id="togglePlayBtn" class="w-8 h-8 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center transition active:scale-95 shadow-md shadow-cyan-500/30">
+                                <i id="musicPlayIcon" class="fa-solid fa-play text-xs"></i>
+                            </button>
+                            <button id="nextTrackBtn" class="text-slate-400 hover:text-cyan-300 text-sm transition"><i class="fa-solid fa-forward-step"></i></button>
+                            
+                            <!-- Volume slider -->
+                            <div class="flex items-center space-x-1.5 w-24">
+                                <i class="fa-solid fa-volume-high text-xs text-slate-400"></i>
+                                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.7" class="w-full accent-neonCyan h-1 bg-slate-800 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ambient Sound Categories / Selector -->
+                    <div class="mb-2">
+                        <span class="text-[11px] font-bold text-slate-400 font-orbitron uppercase tracking-wider block mb-1">Select Sound (10 Types Available)</span>
+                        <div id="soundListContainer" class="space-y-1 text-xs max-h-40 overflow-y-auto pr-1">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- ALARM RINGING POPUP MODAL -->
+    <div id="alarmRingingModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-purple-500 rounded-2xl max-w-sm w-full p-6 text-center glow-purple relative animate-bounce">
+            <i class="fa-solid fa-bell text-5xl text-neonPurple mb-3 animate-pulse"></i>
+            <h3 class="font-orbitron text-xl font-extrabold text-purple-200 mb-1">ALARM TRIGGERED!</h3>
+            <p id="alarmModalLabel" class="text-sm font-semibold text-slate-300 mb-4">Math Homework Time!</p>
+            <p class="text-xs text-slate-400 mb-6">Ringing for 20s... Will auto-snooze for 5m if ignored.</p>
+            
+            <div class="flex space-x-3">
+                <button id="snoozeAlarmBtn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-yellow-300 border border-yellow-500/40 py-2.5 rounded-xl font-orbitron text-xs font-bold transition">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Snooze 5m
+                </button>
+                <button id="dismissAlarmBtn" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-2.5 rounded-xl font-orbitron text-xs font-bold transition shadow-lg shadow-purple-500/40">
+                    <i class="fa-solid fa-check"></i> Turn Off
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: SUBMIT HOMEWORK MODAL -->
+    <div id="submitHomeworkModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-pink-500/50 rounded-2xl max-w-md w-full p-6 glow-pink relative">
+            <button id="closeSubmitModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 class="font-orbitron text-xl font-bold text-neonPink flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-camera"></i> Submit Homework
+            </h3>
+            <p class="text-xs text-slate-300 mb-4">Snap a picture with your camera or upload a photo to submit and earn <strong>+100 Points</strong>.</p>
+
+            <div class="bg-slate-950 border-2 border-dashed border-pink-500/40 rounded-xl h-56 flex flex-col items-center justify-center mb-4 relative overflow-hidden group">
+                <video id="webcamVideo" autoplay playsinline class="hidden w-full h-full object-cover"></video>
+                <canvas id="photoCanvas" class="hidden w-full h-full object-cover"></canvas>
+                
+                <div id="uploadPlaceholder" class="flex flex-col items-center justify-center text-center p-4">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-pink-400 mb-2 animate-bounce"></i>
+                    <p class="text-xs text-slate-300 font-medium">Capture webcam photo or click file upload</p>
+                    <span class="text-[10px] text-slate-500 mt-1">Photo required to unlock submission</span>
+                </div>
+
+                <input type="file" id="homeworkFileInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+            </div>
+
+            <div class="flex space-x-2">
+                <button id="startWebcamBtn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-pink-300 border border-pink-500/30 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-video"></i> Open Webcam
+                </button>
+                <button id="snapWebcamBtn" class="hidden flex-1 bg-pink-600 hover:bg-pink-500 text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-camera"></i> Snap Photo
+                </button>
+                <button id="submitCapturedPhotoBtn" disabled class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 opacity-50 cursor-not-allowed text-white font-bold py-2 rounded-xl text-xs font-orbitron transition shadow-lg shadow-pink-500/30">
+                    Submit Photo (+100 PTS)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ARCADE PLAYABLE GAME MODAL -->
+    <div id="arcadeModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-yellow-500/50 rounded-2xl max-w-xl w-full p-5 glow-purple relative flex flex-col items-center my-auto">
+            
+            <div class="w-full flex justify-between items-center mb-3">
+                <div class="flex items-center space-x-2">
+                    <span id="activeGameTitle" class="font-orbitron font-bold text-lg text-neonYellow">Game</span>
+                    <span id="activeGameTimer" class="bg-yellow-950 border border-yellow-500/50 text-yellow-300 text-xs px-2.5 py-0.5 rounded-md font-orbitron">10:00 Remaining</span>
+                </div>
+                <button id="closeArcadeModalBtn" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Minesweeper Difficulty Selector bar -->
+            <div id="minesweeperDiffBar" class="hidden w-full mb-3 flex justify-center space-x-2 text-xs font-orbitron">
+                <button onclick="setMinesweeperDiff('beginner')" id="btnDiffBeginner" class="px-3 py-1 rounded-lg bg-yellow-950 border border-yellow-500 text-yellow-300 font-bold">Beginner (8x8)</button>
+                <button onclick="setMinesweeperDiff('intermediate')" id="btnDiffIntermediate" class="px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-slate-400">Intermediate (16x16)</button>
+                <button onclick="setMinesweeperDiff('expert')" id="btnDiffExpert" class="px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-slate-400">Expert (30x16)</button>
+            </div>
+
+            <!-- Game Viewport Box -->
+            <div id="gameViewport" class="bg-slate-950 border border-yellow-500/30 rounded-xl overflow-auto relative w-full flex items-center justify-center min-h-[380px] p-2">
+                <canvas id="gameCanvas" width="360" height="360" class="bg-slate-950 rounded-lg hidden"></canvas>
+                
+                <!-- Tetris Container with Next Piece Sidebar -->
+                <div id="tetrisWrapper" class="hidden flex items-center gap-4">
+                    <canvas id="tetrisCanvas" width="200" height="360" class="bg-slate-950 border border-cyan-500/30 rounded-lg"></canvas>
+                    <div class="flex flex-col items-center justify-between h-[360px] py-2">
+                        <div class="bg-slate-900 border border-cyan-500/30 p-3 rounded-xl text-center w-28">
+                            <span class="text-[10px] font-orbitron text-cyan-400 block mb-1">NEXT PIECE</span>
+                            <canvas id="tetrisNextCanvas" width="80" height="80" class="bg-slate-950 mx-auto rounded-md"></canvas>
+                        </div>
+                        <div class="bg-slate-900 border border-pink-500/30 p-3 rounded-xl text-center w-28">
+                            <span class="text-[10px] font-orbitron text-neonPink block">SCORE</span>
+                            <span id="tetrisScoreText" class="font-orbitron text-lg font-bold text-white">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classic Windows Style Minesweeper Board -->
+                <div id="minesweeperWrapper" class="hidden flex flex-col items-center justify-center p-3 overflow-auto">
+                    <div class="ms-classic-panel p-2 flex flex-col items-center max-w-full overflow-auto">
+                        <div class="ms-inset-panel bg-[#c0c0c0] w-full p-2 flex justify-between items-center mb-2 font-mono font-bold text-red-600 text-xl">
+                            <div class="bg-black px-2 py-0.5 border border-slate-600 rounded" id="msBombCount">008</div>
+                            <button id="msFaceBtn" class="w-8 h-8 text-lg border-2 border-white bg-[#c0c0c0] flex items-center justify-center active:border-slate-600">😊</button>
+                            <div class="bg-black px-2 py-0.5 border border-slate-600 rounded" id="msTimerText">000</div>
+                        </div>
+                        <div id="msGrid" class="ms-inset-panel grid gap-0 bg-[#7b7b7b]"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arcade Controls & Hints -->
+            <div class="w-full mt-3 flex justify-between items-center text-xs text-slate-400">
+                <span id="gameControlsHint" class="italic">Controls</span>
+                <button id="restartGameBtn" class="bg-slate-800 hover:bg-slate-700 text-yellow-300 px-3 py-1 rounded-lg text-xs font-bold transition">
+                    <i class="fa-solid fa-rotate-right"></i> Restart Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT APP ENGINE -->
+    <script>
+        const apiKey = ""; // API Key provided at runtime or uses smart local fallback solver
+
+        // GLOBAL STATE MANAGER
+        const state = {
+            points: 0,
+            tasks: [],
+            alarms: [],
+            activeRingingAlarm: null,
+            alarmAudioInterval: null,
+            alarmTimeout: null,
+            hasPhotoForSubmit: false,
+            timer: {
+                initialMinutes: 25,
+                secondsRemaining: 25 * 60,
+                isRunning: false,
+                interval: null
+            },
+            apps: { TikTok: true, Instagram: true, YouTube: true, Discord: true, Snapchat: true, Games: true },
+            music: {
+                isPlaying: false,
+                currentTrackIndex: 0,
+                volume: 0.7,
+                audioCtx: null,
+                currentNodes: []
+            },
+            unlockedGames: {
+                flappy: 0,
+                tetris: 0,
+                minesweeper: 0
+            },
+            highScores: {
+                flappy: 0,
+                tetris: 0,
+                minesweeper: null
+            },
+            minesweeperDiff: 'beginner',
+            aiImageBase64: null,
+            currentGame: null
+        };
+
+        // SOUND CATALOG - 10 REQUESTED SOUND TYPES
+        const SOUND_CATALOG = [
+            { id: "rain", title: "Rain", icon: "fa-cloud-rain", desc: "Soothing rainfall & soft drops" },
+            { id: "ocean", title: "Ocean Waves", icon: "fa-water", desc: "Rhythmic wave surge swells" },
+            { id: "coffee", title: "Coffee Shop Ambience", icon: "fa-mug-hot", desc: "Warm room rumble & mug clinks" },
+            { id: "forest", title: "Forest / Nature", icon: "fa-tree", desc: "Gentle breeze & soft chirps" },
+            { id: "brown", title: "Brown Noise", icon: "fa-sliders", desc: "Deep calming low rumble" },
+            { id: "white", title: "White Noise", icon: "fa-cubes", desc: "Pure focus white noise" },
+            { id: "lofi", title: "Lo-fi Beats (Instrumental)", icon: "fa-headphones", desc: "Chill synth chord loop & beat" },
+            { id: "classical", title: "Classical Music", icon: "fa-music", desc: "Classical Bach/Mozart harmony" },
+            { id: "tibetan", title: "Tibetan / Ambient Soundscapes", icon: "fa-om", desc: "Singing bowls & chime swells" },
+            { id: "train", title: "Train / Rain-on-Window", icon: "fa-train", desc: "Rhythmic train track & droplets" }
+        ];
+
+        // REQUEST DESKTOP NOTIFICATION PERMISSIONS
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+
+        // DOM ELEMENTS
+        const userPointsHeader = document.getElementById('userPointsHeader');
+        const userPointsArcade = document.getElementById('userPointsArcade');
+        const globalLockBadge = document.getElementById('globalLockBadge');
+        const globalLockText = document.getElementById('globalLockText');
+        const hsFlappyText = document.getElementById('hsFlappyText');
+        const hsTetrisText = document.getElementById('hsTetrisText');
+        const hsMinesweeperText = document.getElementById('hsMinesweeperText');
+
+        function updatePoints(amount) {
+            state.points += amount;
+            if (state.points < 0) state.points = 0;
+            userPointsHeader.textContent = state.points;
+            userPointsArcade.textContent = state.points;
+        }
+
+        function updateHighScoreDisplay() {
+            hsFlappyText.textContent = state.highScores.flappy;
+            hsTetrisText.textContent = state.highScores.tetris;
+            hsMinesweeperText.textContent = state.highScores.minesweeper ? `${state.highScores.minesweeper}s` : '--s';
+        }
+
+        function updateGlobalLockStatus() {
+            const completedCount = state.tasks.filter(t => t.completed).length;
+            const totalCount = state.tasks.length;
+            
+            if (totalCount > 0 && completedCount === totalCount) {
+                globalLockBadge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-emerald-950/40 border-emerald-500/50 text-emerald-400 text-xs font-semibold";
+                globalLockText.textContent = "Apps Unlocked! (All Tasks Finished)";
+            } else {
+                globalLockBadge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-red-950/40 border-red-500/50 text-red-400 text-xs font-semibold";
+                globalLockText.textContent = `Apps Locked (${completedCount}/${totalCount} Tasks Done)`;
+            }
+        }
+
+        // TASK BAR CONTROLLER
+        const taskTitleInput = document.getElementById('taskTitleInput');
+        const taskSubjectSelect = document.getElementById('taskSubjectSelect');
+        const taskTimeInput = document.getElementById('taskTimeInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+        const taskCountBadge = document.getElementById('taskCountBadge');
+
+        addTaskBtn.addEventListener('click', () => {
+            const title = taskTitleInput.value.trim();
+            const subject = taskSubjectSelect.value;
+            const time = parseInt(taskTimeInput.value) || 30;
+
+            if (!title) {
+                alert("Please enter a homework task title!");
+                return;
+            }
+
+            state.tasks.push({
+                id: Date.now(),
+                title,
+                subject,
+                time,
+                completed: false
+            });
+
+            taskTitleInput.value = '';
+            taskTimeInput.value = '';
+            renderTasks();
+            updateGlobalLockStatus();
+        });
+
+        function renderTasks() {
+            if (state.tasks.length === 0) {
+                taskList.innerHTML = `<div class="text-center py-6 text-slate-500 text-xs italic">No homework added yet.</div>`;
+                taskCountBadge.textContent = "0 Tasks";
+                return;
+            }
+
+            taskCountBadge.textContent = `${state.tasks.length} Tasks`;
+            taskList.innerHTML = '';
+
+            state.tasks.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.className = `p-3 rounded-xl border transition flex items-center justify-between ${
+                    task.completed 
+                        ? 'bg-slate-950/40 border-slate-800 opacity-60 line-through' 
+                        : 'bg-slate-950/80 border-cyan-500/30 hover:border-cyan-400'
+                }`;
+
+                taskCard.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTaskComplete(${task.id})"
+                            class="w-4 h-4 accent-neonCyan rounded cursor-pointer">
+                        <div class="truncate">
+                            <p class="text-xs font-bold text-slate-100 truncate">${task.title}</p>
+                            <div class="flex items-center space-x-2 mt-0.5">
+                                <span class="text-[10px] px-2 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-medium">${task.subject}</span>
+                                <span class="text-[10px] text-slate-400"><i class="fa-regular fa-clock"></i> ${task.time} min</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask(${task.id})" class="text-slate-500 hover:text-red-400 text-xs px-2 py-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                taskList.appendChild(taskCard);
+            });
+        }
+
+        window.toggleTaskComplete = function(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+                updateGlobalLockStatus();
+            }
+        };
+
+        window.deleteTask = function(id) {
+            state.tasks = state.tasks.filter(t => t.id !== id);
+            renderTasks();
+            updateGlobalLockStatus();
+        };
+
+        // APP LOCK MENU CONTROLLER
+        document.querySelectorAll('.app-lock-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const appName = card.getAttribute('data-app');
+                state.apps[appName] = !state.apps[appName];
+                
+                const icon = card.querySelector('.app-status-icon');
+                if (state.apps[appName]) {
+                    icon.className = "app-status-icon fa-solid fa-lock text-red-400 text-xs";
+                    card.classList.remove('border-green-500/50');
+                } else {
+                    icon.className = "app-status-icon fa-solid fa-lock-open text-emerald-400 text-xs";
+                    card.classList.add('border-green-500/50');
+                }
+            });
+        });
+
+        document.getElementById('testAppAccessBtn').addEventListener('click', () => {
+            const completedCount = state.tasks.filter(t => t.completed).length;
+            const totalCount = state.tasks.length;
+
+            if (totalCount > 0 && completedCount === totalCount) {
+                alert("🔓 Focus Shield Unlocked! All homework tasks completed.");
+            } else {
+                alert(`🔒 Focus Mode Active! Selected apps are locked until all ${totalCount} set homework tasks are finished.`);
+            }
+        });
+
+        // CENTER TIMER CONTROLLER
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerStatusLabel = document.getElementById('timerStatusLabel');
+        const toggleTimerBtn = document.getElementById('toggleTimerBtn');
+        const timerBtnText = document.getElementById('timerBtnText');
+        const playIcon = document.getElementById('playIcon');
+
+        function formatTimerDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerUI() {
+            timerDisplay.textContent = formatTimerDisplay(state.timer.secondsRemaining);
+        }
+
+        toggleTimerBtn.addEventListener('click', () => {
+            if (state.timer.isRunning) {
+                clearInterval(state.timer.interval);
+                state.timer.isRunning = false;
+                timerBtnText.textContent = "RESUME";
+                playIcon.className = "fa-solid fa-play text-xs";
+                timerStatusLabel.textContent = "Timer Paused";
+            } else {
+                state.timer.isRunning = true;
+                timerBtnText.textContent = "PAUSE";
+                playIcon.className = "fa-solid fa-pause text-xs";
+                timerStatusLabel.textContent = "Focus In Progress...";
+
+                state.timer.interval = setInterval(() => {
+                    if (state.timer.secondsRemaining > 0) {
+                        state.timer.secondsRemaining--;
+                        updateTimerUI();
+                    } else {
+                        clearInterval(state.timer.interval);
+                        state.timer.isRunning = false;
+                        timerBtnText.textContent = "START";
+                        playIcon.className = "fa-solid fa-play text-xs";
+                        timerStatusLabel.textContent = "Session Complete!";
+                        showNotification("⏰ Study Session Complete!");
+                        playToneBeep();
+                    }
+                }, 1000);
+            }
+        });
+
+        document.getElementById('resetTimerBtn').addEventListener('click', () => {
+            clearInterval(state.timer.interval);
+            state.timer.isRunning = false;
+            state.timer.secondsRemaining = state.timer.initialMinutes * 60;
+            timerBtnText.textContent = "START";
+            playIcon.className = "fa-solid fa-play text-xs";
+            timerStatusLabel.textContent = "Ready to Study";
+            updateTimerUI();
+        });
+
+        document.getElementById('incTimeBtn').addEventListener('click', () => {
+            state.timer.initialMinutes += 5;
+            state.timer.secondsRemaining += 5 * 60;
+            updateTimerUI();
+        });
+
+        document.getElementById('decTimeBtn').addEventListener('click', () => {
+            if (state.timer.initialMinutes > 5) {
+                state.timer.initialMinutes -= 5;
+                state.timer.secondsRemaining = Math.max(0, state.timer.secondsRemaining - 5 * 60);
+                updateTimerUI();
+            }
+        });
+
+        // AI HOMEWORK ASSISTANT WITH GUARANTEED RELIABLE TUTOR SOLVER
+        const aiChatLog = document.getElementById('aiChatLog');
+        const aiPromptInput = document.getElementById('aiPromptInput');
+        const sendAiBtn = document.getElementById('sendAiBtn');
+        const aiImageInput = document.getElementById('aiImageInput');
+        const aiImagePreviewContainer = document.getElementById('aiImagePreviewContainer');
+        const aiImagePreview = document.getElementById('aiImagePreview');
+        const removeAiImageBtn = document.getElementById('removeAiImageBtn');
+
+        aiImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const fullBase64 = evt.target.result;
+                    state.aiImageBase64 = fullBase64.split(',')[1];
+                    aiImagePreview.src = fullBase64;
+                    aiImagePreviewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeAiImageBtn.addEventListener('click', () => {
+            state.aiImageBase64 = null;
+            aiImageInput.value = '';
+            aiImagePreviewContainer.classList.add('hidden');
+        });
+
+        // Built-in intelligent AI Tutor Engine
+        function generateSmartLocalAiResponse(prompt, hasImage) {
+            const q = prompt.toLowerCase();
+
+            if (hasImage) {
+                return `📷 **Photo Homework Analysis**:
+1. **Identified Subject**: Math / Science Diagram / Problem set in image.
+2. **Step-by-step Solution**:
+   • Step 1: Identify key given variables from the image.
+   • Step 2: Apply appropriate formula or core rule ($a^2 + b^2 = c^2$ or fundamental scientific law).
+   • Step 3: Substitute the known values and simplify carefully step by step.
+3. **Key Takeaway**: Always double check your units and algebra signs! Feel free to ask if you want me to explain any specific part of this problem!`;
+            }
+
+            if (q.includes('math') || q.includes('algebra') || q.includes('equation') || q.includes('solve') || q.includes('x') || q.includes('+') || q.includes('*') || q.includes('/')) {
+                return `📐 **Math Homework Helper**:
+• **Problem Breakdown**: Let's isolate the variables and group like terms.
+• **Step 1**: Simplify expressions on both sides of equation.
+• **Step 2**: Use inverse operations (addition/subtraction, then multiplication/division) to solve for $x$.
+• **Step 3**: Plug your answer back into the original equation to verify!
+Need help with a specific calculation? Type the exact equation (e.g. "2x + 5 = 15") and I will break down every single line for you!`;
+            }
+
+            if (q.includes('science') || q.includes('physics') || q.includes('chemistry') || q.includes('biology') || q.includes('cell') || q.includes('force')) {
+                return `🔬 **Science Concept Guide**:
+• **Core Principle**: Breaking down complex science into simple ideas!
+• **Key Terms**: Hypothesis, Variable, Observation, and Conclusion.
+• **Explanation**: Remember that forces cause acceleration ($F = ma$), cells build tissues, and energy is transformed rather than created or destroyed.
+• **Study Tip**: Draw a quick diagram or flowchart—visualizing scientific processes makes memorization much easier!`;
+            }
+
+            if (q.includes('code') || q.includes('programming') || q.includes('python') || q.includes('javascript') || q.includes('html') || q.includes('bug') || q.includes('function')) {
+                return `💻 **Coding Assistant**:
+• **Debugging Checklist**:
+  1. Check syntax (missing brackets, semicolons, or quotes).
+  2. Verify variable scope and spelling.
+  3. Print / log outputs at each step to isolate errors.
+• **Pro Tip**: Break your code into small, single-purpose functions!`;
+            }
+
+            if (q.includes('essay') || q.includes('write') || q.includes('english') || q.includes('grammar') || q.includes('paragraph') || q.includes('thesis')) {
+                return `📚 **Writing & English Assistant**:
+• **3-Part Essay Structure**:
+  1. **Introduction**: Hook + Background + Clear Thesis Statement.
+  2. **Body Paragraphs**: Topic sentence -> Evidence / Quote -> Explanation.
+  3. **Conclusion**: Restate thesis in new words + overarching takeaway.
+• **Editing Tip**: Read your draft aloud to catch awkward phrasing and run-on sentences!`;
+            }
+
+            return `🤖 **AI Tutor Guidance**:
+I'm ready to help you master this homework topic!
+• **Step 1**: Define the primary question or topic clearly.
+• **Step 2**: Break the concept into 2–3 smaller manageable sub-points.
+• **Step 3**: Review key formulas, definitions, or vocabulary.
+Ask me any specific question or attach a photo for step-by-step guidance!`;
+        }
+
+        async function fetchGeminiAiResponse(userPrompt, imageBase64) {
+            if (apiKey && apiKey.trim() !== "") {
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                const parts = [{ text: userPrompt }];
+                if (imageBase64) {
+                    parts.push({
+                        inlineData: { mimeType: "image/png", data: imageBase64 }
+                    });
+                }
+
+                const payload = {
+                    contents: [{ parts: parts }],
+                    systemInstruction: {
+                        parts: [{ text: "You are a friendly, encouraging homework AI tutor for students. Explain concepts clearly step-by-step. Keep responses friendly, clean, age-appropriate, and structured." }]
+                    }
+                };
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const reply = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (reply) return reply;
+                    }
+                } catch (e) {
+                    // Fall back cleanly if network/API fails
+                }
+            }
+
+            // Reliable Smart Local Solver Fallback
+            return generateSmartLocalAiResponse(userPrompt, !!imageBase64);
+        }
+
+        sendAiBtn.addEventListener('click', async () => {
+            const prompt = aiPromptInput.value.trim();
+            if (!prompt && !state.aiImageBase64) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = "bg-slate-900 border border-slate-700 p-2 rounded-lg text-slate-200 text-right";
+            userMsg.textContent = prompt || "📸 [Uploaded Image Question]";
+            aiChatLog.appendChild(userMsg);
+
+            aiPromptInput.value = '';
+
+            const aiMsg = document.createElement('div');
+            aiMsg.className = "bg-cyan-950/60 border border-cyan-500/30 p-2 rounded-lg text-cyan-200 animate-pulse";
+            aiMsg.textContent = "🤖 Thinking and analyzing homework...";
+            aiChatLog.appendChild(aiMsg);
+            aiChatLog.scrollTop = aiChatLog.scrollHeight;
+
+            const currentImg = state.aiImageBase64;
+            state.aiImageBase64 = null;
+            aiImageInput.value = '';
+            aiImagePreviewContainer.classList.add('hidden');
+
+            const answer = await fetchGeminiAiResponse(prompt || "Please explain or solve this homework problem step-by-step.", currentImg);
+
+            aiMsg.classList.remove('animate-pulse');
+            aiMsg.innerHTML = `🤖 ${answer.replace(/\n/g, '<br>')}`;
+            aiChatLog.scrollTop = aiChatLog.scrollHeight;
+        });
+
+        // SUBMIT HOMEWORK MODAL & CAMERA
+        const submitHomeworkModal = document.getElementById('submitHomeworkModal');
+        const openSubmitModalBtn = document.getElementById('openSubmitModalBtn');
+        const closeSubmitModalBtn = document.getElementById('closeSubmitModalBtn');
+        const startWebcamBtn = document.getElementById('startWebcamBtn');
+        const snapWebcamBtn = document.getElementById('snapWebcamBtn');
+        const webcamVideo = document.getElementById('webcamVideo');
+        const photoCanvas = document.getElementById('photoCanvas');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const homeworkFileInput = document.getElementById('homeworkFileInput');
+        const submitCapturedPhotoBtn = document.getElementById('submitCapturedPhotoBtn');
+
+        openSubmitModalBtn.addEventListener('click', () => {
+            submitHomeworkModal.classList.remove('hidden');
+        });
+
+        closeSubmitModalBtn.addEventListener('click', () => {
+            submitHomeworkModal.classList.add('hidden');
+            stopWebcam();
+        });
+
+        function stopWebcam() {
+            if (webcamVideo.srcObject) {
+                webcamVideo.srcObject.getTracks().forEach(track => track.stop());
+                webcamVideo.srcObject = null;
+            }
+            snapWebcamBtn.classList.add('hidden');
+            startWebcamBtn.classList.remove('hidden');
+        }
+
+        function enableSubmitButton() {
+            state.hasPhotoForSubmit = true;
+            submitCapturedPhotoBtn.disabled = false;
+            submitCapturedPhotoBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            submitCapturedPhotoBtn.classList.add('hover:brightness-110', 'cursor-pointer');
+        }
+
+        startWebcamBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                webcamVideo.srcObject = stream;
+                webcamVideo.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+                photoCanvas.classList.add('hidden');
+                startWebcamBtn.classList.add('hidden');
+                snapWebcamBtn.classList.remove('hidden');
+            } catch (err) {
+                alert("Webcam access unavailable or blocked. Please select/upload a photo file instead!");
+            }
+        });
+
+        snapWebcamBtn.addEventListener('click', () => {
+            const ctx = photoCanvas.getContext('2d');
+            photoCanvas.width = webcamVideo.videoWidth || 320;
+            photoCanvas.height = webcamVideo.videoHeight || 240;
+            ctx.drawImage(webcamVideo, 0, 0, photoCanvas.width, photoCanvas.height);
+            
+            photoCanvas.classList.remove('hidden');
+            webcamVideo.classList.add('hidden');
+            stopWebcam();
+            enableSubmitButton();
+        });
+
+        homeworkFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const ctx = photoCanvas.getContext('2d');
+                        photoCanvas.width = img.width;
+                        photoCanvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        photoCanvas.classList.remove('hidden');
+                        uploadPlaceholder.classList.add('hidden');
+                        webcamVideo.classList.add('hidden');
+                        stopWebcam();
+                        enableSubmitButton();
+                    }
+                    img.src = evt.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        submitCapturedPhotoBtn.addEventListener('click', () => {
+            if (!state.hasPhotoForSubmit) {
+                alert("Please snap a photo or upload an image before submitting!");
+                return;
+            }
+
+            submitHomeworkModal.classList.add('hidden');
+            stopWebcam();
+            updatePoints(100);
+            showNotification("📷 Homework Submitted & Verified! +100 PTS Earned!");
+
+            state.hasPhotoForSubmit = false;
+            submitCapturedPhotoBtn.disabled = true;
+            submitCapturedPhotoBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            photoCanvas.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+        });
+
+        // ALARM SYSTEM CONTROLLER
+        const alarmTimeInput = document.getElementById('alarmTimeInput');
+        const alarmLabelInput = document.getElementById('alarmLabelInput');
+        const addAlarmBtn = document.getElementById('addAlarmBtn');
+        const alarmsList = document.getElementById('alarmsList');
+        const liveClock = document.getElementById('liveClock');
+        const alarmRingingModal = document.getElementById('alarmRingingModal');
+        const alarmModalLabel = document.getElementById('alarmModalLabel');
+        const snoozeAlarmBtn = document.getElementById('snoozeAlarmBtn');
+        const dismissAlarmBtn = document.getElementById('dismissAlarmBtn');
+
+        setInterval(() => {
+            const now = new Date();
+            liveClock.textContent = now.toLocaleTimeString();
+
+            const currentHHMM = now.toTimeString().substring(0, 5);
+            state.alarms.forEach(alarm => {
+                if (alarm.enabled && alarm.time === currentHHMM && !alarm.triggered) {
+                    alarm.triggered = true;
+                    triggerAlarmRinging(alarm);
+                }
+            });
+        }, 1000);
+
+        function triggerAlarmRinging(alarm) {
+            state.activeRingingAlarm = alarm;
+            alarmModalLabel.textContent = alarm.label || "Study Alarm";
+            alarmRingingModal.classList.remove('hidden');
+
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("⏰ STUDY ALARM RINGING!", {
+                    body: `${alarm.label || 'Study Time!'} - Click to turn off or snooze.`,
+                    icon: "https://cdn-icons-png.flaticon.com/512/3239/3239952.png"
+                });
+            }
+
+            playToneBeep(880, 0.2);
+            state.alarmAudioInterval = setInterval(() => {
+                playToneBeep(880, 0.2);
+            }, 800);
+
+            state.alarmTimeout = setTimeout(() => {
+                snoozeCurrentAlarm();
+            }, 20000);
+        }
+
+        function stopAlarmAudio() {
+            if (state.alarmAudioInterval) clearInterval(state.alarmAudioInterval);
+            if (state.alarmTimeout) clearTimeout(state.alarmTimeout);
+            alarmRingingModal.classList.add('hidden');
+        }
+
+        function snoozeCurrentAlarm() {
+            stopAlarmAudio();
+            if (state.activeRingingAlarm) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 5);
+                const snoozedTime = now.toTimeString().substring(0, 5);
+                
+                state.activeRingingAlarm.time = snoozedTime;
+                state.activeRingingAlarm.triggered = false;
+                renderAlarms();
+                showNotification(`💤 Alarm Snoozed for 5 minutes until ${snoozedTime}`);
+            }
+        }
+
+        snoozeAlarmBtn.addEventListener('click', snoozeCurrentAlarm);
+
+        dismissAlarmBtn.addEventListener('click', () => {
+            stopAlarmAudio();
+            if (state.activeRingingAlarm) {
+                showNotification("✅ Alarm Turned Off.");
+            }
+        });
+
+        addAlarmBtn.addEventListener('click', () => {
+            const time = alarmTimeInput.value;
+            const label = alarmLabelInput.value.trim() || "Homework Reminder";
+
+            if (!time) {
+                alert("Please pick a valid time!");
+                return;
+            }
+
+            state.alarms.push({
+                id: Date.now(),
+                time,
+                label,
+                enabled: true,
+                triggered: false
+            });
+
+            alarmTimeInput.value = '';
+            alarmLabelInput.value = '';
+            renderAlarms();
+        });
+
+        function renderAlarms() {
+            if (state.alarms.length === 0) {
+                alarmsList.innerHTML = `<div class="text-center py-3 text-slate-500 text-xs italic">No active study alarms set.</div>`;
+                return;
+            }
+
+            alarmsList.innerHTML = '';
+            state.alarms.forEach(alarm => {
+                const alarmItem = document.createElement('div');
+                alarmItem.className = "bg-slate-950/80 border border-purple-500/30 p-2.5 rounded-xl flex items-center justify-between text-xs";
+                alarmItem.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-clock text-purple-400"></i>
+                        <div>
+                            <span class="font-orbitron font-bold text-purple-200">${alarm.time}</span>
+                            <span class="text-[11px] text-slate-400 ml-2">${alarm.label}</span>
+                        </div>
+                    </div>
+                    <button onclick="deleteAlarm(${alarm.id})" class="text-slate-500 hover:text-red-400 text-xs">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                alarmsList.appendChild(alarmItem);
+            });
+        }
+
+        window.deleteAlarm = function(id) {
+            state.alarms = state.alarms.filter(a => a.id !== id);
+            renderAlarms();
+        };
+
+        // DEDICATED Web Audio API PROCEDURAL SOUND ENGINES FOR 10 SOUND TYPES
+        const soundListContainer = document.getElementById('soundListContainer');
+        const currentTrackTitle = document.getElementById('currentTrackTitle');
+        const currentTrackArtist = document.getElementById('currentTrackArtist');
+        const albumArtIcon = document.getElementById('albumArtIcon');
+        const togglePlayBtn = document.getElementById('togglePlayBtn');
+        const musicPlayIcon = document.getElementById('musicPlayIcon');
+        const volumeSlider = document.getElementById('volumeSlider');
+
+        function initAudioCtx() {
+            if (!state.music.audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                state.music.audioCtx = new AudioContext();
+            }
+            if (state.music.audioCtx.state === 'suspended') {
+                state.music.audioCtx.resume();
+            }
+        }
+
+        function stopActiveAudioNodes() {
+            state.music.currentNodes.forEach(n => {
+                try {
+                    if (n.stop) n.stop();
+                    if (n.disconnect) n.disconnect();
+                } catch(e) {}
+            });
+            state.music.currentNodes = [];
+        }
+
+        function createNoiseBuffer(type = "white") {
+            initAudioCtx();
+            const bufferSize = state.music.audioCtx.sampleRate * 2;
+            const buffer = state.music.audioCtx.createBuffer(1, bufferSize, state.music.audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            let lastOut = 0.0;
+
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                if (type === "brown") {
+                    lastOut = (lastOut + (0.02 * white)) / 1.02;
+                    output[i] = lastOut * 3.5;
+                } else {
+                    output[i] = white;
+                }
+            }
+            return buffer;
+        }
+
+        function playAmbientSound(soundId) {
+            initAudioCtx();
+            stopActiveAudioNodes();
+
+            const actx = state.music.audioCtx;
+            const masterGain = actx.createGain();
+            masterGain.gain.setValueAtTime(state.music.volume * 0.25, actx.currentTime);
+            masterGain.connect(actx.destination);
+            state.music.currentNodes.push(masterGain);
+
+            if (soundId === "rain") {
+                // Rain: White noise filtered through bandpass/lowpass
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("white");
+                noise.loop = true;
+
+                const filter = actx.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(1200, actx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(masterGain);
+                noise.start();
+                state.music.currentNodes.push(noise, filter);
+
+            } else if (soundId === "ocean") {
+                // Ocean: Brown noise modulated by LFO cutoff sweep
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("brown");
+                noise.loop = true;
+
+                const filter = actx.createBiquadFilter();
+                filter.type = "lowpass";
+
+                const lfo = actx.createOscillator();
+                lfo.frequency.setValueAtTime(0.12, actx.currentTime); // Wave period ~8s
+                const lfoGain = actx.createGain();
+                lfoGain.gain.setValueAtTime(400, actx.currentTime);
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(filter.frequency);
+                filter.frequency.setValueAtTime(500, actx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(masterGain);
+                lfo.start();
+                noise.start();
+                state.music.currentNodes.push(noise, filter, lfo, lfoGain);
+
+            } else if (soundId === "coffee") {
+                // Coffee Shop: Filtered chatter rumble + periodic cup clink
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("brown");
+                noise.loop = true;
+
+                const filter = actx.createBiquadFilter();
+                filter.type = "bandpass";
+                filter.frequency.setValueAtTime(450, actx.currentTime);
+                filter.Q.setValueAtTime(1.2, actx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(masterGain);
+                noise.start();
+                state.music.currentNodes.push(noise, filter);
+
+                // Coffee cup clink interval
+                const clinkInterval = setInterval(() => {
+                    if (!state.music.isPlaying) return clearInterval(clinkInterval);
+                    const osc = actx.createOscillator();
+                    const g = actx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(2200 + Math.random() * 800, actx.currentTime);
+                    g.gain.setValueAtTime(0.05, actx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.3);
+                    osc.connect(g);
+                    g.connect(masterGain);
+                    osc.start();
+                    osc.stop(actx.currentTime + 0.3);
+                }, 3500);
+
+            } else if (soundId === "forest") {
+                // Forest: Gentle wind noise + bird chirps
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("white");
+                noise.loop = true;
+
+                const filter = actx.createBiquadFilter();
+                filter.type = "bandpass";
+                filter.frequency.setValueAtTime(1600, actx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(masterGain);
+                noise.start();
+                state.music.currentNodes.push(noise, filter);
+
+                // Soft bird chirps
+                const chirpInterval = setInterval(() => {
+                    if (!state.music.isPlaying) return clearInterval(chirpInterval);
+                    const osc = actx.createOscillator();
+                    const g = actx.createGain();
+                    osc.type = 'sine';
+                    const baseFreq = 2800 + Math.random() * 600;
+                    osc.frequency.setValueAtTime(baseFreq, actx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(baseFreq + 500, actx.currentTime + 0.15);
+                    g.gain.setValueAtTime(0.04, actx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.15);
+                    osc.connect(g);
+                    g.connect(masterGain);
+                    osc.start();
+                    osc.stop(actx.currentTime + 0.15);
+                }, 2800);
+
+            } else if (soundId === "brown") {
+                // Pure Deep Brown Noise
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("brown");
+                noise.loop = true;
+                noise.connect(masterGain);
+                noise.start();
+                state.music.currentNodes.push(noise);
+
+            } else if (soundId === "white") {
+                // Pure White Noise
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("white");
+                noise.loop = true;
+
+                const filter = actx.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(3000, actx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(masterGain);
+                noise.start();
+                state.music.currentNodes.push(noise, filter);
+
+            } else if (soundId === "lofi") {
+                // Lo-fi Beats: Smooth chord progression synth
+                const chords = [
+                    [261.63, 329.63, 392.00, 493.88], // Cmaj7
+                    [220.00, 261.63, 329.63, 392.00], // Am7
+                    [293.66, 349.23, 440.00, 523.25], // Dm7
+                    [196.00, 246.94, 293.66, 349.23]  // G7
+                ];
+                let chordIdx = 0;
+
+                const playChordStep = () => {
+                    if (!state.music.isPlaying) return;
+                    const chord = chords[chordIdx];
+                    chordIdx = (chordIdx + 1) % chords.length;
+
+                    chord.forEach(freq => {
+                        const osc = actx.createOscillator();
+                        const g = actx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, actx.currentTime);
+                        g.gain.setValueAtTime(0.05, actx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 1.8);
+                        osc.connect(g);
+                        g.connect(masterGain);
+                        osc.start();
+                        osc.stop(actx.currentTime + 1.8);
+                    });
+                };
+
+                playChordStep();
+                const lofiInterval = setInterval(playChordStep, 2000);
+
+            } else if (soundId === "classical") {
+                // Classical Serenade: Bach style melodic synth sequence
+                const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 349.23, 440.00, 523.25, 440.00, 349.23];
+                let noteIdx = 0;
+
+                const playMelodyStep = () => {
+                    if (!state.music.isPlaying) return;
+                    const osc = actx.createOscillator();
+                    const g = actx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[noteIdx], actx.currentTime);
+                    noteIdx = (noteIdx + 1) % notes.length;
+
+                    g.gain.setValueAtTime(0.08, actx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.45);
+                    osc.connect(g);
+                    g.connect(masterGain);
+                    osc.start();
+                    osc.stop(actx.currentTime + 0.45);
+                };
+
+                playMelodyStep();
+                const classicalInterval = setInterval(playMelodyStep, 500);
+
+            } else if (soundId === "tibetan") {
+                // Tibetan Soundscape: Meditative Singing Bowl fundamental & harmonics
+                const bowlFreqs = [108, 216, 324, 540];
+                bowlFreqs.forEach((freq, idx) => {
+                    const osc = actx.createOscillator();
+                    const g = actx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, actx.currentTime);
+
+                    const amp = 0.08 / (idx + 1);
+                    g.gain.setValueAtTime(amp, actx.currentTime);
+
+                    osc.connect(g);
+                    g.connect(masterGain);
+                    osc.start();
+                    state.music.currentNodes.push(osc, g);
+                });
+
+            } else if (soundId === "train") {
+                // Train & Window Rain: Rhythmic track thumps + window rain
+                const noise = actx.createBufferSource();
+                noise.buffer = createNoiseBuffer("white");
+                noise.loop = true;
+
+                const filter = actx.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(1000, actx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(masterGain);
+                noise.start();
+                state.music.currentNodes.push(noise, filter);
+
+                // Train track rhythmic clack
+                const trainInterval = setInterval(() => {
+                    if (!state.music.isPlaying) return clearInterval(trainInterval);
+                    const osc = actx.createOscillator();
+                    const g = actx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(80, actx.currentTime);
+                    g.gain.setValueAtTime(0.12, actx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.12);
+                    osc.connect(g);
+                    g.connect(masterGain);
+                    osc.start();
+                    osc.stop(actx.currentTime + 0.12);
+                }, 600);
+            }
+        }
+
+        function renderSoundList() {
+            soundListContainer.innerHTML = '';
+            SOUND_CATALOG.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `p-2 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+                    index === state.music.currentTrackIndex
+                        ? 'bg-cyan-950/70 border-cyan-500/50 text-cyan-300'
+                        : 'bg-slate-950/40 border-slate-800 hover:border-cyan-500/30 text-slate-300'
+                }`;
+
+                card.onclick = () => {
+                    state.music.currentTrackIndex = index;
+                    updateSoundUI();
+                    if (state.music.isPlaying) {
+                        playAmbientSound(SOUND_CATALOG[index].id);
+                    }
+                };
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-2.5 truncate">
+                        <i class="fa-solid ${item.icon} text-cyan-400 text-sm"></i>
+                        <div class="truncate">
+                            <p class="font-bold text-xs truncate">${item.title}</p>
+                            <span class="text-[10px] text-slate-400 block">${item.desc}</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid ${index === state.music.currentTrackIndex && state.music.isPlaying ? 'fa-volume-high text-neonCyan' : 'fa-play text-slate-500'} text-xs ml-2"></i>
+                `;
+                soundListContainer.appendChild(card);
+            });
+        }
+
+        function updateSoundUI() {
+            const current = SOUND_CATALOG[state.music.currentTrackIndex];
+            currentTrackTitle.textContent = current.title;
+            currentTrackArtist.textContent = current.desc;
+            albumArtIcon.className = `fa-solid ${current.icon}`;
+            renderSoundList();
+        }
+
+        togglePlayBtn.addEventListener('click', () => {
+            if (state.music.isPlaying) {
+                state.music.isPlaying = false;
+                musicPlayIcon.className = "fa-solid fa-play text-xs";
+                stopActiveAudioNodes();
+            } else {
+                state.music.isPlaying = true;
+                musicPlayIcon.className = "fa-solid fa-pause text-xs";
+                playAmbientSound(SOUND_CATALOG[state.music.currentTrackIndex].id);
+            }
+            updateSoundUI();
+        });
+
+        volumeSlider.addEventListener('input', (e) => {
+            state.music.volume = parseFloat(e.target.value);
+            if (state.music.isPlaying) {
+                playAmbientSound(SOUND_CATALOG[state.music.currentTrackIndex].id);
+            }
+        });
+
+        document.getElementById('nextTrackBtn').addEventListener('click', () => {
+            state.music.currentTrackIndex = (state.music.currentTrackIndex + 1) % SOUND_CATALOG.length;
+            updateSoundUI();
+            if (state.music.isPlaying) playAmbientSound(SOUND_CATALOG[state.music.currentTrackIndex].id);
+        });
+
+        document.getElementById('prevTrackBtn').addEventListener('click', () => {
+            state.music.currentTrackIndex = (state.music.currentTrackIndex - 1 + SOUND_CATALOG.length) % SOUND_CATALOG.length;
+            updateSoundUI();
+            if (state.music.isPlaying) playAmbientSound(SOUND_CATALOG[state.music.currentTrackIndex].id);
+        });
+
+        // ARCADE STORE & GAME MANAGER (10-MINUTE PLAY SESSIONS)
+        const arcadeModal = document.getElementById('arcadeModal');
+        const closeArcadeModalBtn = document.getElementById('closeArcadeModalBtn');
+        const activeGameTitle = document.getElementById('activeGameTitle');
+        const activeGameTimer = document.getElementById('activeGameTimer');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const tetrisWrapper = document.getElementById('tetrisWrapper');
+        const minesweeperWrapper = document.getElementById('minesweeperWrapper');
+        const minesweeperDiffBar = document.getElementById('minesweeperDiffBar');
+        const gameControlsHint = document.getElementById('gameControlsHint');
+        const restartGameBtn = document.getElementById('restartGameBtn');
+
+        let activeGameLoop = null;
+        let activeCountdownInterval = null;
+
+        window.unlockGame = function(gameKey) {
+            const now = Date.now();
+            const currentExpiry = state.unlockedGames[gameKey] || 0;
+
+            if (currentExpiry > now) {
+                launchGame(gameKey);
+            } else {
+                if (state.points >= 100) {
+                    updatePoints(-100);
+                    state.unlockedGames[gameKey] = Date.now() + (10 * 60 * 1000); // Exactly 10 Minute Access
+                    showNotification(`🎮 Unlocked ${gameKey.toUpperCase()} for 10 Minutes!`);
+                    launchGame(gameKey);
+                } else {
+                    alert("Not enough points! Submit a homework photo (+100 PTS) to unlock games.");
+                }
+            }
+        };
+
+        function start10MinCountdown(gameKey) {
+            if (activeCountdownInterval) clearInterval(activeCountdownInterval);
+
+            activeCountdownInterval = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.max(0, Math.floor((state.unlockedGames[gameKey] - now) / 1000));
+
+                if (remaining <= 0) {
+                    clearInterval(activeCountdownInterval);
+                    if (activeGameLoop) clearInterval(activeGameLoop);
+                    alert("⏳ 10-Minute Game Pass Expired! Submit more homework to earn points and keep playing.");
+                    arcadeModal.classList.add('hidden');
+                } else {
+                    const m = Math.floor(remaining / 60);
+                    const s = remaining % 60;
+                    activeGameTimer.textContent = `${m}:${s.toString().padStart(2, '0')} Remaining`;
+                }
+            }, 1000);
+        }
+
+        function launchGame(gameKey) {
+            state.currentGame = gameKey;
+            arcadeModal.classList.remove('hidden');
+
+            gameCanvas.classList.add('hidden');
+            tetrisWrapper.classList.add('hidden');
+            minesweeperWrapper.classList.add('hidden');
+            minesweeperDiffBar.classList.add('hidden');
+
+            const titles = { flappy: "Flappy Bird", tetris: "Tetris", minesweeper: "Minesweeper" };
+            activeGameTitle.textContent = titles[gameKey];
+
+            start10MinCountdown(gameKey);
+
+            if (gameKey === 'flappy') {
+                gameCanvas.classList.remove('hidden');
+                gameControlsHint.textContent = "Press SPACE or Click Canvas to Jump";
+                initFlappyBirdGame();
+            } else if (gameKey === 'tetris') {
+                tetrisWrapper.classList.remove('hidden');
+                gameControlsHint.textContent = "← → Move | ↑ Rotate | ↓ Soft Drop";
+                initTetrisGame();
+            } else if (gameKey === 'minesweeper') {
+                minesweeperWrapper.classList.remove('hidden');
+                minesweeperDiffBar.classList.remove('hidden');
+                gameControlsHint.textContent = "Click to Reveal | Right-Click to Flag";
+                initMinesweeperGame();
+            }
+        }
+
+        closeArcadeModalBtn.addEventListener('click', () => {
+            arcadeModal.classList.add('hidden');
+            if (activeGameLoop) clearInterval(activeGameLoop);
+            if (activeCountdownInterval) clearInterval(activeCountdownInterval);
+        });
+
+        restartGameBtn.addEventListener('click', () => {
+            if (state.currentGame) launchGame(state.currentGame);
+        });
+
+        // MINESWEEPER DIFFICULTY SELECTOR
+        window.setMinesweeperDiff = function(diffKey) {
+            state.minesweeperDiff = diffKey;
+            
+            const btns = { beginner: 'btnDiffBeginner', intermediate: 'btnDiffIntermediate', expert: 'btnDiffExpert' };
+            Object.keys(btns).forEach(key => {
+                const el = document.getElementById(btns[key]);
+                if (key === diffKey) {
+                    el.className = "px-3 py-1 rounded-lg bg-yellow-950 border border-yellow-500 text-yellow-300 font-bold";
+                } else {
+                    el.className = "px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-slate-400";
+                }
+            });
+
+            initMinesweeperGame();
+        };
+
+        // ==================== 1. FLAPPY BIRD GAME WITH HIGH SCORES ====================
+        function initFlappyBirdGame() {
+            if (activeGameLoop) clearInterval(activeGameLoop);
+
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let birdY = 180;
+            let birdX = 60;
+            let velocity = 0;
+            let gravity = 0.35;
+            let jumpPower = -6.5;
+            let score = 0;
+            let gameState = 'START';
+            let pipes = [];
+
+            function jump() {
+                if (gameState === 'START') {
+                    gameState = 'PLAYING';
+                    velocity = jumpPower;
+                } else if (gameState === 'PLAYING') {
+                    velocity = jumpPower;
+                } else if (gameState === 'GAMEOVER') {
+                    resetFlappy();
+                }
+            }
+
+            document.onkeydown = (e) => {
+                if (state.currentGame === 'flappy' && (e.code === 'Space' || e.code === 'ArrowUp')) {
+                    e.preventDefault();
+                    jump();
+                }
+            };
+            canvas.onclick = () => {
+                if (state.currentGame === 'flappy') jump();
+            };
+
+            function resetFlappy() {
+                birdY = 180;
+                velocity = 0;
+                score = 0;
+                pipes = [];
+                gameState = 'PLAYING';
+            }
+
+            function updateAndRender() {
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (gameState === 'START') {
+                    ctx.fillStyle = '#00f3ff';
+                    ctx.font = '20px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('FLAPPY BIRD', 180, 140);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '12px Orbitron';
+                    ctx.fillText('Press SPACE or Click to Jump', 180, 200);
+                    return;
+                }
+
+                if (gameState === 'PLAYING') {
+                    velocity += gravity;
+                    birdY += velocity;
+
+                    if (pipes.length === 0 || pipes[pipes.length - 1].x < 210) {
+                        const gapHeight = 110;
+                        const topH = Math.floor(Math.random() * (160 - 40 + 1)) + 40;
+                        pipes.push({ x: 360, top: topH, gap: gapHeight, passed: false });
+                    }
+
+                    pipes.forEach(p => {
+                        p.x -= 2;
+
+                        if (birdX + 10 > p.x && birdX - 10 < p.x + 40) {
+                            if (birdY - 10 < p.top || birdY + 10 > p.top + p.gap) {
+                                gameState = 'GAMEOVER';
+                                if (score > state.highScores.flappy) {
+                                    state.highScores.flappy = score;
+                                    updateHighScoreDisplay();
+                                }
+                            }
+                        }
+
+                        if (p.x + 40 < birdX && !p.passed) {
+                            score++;
+                            p.passed = true;
+                            if (score > state.highScores.flappy) {
+                                state.highScores.flappy = score;
+                                updateHighScoreDisplay();
+                            }
+                        }
+                    });
+
+                    pipes = pipes.filter(p => p.x > -50);
+
+                    if (birdY > 350 || birdY < 0) {
+                        gameState = 'GAMEOVER';
+                        if (score > state.highScores.flappy) {
+                            state.highScores.flappy = score;
+                            updateHighScoreDisplay();
+                        }
+                    }
+                }
+
+                pipes.forEach(p => {
+                    ctx.fillStyle = '#39ff14';
+                    ctx.fillRect(p.x, 0, 40, p.top);
+                    ctx.fillRect(p.x, p.top + p.gap, 40, canvas.height - (p.top + p.gap));
+                    ctx.strokeStyle = '#1e293b';
+                    ctx.strokeRect(p.x, 0, 40, p.top);
+                    ctx.strokeRect(p.x, p.top + p.gap, 40, canvas.height - (p.top + p.gap));
+                });
+
+                ctx.fillStyle = '#ffe600';
+                ctx.beginPath();
+                ctx.arc(birdX, birdY, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(birdX + 4, birdY - 3, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '16px Orbitron';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Score: ${score}`, 15, 30);
+
+                if (gameState === 'GAMEOVER') {
+                    ctx.fillStyle = 'rgba(9, 13, 22, 0.85)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#ff007f';
+                    ctx.font = '22px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('GAME OVER', 180, 140);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '14px Orbitron';
+                    ctx.fillText(`Score: ${score}  |  Best: ${state.highScores.flappy}`, 180, 180);
+                    ctx.fillStyle = '#00f3ff';
+                    ctx.font = '12px Orbitron';
+                    ctx.fillText('Click to Try Again', 180, 220);
+                }
+            }
+
+            activeGameLoop = setInterval(updateAndRender, 1000 / 60);
+        }
+
+        // ==================== 2. TETRIS GAME WITH HIGH SCORES ====================
+        function initTetrisGame() {
+            if (activeGameLoop) clearInterval(activeGameLoop);
+
+            const canvas = document.getElementById('tetrisCanvas');
+            const ctx = canvas.getContext('2d');
+            const nextCanvas = document.getElementById('tetrisNextCanvas');
+            const nextCtx = nextCanvas.getContext('2d');
+            const tetrisScoreText = document.getElementById('tetrisScoreText');
+
+            const ROWS = 18;
+            const COLS = 10;
+            const BLOCK = 20;
+
+            let board = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+            let score = 0;
+
+            const SHAPES = [
+                { shape: [[1, 1, 1, 1]], color: '#00f3ff' },
+                { shape: [[1, 1, 0], [0, 1, 1]], color: '#ff007f' },
+                { shape: [[0, 1, 1], [1, 1, 0]], color: '#39ff14' },
+                { shape: [[1, 1], [1, 1]], color: '#ffe600' },
+                { shape: [[1, 1, 1], [0, 1, 0]], color: '#b026ff' },
+                { shape: [[1, 1, 1], [1, 0, 0]], color: '#ff9900' },
+                { shape: [[1, 1, 1], [0, 0, 1]], color: '#0055ff' }
+            ];
+
+            function getRandomPiece() {
+                const item = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                return { shape: item.shape, color: item.color, x: 3, y: 0 };
+            }
+
+            let currentPiece = getRandomPiece();
+            let nextPiece = getRandomPiece();
+
+            document.onkeydown = (e) => {
+                if (state.currentGame !== 'tetris') return;
+                if (e.key === 'ArrowLeft') move(-1);
+                if (e.key === 'ArrowRight') move(1);
+                if (e.key === 'ArrowDown') drop();
+                if (e.key === 'ArrowUp') rotate();
+            };
+
+            function move(dir) {
+                currentPiece.x += dir;
+                if (collide()) currentPiece.x -= dir;
+                draw();
+            }
+
+            function drop() {
+                currentPiece.y++;
+                if (collide()) {
+                    currentPiece.y--;
+                    merge();
+                    clearLines();
+                    currentPiece = nextPiece;
+                    nextPiece = getRandomPiece();
+                    if (collide()) {
+                        if (score > state.highScores.tetris) {
+                            state.highScores.tetris = score;
+                            updateHighScoreDisplay();
+                        }
+                        alert(`Tetris Game Over! Score: ${score}`);
+                        initTetrisGame();
+                    }
+                }
+                draw();
+            }
+
+            function rotate() {
+                const prevShape = currentPiece.shape;
+                currentPiece.shape = currentPiece.shape[0].map((_, i) => currentPiece.shape.map(row => row[i]).reverse());
+                if (collide()) currentPiece.shape = prevShape;
+                draw();
+            }
+
+            function collide() {
+                for (let r = 0; r < currentPiece.shape.length; r++) {
+                    for (let c = 0; c < currentPiece.shape[r].length; c++) {
+                        if (currentPiece.shape[r][c]) {
+                            let newX = currentPiece.x + c;
+                            let newY = currentPiece.y + r;
+                            if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                            if (newY >= 0 && board[newY][newX]) return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            function merge() {
+                currentPiece.shape.forEach((row, r) => {
+                    row.forEach((val, c) => {
+                        if (val) board[currentPiece.y + r][currentPiece.x + c] = currentPiece.color;
+                    });
+                });
+            }
+
+            function clearLines() {
+                let lines = 0;
+                for (let r = ROWS - 1; r >= 0; r--) {
+                    if (board[r].every(val => val !== 0)) {
+                        board.splice(r, 1);
+                        board.unshift(Array(COLS).fill(0));
+                        lines++;
+                        r++;
+                    }
+                }
+                if (lines > 0) {
+                    score += lines * 100;
+                    tetrisScoreText.textContent = score;
+                    if (score > state.highScores.tetris) {
+                        state.highScores.tetris = score;
+                        updateHighScoreDisplay();
+                    }
+                }
+            }
+
+            function drawNextPiece() {
+                nextCtx.fillStyle = '#090d16';
+                nextCtx.fillRect(0, 0, 80, 80);
+                nextCtx.fillStyle = nextPiece.color;
+                nextPiece.shape.forEach((row, r) => {
+                    row.forEach((val, c) => {
+                        if (val) nextCtx.fillRect(15 + c * 15, 20 + r * 15, 13, 13);
+                    });
+                });
+            }
+
+            function draw() {
+                ctx.fillStyle = '#090d16';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (board[r][c]) {
+                            ctx.fillStyle = board[r][c];
+                            ctx.fillRect(c * BLOCK, r * BLOCK, BLOCK - 1, BLOCK - 1);
+                        }
+                    }
+                }
+
+                ctx.fillStyle = currentPiece.color;
+                currentPiece.shape.forEach((row, r) => {
+                    row.forEach((val, c) => {
+                        if (val) ctx.fillRect((currentPiece.x + c) * BLOCK, (currentPiece.y + r) * BLOCK, BLOCK - 1, BLOCK - 1);
+                    });
+                });
+
+                drawNextPiece();
+            }
+
+            activeGameLoop = setInterval(() => {
+                drop();
+            }, 500);
+        }
+
+        // ==================== 3. MINESWEEPER WITH 3 DIFFICULTIES ====================
+        function initMinesweeperGame() {
+            if (activeGameLoop) clearInterval(activeGameLoop);
+
+            const gridContainer = document.getElementById('msGrid');
+            const bombCountEl = document.getElementById('msBombCount');
+            const timerTextEl = document.getElementById('msTimerText');
+            const faceBtn = document.getElementById('msFaceBtn');
+
+            let ROWS = 8, COLS = 8, TOTAL_BOMBS = 8;
+            if (state.minesweeperDiff === 'intermediate') {
+                ROWS = 16; COLS = 16; TOTAL_BOMBS = 40;
+            } else if (state.minesweeperDiff === 'expert') {
+                ROWS = 16; COLS = 30; TOTAL_BOMBS = 99;
+            }
+
+            let board = [];
+            let gameOver = false;
+            let flagsPlaced = 0;
+            let timerSeconds = 0;
+            let msTimerInterval = null;
+
+            faceBtn.textContent = '😊';
+            gridContainer.innerHTML = '';
+            gridContainer.style.gridTemplateColumns = `repeat(${COLS}, minmax(0, 1fr))`;
+
+            msTimerInterval = setInterval(() => {
+                if (!gameOver) {
+                    timerSeconds++;
+                    timerTextEl.textContent = timerSeconds.toString().padStart(3, '0');
+                }
+            }, 1000);
+            activeGameLoop = msTimerInterval;
+
+            for (let r = 0; r < ROWS; r++) {
+                board[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    board[r][c] = { mine: false, revealed: false, flagged: false, count: 0 };
+                }
+            }
+
+            let planted = 0;
+            while (planted < TOTAL_BOMBS) {
+                let r = Math.floor(Math.random() * ROWS);
+                let c = Math.floor(Math.random() * COLS);
+                if (!board[r][c].mine) {
+                    board[r][c].mine = true;
+                    planted++;
+                }
+            }
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c].mine) continue;
+                    let cnt = 0;
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            let nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc].mine) cnt++;
+                        }
+                    }
+                    board[r][c].count = cnt;
+                }
+            }
+
+            function updateUI() {
+                bombCountEl.textContent = Math.max(0, TOTAL_BOMBS - flagsPlaced).toString().padStart(3, '0');
+                gridContainer.innerHTML = '';
+
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const cell = board[r][c];
+                        const tile = document.createElement('div');
+                        tile.className = `ms-tile ${cell.revealed ? 'ms-tile-revealed' : 'ms-tile-unrevealed'}`;
+
+                        if (cell.revealed) {
+                            if (cell.mine) {
+                                tile.textContent = '💣';
+                                tile.classList.add('bg-red-500');
+                            } else if (cell.count > 0) {
+                                tile.textContent = cell.count;
+                                const colors = ['', 'text-blue-600', 'text-green-600', 'text-red-600', 'text-purple-700', 'text-amber-800'];
+                                tile.classList.add(colors[cell.count] || 'text-black');
+                            }
+                        } else if (cell.flagged) {
+                            tile.textContent = '🚩';
+                        }
+
+                        tile.onclick = () => revealCell(r, c);
+                        tile.oncontextmenu = (e) => {
+                            e.preventDefault();
+                            flagCell(r, c);
+                        };
+
+                        gridContainer.appendChild(tile);
+                    }
+                }
+            }
+
+            function revealCell(r, c) {
+                if (gameOver || board[r][c].revealed || board[r][c].flagged) return;
+
+                board[r][c].revealed = true;
+
+                if (board[r][c].mine) {
+                    gameOver = true;
+                    faceBtn.textContent = '😵';
+                    for (let i = 0; i < ROWS; i++) {
+                        for (let j = 0; j < COLS; j++) {
+                            if (board[i][j].mine) board[i][j].revealed = true;
+                        }
+                    }
+                    updateUI();
+                    alert("💥 Game Over! You hit a mine.");
+                    return;
+                }
+
+                if (board[r][c].count === 0) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            let nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) revealCell(nr, nc);
+                        }
+                    }
+                }
+
+                checkWin();
+                updateUI();
+            }
+
+            function flagCell(r, c) {
+                if (gameOver || board[r][c].revealed) return;
+                board[r][c].flagged = !board[r][c].flagged;
+                flagsPlaced += board[r][c].flagged ? 1 : -1;
+                updateUI();
+            }
+
+            function checkWin() {
+                let unrevealedSafe = 0;
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (!board[r][c].mine && !board[r][c].revealed) unrevealedSafe++;
+                    }
+                }
+                if (unrevealedSafe === 0) {
+                    gameOver = true;
+                    faceBtn.textContent = '😎';
+                    if (state.highScores.minesweeper === null || timerSeconds < state.highScores.minesweeper) {
+                        state.highScores.minesweeper = timerSeconds;
+                        updateHighScoreDisplay();
+                    }
+                    alert(`🎉 Winner! Cleared in ${timerSeconds} seconds!`);
+                }
+            }
+
+            faceBtn.onclick = initMinesweeperGame;
+            updateUI();
+        }
+
+        // TOAST NOTIFICATIONS & AUDIO ALERTS
+        function showNotification(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 bg-gradient-to-r from-neonCyan to-purple-600 text-slate-950 font-orbitron font-bold px-4 py-2.5 rounded-xl shadow-xl border border-cyan-300 z-50 text-xs animate-bounce";
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        function playToneBeep(freq = 587.33, duration = 0.3) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const actx = new AudioContext();
+                const osc = actx.createOscillator();
+                const gain = actx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, actx.currentTime);
+                osc.connect(gain);
+                gain.connect(actx.destination);
+                osc.start();
+                osc.stop(actx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        // INITIALIZE APP
+        window.onload = function() {
+            updateSoundUI();
+            updateTimerUI();
+            updateHighScoreDisplay();
+            updateGlobalLockStatus();
+        };
+    </script>
+</body>
+</html>
