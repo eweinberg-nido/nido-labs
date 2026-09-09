@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Syllabi - Nido Skills & Dispositions</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { background-color: #f4f6f8; margin: 0; padding: 0; }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background: var(--nido-white);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .hidden { display: none !important; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: var(--font-gotham);
+            font-size: 1rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--nido-blue);
+            box-shadow: 0 0 0 3px rgba(0, 35, 101, 0.12);
+        }
+
+        /* Course cards */
+        .course-card {
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .course-card:hover { border-color: #d5dce8; }
+        .course-card.is-linked { border-left: 6px solid #28a745; }
+        .course-card.is-unlinked { border-left: 6px solid #e0a800; }
+        .course-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .course-meta { font-size: 0.85rem; color: #666; margin-top: 0.2rem; }
+        .chip {
+            display: inline-block;
+            background: #eef2f9;
+            color: var(--nido-blue);
+            border-radius: 999px;
+            padding: 0.15rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.25rem 0.25rem 0 0;
+        }
+        .status-pill {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .status-linked { background: #e6f4ea; color: #1e7e34; }
+        .status-unlinked { background: #fff3cd; color: #856404; }
+
+        .link-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: stretch;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .link-row .form-control { flex: 1; min-width: 240px; }
+        .row-msg { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.1rem; }
+        .row-msg.ok { color: #1e7e34; }
+        .row-msg.err { color: var(--nido-red); }
+        .row-msg.info { color: #666; }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--nido-blue);
+            border: 1px solid var(--nido-blue);
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-gotham);
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-ghost:hover { background: #f0f4fb; }
+
+        .notice {
+            background-color: #eef7ff;
+            border-left: 4px solid var(--nido-blue);
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .progress-track { background: #eaeaea; border-radius: 999px; height: 10px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-fill { background: var(--nido-blue); height: 100%; width: 0; transition: width 0.4s ease; }
+
+        .lang-es { display: none; }
+        body.show-es .lang-en { display: none; }
+        body.show-es .lang-es { display: inline; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-nido-blue text-white" style="padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <h1 class="font-bold" style="margin: 0; font-size: 1.5rem;">
+            <span class="lang-en">Course Syllabi</span>
+            <span class="lang-es">Programas de Curso</span>
+        </h1>
+        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+            <select class="lang-select form-control" style="width: auto; font-size: 0.9rem; padding: 0.4rem; color: #333;">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+            </select>
+            <a href="index.html" style="color: white; text-decoration: none;">&larr;
+                <span class="lang-en">Back to Dispositions</span>
+                <span class="lang-es">Volver a Disposiciones</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Signed-out state -->
+        <div id="auth-section" style="text-align: center; padding: 1rem 0 2rem;">
+            <h2 class="text-nido-blue font-medium" style="margin-top: 0;">
+                <span class="lang-en">Sign in to link your syllabi</span>
+                <span class="lang-es">Inicia sesión para vincular tus programas</span>
+            </h2>
+            <p class="text-nido-dark" style="max-width: 520px; margin: 0 auto 1.5rem;">
+                <span class="lang-en">Use your Nido Google account to see the courses you submitted for the dispositions project and add a link to each syllabus.</span>
+                <span class="lang-es">Usa tu cuenta de Google de Nido para ver los cursos que enviaste para el proyecto de disposiciones y agregar un enlace a cada programa.</span>
+            </p>
+            <button id="sign-in-btn" class="btn-nido-blue">Sign in with Google</button>
+            <p id="auth-message" style="color: var(--nido-red); margin-top: 1rem;"></p>
+        </div>
+
+        <!-- Signed-in dashboard -->
+        <div id="syllabi-section" class="hidden">
+            <div id="user-bar" style="text-align: right; margin-bottom: 1rem;">
+                <p class="text-nido-dark font-medium" style="margin: 0;">
+                    <span class="lang-en">Signed in as</span><span class="lang-es">Sesión iniciada como</span>
+                    <strong id="user-name"></strong> (<span id="user-email"></span>)
+                    <button id="sign-out-btn" class="btn-nido-blue" style="margin-left: 1rem; background-color: #6c757d;">
+                        <span class="lang-en">Sign Out</span><span class="lang-es">Cerrar Sesión</span>
+                    </button>
+                </p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 1rem 0;">
+            </div>
+
+            <h2 class="text-nido-blue font-medium" style="margin-top: 0;">
+                <span class="lang-en">My Course Syllabi</span>
+                <span class="lang-es">Programas de Mis Cursos</span>
+            </h2>
+            <p class="text-nido-dark" style="margin-bottom: 0.5rem;">
+                <span class="lang-en">For each course below, paste the Google Drive link to that course's syllabus.</span>
+                <span class="lang-es">Para cada curso a continuación, pega el enlace de Google Drive del programa de ese curso.</span>
+            </p>
+
+            <div id="progress-summary" class="text-nido-blue font-bold" style="font-size: 0.95rem; margin-top: 1.5rem;"></div>
+            <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+
+            <div class="notice">
+                <strong><span class="lang-en">Sharing tip:</span><span class="lang-es">Consejo para compartir:</span></strong>
+                <span class="lang-en">In Google Drive, use <em>Share &rarr; Copy link</em> and make sure access is set to at least "Anyone at Nido de Aguilas with the link can view" so colleagues and administrators can open it.</span>
+                <span class="lang-es">En Google Drive, usa <em>Compartir &rarr; Copiar enlace</em> y asegúrate de que el acceso esté configurado al menos como "Cualquier persona de Nido de Aguilas con el enlace puede ver" para que colegas y administradores puedan abrirlo.</span>
+            </div>
+
+            <div id="courses-list" style="margin-top: 1.5rem;">
+                <!-- Course cards injected via JS -->
+            </div>
+
+            <div id="empty-state" class="hidden" style="margin-top: 1.5rem; padding: 1.5rem; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+                <p class="text-nido-dark" style="margin-top: 0;">
+                    <span class="lang-en">You have not submitted any courses for the dispositions project yet, so there is nothing to link a syllabus to.</span>
+                    <span class="lang-es">Aún no has enviado ningún curso para el proyecto de disposiciones, por lo que no hay nada a lo que vincular un programa.</span>
+                </p>
+                <a href="index.html" class="btn-nido-blue" style="text-decoration: none; display: inline-block;">
+                    <span class="lang-en">Add my courses</span>
+                    <span class="lang-es">Agregar mis cursos</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="syllabi.js"></script>
+</body>
+</html>

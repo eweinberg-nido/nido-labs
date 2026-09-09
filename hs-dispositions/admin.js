@@ -272,6 +272,19 @@ function renderTable() {
         const tdCourse = document.createElement('td');
         tdCourse.innerText = entry.course || '';
 
+        // Teachers add these on syllabi.html; show a link only once one exists.
+        if (entry.syllabusUrl) {
+            const syllabusLink = document.createElement('a');
+            syllabusLink.href = entry.syllabusUrl;
+            syllabusLink.target = '_blank';
+            syllabusLink.rel = 'noopener noreferrer';
+            syllabusLink.className = 'syllabus-link';
+            syllabusLink.innerText = 'Syllabus \u2197';
+            syllabusLink.title = entry.syllabusUrl;
+            tdCourse.appendChild(document.createElement('br'));
+            tdCourse.appendChild(syllabusLink);
+        }
+
         const tdDisp = document.createElement('td');
         tdDisp.innerText = entry.isMissing ? 'N/A' : (entry.dispositions || []).join(', ');
 
@@ -597,7 +610,7 @@ exportCsvBtn.addEventListener('click', () => {
     }
     
     // Build CSV Headers
-    const headers = ["Status", "Teacher Name", "Teacher Email", "Department", "Course", "Dispositions", "Evidence"];
+    const headers = ["Status", "Teacher Name", "Teacher Email", "Department", "Course", "Syllabus Link", "Dispositions", "Evidence"];
     const rows = [headers.join(",")];
     
     currentFilteredData.forEach(entry => {
@@ -606,6 +619,7 @@ exportCsvBtn.addEventListener('click', () => {
         const tEmail = `"${(entry.userEmail || '').replace(/"/g, '""')}"`;
         const dept = `"${(entry.department || '').replace(/"/g, '""')}"`;
         const course = `"${(entry.course || '').replace(/"/g, '""')}"`;
+        const syllabus = `"${(entry.syllabusUrl || '').replace(/"/g, '""')}"`;
         const disp = `"${(entry.dispositions || []).join(', ')}"`;
         
         let evidenceStr = "";
@@ -618,7 +632,7 @@ exportCsvBtn.addEventListener('click', () => {
             evidenceStr = '""';
         }
 
-        rows.push([status, tName, tEmail, dept, course, disp, evidenceStr].join(","));
+        rows.push([status, tName, tEmail, dept, course, syllabus, disp, evidenceStr].join(","));
     });
     
     const csvContent = rows.join("\n");
