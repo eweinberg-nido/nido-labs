@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assessment Calendar — Crash Obviator</title>
+<style>
+:root{
+  --bg:#f4f6f8; --panel:#ffffff; --ink:#16202b; --muted:#5f6c7b; --line:#dde3ea;
+  --accent:#1f5fa9; --accent-soft:#e8f0fb;
+  --ok:#1f7a44; --ok-soft:#e6f4ec;
+  --warn:#9a5b00; --warn-soft:#fdf1dc;
+  --bad:#a3232b; --bad-soft:#fbe9e9;
+  --g9:#2d6fb8; --g10:#1f8a70; --g11:#8a5cc0; --g12:#c06a1f;
+  --radius:10px; --shadow:0 1px 2px rgba(16,32,48,.06),0 4px 14px rgba(16,32,48,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em}
+button{font:inherit;cursor:pointer}
+a{color:var(--accent)}
+.hidden{display:none !important}
+
+/* ---------- layout ---------- */
+.topbar{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-weight:700;font-size:13px;flex:0 0 auto}
+.brand h1{font-size:15px}
+.brand small{display:block;color:var(--muted);font-size:11.5px;font-weight:500;letter-spacing:0}
+.userchip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.userchip img{width:26px;height:26px;border-radius:50%}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 12px;border-radius:8px;
+  font-size:13px;font-weight:550;transition:.12s}
+.btn:hover{background:#f7f9fb;border-color:#c8d2dd}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#1a5192}
+.btn.sm{padding:4px 9px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.wrap{max-width:1400px;margin:0 auto;padding:18px}
+
+/* ---------- gate ---------- */
+.gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+.gatecard{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+  padding:34px;max-width:460px;width:100%;text-align:center}
+.gatecard .mark{width:46px;height:46px;border-radius:12px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-weight:700;margin:0 auto 16px;font-size:17px}
+.gatecard h2{font-size:19px;margin-bottom:8px}
+.gatecard p{color:var(--muted);margin:0 0 20px}
+.gsi{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:8px;
+  border:1px solid var(--line);background:#fff;font-weight:600}
+.gsi:hover{background:#f7f9fb}
+.gatenote{margin-top:18px;font-size:12px;color:var(--muted)}
+
+/* ---------- toolbar ---------- */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.weeknav{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
+  border-radius:9px;padding:4px}
+.weeknav button{border:0;background:transparent;padding:5px 9px;border-radius:6px;font-size:14px;color:var(--muted)}
+.weeknav button:hover{background:#f1f4f8;color:var(--ink)}
+.weeklabel{font-weight:650;padding:0 6px;min-width:190px;text-align:center;font-size:13.5px}
+input[type=date],input[type=text],select,textarea{font:inherit;border:1px solid var(--line);
+  background:#fff;border-radius:8px;padding:7px 9px;color:var(--ink)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.tabs{display:flex;gap:4px;background:#eef1f5;padding:4px;border-radius:9px}
+.tabs button{border:0;background:transparent;padding:6px 13px;border-radius:6px;font-size:13px;
+  font-weight:600;color:var(--muted)}
+.tabs button[aria-selected=true]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.spacer{margin-left:auto}
+
+.banner{border-radius:9px;padding:10px 13px;margin-bottom:12px;font-size:13px;display:block}
+.banner b{font-weight:650}
+.banner.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #f0dcb4}
+.banner.bad{background:var(--bad-soft);color:var(--bad);border:1px solid #f2cccc}
+.banner.info{background:var(--accent-soft);color:#17457c;border:1px solid #cfe0f5}
+
+/* ---------- week grid ---------- */
+.weekgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:start}
+.daycol{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:180px}
+.daycol.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow)}
+.dayhead{padding:10px 12px;border-bottom:1px solid var(--line)}
+.dayhead .dname{font-weight:650;font-size:13.5px}
+.dayhead .ddate{color:var(--muted);font-size:11.5px}
+.daystats{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pill{font-size:11px;font-weight:650;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.pill.n{background:#eef1f5;color:var(--muted)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.dayevents{padding:9px;display:flex;flex-direction:column;gap:7px;flex:1}
+.ev{border:1px solid var(--line);border-left:3px solid var(--muted);border-radius:7px;padding:7px 9px;
+  background:#fff;text-align:left;width:100%;transition:.12s}
+.ev:hover{background:#f7f9fb;border-color:#c8d2dd}
+.ev .evtitle{font-weight:600;font-size:12.5px;line-height:1.35;word-break:break-word}
+.ev .evmeta{color:var(--muted);font-size:11px;margin-top:3px;display:flex;gap:7px;flex-wrap:wrap}
+.ev.g9{border-left-color:var(--g9)} .ev.g10{border-left-color:var(--g10)}
+.ev.g11{border-left-color:var(--g11)} .ev.g12{border-left-color:var(--g12)}
+.gradetag{font-size:10.5px;font-weight:700;padding:1px 5px;border-radius:4px;background:#eef1f5;color:var(--muted)}
+.gradetag.g9{background:#e6effa;color:var(--g9)} .gradetag.g10{background:#e2f3ef;color:var(--g10)}
+.gradetag.g11{background:#f0e9fa;color:var(--g11)} .gradetag.g12{background:#fbeee0;color:var(--g12)}
+.empty{color:#98a4b2;font-size:12px;text-align:center;padding:16px 6px}
+.dayfoot{padding:8px 9px;border-top:1px solid var(--line)}
+.dayfoot .btn{width:100%;justify-content:center}
+
+/* ---------- cards / tables ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.card > h3{font-size:14.5px;margin-bottom:4px}
+.card > .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+label.fld{display:block;font-size:12px;font-weight:650;color:var(--muted);margin-bottom:5px;
+  text-transform:uppercase;letter-spacing:.04em}
+textarea{width:100%;min-height:190px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+  padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fafbfc;position:sticky;top:0}
+td{padding:8px 9px;border-bottom:1px solid #eef1f5;vertical-align:top}
+tbody tr:hover{background:#fafbfc}
+.tblwrap{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:8px}
+.num{text-align:center;font-variant-numeric:tabular-nums;font-weight:600;vertical-align:middle}
+.cell0{color:#c3ccd6} .cell1{color:var(--ink)}
+.cell2{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.cell3{background:var(--bad-soft);color:var(--bad);font-weight:700}
+.sname{font-weight:600}
+.semail{color:var(--muted);font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+.stat{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.statbox{background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 14px;min-width:112px}
+.statbox .v{font-size:22px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.statbox .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.statbox.bad .v{color:var(--bad)} .statbox.warn .v{color:var(--warn)} .statbox.ok .v{color:var(--ok)}
+
+.res{border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.res > header{padding:9px 12px;font-weight:650;font-size:13px;display:flex;gap:8px;align-items:center}
+.res.bad > header{background:var(--bad-soft);color:var(--bad)}
+.res.warn > header{background:var(--warn-soft);color:var(--warn)}
+.res.ok > header{background:var(--ok-soft);color:var(--ok)}
+.res.n > header{background:#f2f5f8;color:var(--muted)}
+.res ul{list-style:none;margin:0;padding:0}
+.res li{padding:9px 12px;border-top:1px solid #eef1f5;display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.res li .who{min-width:210px;flex:0 0 auto}
+.res li .what{color:var(--muted);font-size:12.5px;flex:1;min-width:220px}
+.res li .what div{margin-bottom:2px}
+.count{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ---------- drawer ---------- */
+.drawer{position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end;
+  background:rgba(16,32,48,.35)}
+.drawer .panel{background:#fff;width:min(480px,100%);height:100%;overflow:auto;padding:20px;
+  box-shadow:-8px 0 30px rgba(16,32,48,.18)}
+.drawer h3{font-size:16px;margin-bottom:6px}
+.drawer .close{float:right;border:0;background:#f1f4f8;border-radius:7px;padding:4px 9px;color:var(--muted)}
+.kv{font-size:12.5px;color:var(--muted);margin-bottom:3px}
+.attlist{list-style:none;padding:0;margin:12px 0 0}
+.attlist li{padding:6px 0;border-top:1px solid #eef1f5;display:flex;gap:8px;align-items:center}
+.badge{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:auto;white-space:nowrap}
+.badge.b2{background:var(--warn-soft);color:var(--warn)}
+.badge.b3{background:var(--bad-soft);color:var(--bad)}
+.badge.b1{background:#eef1f5;color:var(--muted)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{background:#eef1f5;border-radius:20px;padding:3px 10px;font-size:12px;display:flex;gap:6px;align-items:center}
+.chip button{border:0;background:transparent;color:var(--muted);padding:0;font-size:14px;line-height:1}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid #cfd8e3;border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+details.cfg{margin-top:10px}
+details.cfg summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:600}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}.weekgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH GATE ================= -->
+<div id="gate" class="gate">
+  <div class="gatecard">
+    <div class="mark">AC</div>
+    <h2>Assessment Calendar</h2>
+    <p>Crash Incident Obviator — find the students who would be over-assessed <em>before</em> you book the date.</p>
+    <button id="signinBtn" class="gsi">
+      <svg width="17" height="17" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.2-.2-1.8H9v3.5h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.5 2.7-3.8 2.7-6.6z"/><path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.4 0-4.5-1.6-5.2-3.8H.8v2.3A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.8 10.7a5.4 5.4 0 0 1 0-3.4V5H.8a9 9 0 0 0 0 8l3-2.3z"/><path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 .8 5l3 2.3C4.5 5.2 6.6 3.6 9 3.6z"/></svg>
+      Sign in with your @nido.cl account
+    </button>
+    <div id="gateMsg" class="gatenote"></div>
+    <div class="gatenote">Access is restricted to <b>nido.cl</b> accounts. The app reads your Google Calendars in read-only mode and stores nothing on a server.</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">AC</div>
+      <div>
+        <h1>Assessment Calendar</h1>
+        <small>Crash Incident Obviator</small>
+      </div>
+    </div>
+    <div id="srcNote" class="pill n"></div>
+    <div class="userchip"><img id="uPhoto" alt=""><span id="uEmail"></span></div>
+    <button id="reconnectBtn" class="btn sm hidden">Reconnect calendars</button>
+    <button id="signoutBtn" class="btn sm">Sign out</button>
+  </div>
+
+  <div class="wrap">
+    <div class="toolbar">
+      <div class="weeknav">
+        <button id="prevWeek" title="Previous week">&#8249;</button>
+        <span id="weekLabel" class="weeklabel">—</span>
+        <button id="nextWeek" title="Next week">&#8250;</button>
+      </div>
+      <input type="date" id="datePick">
+      <button id="thisWeek" class="btn sm">This week</button>
+      <button id="refreshBtn" class="btn sm">Refresh</button>
+      <div class="spacer"></div>
+      <div class="tabs" role="tablist">
+        <button id="tab-week" role="tab" aria-selected="true">Week view</button>
+        <button id="tab-check" role="tab" aria-selected="false">Check a class</button>
+        <button id="tab-load" role="tab" aria-selected="false">Student load</button>
+      </div>
+    </div>
+
+    <div id="banners"></div>
+
+    <!-- ---------- WEEK ---------- -->
+    <section id="view-week">
+      <div id="weekStats" class="stat"></div>
+      <div id="weekGrid" class="weekgrid"></div>
+      <div class="card" style="margin-top:14px">
+        <h3>Conflicts this week</h3>
+        <div class="sub">Students who already hold 2 assessments on one day (adding one more breaks the rule) or more than 2 (already over the limit).</div>
+        <div id="conflictList"></div>
+      </div>
+    </section>
+
+    <!-- ---------- CHECK ---------- -->
+    <section id="view-check" class="hidden">
+      <div class="grid2">
+        <div class="card">
+          <h3>Proposed assessment</h3>
+          <div class="sub">Paste or upload your class list, choose the date you have in mind, and see exactly who would be affected.</div>
+          <div class="row" style="margin-bottom:12px">
+            <div>
+              <label class="fld" for="propDate">Proposed date</label>
+              <input type="date" id="propDate">
+            </div>
+            <div style="flex:1;min-width:170px">
+              <label class="fld" for="rosterName">Class name (optional)</label>
+              <input type="text" id="rosterName" placeholder="e.g. IB Econ HL 1" style="width:100%">
+            </div>
+          </div>
+          <label class="fld" for="rosterText">Class list — emails and/or names, one per line</label>
+          <textarea id="rosterText" placeholder="ana.silva@nido.cl&#10;Bruno Tapia &lt;bruno.tapia@nido.cl&gt;&#10;Catalina Rojas&#10;diego.munoz@nido.cl"></textarea>
+          <div class="hint">Emails match exactly. Plain names are matched against calendar attendee names and email handles (accent- and order-insensitive).</div>
+          <div class="row" style="margin-top:12px">
+            <button id="analyzeBtn" class="btn primary">Check this date</button>
+            <label class="btn sm" style="margin:0">Upload file<input type="file" id="rosterFile" accept=".csv,.txt,.tsv" class="hidden"></label>
+            <button id="saveRoster" class="btn sm">Save class</button>
+            <button id="clearRoster" class="btn sm">Clear</button>
+          </div>
+          <div id="savedRosters" class="chips"></div>
+        </div>
+        <div>
+          <div id="checkSummary"></div>
+          <div id="checkResults"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- LOAD ---------- -->
+    <section id="view-load" class="hidden">
+      <div class="card">
+        <h3>Weekly assessment load</h3>
+        <div class="sub">Every student with at least one assessment on the four grade calendars this week. Amber = at the 2-per-day limit, red = over it.</div>
+        <div class="row" style="margin-bottom:12px">
+          <input type="text" id="loadFilter" placeholder="Filter by name or email…" style="min-width:240px">
+          <select id="loadSort">
+            <option value="week">Sort: heaviest week first</option>
+            <option value="max">Sort: worst single day first</option>
+            <option value="name">Sort: name A–Z</option>
+          </select>
+          <label class="row" style="gap:6px;font-size:12.5px"><input type="checkbox" id="loadOnlyRisk"> Only students at or over the limit</label>
+          <button id="exportCsv" class="btn sm">Export CSV</button>
+        </div>
+        <div id="loadTable" class="tblwrap"></div>
+      </div>
+      <div class="card">
+        <h3>Who counts as a student?</h3>
+        <div class="sub">Attendees are treated as students unless they organise an event or appear on this exclusion list. Adjust it if staff or room resources are leaking into the counts.</div>
+        <label class="fld" for="exclText">Excluded emails / patterns — one per line</label>
+        <textarea id="exclText" style="min-height:120px" placeholder="teacher.name@nido.cl&#10;*@resource.calendar.google.com"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button id="saveExcl" class="btn primary">Save &amp; recalculate</button>
+          <button id="autoExcl" class="btn sm">Add all detected organisers</button>
+        </div>
+        <details class="cfg">
+          <summary>Detected organisers this week</summary>
+          <div id="organisers" class="chips"></div>
+        </details>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="drawer" class="drawer hidden"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script>
+"use strict";
+/* =========================================================================
+   Assessment Calendar — Crash Incident Obviator
+   Zero-backend SPA. Firebase Auth (Google, hd=nido.cl) + Google Calendar API v3
+   read-only, with a public .ics / CORS-proxy fallback for degraded operation.
+   ========================================================================= */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAFhiLa94zjP8IakzEd4nvtJOH-HRX10fI",
+    authDomain: "nido-teaching-learning.firebaseapp.com",
+    projectId: "nido-teaching-learning",
+    storageBucket: "nido-teaching-learning.firebasestorage.app",
+    messagingSenderId: "167104058821",
+    appId: "1:167104058821:web:7ca1f5c91ddcb68df1a7ac"
+};
+
+const ALLOWED_DOMAIN = "nido.cl";
+const CAL_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+const PROXY = "https://api.allorigins.win/raw?url=";
+const DAILY_LIMIT = 2;              // students should not have MORE than 2 per day
+
+const CALENDARS = [
+  { grade: 9,  id: "c_v27k766n9ksdeb9g0932vv8n88@group.calendar.google.com" },
+  { grade: 10, id: "c_sdjvrf9c8012n30l8dps8h4qjc@group.calendar.google.com" },
+  { grade: 11, id: "c_pjcg8k6hiasf7oveo9m7vhsng8@group.calendar.google.com" },
+  { grade: 12, id: "c_3i50bet37c1soj031pvua8rvso@group.calendar.google.com" }
+];
+const CAL_IDS = new Set(CALENDARS.map(c => c.id.toLowerCase()));
+
+const DEFAULT_EXCLUSIONS = ["*@resource.calendar.google.com", "*@group.calendar.google.com"];
+
+/* ---------------------------------------------------------------- storage */
+const LS = {
+  get(k, fb) { try { const v = localStorage.getItem("ac." + k); return v === null ? fb : JSON.parse(v); }
+               catch (e) { return fb; } },
+  set(k, v)  { try { localStorage.setItem("ac." + k, JSON.stringify(v)); } catch (e) {} },
+  del(k)     { try { localStorage.removeItem("ac." + k); } catch (e) {} }
+};
+
+/* ------------------------------------------------------------------ state */
+const state = {
+  user: null,
+  token: null,
+  weekStart: null,        // Date, local Monday 00:00
+  events: [],             // normalised, de-duplicated
+  index: null,            // student index
+  organisers: new Set(),
+  exclusions: LS.get("exclusions", DEFAULT_EXCLUSIONS.slice()),
+  rosters: LS.get("rosters", {}),
+  loading: false,
+  notices: [],            // {level,text}
+  degraded: false,
+  tab: "week",
+  lastCheck: null
+};
+
+/* ------------------------------------------------------------------ utils */
+const $ = s => document.querySelector(s);
+const el = (t, cls, txt) => { const n = document.createElement(t); if (cls) n.className = cls;
+                              if (txt != null) n.textContent = txt; return n; };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+function startOfWeek(d) {                       // Monday of d's week, local midnight
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const off = (x.getDay() + 6) % 7;             // Sun=6, Mon=0
+  x.setDate(x.getDate() - off);
+  return x;
+}
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function dayKey(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" +
+         String(d.getDate()).padStart(2, "0");
+}
+function keyToDate(k) { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); }
+function weekDays(ws) { return [0, 1, 2, 3, 4].map(i => addDays(ws, i)); }
+function fmtDay(d) { return d.toLocaleDateString(undefined, { day: "numeric", month: "short" }); }
+function fmtRange(ws) {
+  const we = addDays(ws, 4);
+  const mo = d => d.toLocaleDateString(undefined, { month: "short" });
+  if (ws.getMonth() === we.getMonth())
+    return mo(ws) + " " + ws.getDate() + " – " + we.getDate() + ", " + we.getFullYear();
+  return mo(ws) + " " + ws.getDate() + " – " + mo(we) + " " + we.getDate() + ", " + we.getFullYear();
+}
+function fmtTime(d) { return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
+
+function stripAccents(s) { return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+function nameKey(s) {
+  const t = stripAccents(String(s || "").toLowerCase())
+    .replace(/[^a-z\s'-]/g, " ")
+    .split(/\s+/).filter(w => w.length > 1);
+  return t.sort().join(" ");
+}
+function nameFromEmail(e) {
+  return String(e || "").split("@")[0].replace(/[._\-+0-9]+/g, " ").trim()
+    .replace(/\b[a-z]/g, c => c.toUpperCase());
+}
+function matchesPattern(email, pat) {
+  const p = pat.trim().toLowerCase(); if (!p) return false;
+  const e = email.toLowerCase();
+  if (p.startsWith("*")) return e.endsWith(p.slice(1));
+  if (p.endsWith("*")) return e.startsWith(p.slice(0, -1));
+  return e === p;
+}
+function isExcluded(email) {
+  const e = email.toLowerCase();
+  if (CAL_IDS.has(e)) return true;
+  if (e.includes("resource.calendar.google.com")) return true;
+  return state.exclusions.some(p => matchesPattern(e, p));
+}
+
+/* =========================================================================
+   AUTH
+   ========================================================================= */
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+async function signIn() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope(CAL_SCOPE);
+  provider.setCustomParameters({ hd: ALLOWED_DOMAIN, prompt: "select_account" });
+  $("#gateMsg").innerHTML = '<span class="loader"></span> Opening Google sign-in…';
+  try {
+    const res = await auth.signInWithPopup(provider);
+    const email = (res.user && res.user.email) || "";
+    if (!email.toLowerCase().endsWith("@" + ALLOWED_DOMAIN)) {
+      await auth.signOut();
+      alert("Access denied.\n\nThis tool is restricted to @" + ALLOWED_DOMAIN +
+            " accounts. You signed in as " + email + ".");
+      $("#gateMsg").textContent = "Access denied for " + email + ".";
+      return;
+    }
+    if (res.credential && res.credential.accessToken) {
+      state.token = res.credential.accessToken;
+      sessionStorage.setItem("ac.gtoken", state.token);
+    }
+    $("#gateMsg").textContent = "";
+  } catch (e) {
+    const msg = e && e.code === "auth/popup-closed-by-user"
+      ? "Sign-in window was closed before finishing."
+      : "Sign-in failed: " + ((e && e.message) || e);
+    $("#gateMsg").textContent = msg;
+  }
+}
+
+async function reconnect() {                    // fresh Calendar access token
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope(CAL_SCOPE);
+  provider.setCustomParameters({ hd: ALLOWED_DOMAIN, login_hint: (state.user && state.user.email) || "" });
+  try {
+    const res = await auth.currentUser.reauthenticateWithPopup(provider);
+    if (res.credential && res.credential.accessToken) {
+      state.token = res.credential.accessToken;
+      sessionStorage.setItem("ac.gtoken", state.token);
+      $("#reconnectBtn").classList.add("hidden");
+      await loadWeek(true);
+    }
+  } catch (e) { note("bad", "Could not renew calendar access: " + ((e && e.message) || e)); render(); }
+}
+
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    state.user = null; state.token = null;
+    sessionStorage.removeItem("ac.gtoken");
+    $("#app").classList.add("hidden"); $("#gate").classList.remove("hidden");
+    return;
+  }
+  if (!String(user.email || "").toLowerCase().endsWith("@" + ALLOWED_DOMAIN)) {
+    await auth.signOut(); return;
+  }
+  state.user = user;
+  state.token = state.token || sessionStorage.getItem("ac.gtoken");
+  $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden");
+  $("#uEmail").textContent = user.email;
+  if (user.photoURL) $("#uPhoto").src = user.photoURL; else $("#uPhoto").style.display = "none";
+  boot();
+});
+
+/* =========================================================================
+   DATA — Google Calendar API v3 (primary)
+   ========================================================================= */
+async function apiEvents(cal, timeMin, timeMax) {
+  const out = [];
+  let pageToken = null;
+  do {
+    const q = new URLSearchParams({
+      timeMin: timeMin.toISOString(), timeMax: timeMax.toISOString(),
+      singleEvents: "true", orderBy: "startTime", maxResults: "250",
+      fields: "nextPageToken,items(id,iCalUID,status,summary,description,location,start,end," +
+              "organizer,creator,attendees(email,displayName,resource,responseStatus,optional),recurringEventId)"
+    });
+    if (pageToken) q.set("pageToken", pageToken);
+    const url = "https://www.googleapis.com/calendar/v3/calendars/" +
+                encodeURIComponent(cal.id) + "/events?" + q.toString();
+    const r = await fetch(url, { headers: { Authorization: "Bearer " + state.token } });
+    if (!r.ok) {
+      const body = await r.text().catch(() => "");
+      const err = new Error("HTTP " + r.status + " " + body.slice(0, 200));
+      err.status = r.status;
+      throw err;
+    }
+    const j = await r.json();
+    (j.items || []).forEach(it => out.push(it));
+    pageToken = j.nextPageToken || null;
+  } while (pageToken);
+  return out;
+}
+
+function normaliseApiEvent(it, cal) {
+  if (it.status === "cancelled") return null;
+  const allDay = !!(it.start && it.start.date);
+  const start = allDay ? keyToDate(it.start.date) : new Date(it.start.dateTime);
+  let end;
+  if (allDay) { end = it.end && it.end.date ? keyToDate(it.end.date) : addDays(start, 1); }
+  else { end = it.end && it.end.dateTime ? new Date(it.end.dateTime) : new Date(start.getTime() + 36e5); }
+  const organiser = ((it.organizer && it.organizer.email) || (it.creator && it.creator.email) || "").toLowerCase();
+  const people = [];
+  (it.attendees || []).forEach(a => {
+    if (!a.email || a.resource) return;
+    if (a.responseStatus === "declined") return;
+    people.push({ email: a.email.toLowerCase(), name: a.displayName || "", src: "invite" });
+  });
+  emailsFromText(it.description).forEach(e => {
+    if (!people.some(p => p.email === e)) people.push({ email: e, name: "", src: "description" });
+  });
+  return {
+    uid: it.iCalUID || it.id, calId: cal.id, grades: [cal.grade],
+    title: it.summary || "(untitled assessment)", description: it.description || "",
+    location: it.location || "", allDay, start, end, organiser, people, source: "api"
+  };
+}
+
+/* -------------------------------------------- .ics fallback (no attendees) */
+function icsUrl(id) {
+  return "https://calendar.google.com/calendar/ical/" + encodeURIComponent(id) + "/public/basic.ics";
+}
+async function icsEvents(cal) {
+  const r = await fetch(PROXY + encodeURIComponent(icsUrl(cal.id)));
+  if (!r.ok) throw new Error("proxy HTTP " + r.status);
+  const text = await r.text();
+  if (!/BEGIN:VCALENDAR/.test(text)) throw new Error("not an iCalendar feed (calendar may not be public)");
+  return parseIcs(text);
+}
+function unfold(text) {
+  return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/\n[ \t]/g, "");
+}
+function icsUnescape(v) {
+  return String(v).replace(/\\n/gi, "\n").replace(/\\,/g, ",").replace(/\\;/g, ";").replace(/\\\\/g, "\\");
+}
+function parseIcsDate(params, value) {
+  const isDate = /VALUE=DATE(?!-TIME)/i.test(params) || /^\d{8}$/.test(value);
+  if (isDate) {
+    return { d: new Date(+value.slice(0, 4), +value.slice(4, 6) - 1, +value.slice(6, 8)), allDay: true };
+  }
+  const m = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/);
+  if (!m) return { d: new Date(value), allDay: false };
+  const [, y, mo, da, h, mi, se, z] = m;
+  const d = z ? new Date(Date.UTC(+y, +mo - 1, +da, +h, +mi, +se))
+              : new Date(+y, +mo - 1, +da, +h, +mi, +se);   // floating/TZID → treat as local
+  return { d, allDay: false };
+}
+function parseIcs(text) {
+  const lines = unfold(text).split("\n");
+  const events = []; let cur = null;
+  for (const line of lines) {
+    if (line === "BEGIN:VEVENT") { cur = { attendees: [] }; continue; }
+    if (line === "END:VEVENT") { if (cur) events.push(cur); cur = null; continue; }
+    if (!cur) continue;
+    const i = line.indexOf(":"); if (i < 0) continue;
+    const left = line.slice(0, i), value = line.slice(i + 1);
+    const semi = left.indexOf(";");
+    const name = (semi < 0 ? left : left.slice(0, semi)).toUpperCase();
+    const params = semi < 0 ? "" : left.slice(semi + 1);
+    switch (name) {
+      case "UID": cur.uid = value; break;
+      case "SUMMARY": cur.summary = icsUnescape(value); break;
+      case "DESCRIPTION": cur.description = icsUnescape(value); break;
+      case "LOCATION": cur.location = icsUnescape(value); break;
+      case "STATUS": cur.status = value; break;
+      case "RRULE": cur.rrule = value; break;
+      case "DTSTART": { const p = parseIcsDate(params, value); cur.start = p.d; cur.allDay = p.allDay; break; }
+      case "DTEND":   { const p = parseIcsDate(params, value); cur.end = p.d; break; }
+      case "ORGANIZER": {
+        const m = value.match(/mailto:([^\s;>]+)/i); if (m) cur.organiser = m[1].toLowerCase(); break;
+      }
+      case "ATTENDEE": {
+        const m = value.match(/mailto:([^\s;>]+)/i); if (!m) break;
+        const cn = params.match(/CN=("([^"]*)"|([^;:]*))/i);
+        cur.attendees.push({ email: m[1].toLowerCase(), name: cn ? (cn[2] || cn[3] || "") : "" });
+        break;
+      }
+    }
+  }
+  return events;
+}
+function expandRrule(ev, from, to) {           // minimal DAILY/WEEKLY/MONTHLY expansion
+  if (!ev.rrule || !ev.start) return [ev.start];
+  const p = {}; ev.rrule.split(";").forEach(kv => { const [k, v] = kv.split("="); if (k) p[k.toUpperCase()] = v; });
+  const freq = (p.FREQ || "").toUpperCase();
+  if (!["DAILY", "WEEKLY", "MONTHLY"].includes(freq)) return [ev.start];
+  const interval = Math.max(1, parseInt(p.INTERVAL || "1", 10));
+  const count = p.COUNT ? parseInt(p.COUNT, 10) : null;
+  const until = p.UNTIL ? parseIcsDate("", p.UNTIL).d : null;
+  const byDay = p.BYDAY ? p.BYDAY.split(",").map(s => s.slice(-2).toUpperCase()) : null;
+  const DOW = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
+  const out = []; let cursor = new Date(ev.start); let n = 0; let guard = 0;
+  while (guard++ < 1500) {
+    if (until && cursor > until) break;
+    if (count != null && n >= count) break;
+    if (cursor > to) break;
+    if (freq === "WEEKLY" && byDay) {
+      const weekBase = startOfWeek(cursor);
+      for (const d of byDay) {
+        const off = (DOW[d] + 6) % 7;
+        const occ = addDays(weekBase, off);
+        occ.setHours(ev.start.getHours(), ev.start.getMinutes(), 0, 0);
+        if (occ >= ev.start && occ >= from && occ <= to) out.push(new Date(occ));
+      }
+      n += byDay.length;
+      cursor = addDays(cursor, 7 * interval);
+    } else {
+      if (cursor >= from) out.push(new Date(cursor));
+      n++;
+      if (freq === "DAILY") cursor = addDays(cursor, interval);
+      else if (freq === "WEEKLY") cursor = addDays(cursor, 7 * interval);
+      else { const c = new Date(cursor); c.setMonth(c.getMonth() + interval); cursor = c; }
+    }
+  }
+  return out.length ? out : [ev.start];
+}
+function emailsFromText(t) {
+  if (!t) return [];
+  const found = String(t).match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+  const seen = new Set(); const out = [];
+  found.forEach(e => { const x = e.toLowerCase(); if (!seen.has(x)) { seen.add(x); out.push(x); } });
+  return out;
+}
+
+/* =========================================================================
+   LOAD + DEDUPE
+   ========================================================================= */
+function note(level, text) { state.notices.push({ level, text }); }
+
+async function loadWeek(force) {
+  const ws = state.weekStart;
+  const from = new Date(ws);
+  const to = addDays(ws, 5);                      // Saturday 00:00, exclusive
+  const cacheKey = "cache." + dayKey(ws);
+
+  state.notices = []; state.degraded = false; state.loading = true;
+  render();
+
+  const raw = [];
+  let apiOk = 0, icsOk = 0;
+
+  for (const cal of CALENDARS) {
+    let done = false;
+    if (state.token) {
+      try {
+        const items = await apiEvents(cal, from, to);
+        items.forEach(it => { const n = normaliseApiEvent(it, cal); if (n) raw.push(n); });
+        apiOk++; done = true;
+      } catch (e) {
+        if (e.status === 401 || e.status === 403) {
+          if (e.status === 401) { state.token = null; sessionStorage.removeItem("ac.gtoken"); }
+          note("warn", "Grade " + cal.grade + ": Google Calendar API returned " + e.status +
+               ". Falling back to the public feed (no student lists).");
+        } else {
+          note("warn", "Grade " + cal.grade + ": API error — " + e.message);
+        }
+      }
+    }
+    if (!done) {                                   // .ics fallback
+      try {
+        const evs = await icsEvents(cal);
+        evs.forEach(ev => {
+          if (!ev.start || ev.status === "CANCELLED") return;
+          const durMs = ev.end ? (ev.end - ev.start) : (ev.allDay ? 864e5 : 36e5);
+          expandRrule(ev, from, to).forEach(st => {
+            if (st >= to || new Date(st.getTime() + durMs) <= from) return;
+            const people = ev.attendees
+              .filter(a => a.email)
+              .map(a => ({ email: a.email, name: a.name, src: "invite" }));
+            emailsFromText(ev.description).forEach(e => {
+              if (!people.some(p => p.email === e)) people.push({ email: e, name: "", src: "description" });
+            });
+            raw.push({
+              uid: (ev.uid || ev.summary) + "|" + dayKey(st), calId: cal.id, grades: [cal.grade],
+              title: ev.summary || "(untitled assessment)", description: ev.description || "",
+              location: ev.location || "", allDay: !!ev.allDay,
+              start: new Date(st), end: new Date(st.getTime() + durMs),
+              organiser: ev.organiser || "", people, source: "ics"
+            });
+          });
+        });
+        icsOk++;
+        state.degraded = true;
+      } catch (e) {
+        note("bad", "Grade " + cal.grade + " calendar could not be read (" + e.message + ").");
+      }
+    }
+  }
+
+  if (apiOk === 0 && icsOk === 0) {
+    const cached = LS.get(cacheKey, null);
+    if (cached && cached.events) {
+      state.events = cached.events.map(reviveEvent);
+      note("warn", "Showing cached data from " + new Date(cached.at).toLocaleString() + ".");
+      state.loading = false; reindex(); refreshCheck(); render(); return;
+    }
+    state.events = []; state.loading = false; reindex(); refreshCheck(); render(); return;
+  }
+
+  state.events = dedupe(raw, from, to);
+  LS.set(cacheKey, { at: Date.now(), events: state.events.map(dryEvent) });
+  if (state.degraded) {
+    note("warn", "Some calendars were read from the public .ics feed. Google strips attendee lists " +
+                 "from public feeds, so students on those events cannot be counted — reconnect calendar " +
+                 "access for full detection.");
+  }
+  state.loading = false;
+  reindex();
+  refreshCheck();
+  render();
+}
+function dryEvent(e) { return Object.assign({}, e, { start: e.start.toISOString(), end: e.end.toISOString() }); }
+function reviveEvent(e) { return Object.assign({}, e, { start: new Date(e.start), end: new Date(e.end) }); }
+
+/* The same assessment can sit on several grade calendars (mixed classes).
+   Google keeps one iCalUID across those copies, so merge them into one event. */
+function dedupe(raw, from, to) {
+  const byUid = new Map();
+  for (const e of raw) {
+    if (e.end <= from || e.start >= to) continue;
+    const k = e.uid || (e.title + "|" + e.start.toISOString());
+    const prev = byUid.get(k);
+    if (!prev) { byUid.set(k, e); continue; }
+    e.grades.forEach(g => { if (!prev.grades.includes(g)) prev.grades.push(g); });
+    const seen = new Set(prev.people.map(p => p.email));
+    e.people.forEach(p => { if (!seen.has(p.email)) { seen.add(p.email); prev.people.push(p); } });
+    if (!prev.description && e.description) prev.description = e.description;
+  }
+  const out = [...byUid.values()];
+  out.forEach(e => e.grades.sort((a, b) => a - b));
+  out.sort((a, b) => a.start - b.start || a.title.localeCompare(b.title));
+  return out;
+}
+
+/* Which of Mon–Fri does this event touch? */
+function eventDayKeys(e) {
+  const keys = [];
+  const last = new Date(e.end.getTime() - (e.allDay ? 864e5 : 1));   // all-day DTEND is exclusive
+  let d = new Date(e.start.getFullYear(), e.start.getMonth(), e.start.getDate());
+  const stop = new Date(last.getFullYear(), last.getMonth(), last.getDate());
+  let guard = 0;
+  while (d <= stop && guard++ < 14) { keys.push(dayKey(d)); d = addDays(d, 1); }
+  return keys.length ? keys : [dayKey(e.start)];
+}
+
+/* =========================================================================
+   INDEX — student -> day -> events
+   ========================================================================= */
+function reindex() {
+  const days = weekDays(state.weekStart).map(dayKey);
+  const dayset = new Set(days);
+  const students = new Map();     // email -> record
+  const byDay = new Map(days.map(k => [k, []]));
+  const organisers = new Set();
+
+  for (const e of state.events) {
+    if (e.organiser) organisers.add(e.organiser);
+    e.dayKeys = eventDayKeys(e).filter(k => dayset.has(k));
+    e.dayKeys.forEach(k => byDay.get(k).push(e));
+    e.students = e.people.filter(p =>
+      p.email && p.email !== e.organiser && !isExcluded(p.email));
+    for (const p of e.students) {
+      let rec = students.get(p.email);
+      if (!rec) {
+        rec = { email: p.email, name: "", days: new Map(days.map(k => [k, []])), week: 0, max: 0 };
+        students.set(p.email, rec);
+      }
+      if (!rec.name && p.name) rec.name = p.name;
+      e.dayKeys.forEach(k => {
+        const arr = rec.days.get(k);
+        if (!arr.some(x => x.uid === e.uid)) arr.push(e);
+      });
+    }
+  }
+  for (const rec of students.values()) {
+    if (!rec.name) rec.name = nameFromEmail(rec.email);
+    rec.week = 0; rec.max = 0;
+    for (const k of days) {
+      const n = rec.days.get(k).length;
+      rec.week += n; rec.max = Math.max(rec.max, n);
+    }
+  }
+
+  // lookup tables for roster matching
+  const byEmail = new Map(); const byName = new Map();
+  for (const rec of students.values()) {
+    byEmail.set(rec.email, rec);
+    const keys = new Set([nameKey(rec.name), nameKey(nameFromEmail(rec.email))]);
+    keys.forEach(k => { if (!k) return; if (!byName.has(k)) byName.set(k, []); byName.get(k).push(rec); });
+  }
+
+  state.organisers = organisers;
+  state.index = { days, students, byDay, byEmail, byName };
+}
+
+function dayCounts(k) {                       // {atLimit:[], over:[], total:n}
+  const at = [], over = [];
+  for (const rec of state.index.students.values()) {
+    const n = rec.days.get(k).length;
+    if (n > DAILY_LIMIT) over.push(rec); else if (n === DAILY_LIMIT) at.push(rec);
+  }
+  const cmp = (a, b) => b.days.get(k).length - a.days.get(k).length || a.name.localeCompare(b.name);
+  return { at: at.sort(cmp), over: over.sort(cmp) };
+}
+
+/* =========================================================================
+   RENDER
+   ========================================================================= */
+function render() {
+  $("#weekLabel").textContent = fmtRange(state.weekStart);
+  $("#datePick").value = dayKey(state.weekStart);
+  $("#srcNote").textContent = state.loading ? "loading…"
+    : state.degraded ? "public feed (limited)" : (state.token ? "calendar API" : "cached");
+  $("#srcNote").className = "pill " + (state.degraded ? "warn" : state.token ? "ok" : "n");
+  $("#reconnectBtn").classList.toggle("hidden", !!state.token);
+
+  const b = $("#banners"); b.innerHTML = "";
+  if (!state.token) {
+    b.appendChild(banner("info",
+      "<b>Calendar access not connected.</b> Student attendee lists need a Google Calendar " +
+      "token — click <b>Reconnect calendars</b> in the header."));
+  }
+  state.notices.forEach(n => b.appendChild(banner(n.level, n.text)));
+
+  $("#view-week").classList.toggle("hidden", state.tab !== "week");
+  $("#view-check").classList.toggle("hidden", state.tab !== "check");
+  $("#view-load").classList.toggle("hidden", state.tab !== "load");
+  ["week", "check", "load"].forEach(t =>
+    $("#tab-" + t).setAttribute("aria-selected", String(state.tab === t)));
+
+  if (!state.index) return;
+  renderWeek();
+  renderConflicts();
+  renderLoad();
+  renderOrganisers();
+  if (state.lastCheck) renderCheck(state.lastCheck);
+  else { $("#checkSummary").innerHTML = ""; $("#checkResults").innerHTML = ""; }
+}
+function banner(level, html) {
+  const d = el("div", "banner " + level); d.innerHTML = html; return d;
+}
+
+function renderWeek() {
+  const days = weekDays(state.weekStart);
+  const todayK = dayKey(new Date());
+  let totalEv = 0, totalAt = 0, totalOver = 0;
+
+  const grid = $("#weekGrid"); grid.innerHTML = "";
+  days.forEach(d => {
+    const k = dayKey(d);
+    const evs = (state.index.byDay.get(k) || []).slice()
+      .sort((a, b) => (a.allDay === b.allDay ? a.start - b.start : a.allDay ? -1 : 1));
+    const c = dayCounts(k);
+    totalEv += evs.length; totalAt += c.at.length; totalOver += c.over.length;
+
+    const col = el("div", "daycol" + (k === todayK ? " today" : ""));
+    const head = el("div", "dayhead");
+    head.appendChild(el("div", "dname", DAY_NAMES[(d.getDay() + 6) % 7]));
+    head.appendChild(el("div", "ddate", fmtDay(d)));
+    const stats = el("div", "daystats");
+    stats.appendChild(el("span", "pill n", evs.length + (evs.length === 1 ? " assessment" : " assessments")));
+    if (c.over.length) stats.appendChild(el("span", "pill bad", c.over.length + " over limit"));
+    if (c.at.length) stats.appendChild(el("span", "pill warn", c.at.length + " at limit"));
+    if (!c.over.length && !c.at.length && evs.length)
+      stats.appendChild(el("span", "pill ok", "no conflicts"));
+    head.appendChild(stats);
+    col.appendChild(head);
+
+    const body = el("div", "dayevents");
+    if (!evs.length) body.appendChild(el("div", "empty", "Nothing scheduled"));
+    evs.forEach(e => {
+      const btn = el("button", "ev g" + e.grades[0]);
+      btn.appendChild(el("div", "evtitle", e.title));
+      const meta = el("div", "evmeta");
+      e.grades.forEach(g => meta.appendChild(el("span", "gradetag g" + g, "G" + g)));
+      meta.appendChild(el("span", null, e.allDay ? "all day" : fmtTime(e.start)));
+      const n = e.students.length;
+      meta.appendChild(el("span", null, n ? n + (n === 1 ? " student" : " students") : "no student list"));
+      btn.appendChild(meta);
+      btn.onclick = () => openEvent(e, k);
+      body.appendChild(btn);
+    });
+    col.appendChild(body);
+
+    const foot = el("div", "dayfoot");
+    const tb = el("button", "btn sm", "Test my class here");
+    tb.onclick = () => { state.tab = "check"; $("#propDate").value = k; render();
+                         window.scrollTo({ top: 0 }); $("#rosterText").focus(); };
+    foot.appendChild(tb);
+    col.appendChild(foot);
+    grid.appendChild(col);
+  });
+
+  const s = $("#weekStats"); s.innerHTML = "";
+  s.appendChild(statBox(totalEv, "assessments", ""));
+  s.appendChild(statBox(state.index.students.size, "students involved", ""));
+  s.appendChild(statBox(totalAt, "at the daily limit", totalAt ? "warn" : "ok"));
+  s.appendChild(statBox(totalOver, "over the daily limit", totalOver ? "bad" : "ok"));
+  const heavy = [...state.index.students.values()].filter(r => r.week >= 5).length;
+  s.appendChild(statBox(heavy, "5+ assessments this week", heavy ? "warn" : "ok"));
+}
+function statBox(v, k, cls) {
+  const d = el("div", "statbox " + (cls || ""));
+  d.appendChild(el("div", "v", String(v)));
+  d.appendChild(el("div", "k", k));
+  return d;
+}
+
+function renderConflicts() {
+  const host = $("#conflictList"); host.innerHTML = "";
+  let any = false;
+  weekDays(state.weekStart).forEach(d => {
+    const k = dayKey(d);
+    const c = dayCounts(k);
+    if (!c.over.length && !c.at.length) return;
+    any = true;
+    const box = el("div", "res " + (c.over.length ? "bad" : "warn"));
+    const h = el("header");
+    h.appendChild(el("span", null, DAY_NAMES[(d.getDay() + 6) % 7] + " " + fmtDay(d)));
+    h.appendChild(el("span", "count", c.over.length + " over · " + c.at.length + " at limit"));
+    box.appendChild(h);
+    const ul = el("ul");
+    c.over.concat(c.at).forEach(rec => ul.appendChild(studentLi(rec, k)));
+    box.appendChild(ul);
+    host.appendChild(box);
+  });
+  if (!any) {
+    const box = el("div", "res ok");
+    box.appendChild(el("header", null, "No student is at or over the daily limit this week."));
+    host.appendChild(box);
+  }
+}
+function studentLi(rec, k) {
+  const li = el("li");
+  const who = el("div", "who");
+  who.appendChild(el("div", "sname", rec.name));
+  who.appendChild(el("div", "semail", rec.email));
+  li.appendChild(who);
+  const what = el("div", "what");
+  rec.days.get(k).forEach(e => {
+    what.appendChild(el("div", null, "• " + e.title + "  (G" + e.grades.join("/") +
+      (e.allDay ? "" : ", " + fmtTime(e.start)) + ")"));
+  });
+  li.appendChild(what);
+  const n = rec.days.get(k).length;
+  const badge = el("span", "count " + (n > DAILY_LIMIT ? "" : ""), n + " on the day");
+  badge.style.color = n > DAILY_LIMIT ? "var(--bad)" : "var(--warn)";
+  li.appendChild(badge);
+  return li;
+}
+
+/* ------------------------------------------------------------- event drawer */
+function openEvent(e, k) {
+  const d = $("#drawer"); d.classList.remove("hidden"); d.innerHTML = "";
+  d.onclick = ev => { if (ev.target === d) closeDrawer(); };
+  const p = el("div", "panel");
+  const close = el("button", "close", "Close"); close.onclick = closeDrawer;
+  p.appendChild(close);
+  p.appendChild(el("h3", null, e.title));
+  p.appendChild(el("div", "kv", "Grade " + e.grades.join(" / ") + " calendar" + (e.grades.length > 1 ? "s" : "")));
+  p.appendChild(el("div", "kv", e.allDay
+    ? "All day · " + keyToDate(k).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })
+    : e.start.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" }) +
+      " · " + fmtTime(e.start) + "–" + fmtTime(e.end)));
+  if (e.location) p.appendChild(el("div", "kv", "Location: " + e.location));
+  if (e.organiser) p.appendChild(el("div", "kv", "Organiser: " + e.organiser));
+  p.appendChild(el("div", "kv", "Source: " + (e.source === "api" ? "Calendar API" : "public .ics feed")));
+
+  const h = el("h4", null, e.students.length
+    ? e.students.length + " students on this assessment"
+    : "No student list available for this event");
+  h.style.margin = "16px 0 0"; h.style.fontSize = "13px";
+  p.appendChild(h);
+  if (!e.students.length) {
+    p.appendChild(el("div", "hint", e.source === "ics"
+      ? "Public .ics feeds do not include attendees. Reconnect calendar access to read them."
+      : "Nobody was invited and no emails were found in the description, so this event cannot be attributed to students."));
+  }
+  const ul = el("ul", "attlist");
+  e.students.slice().sort((a, b) => {
+    const ra = state.index.byEmail.get(a.email), rb = state.index.byEmail.get(b.email);
+    return (rb ? rb.days.get(k).length : 0) - (ra ? ra.days.get(k).length : 0);
+  }).forEach(s => {
+    const rec = state.index.byEmail.get(s.email);
+    const n = rec ? rec.days.get(k).length : 1;
+    const li = el("li");
+    const w = el("div");
+    w.appendChild(el("div", "sname", (rec && rec.name) || s.name || nameFromEmail(s.email)));
+    w.appendChild(el("div", "semail", s.email + (s.src === "description" ? " · from description" : "")));
+    li.appendChild(w);
+    li.appendChild(el("span", "badge " + (n > DAILY_LIMIT ? "b3" : n === DAILY_LIMIT ? "b2" : "b1"),
+      n + " that day"));
+    ul.appendChild(li);
+  });
+  p.appendChild(ul);
+  if (e.description) {
+    const dd = el("details", "cfg");
+    dd.appendChild(el("summary", null, "Event description"));
+    const pre = el("div", "hint"); pre.style.whiteSpace = "pre-wrap"; pre.textContent = e.description;
+    dd.appendChild(pre);
+    p.appendChild(dd);
+  }
+  d.appendChild(p);
+}
+function closeDrawer() { $("#drawer").classList.add("hidden"); $("#drawer").innerHTML = ""; }
+
+/* =========================================================================
+   CHECK A CLASS
+   ========================================================================= */
+function parseRoster(text) {
+  const out = []; const seen = new Set();
+  String(text || "").split(/[\n\r]+/).forEach(line => {
+    const raw = line.trim();
+    if (!raw || /^(name|email|student|first|last)\b/i.test(raw) && raw.includes(",") && !/@/.test(raw)) return;
+    const emails = raw.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g);
+    if (emails && emails.length) {
+      emails.forEach(e => {
+        const email = e.toLowerCase();
+        let name = raw.replace(e, "").replace(/[<>"',;\t]+/g, " ").replace(/\s+/g, " ").trim();
+        if (!name || /^\W*$/.test(name)) name = nameFromEmail(email);
+        if (!seen.has(email)) { seen.add(email); out.push({ raw, email, name }); }
+      });
+      return;
+    }
+    // no email: keep alphabetic fields only ("Rojas, Catalina, 10A" -> "Rojas Catalina")
+    const parts = raw.split(/[,;\t|]+/).map(s => s.trim())
+      .filter(s => s && /[A-Za-zÀ-ÿ]{2,}/.test(s) && !/^\d+$/.test(s));
+    const name = (parts.length ? parts.slice(0, 2).join(" ") : raw).replace(/\s+/g, " ").trim();
+    const key = "n:" + nameKey(name);
+    if (name && !seen.has(key)) { seen.add(key); out.push({ raw, email: null, name }); }
+  });
+  return out;
+}
+
+function computeCheck(interactive) {
+  if (!state.index) return null;
+  const dk = $("#propDate").value;
+  const entries = parseRoster($("#rosterText").value);
+  if (!dk) { if (interactive) alert("Pick the date you are considering."); return null; }
+  if (!entries.length) { if (interactive) alert("Paste or upload a class list first."); return null; }
+
+  const inWeek = state.index.days.includes(dk);
+  const rows = [];
+  const unmatched = [];
+  const ambiguous = [];
+
+  entries.forEach(en => {
+    let rec = null;
+    if (en.email) rec = state.index.byEmail.get(en.email) || null;
+    if (!rec) {
+      const hits = state.index.byName.get(nameKey(en.name)) || [];
+      const uniq = [...new Set(hits)];
+      if (uniq.length === 1) rec = uniq[0];
+      else if (uniq.length > 1) { ambiguous.push({ en, hits: uniq }); return; }
+    }
+    if (!rec) { unmatched.push(en); return; }
+    const dayEvents = inWeek ? rec.days.get(dk) : [];
+    rows.push({ en, rec, n: dayEvents.length, events: dayEvents, week: rec.week });
+  });
+
+  return { dk, inWeek, entries, rows, unmatched, ambiguous };
+}
+function analyse() {
+  const c = computeCheck(true);
+  if (!c) return;
+  state.lastCheck = c;
+  render();
+  $("#checkSummary").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+/* Roster rows hold references to index records, so re-index invalidates them. */
+function refreshCheck() { if (state.lastCheck) state.lastCheck = computeCheck(false); }
+
+function renderCheck(c) {
+  const sum = $("#checkSummary"); const host = $("#checkResults");
+  sum.innerHTML = ""; host.innerHTML = "";
+  const d = keyToDate(c.dk);
+  const blocked = c.rows.filter(r => r.n >= DAILY_LIMIT);
+  const over    = c.rows.filter(r => r.n > DAILY_LIMIT);
+  const atCap   = c.rows.filter(r => r.n === DAILY_LIMIT);
+  const willHit = c.rows.filter(r => r.n === DAILY_LIMIT - 1);
+  const clear   = c.rows.filter(r => r.n < DAILY_LIMIT - 1);
+
+  const head = el("div", "card");
+  head.appendChild(el("h3", null, d.toLocaleDateString(undefined,
+    { weekday: "long", day: "numeric", month: "long", year: "numeric" })));
+  head.appendChild(el("div", "sub", c.entries.length + " names in the list · " +
+    c.rows.length + " found on the assessment calendars" +
+    (c.unmatched.length ? " · " + c.unmatched.length + " with no assessments this week" : "")));
+
+  if (!c.inWeek) {
+    head.appendChild(banner("warn", "<b>" + fmtDay(d) + " is outside the week you are viewing.</b> " +
+      "Navigate to that week first — the check only sees loaded events."));
+  }
+  const verdict = blocked.length
+    ? banner("bad", "<b>" + blocked.length + " student" + (blocked.length === 1 ? "" : "s") +
+        " would be pushed past the limit of " + DAILY_LIMIT + " assessments.</b> " +
+        (blocked.length <= 3
+          ? "That is a small group — you could proceed and arrange an alternative for them."
+          : "Consider another day."))
+    : willHit.length
+      ? banner("warn", "<b>Date is workable.</b> No one goes over the limit, but " + willHit.length +
+          " student" + (willHit.length === 1 ? "" : "s") + " would reach " + DAILY_LIMIT +
+          " assessments, so the day closes for other teachers.")
+      : banner("info", "<b>Date is clear.</b> Nobody in this class has an assessment " +
+          "booked that day, so this would be their first.");
+  head.appendChild(verdict);
+
+  const st = el("div", "stat");
+  st.appendChild(statBox(over.length, "already over limit", over.length ? "bad" : "ok"));
+  st.appendChild(statBox(atCap.length, "at limit (" + DAILY_LIMIT + ")", atCap.length ? "bad" : "ok"));
+  st.appendChild(statBox(willHit.length, "would reach limit", willHit.length ? "warn" : "ok"));
+  st.appendChild(statBox(clear.length, "clear", clear.length ? "ok" : ""));
+  head.appendChild(st);
+  sum.appendChild(head);
+
+  const group = (cls, title, list, collapsible) => {
+    if (!list.length) return;
+    const box = el("div", "res " + cls);
+    let mount = box;
+    if (collapsible) {
+      const det = el("details");
+      const sum2 = el("summary");
+      sum2.style.cssText = "cursor:pointer;list-style:none";
+      const h2 = el("header");
+      h2.appendChild(el("span", null, title));
+      h2.appendChild(el("span", "count", String(list.length)));
+      sum2.appendChild(h2);
+      det.appendChild(sum2);
+      box.appendChild(det);
+      mount = det;
+    } else {
+      const h = el("header");
+      h.appendChild(el("span", null, title));
+      h.appendChild(el("span", "count", String(list.length)));
+      box.appendChild(h);
+    }
+    const ul = el("ul");
+    list.sort((a, b) => b.n - a.n || a.rec.name.localeCompare(b.rec.name)).forEach(r => {
+      const li = el("li");
+      const who = el("div", "who");
+      who.appendChild(el("div", "sname", r.rec.name));
+      who.appendChild(el("div", "semail", r.rec.email));
+      li.appendChild(who);
+      const what = el("div", "what");
+      if (r.events.length) r.events.forEach(e => what.appendChild(el("div", null,
+        "• " + e.title + " (G" + e.grades.join("/") + (e.allDay ? "" : ", " + fmtTime(e.start)) + ")")));
+      else what.appendChild(el("div", null, "No assessment booked that day"));
+      what.appendChild(el("div", null, "Week total: " + r.week +
+        (r.week >= 5 ? "  ⚠ heavy week" : "")));
+      li.appendChild(what);
+      li.appendChild(el("span", "count", (r.n + 1) + " if added"));
+      ul.appendChild(li);
+    });
+    mount.appendChild(ul);
+    host.appendChild(box);
+  };
+
+  group("bad", "Would exceed the limit of " + DAILY_LIMIT + " — needs an alternative", blocked);
+  group("warn", "Would reach the limit of " + DAILY_LIMIT, willHit);
+  group("ok", "Clear — nothing else booked that day", clear, true);
+
+  if (c.ambiguous.length) {
+    const box = el("div", "res n");
+    box.appendChild(el("header", null, "Ambiguous names — " + c.ambiguous.length));
+    const ul = el("ul");
+    c.ambiguous.forEach(a => {
+      const li = el("li");
+      li.appendChild(el("div", "who", a.en.name));
+      li.appendChild(el("div", "what", "Matches " + a.hits.map(h => h.email).join(", ") +
+        " — paste emails instead to disambiguate."));
+      ul.appendChild(li);
+    });
+    box.appendChild(ul); host.appendChild(box);
+  }
+  if (c.unmatched.length) {
+    const box = el("div", "res n");
+    const h = el("header");
+    h.appendChild(el("span", null, "No assessments found this week"));
+    h.appendChild(el("span", "count", String(c.unmatched.length)));
+    box.appendChild(h);
+    const ul = el("ul");
+    c.unmatched.forEach(u => {
+      const li = el("li");
+      li.appendChild(el("div", "who", u.name));
+      li.appendChild(el("div", "what", u.email
+        ? u.email + " — not invited to any assessment this week (that is good news, unless the email is wrong)."
+        : "Matched by name only; no calendar attendee with this name. Paste the email to be certain."));
+      ul.appendChild(li);
+    });
+    box.appendChild(ul); host.appendChild(box);
+  }
+}
+
+/* ------------------------------------------------------------ saved rosters */
+function renderRosters() {
+  const host = $("#savedRosters"); host.innerHTML = "";
+  const names = Object.keys(state.rosters).sort();
+  if (!names.length) return;
+  host.appendChild(el("span", "hint", "Saved classes:"));
+  names.forEach(n => {
+    const chip = el("span", "chip");
+    const b = el("button", null, n); b.style.font = "inherit"; b.style.fontWeight = "600";
+    b.onclick = () => { $("#rosterText").value = state.rosters[n]; $("#rosterName").value = n; };
+    const x = el("button", null, "×");
+    x.title = "Delete " + n;
+    x.onclick = () => { delete state.rosters[n]; LS.set("rosters", state.rosters); renderRosters(); };
+    chip.appendChild(b); chip.appendChild(x);
+    host.appendChild(chip);
+  });
+}
+
+/* =========================================================================
+   STUDENT LOAD TABLE
+   ========================================================================= */
+function loadRows() {
+  const onlyRisk = $("#loadOnlyRisk").checked;
+  let rows = [...state.index.students.values()];
+  if ($("#loadFilter").value.trim()) {
+    const raw = $("#loadFilter").value.trim().toLowerCase();
+    rows = rows.filter(r => r.email.includes(raw) || nameKey(r.name).includes(nameKey(raw)) ||
+                            r.name.toLowerCase().includes(raw));
+  }
+  if (onlyRisk) rows = rows.filter(r => r.max >= DAILY_LIMIT);
+  const sort = $("#loadSort").value;
+  rows.sort((a, b) => sort === "name" ? a.name.localeCompare(b.name)
+    : sort === "max" ? (b.max - a.max || b.week - a.week || a.name.localeCompare(b.name))
+    : (b.week - a.week || b.max - a.max || a.name.localeCompare(b.name)));
+  return rows;
+}
+function renderLoad() {
+  const host = $("#loadTable"); host.innerHTML = "";
+  const rows = loadRows();
+  const days = state.index.days;
+  const table = el("table");
+  const thead = el("thead"); const htr = el("tr");
+  htr.appendChild(el("th", null, "Student"));
+  days.forEach((k, i) => htr.appendChild(el("th", null, DAY_NAMES[i].slice(0, 3) + " " + fmtDay(keyToDate(k)))));
+  htr.appendChild(el("th", null, "Week"));
+  thead.appendChild(htr); table.appendChild(thead);
+  const tb = el("tbody");
+  if (!rows.length) {
+    const tr = el("tr"); const td = el("td", "empty", "No students to show.");
+    td.colSpan = days.length + 2; tr.appendChild(td); tb.appendChild(tr);
+  }
+  rows.forEach(r => {
+    const tr = el("tr");
+    const td0 = el("td");
+    td0.appendChild(el("div", "sname", r.name));
+    td0.appendChild(el("div", "semail", r.email));
+    tr.appendChild(td0);
+    days.forEach(k => {
+      const n = r.days.get(k).length;
+      const td = el("td", "num " + (n > DAILY_LIMIT ? "cell3" : n === DAILY_LIMIT ? "cell2" : n ? "cell1" : "cell0"),
+        n ? String(n) : "·");
+      if (n) td.title = r.days.get(k).map(e => e.title).join("\n");
+      tr.appendChild(td);
+    });
+    const tw = el("td", "num" + (r.week >= 5 ? " cell2" : ""), String(r.week));
+    tr.appendChild(tw);
+    tb.appendChild(tr);
+  });
+  table.appendChild(tb);
+  host.appendChild(table);
+}
+function exportCsv() {
+  const days = state.index.days;
+  const lines = [["Name", "Email"].concat(days.map((k, i) => DAY_NAMES[i] + " " + k)).concat(["Week total"]).join(",")];
+  loadRows().forEach(r => {
+    lines.push(['"' + r.name.replace(/"/g, '""') + '"', r.email]
+      .concat(days.map(k => r.days.get(k).length)).concat([r.week]).join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "assessment-load-" + dayKey(state.weekStart) + ".csv";
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function renderOrganisers() {
+  const host = $("#organisers"); host.innerHTML = "";
+  const list = [...state.organisers].sort();
+  if (!list.length) { host.appendChild(el("span", "hint", "None detected.")); return; }
+  list.forEach(o => {
+    const chip = el("span", "chip", o);
+    if (isExcluded(o)) { chip.style.background = "var(--bad-soft)"; chip.title = "already excluded"; }
+    host.appendChild(chip);
+  });
+}
+
+/* =========================================================================
+   WIRING
+   ========================================================================= */
+$("#signinBtn").onclick = signIn;
+$("#signoutBtn").onclick = () => auth.signOut();
+$("#reconnectBtn").onclick = reconnect;
+
+$("#prevWeek").onclick = () => setWeek(addDays(state.weekStart, -7));
+$("#nextWeek").onclick = () => setWeek(addDays(state.weekStart, 7));
+$("#thisWeek").onclick = () => setWeek(new Date());
+$("#datePick").onchange = e => { if (e.target.value) setWeek(keyToDate(e.target.value)); };
+$("#refreshBtn").onclick = () => loadWeek(true);
+
+["week", "check", "load"].forEach(t => {
+  $("#tab-" + t).onclick = () => { state.tab = t; render(); };
+});
+
+$("#analyzeBtn").onclick = analyse;
+$("#clearRoster").onclick = () => {
+  $("#rosterText").value = ""; $("#rosterName").value = "";
+  state.lastCheck = null; $("#checkSummary").innerHTML = ""; $("#checkResults").innerHTML = "";
+};
+$("#saveRoster").onclick = () => {
+  const n = $("#rosterName").value.trim();
+  if (!n) { alert("Give the class a name first."); return; }
+  if (!$("#rosterText").value.trim()) { alert("Nothing to save."); return; }
+  state.rosters[n] = $("#rosterText").value;
+  LS.set("rosters", state.rosters); renderRosters();
+};
+$("#rosterFile").onchange = e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    const cur = $("#rosterText").value.trim();
+    $("#rosterText").value = (cur ? cur + "\n" : "") + String(fr.result);
+    if (!$("#rosterName").value) $("#rosterName").value = f.name.replace(/\.[^.]+$/, "");
+  };
+  fr.readAsText(f);
+  e.target.value = "";
+};
+
+$("#loadFilter").oninput = () => renderLoad();
+$("#loadSort").onchange = () => renderLoad();
+$("#loadOnlyRisk").onchange = () => renderLoad();
+$("#exportCsv").onclick = exportCsv;
+$("#saveExcl").onclick = () => {
+  state.exclusions = $("#exclText").value.split(/\n+/).map(s => s.trim()).filter(Boolean);
+  LS.set("exclusions", state.exclusions);
+  reindex(); refreshCheck(); render();
+};
+$("#autoExcl").onclick = () => {
+  const set = new Set(state.exclusions);
+  state.organisers.forEach(o => set.add(o));
+  state.exclusions = [...set];
+  LS.set("exclusions", state.exclusions);
+  $("#exclText").value = state.exclusions.join("\n");
+  reindex(); refreshCheck(); render();
+};
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+function setWeek(d) {
+  state.weekStart = startOfWeek(d);
+  LS.set("lastWeek", dayKey(state.weekStart));
+  state.lastCheck = null;
+  const days = weekDays(state.weekStart).map(dayKey);
+  if (!days.includes($("#propDate").value)) $("#propDate").value = days[0];
+  loadWeek();
+}
+
+let booted = false;
+function boot() {
+  if (booted) { if (!state.events.length) loadWeek(); return; }
+  booted = true;
+  $("#exclText").value = state.exclusions.join("\n");
+  renderRosters();
+  const saved = LS.get("lastWeek", null);
+  const base = saved ? keyToDate(saved) : new Date();
+  state.weekStart = startOfWeek(isNaN(base) ? new Date() : base);
+  const today = dayKey(new Date());
+  const days = weekDays(state.weekStart).map(dayKey);
+  $("#propDate").value = days.includes(today) ? today : days[0];
+  loadWeek();
+}
+</script>
+</body>
+</html>
