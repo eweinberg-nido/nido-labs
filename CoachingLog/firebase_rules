@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers -------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Anyone signed in with a school account.
+    function isNidoUser() {
+      return isSignedIn() && request.auth.token.email.matches('.*@nido\\.cl');
+    }
+
+    // Guarded so the users/ lookup never runs for an unauthenticated request.
+    function isAdminUser() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Kept for the existing dispositions app.
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ---- dispositions (existing) ---------------------------------
+    match /hs-dispositions/{docId} {
+      allow read: if request.auth != null && (request.auth.token.email.matches('.*@nido\\.cl') || isAdmin());
+
+      // For create and update, check the INCOMING data payload
+      allow create, update: if request.auth != null
+        && (
+          (request.auth.token.email.matches('.*@nido\\.cl') && request.resource.data.userEmail == request.auth.token.email)
+          || isAdmin()
+        );
+
+      // For delete, check the EXISTING data in the database
+      allow delete: if request.auth != null
+        && (
+          (request.auth.token.email.matches('.*@nido\\.cl') && resource.data.userEmail == request.auth.token.email)
+          || isAdmin()
+        );
+    }
+
+    // ---- coaching log --------------------------------------------
+    // Shared reference data: the whole coaching office reads and maintains it.
+    // Delete is open to the office so that merging a duplicate person actually
+    // removes the leftover record - the thing this tool exists to prevent.
+    // Nothing is lost: a person record is just name/email/division and is
+    // rebuilt from the invites on the next import.
+    match /coaching-people/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+      allow create, update, delete: if isNidoUser() || isAdminUser();
+    }
+
+    // Everyone in the office sees every interaction; you only change your own.
+    match /coaching-interactions/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+
+      allow create: if isAdminUser()
+        || (isNidoUser() && request.resource.data.userEmail == request.auth.token.email);
+
+      // Your own entry: both sides checked, so it cannot be reassigned to
+      // another coach. Anyone else's: only the person it points at may move,
+      // which is what merging two duplicate people does. Notes and authorship
+      // stay with whoever wrote them.
+      allow update: if isAdminUser()
+        || (isNidoUser()
+            && resource.data.userEmail == request.auth.token.email
+            && request.resource.data.userEmail == request.auth.token.email)
+        || (isNidoUser()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['personId', 'personName']));
+
+      allow delete: if isAdminUser()
+        || (isNidoUser() && resource.data.userEmail == request.auth.token.email);
+    }
+
+    // Imported Google Form responses. Re-importing the same row overwrites it
+    // in place, so update has to be open to whoever is running the import.
+    match /coaching-invites/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+      allow create, update: if isNidoUser() || isAdminUser();
+      allow delete: if isAdminUser()
+        || (isNidoUser() && resource.data.importedBy == request.auth.token.email);
+    }
+
+    // Office-wide settings (the interaction-type list).
+    match /coaching-settings/{docId} {
+      allow read, write: if isNidoUser() || isAdminUser();
+    }
+
+    // ---- user profiles (existing) --------------------------------
+    match /users/{userId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && !('role' in request.resource.data);
+
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+    }
+  }
+}

@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nido Coaching Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+/* ---------------------------------------------------------------
+   Nido Coaching Log - single page app
+   Brand tokens mirror nido-labs/style.css; the series palette is a
+   separate, CVD-validated categorical set (all-pairs, light surface).
+   --------------------------------------------------------------- */
+:root {
+  /* Nido brand */
+  --nido-blue: #002365;
+  --nido-red: #8A1621;
+
+  /* Surfaces & ink */
+  --page: #f4f6f8;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e2e6ea;
+  --border-strong: #cfd6dd;
+  --text-primary: #1a1c1f;
+  --text-secondary: #5a6069;
+  --text-muted: #868d96;
+
+  /* Categorical series palette - validated all-pairs for light surface.
+     Do not reorder or extend past slot 5; a 6th type folds to --series-other. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #4a3aa7;
+  --series-5: #a34f9e;
+  --series-other: #6b6f76;
+
+  /* Status (reserved - never reused as a series colour) */
+  --status-good: #1e7a4c;
+  --status-warning: #a8620a;
+  --status-serious: #8A1621;
+
+  --font: 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 12px rgba(16,24,40,.05);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--page);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -.01em; }
+a { color: var(--nido-blue); }
+
+/* ---------- App chrome ---------- */
+.topbar {
+  background: var(--nido-blue);
+  color: #fff;
+  padding: .85rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.topbar h1 { font-size: 1.1rem; }
+.topbar .spacer { flex: 1; }
+.topbar .who { font-size: .85rem; opacity: .9; }
+
+.tabs {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex; gap: .25rem; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 40;
+}
+.tab {
+  appearance: none; background: none; border: 0;
+  border-bottom: 3px solid transparent;
+  padding: .8rem .9rem; margin-bottom: -1px;
+  font: inherit; font-weight: 600; font-size: .9rem;
+  color: var(--text-secondary); cursor: pointer;
+}
+.tab:hover { color: var(--text-primary); }
+.tab[aria-selected="true"] { color: var(--nido-blue); border-bottom-color: var(--nido-blue); }
+
+main { max-width: 1240px; margin: 0 auto; padding: 1.5rem; }
+.view[hidden] { display: none; }
+
+/* ---------- Primitives ---------- */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.card > h2 { font-size: 1rem; margin-bottom: .25rem; }
+.card > .sub { color: var(--text-secondary); font-size: .85rem; margin: 0 0 1rem; }
+
+.btn {
+  appearance: none; font: inherit; font-weight: 600; font-size: .9rem;
+  border: 1px solid transparent; border-radius: 6px;
+  padding: .55rem 1rem; cursor: pointer;
+  background: var(--nido-blue); color: #fff;
+  transition: filter .15s, background .15s;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+.btn.secondary { background: var(--surface-1); color: var(--text-primary); border-color: var(--border-strong); }
+.btn.secondary:hover { background: var(--surface-2); filter: none; }
+.btn.danger { background: var(--surface-1); color: var(--nido-red); border-color: #e7c4c8; }
+.btn.danger:hover { background: #fdf4f5; filter: none; }
+.btn.small { padding: .35rem .65rem; font-size: .8rem; }
+.btn.big { padding: .8rem 1.4rem; font-size: 1rem; }
+
+label.lbl { display: block; font-weight: 600; font-size: .82rem; color: var(--text-secondary); margin-bottom: .3rem; }
+.input, select.input, textarea.input {
+  width: 100%; font: inherit; font-size: .92rem;
+  padding: .55rem .65rem;
+  border: 1px solid var(--border-strong); border-radius: 6px;
+  background: var(--surface-1); color: var(--text-primary);
+}
+.input:focus { outline: 2px solid var(--nido-blue); outline-offset: -1px; border-color: var(--nido-blue); }
+textarea.input { min-height: 110px; resize: vertical; line-height: 1.5; }
+.field { margin-bottom: 1rem; }
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.row > .field { flex: 1 1 200px; margin-bottom: 1rem; }
+
+.muted { color: var(--text-muted); }
+.small { font-size: .82rem; }
+.empty { color: var(--text-muted); text-align: center; padding: 2.5rem 1rem; font-size: .9rem; }
+.notice {
+  background: #eef4ff; border-left: 3px solid var(--nido-blue);
+  padding: .7rem .9rem; border-radius: 4px; font-size: .85rem; margin-bottom: 1rem;
+}
+.notice.warn { background: #fff8ec; border-left-color: var(--status-warning); }
+.notice.err  { background: #fdf3f4; border-left-color: var(--nido-red); }
+
+.pill {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .75rem; font-weight: 600;
+  padding: .18rem .5rem; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-secondary); white-space: nowrap;
+}
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.pill.good    { background:#eaf6f0; border-color:#c3e3d4; color: var(--status-good); }
+.pill.warn    { background:#fdf3e6; border-color:#f0dcc0; color: var(--status-warning); }
+.pill.serious { background:#fdf1f2; border-color:#eecdd1; color: var(--status-serious); }
+
+/* ---------- Tables ---------- */
+table.data { width: 100%; border-collapse: collapse; font-size: .88rem; }
+table.data th {
+  text-align: left; font-size: .74rem; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-muted); font-weight: 700;
+  padding: .5rem .6rem; border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+}
+table.data td { padding: .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.data tbody tr:hover { background: var(--surface-2); }
+table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
+.scroll-x { overflow-x: auto; }
+
+/* ---------- Stat tiles ---------- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+.tile {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow);
+}
+.tile .n { font-size: 2rem; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+.tile .k { font-size: .8rem; color: var(--text-secondary); font-weight: 600; margin-top: .15rem; }
+.tile .h { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
+.tile.flag .n { color: var(--status-warning); }
+.tile.alert .n { color: var(--nido-red); }
+
+/* ---------- Autocomplete ---------- */
+.ac { position: relative; }
+.ac-menu {
+  position: absolute; z-index: 60; left: 0; right: 0; top: calc(100% + 4px);
+  background: var(--surface-1); border: 1px solid var(--border-strong);
+  border-radius: 6px; box-shadow: 0 8px 24px rgba(16,24,40,.12);
+  max-height: 280px; overflow-y: auto; padding: .25rem;
+}
+.ac-menu[hidden] { display: none; }
+.ac-item { padding: .5rem .6rem; border-radius: 4px; cursor: pointer; font-size: .9rem; }
+.ac-item .em { color: var(--text-muted); font-size: .78rem; }
+.ac-item[aria-selected="true"], .ac-item:hover { background: #eef4ff; }
+.ac-item.new { color: var(--nido-blue); font-weight: 600; border-top: 1px solid var(--border); margin-top: .25rem; }
+
+/* ---------- Chart ---------- */
+.legend { display: flex; flex-wrap: wrap; gap: .85rem; align-items: center; margin: .25rem 0 1rem; }
+.legend .item { display: inline-flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-secondary); font-weight: 600; }
+.filters { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
+.filters .field { margin: 0; }
+.filters .field select.input, .filters .field input.input { min-width: 150px; width: auto; }
+#chart-wrap { overflow-x: auto; overflow-y: auto; max-height: 70vh; }
+#chart text { font-family: var(--font); }
+.axis-label { font-size: 11px; fill: var(--text-muted); }
+.row-label { font-size: 12px; fill: var(--text-primary); cursor: pointer; }
+.row-label:hover { fill: var(--nido-blue); text-decoration: underline; }
+.lane-arc { stroke: var(--border-strong); stroke-width: 2; stroke-linecap: round; }
+.lane-quiet { stroke: var(--status-warning); stroke-width: 2; stroke-dasharray: 2 4; opacity: .55; }
+.gridline { stroke: var(--border); stroke-width: 1; }
+.mark { stroke: var(--surface-1); stroke-width: 2; cursor: pointer; }
+.mark:hover { stroke: var(--text-primary); }
+.invite-mark { fill: var(--surface-1); stroke: var(--nido-blue); stroke-width: 2; cursor: pointer; }
+#tooltip {
+  position: fixed; z-index: 200; pointer-events: none; opacity: 0;
+  background: var(--surface-1); border: 1px solid var(--border-strong);
+  border-radius: 6px; box-shadow: 0 8px 24px rgba(16,24,40,.16);
+  padding: .6rem .75rem; font-size: .82rem; max-width: 320px;
+  transition: opacity .1s;
+}
+#tooltip .t-title { font-weight: 700; margin-bottom: .2rem; }
+#tooltip .t-notes { color: var(--text-secondary); margin-top: .35rem; white-space: pre-wrap; }
+
+/* ---------- Drawer ---------- */
+.drawer-scrim {
+  position: fixed; inset: 0; background: rgba(16,24,40,.35); z-index: 90;
+}
+.drawer-scrim[hidden] { display: none; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%);
+  background: var(--surface-1); z-index: 100; overflow-y: auto;
+  box-shadow: -8px 0 32px rgba(16,24,40,.18); padding: 1.5rem;
+}
+.drawer[hidden] { display: none; }
+.drawer-head { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.drawer-head h2 { font-size: 1.25rem; }
+
+.timeline-item { display: flex; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+.timeline-item .bullet { width: 10px; height: 10px; border-radius: 50%; margin-top: .4rem; flex: none; }
+.timeline-item .body { flex: 1; min-width: 0; }
+.timeline-item .meta { font-size: .78rem; color: var(--text-muted); }
+.timeline-item .notes { white-space: pre-wrap; font-size: .88rem; margin-top: .3rem; }
+.goal { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: .6rem .75rem; margin-bottom: .6rem; font-size: .88rem; }
+.goal .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); font-weight: 700; }
+
+/* ---------- Sign-in gate ---------- */
+#gate { max-width: 480px; margin: 6rem auto; text-align: center; }
+#gate .card { padding: 2.5rem; }
+
+@media (max-width: 640px) {
+  main { padding: 1rem; }
+  .card { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+<div id="tooltip" role="tooltip"></div>
+
+<header class="topbar">
+  <h1>Nido Coaching Log</h1>
+  <span class="spacer"></span>
+  <span class="who" id="who"></span>
+  <button class="btn secondary small" id="signout-btn" hidden>Sign out</button>
+</header>
+
+<!-- Signed-out gate -->
+<section id="gate" hidden>
+  <div class="card">
+    <h2>Coaching relationships, in one place</h2>
+    <p class="sub" style="margin-top:.5rem">Log an interaction in about ten seconds, and see how each coaching
+      relationship has moved over the year. Sign in with your <strong>@nido.cl</strong> account.</p>
+    <button class="btn big" id="signin-btn">Sign in with Google</button>
+    <p class="small muted" id="gate-msg" style="margin-top:1rem"></p>
+  </div>
+</section>
+
+<div id="app" hidden>
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" data-view="log" aria-selected="true">Log</button>
+  <button class="tab" role="tab" data-view="relationships" aria-selected="false">Relationships</button>
+  <button class="tab" role="tab" data-view="timeline" aria-selected="false">Timeline</button>
+  <button class="tab" role="tab" data-view="import" aria-selected="false">Import invites</button>
+  <button class="tab" role="tab" data-view="settings" aria-selected="false">Settings</button>
+</nav>
+
+<main>
+  <div id="global-msg"></div>
+
+  <!-- ============ LOG ============ -->
+  <section class="view" id="view-log">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <h2>Log an interaction</h2>
+          <p class="sub" style="margin:.15rem 0 0">Start typing a name &mdash; pick from the list so it lands on the same person every time.</p>
+        </div>
+        <button class="btn big" id="open-log-btn">+ Log an interaction</button>
+      </div>
+
+      <form id="log-form" hidden style="margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1.25rem">
+        <div class="row">
+          <div class="field" style="flex:2 1 320px">
+            <label class="lbl" for="p-input">Teacher / colleague</label>
+            <div class="ac">
+              <input class="input" id="p-input" autocomplete="off" role="combobox" aria-expanded="false"
+                     aria-autocomplete="list" aria-controls="p-menu" placeholder="Start typing a name or email&hellip;">
+              <div class="ac-menu" id="p-menu" role="listbox" hidden></div>
+            </div>
+            <div id="p-chosen" class="small" style="margin-top:.4rem"></div>
+          </div>
+          <div class="field">
+            <label class="lbl" for="i-type">Type of interaction</label>
+            <select class="input" id="i-type"></select>
+          </div>
+          <div class="field" style="flex:0 1 170px">
+            <label class="lbl" for="i-date">Date</label>
+            <input class="input" type="date" id="i-date">
+          </div>
+        </div>
+
+        <!-- shown only when adding somebody new -->
+        <div class="row" id="new-person-fields" hidden>
+          <div class="field">
+            <label class="lbl" for="np-email">Email <span class="muted">(recommended &mdash; it is what keeps one person from becoming three)</span></label>
+            <input class="input" type="email" id="np-email" placeholder="name@nido.cl" autocomplete="off">
+          </div>
+          <div class="field" style="flex:0 1 200px">
+            <label class="lbl" for="np-division">Division</label>
+            <select class="input" id="np-division">
+              <option value="">&mdash;</option>
+              <option value="EYSES">EYS / ES</option>
+              <option value="MSHS">MS / HS</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="lbl" for="i-notes">Notes <span class="muted">&mdash; what was discussed, an overview, a pasted transcript</span></label>
+          <textarea class="input" id="i-notes" placeholder="What came up? What is the next step?"></textarea>
+        </div>
+
+        <div id="log-msg" class="small" style="margin-bottom:.75rem"></div>
+        <div style="display:flex;gap:.6rem">
+          <button type="submit" class="btn" id="save-log-btn">Save interaction</button>
+          <button type="button" class="btn secondary" id="cancel-log-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Recent interactions</h2>
+      <p class="sub">Everything the coaching office has logged. You can edit or delete your own entries.</p>
+      <div class="filters">
+        <div class="field">
+          <label class="lbl" for="log-search">Search</label>
+          <input class="input" id="log-search" placeholder="Name, notes&hellip;" autocomplete="off">
+        </div>
+        <div class="field">
+          <label class="lbl" for="log-coach">Coach</label>
+          <select class="input" id="log-coach"><option value="">All coaches</option></select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="log-type">Type</label>
+          <select class="input" id="log-type"><option value="">All types</option></select>
+        </div>
+      </div>
+      <div class="scroll-x"><table class="data" id="log-table">
+        <thead><tr>
+          <th class="nowrap">Date</th><th>Person</th><th>Type</th><th>Notes</th><th class="nowrap">Logged by</th><th></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div class="empty" id="log-empty" hidden>No interactions logged yet.</div>
+    </div>
+  </section>
+
+  <!-- ============ RELATIONSHIPS ============ -->
+  <section class="view" id="view-relationships" hidden>
+    <div class="tiles" id="rel-tiles"></div>
+    <div class="card">
+      <h2>Coaching relationships</h2>
+      <p class="sub">One row per person, invites and logged interactions merged. Click a row for the full arc.</p>
+      <div class="filters">
+        <div class="field">
+          <label class="lbl" for="rel-search">Search</label>
+          <input class="input" id="rel-search" placeholder="Name, subject, goal&hellip;" autocomplete="off">
+        </div>
+        <div class="field">
+          <label class="lbl" for="rel-division">Division</label>
+          <select class="input" id="rel-division">
+            <option value="">All divisions</option><option value="EYSES">EYS / ES</option><option value="MSHS">MS / HS</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="rel-status">Status</label>
+          <select class="input" id="rel-status">
+            <option value="">All</option>
+            <option value="uncontacted">Invited, not yet contacted</option>
+            <option value="active">Active (touch in last 30 days)</option>
+            <option value="quiet">Quiet (30+ days)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="rel-sort">Sort by</label>
+          <select class="input" id="rel-sort">
+            <option value="recent">Most recent touch</option>
+            <option value="stale">Longest since a touch</option>
+            <option value="touches">Most touches</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+      </div>
+      <div class="scroll-x"><table class="data" id="rel-table">
+        <thead><tr>
+          <th>Person</th><th>Division</th><th>Grade / subject</th><th>Imagined as</th>
+          <th class="nowrap">Touches</th><th class="nowrap">First</th><th class="nowrap">Last</th><th>Status</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div class="empty" id="rel-empty" hidden>Nothing here yet. Log an interaction or import your invite responses.</div>
+    </div>
+  </section>
+
+  <!-- ============ TIMELINE ============ -->
+  <section class="view" id="view-timeline" hidden>
+    <div class="tiles" id="tl-tiles"></div>
+    <div class="card">
+      <h2>Relationships over time</h2>
+      <p class="sub">Each lane is one person. The ring marks the invite; each mark is a logged interaction. A dashed
+        tail means nothing has been logged since.</p>
+      <div class="filters">
+        <div class="field">
+          <label class="lbl" for="tl-division">Division</label>
+          <select class="input" id="tl-division">
+            <option value="">All divisions</option><option value="EYSES">EYS / ES</option><option value="MSHS">MS / HS</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="tl-coach">Coach</label>
+          <select class="input" id="tl-coach"><option value="">All coaches</option></select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="tl-from">From</label>
+          <input class="input" type="date" id="tl-from">
+        </div>
+        <div class="field">
+          <label class="lbl" for="tl-to">To</label>
+          <input class="input" type="date" id="tl-to">
+        </div>
+        <div class="field">
+          <label class="lbl" for="tl-sort">Order</label>
+          <select class="input" id="tl-sort">
+            <option value="recent">Most recent touch</option>
+            <option value="first">When it started</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+        <div class="field" style="align-self:flex-end">
+          <button class="btn secondary small" id="tl-reset">Reset</button>
+        </div>
+      </div>
+      <div class="legend" id="tl-legend"></div>
+      <div id="chart-wrap"><svg id="chart"></svg></div>
+      <div class="empty" id="tl-empty" hidden>Nothing to plot yet.</div>
+      <p class="small muted" style="margin-top:.75rem">Every mark here is also in the table on the
+        <a href="#" data-goto="log">Log</a> tab, with its full notes.</p>
+    </div>
+  </section>
+
+  <!-- ============ IMPORT ============ -->
+  <section class="view" id="view-import" hidden>
+    <div class="card">
+      <h2>Import coaching invites</h2>
+      <p class="sub">Select the rows in your Google Sheet &mdash; including the header row &mdash; copy, and paste below.
+        One tab at a time. Rows you have already imported are skipped automatically.</p>
+      <div class="notice">The EYS/ES and MS/HS tabs have different headers. Both are recognised, and the division is
+        detected from the headers. Everything is matched to a person by email, so a teacher who signed up and later gets
+        logged lands on the same record.</div>
+      <div class="field">
+        <label class="lbl" for="paste">Paste here</label>
+        <textarea class="input" id="paste" style="min-height:200px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem"
+          placeholder="Timestamp&#9;Email Address&#9;Your name&#9;&hellip;"></textarea>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:0 1 220px">
+          <label class="lbl" for="imp-division">Division</label>
+          <select class="input" id="imp-division">
+            <option value="auto">Detect from headers</option>
+            <option value="EYSES">EYS / ES</option>
+            <option value="MSHS">MS / HS</option>
+          </select>
+        </div>
+        <div class="field" style="flex:0 1 240px">
+          <label class="lbl" for="imp-dateorder">Date format in the Timestamp column</label>
+          <select class="input" id="imp-dateorder">
+            <option value="">Detect from the data</option>
+            <option value="mdy">Month/Day/Year</option>
+            <option value="dmy">Day/Month/Year</option>
+          </select>
+        </div>
+        <div class="field" style="align-self:flex-end;flex:0 0 auto">
+          <button class="btn secondary" id="parse-btn">Preview</button>
+        </div>
+      </div>
+      <div id="imp-msg"></div>
+      <div id="imp-preview" hidden>
+        <div class="scroll-x" style="max-height:380px;overflow-y:auto"><table class="data" id="imp-table">
+          <thead></thead><tbody></tbody>
+        </table></div>
+        <div style="display:flex;gap:.6rem;margin-top:1rem;align-items:center">
+          <button class="btn" id="import-btn">Import</button>
+          <button class="btn secondary" id="imp-cancel">Cancel</button>
+          <span class="small muted" id="imp-count"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="view" id="view-settings" hidden>
+    <div class="card">
+      <h2>Interaction types</h2>
+      <p class="sub">These fill the dropdown on the log form. The first five get their own colour on the timeline;
+        anything past that shares a neutral grey.</p>
+      <div id="types-list"></div>
+      <div class="row" style="margin-top:1rem">
+        <div class="field" style="flex:1 1 240px">
+          <input class="input" id="new-type" placeholder="Add a type&hellip;" autocomplete="off">
+        </div>
+        <div class="field" style="flex:0 0 auto;align-self:flex-start">
+          <button class="btn secondary" id="add-type-btn">Add</button>
+        </div>
+      </div>
+      <div id="types-msg" class="small"></div>
+    </div>
+
+    <div class="card">
+      <h2>People</h2>
+      <p class="sub">The autocomplete list. If the same person ended up entered twice, merge them here &mdash; their
+        interactions and invites move to the record you keep.</p>
+      <div class="field" style="max-width:360px">
+        <input class="input" id="people-search" placeholder="Search people&hellip;" autocomplete="off">
+      </div>
+      <div class="scroll-x" style="max-height:420px;overflow-y:auto"><table class="data" id="people-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Division</th><th class="nowrap">Touches</th><th class="nowrap">Invites</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <h2>Firestore rules</h2>
+      <p class="sub">This app adds four collections. Until these rules are published in the Firebase console, reads and
+        writes will be rejected. The full block is in <code>firebase_rules</code> in this folder.</p>
+      <div class="scroll-x"><pre id="rules-pre" style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:1rem;font-size:.78rem;line-height:1.5;margin:0"></pre></div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- Person drawer -->
+<div class="drawer-scrim" id="drawer-scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="Person detail"></aside>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc,
+         serverTimestamp, writeBatch, getDocs, query, where }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFhiLa94zjP8IakzEd4nvtJOH-HRX10fI",
+  authDomain: "nido-teaching-learning.firebaseapp.com",
+  projectId: "nido-teaching-learning",
+  storageBucket: "nido-teaching-learning.firebasestorage.app",
+  messagingSenderId: "167104058821",
+  appId: "1:167104058821:web:7ca1f5c91ddcb68df1a7ac"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ hd: 'nido.cl' });
+
+const C = {
+  people:       'coaching-people',
+  interactions: 'coaching-interactions',
+  invites:      'coaching-invites',
+  settings:     'coaching-settings'
+};
+
+/* Seeded from the sheet's "I'm imagining this work might be most like a..." column.
+   Editable on the Settings tab. */
+const DEFAULT_TYPES = ['Coaching cycle', 'Mini cycle', 'Drive-by coaching', 'One time consulting'];
+
+/* Categorical slots, validated all-pairs for CVD on a light surface.
+   Shape is a deliberate second encoding so type never rests on colour alone. */
+const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#4a3aa7', '#a34f9e'];
+const SERIES_OTHER = '#6b6f76';
+const SHAPES = ['circle', 'square', 'triangle', 'diamond', 'plus'];
+const QUIET_DAYS = 30;
+
+const RULES_TEXT = `// Shared reference data: the whole coaching office reads and maintains it.
+// Delete is open to the office so that merging a duplicate person actually
+// removes the leftover record - the thing this tool exists to prevent.
+// Nothing is lost: a person record is just name/email/division and is
+// rebuilt from the invites on the next import.
+match /coaching-people/{docId} {
+  allow read: if isNidoUser() || isAdminUser();
+  allow create, update, delete: if isNidoUser() || isAdminUser();
+}
+
+// Everyone in the office sees every interaction; you only change your own.
+match /coaching-interactions/{docId} {
+  allow read: if isNidoUser() || isAdminUser();
+
+  allow create: if isAdminUser()
+    || (isNidoUser() && request.resource.data.userEmail == request.auth.token.email);
+
+  // Your own entry: both sides checked, so it cannot be reassigned to
+  // another coach. Anyone else's: only the person it points at may move,
+  // which is what merging two duplicate people does. Notes and authorship
+  // stay with whoever wrote them.
+  allow update: if isAdminUser()
+    || (isNidoUser()
+        && resource.data.userEmail == request.auth.token.email
+        && request.resource.data.userEmail == request.auth.token.email)
+    || (isNidoUser()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['personId', 'personName']));
+
+  allow delete: if isAdminUser()
+    || (isNidoUser() && resource.data.userEmail == request.auth.token.email);
+}
+
+match /coaching-invites/{docId} {
+  allow read: if isNidoUser() || isAdminUser();
+  allow create, update: if isNidoUser() || isAdminUser();
+  allow delete: if isAdminUser()
+    || (isNidoUser() && resource.data.importedBy == request.auth.token.email);
+}
+
+match /coaching-settings/{docId} {
+  allow read, write: if isNidoUser() || isAdminUser();
+}`;
+
+/* ---------------------------------------------------------------
+   State
+   --------------------------------------------------------------- */
+const state = {
+  user: null,
+  people: new Map(),        // id -> person
+  interactions: [],
+  invites: [],
+  types: DEFAULT_TYPES.slice(),
+  ready: { people: false, interactions: false, invites: false, settings: false },
+  view: 'log',
+  editingId: null,          // interaction being edited
+  pick: null,               // { id, name, email, division, isNew }
+  parsed: null              // staged import
+};
+
+/* ---------------------------------------------------------------
+   Small helpers
+   --------------------------------------------------------------- */
+const $  = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+/** Strip accents + case so "Muñoz" matches "munoz". */
+function fold(s) {
+  return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+function slug(s) {
+  return fold(s).replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 110);
+}
+/** Stable person id: email when we have one, otherwise the folded name. */
+function personId(email, name) {
+  const e = String(email ?? '').trim();
+  return e ? 'e_' + slug(e) : 'n_' + slug(name);
+}
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+/** 'YYYY-MM-DD' -> local Date (never UTC, or dates slide a day). */
+function toDate(iso) {
+  if (!iso) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return null;
+  return new Date(+m[1], +m[2] - 1, +m[3]);
+}
+function fmtDate(iso) {
+  const d = toDate(iso);
+  if (!d) return '';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function daysBetween(isoA, isoB) {
+  const a = toDate(isoA), b = toDate(isoB);
+  if (!a || !b) return null;
+  return Math.round((b - a) / 86400000);
+}
+function divLabel(code) {
+  return { EYSES: 'EYS / ES', MSHS: 'MS / HS' }[code] || code || '';
+}
+function truncate(s, n) {
+  s = String(s ?? '').replace(/\s+/g, ' ').trim();
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
+function typeIndex(type) {
+  const i = state.types.findIndex(t => fold(t) === fold(type));
+  return i;
+}
+function typeColor(type) {
+  const i = typeIndex(type);
+  return (i >= 0 && i < SERIES.length) ? SERIES[i] : SERIES_OTHER;
+}
+function typeShape(type) {
+  const i = typeIndex(type);
+  return (i >= 0 && i < SHAPES.length) ? SHAPES[i] : 'circle';
+}
+function flash(el, msg, kind = 'notice') {
+  if (!el) return;
+  el.innerHTML = msg ? `<div class="${kind === 'notice' ? 'notice' : 'notice ' + kind}">${msg}</div>` : '';
+}
+
+/* ---------------------------------------------------------------
+   Derived model: one record per person, invites + interactions merged
+   --------------------------------------------------------------- */
+function buildRelationships() {
+  const map = new Map();
+  const get = (id) => {
+    if (!map.has(id)) {
+      const p = state.people.get(id) || {};
+      map.set(id, {
+        id,
+        name: p.name || '(unknown)',
+        email: p.email || '',
+        division: p.division || '',
+        grade: p.grade || '',
+        subject: p.subject || '',
+        imagining: '',
+        interactions: [],
+        invites: [],
+        coaches: new Set()
+      });
+    }
+    return map.get(id);
+  };
+
+  for (const p of state.people.values()) get(p.id);
+
+  for (const inv of state.invites) {
+    const r = get(inv.personId);
+    r.invites.push(inv);
+    if (!r.division && inv.division) r.division = inv.division;
+    if (!r.grade && inv.grade) r.grade = inv.grade;
+    if (!r.subject && inv.subject) r.subject = inv.subject;
+    if (!r.imagining && inv.imagining) r.imagining = inv.imagining;
+  }
+  for (const it of state.interactions) {
+    const r = get(it.personId);
+    r.interactions.push(it);
+    if (it.userEmail) r.coaches.add(it.userEmail);
+  }
+
+  const today = todayISO();
+  const out = [];
+  for (const r of map.values()) {
+    r.interactions.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    r.invites.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+    const inviteDates = r.invites.map(i => i.date).filter(Boolean);
+    const touchDates  = r.interactions.map(i => i.date).filter(Boolean);
+    const all = inviteDates.concat(touchDates).sort();
+
+    r.inviteDate  = inviteDates[0] || null;
+    r.firstTouch  = touchDates[0] || null;
+    r.lastTouch   = touchDates[touchDates.length - 1] || null;
+    r.first       = all[0] || null;
+    r.last        = all[all.length - 1] || null;
+    r.touches     = r.interactions.length;
+    r.daysSince   = r.lastTouch ? daysBetween(r.lastTouch, today) : null;
+
+    if (r.touches === 0) r.status = r.invites.length ? 'uncontacted' : 'none';
+    else if (r.daysSince !== null && r.daysSince > QUIET_DAYS) r.status = 'quiet';
+    else r.status = 'active';
+
+    if (r.touches || r.invites.length) out.push(r);
+  }
+  return out;
+}
+
+const STATUS_META = {
+  active:      { label: 'Active',                  cls: 'good' },
+  quiet:       { label: `Quiet ${QUIET_DAYS}+ days`, cls: 'warn' },
+  uncontacted: { label: 'Invited, not contacted',   cls: 'serious' },
+  none:        { label: '—',                   cls: '' }
+};
+
+/* ---------------------------------------------------------------
+   Auth
+   --------------------------------------------------------------- */
+$('#signin-btn').addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    $('#gate-msg').textContent = e.code === 'auth/popup-closed-by-user'
+      ? 'Sign-in was cancelled.' : 'Sign-in failed: ' + e.message;
+  }
+});
+$('#signout-btn').addEventListener('click', () => signOut(auth));
+
+let unsubs = [];
+onAuthStateChanged(auth, (user) => {
+  unsubs.forEach(u => u()); unsubs = [];
+
+  if (!user) {
+    state.user = null;
+    $('#gate').hidden = false;
+    $('#app').hidden = true;
+    $('#who').textContent = '';
+    $('#signout-btn').hidden = true;
+    return;
+  }
+  if (!/@nido\.cl$/i.test(user.email || '')) {
+    signOut(auth);
+    $('#gate-msg').textContent = 'This tool is limited to @nido.cl accounts.';
+    return;
+  }
+
+  state.user = { email: user.email, name: user.displayName || user.email, uid: user.uid };
+  $('#gate').hidden = true;
+  $('#app').hidden = false;
+  $('#who').textContent = state.user.name + ' · ' + state.user.email;
+  $('#signout-btn').hidden = false;
+
+  // Keep a lightweight profile so a name is available from an email elsewhere.
+  setDoc(doc(db, 'users', user.uid),
+    { email: user.email, displayName: user.displayName || '', lastSeen: serverTimestamp() },
+    { merge: true }).catch(() => {});
+
+  subscribe();
+});
+
+function subscribe() {
+  const fail = (which) => (err) => {
+    console.error(which, err);
+    flash($('#global-msg'), `Could not read <strong>${which}</strong>: ${esc(err.code || err.message)}.
+      If this says <em>permission-denied</em>, the Firestore rules on the Settings tab have not been published yet.`, 'err');
+  };
+
+  unsubs.push(onSnapshot(collection(db, C.people), snap => {
+    state.people = new Map(snap.docs.map(d => [d.id, { id: d.id, ...d.data() }]));
+    state.ready.people = true; renderAll();
+  }, fail('people')));
+
+  unsubs.push(onSnapshot(collection(db, C.interactions), snap => {
+    state.interactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.ready.interactions = true; renderAll();
+  }, fail('interactions')));
+
+  unsubs.push(onSnapshot(collection(db, C.invites), snap => {
+    state.invites = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.ready.invites = true; renderAll();
+  }, fail('invites')));
+
+  unsubs.push(onSnapshot(doc(db, C.settings, 'config'), snap => {
+    const t = snap.exists() ? snap.data().interactionTypes : null;
+    state.types = Array.isArray(t) && t.length ? t : DEFAULT_TYPES.slice();
+    state.ready.settings = true; renderAll();
+  }, () => { state.ready.settings = true; renderAll(); }));
+}
+
+/* ---------------------------------------------------------------
+   View routing
+   --------------------------------------------------------------- */
+$$('.tab').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
+document.addEventListener('click', (e) => {
+  const go = e.target.closest('[data-goto]');
+  if (go) { e.preventDefault(); setView(go.dataset.goto); }
+});
+function setView(v) {
+  state.view = v;
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
+  $$('.view').forEach(s => { s.hidden = s.id !== 'view-' + v; });
+  window.scrollTo({ top: 0 });
+  renderAll();
+}
+
+let rafPending = false;
+function renderAll() {
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(() => {
+    rafPending = false;
+    try { render(); } catch (e) { console.error('render', e); }
+  });
+}
+
+/* ---------------------------------------------------------------
+   Render dispatcher
+   --------------------------------------------------------------- */
+let rels = [];
+function render() {
+  if (!state.user) return;
+  rels = buildRelationships();
+  syncTypeOptions();
+  syncCoachOptions();
+  if (state.view === 'log')           renderLog();
+  if (state.view === 'relationships') renderRelationships();
+  if (state.view === 'timeline')      renderTimeline();
+  if (state.view === 'settings')      renderSettings();
+  if (drawerPersonId) renderDrawer(drawerPersonId);
+}
+
+function keepValue(sel, build) {
+  const el = $(sel);
+  if (!el) return;
+  const prev = el.value;
+  el.innerHTML = build();
+  el.value = Array.from(el.options).some(o => o.value === prev) ? prev : '';
+}
+
+function syncTypeOptions() {
+  const opts = state.types.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  const sel = $('#i-type');
+  const prev = sel.value;
+  sel.innerHTML = opts;
+  if (prev && !state.types.includes(prev)) {
+    // An entry logged under a type that has since been removed keeps its label.
+    sel.insertAdjacentHTML('beforeend', `<option value="${esc(prev)}">${esc(prev)} (retired)</option>`);
+  }
+  if (prev) sel.value = prev;
+  keepValue('#log-type', () => `<option value="">All types</option>` + opts);
+}
+
+function coachList() {
+  const m = new Map();
+  for (const it of state.interactions) {
+    if (it.userEmail && !m.has(it.userEmail)) m.set(it.userEmail, it.userName || it.userEmail);
+  }
+  return Array.from(m, ([email, name]) => ({ email, name }))
+              .sort((a, b) => a.name.localeCompare(b.name));
+}
+function syncCoachOptions() {
+  const opts = coachList().map(c => `<option value="${esc(c.email)}">${esc(c.name)}</option>`).join('');
+  keepValue('#log-coach', () => `<option value="">All coaches</option>` + opts);
+  keepValue('#tl-coach',  () => `<option value="">All coaches</option>` + opts);
+}
+
+/* ---------------------------------------------------------------
+   Autocomplete
+   --------------------------------------------------------------- */
+const acInput = $('#p-input'), acMenu = $('#p-menu'), acChosen = $('#p-chosen');
+let acItems = [], acActive = -1;
+
+function personLabel(p) {
+  const bits = [p.email, divLabel(p.division)].filter(Boolean).join(' · ');
+  return `<div>${esc(p.name)}</div>${bits ? `<div class="em">${esc(bits)}</div>` : ''}`;
+}
+
+function acSearch(q) {
+  const f = fold(q);
+  const people = Array.from(state.people.values());
+  if (!f) return people.sort((a, b) => (a.name || '').localeCompare(b.name || '')).slice(0, 12);
+  const scored = [];
+  for (const p of people) {
+    const n = fold(p.name), e = fold(p.email);
+    let score = -1;
+    if (n.startsWith(f)) score = 0;
+    else if (n.split(/\s+/).some(w => w.startsWith(f))) score = 1;
+    else if (n.includes(f)) score = 2;
+    else if (e.startsWith(f)) score = 3;
+    else if (e.includes(f)) score = 4;
+    if (score >= 0) scored.push({ p, score });
+  }
+  scored.sort((a, b) => a.score - b.score || a.p.name.localeCompare(b.p.name));
+  return scored.slice(0, 12).map(s => s.p);
+}
+
+function acOpen() {
+  const q = acInput.value.trim();
+  const found = acSearch(q);
+  const exact = found.some(p => fold(p.name) === fold(q));
+  acItems = found.map(p => ({ kind: 'person', p }));
+  if (q && !exact) acItems.push({ kind: 'new', name: q });
+
+  if (!acItems.length) { acClose(); return; }
+  acActive = 0;
+  acMenu.innerHTML = acItems.map((it, i) =>
+    it.kind === 'person'
+      ? `<div class="ac-item" role="option" data-i="${i}" aria-selected="${i === 0}">${personLabel(it.p)}</div>`
+      : `<div class="ac-item new" role="option" data-i="${i}" aria-selected="${i === 0}">+ Add &ldquo;${esc(it.name)}&rdquo; as a new person</div>`
+  ).join('');
+  acMenu.hidden = false;
+  acInput.setAttribute('aria-expanded', 'true');
+}
+function acClose() {
+  acMenu.hidden = true;
+  acInput.setAttribute('aria-expanded', 'false');
+  acActive = -1;
+}
+function acHighlight(i) {
+  if (!acItems.length) return;
+  acActive = (i + acItems.length) % acItems.length;
+  $$('.ac-item', acMenu).forEach((el, j) => el.setAttribute('aria-selected', String(j === acActive)));
+  const el = acMenu.children[acActive];
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+function acChoose(i) {
+  const it = acItems[i];
+  if (!it) return;
+  if (it.kind === 'person') {
+    state.pick = { id: it.p.id, name: it.p.name, email: it.p.email || '', division: it.p.division || '', isNew: false };
+    acInput.value = it.p.name;
+    $('#new-person-fields').hidden = true;
+  } else {
+    state.pick = { id: null, name: it.name, email: '', division: '', isNew: true };
+    acInput.value = it.name;
+    $('#new-person-fields').hidden = false;
+    $('#np-email').value = '';
+    $('#np-division').value = '';
+  }
+  renderChosen();
+  acClose();
+}
+function renderChosen() {
+  const p = state.pick;
+  if (!p) { acChosen.innerHTML = ''; return; }
+  if (p.isNew) {
+    acChosen.innerHTML = `<span class="pill warn">New person</span>
+      <span class="muted"> &nbsp;“${esc(p.name)}” will be added to the list.</span>`;
+  } else {
+    const r = rels.find(x => x.id === p.id);
+    const n = r ? r.touches : 0;
+    acChosen.innerHTML = `<span class="pill good">${esc(p.name)}</span>
+      <span class="muted"> &nbsp;${p.email ? esc(p.email) + ' · ' : ''}${n} interaction${n === 1 ? '' : 's'} logged${
+        r && r.invites.length ? ' · ' + r.invites.length + ' invite' + (r.invites.length === 1 ? '' : 's') : ''}</span>`;
+  }
+}
+
+acInput.addEventListener('input', () => { state.pick = null; renderChosen(); $('#new-person-fields').hidden = true; acOpen(); });
+acInput.addEventListener('focus', () => { if (!state.pick) acOpen(); });
+acInput.addEventListener('keydown', (e) => {
+  if (acMenu.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { acOpen(); e.preventDefault(); return; }
+  if (acMenu.hidden) return;
+  if (e.key === 'ArrowDown') { acHighlight(acActive + 1); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { acHighlight(acActive - 1); e.preventDefault(); }
+  else if (e.key === 'Enter') { if (acActive >= 0) { acChoose(acActive); e.preventDefault(); } }
+  else if (e.key === 'Escape') { acClose(); }
+});
+acMenu.addEventListener('mousedown', (e) => {
+  const item = e.target.closest('.ac-item');
+  if (item) { e.preventDefault(); acChoose(+item.dataset.i); }
+});
+document.addEventListener('click', (e) => { if (!e.target.closest('.ac')) acClose(); });
+
+/* ---------------------------------------------------------------
+   Log form
+   --------------------------------------------------------------- */
+function openLogForm() {
+  $('#log-form').hidden = false;
+  $('#open-log-btn').disabled = true;
+  if (!$('#i-date').value) $('#i-date').value = todayISO();
+  acInput.focus();
+}
+function resetLogForm() {
+  state.editingId = null;
+  state.pick = null;
+  acInput.value = '';
+  acChosen.innerHTML = '';
+  $('#new-person-fields').hidden = true;
+  $('#np-email').value = ''; $('#np-division').value = '';
+  $('#i-date').value = todayISO();
+  $('#i-notes').value = '';
+  if (state.types.length) $('#i-type').value = state.types[0];
+  flash($('#log-msg'), '');
+  $('#save-log-btn').textContent = 'Save interaction';
+}
+function closeLogForm() {
+  resetLogForm();
+  $('#log-form').hidden = true;
+  $('#open-log-btn').disabled = false;
+}
+$('#open-log-btn').addEventListener('click', () => { resetLogForm(); openLogForm(); });
+$('#cancel-log-btn').addEventListener('click', closeLogForm);
+
+$('#log-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('#log-msg');
+  const typed = acInput.value.trim();
+
+  if (!state.pick && typed) {
+    // The user typed a name but never picked. Take an exact match if there is
+    // exactly one; otherwise make them choose rather than guessing.
+    const hits = Array.from(state.people.values()).filter(p => fold(p.name) === fold(typed));
+    if (hits.length === 1) state.pick = { id: hits[0].id, name: hits[0].name, email: hits[0].email || '', division: hits[0].division || '', isNew: false };
+  }
+  if (!state.pick) {
+    flash(msg, 'Pick a person from the list, or choose <strong>Add as a new person</strong>.', 'warn');
+    acInput.focus(); acOpen(); return;
+  }
+  const date = $('#i-date').value;
+  if (!date) { flash(msg, 'Pick a date.', 'warn'); return; }
+  const type = $('#i-type').value || state.types[0] || '';
+
+  const btn = $('#save-log-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    let pid = state.pick.id;
+    if (state.pick.isNew) {
+      const email = $('#np-email').value.trim().toLowerCase();
+      const division = $('#np-division').value;
+      pid = personId(email, state.pick.name);
+      if (!pid || pid === 'e_' || pid === 'n_') throw new Error('That name could not be turned into a record. Try adding an email.');
+      await setDoc(doc(db, C.people, pid), {
+        name: state.pick.name, email, division,
+        createdBy: state.user.email, createdAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    const payload = {
+      personId: pid,
+      personName: state.pick.name,
+      type, date,
+      notes: $('#i-notes').value.trim(),
+      userEmail: state.user.email,
+      userName: state.user.name,
+      updatedAt: serverTimestamp()
+    };
+    if (state.editingId) {
+      await updateDoc(doc(db, C.interactions, state.editingId), payload);
+    } else {
+      await addDoc(collection(db, C.interactions), { ...payload, createdAt: serverTimestamp() });
+    }
+    closeLogForm();
+  } catch (err) {
+    console.error(err);
+    flash(msg, 'Could not save: ' + esc(err.code || err.message), 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = state.editingId ? 'Update interaction' : 'Save interaction';
+  }
+});
+
+function editInteraction(id) {
+  const it = state.interactions.find(x => x.id === id);
+  if (!it) return;
+  setView('log');
+  const p = state.people.get(it.personId);
+  state.editingId = id;
+  state.pick = { id: it.personId, name: p ? p.name : it.personName, email: p ? (p.email || '') : '', division: p ? (p.division || '') : '', isNew: false };
+  acInput.value = state.pick.name;
+  renderChosen();
+  $('#new-person-fields').hidden = true;
+  $('#i-date').value = it.date || todayISO();
+  $('#i-notes').value = it.notes || '';
+  $('#log-form').hidden = false;
+  $('#open-log-btn').disabled = true;
+  if (!state.types.includes(it.type)) {
+    $('#i-type').insertAdjacentHTML('beforeend', `<option value="${esc(it.type)}">${esc(it.type)}</option>`);
+  }
+  $('#i-type').value = it.type || '';
+  $('#save-log-btn').textContent = 'Update interaction';
+  $('#log-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function deleteInteraction(id) {
+  const it = state.interactions.find(x => x.id === id);
+  if (!it) return;
+  if (!confirm(`Delete the ${fmtDate(it.date)} interaction with ${it.personName}? This cannot be undone.`)) return;
+  try { await deleteDoc(doc(db, C.interactions, id)); }
+  catch (err) { alert('Could not delete: ' + (err.code || err.message)); }
+}
+
+/* ---------------------------------------------------------------
+   Log table
+   --------------------------------------------------------------- */
+['#log-search', '#log-coach', '#log-type'].forEach(s => $(s).addEventListener('input', renderLog));
+
+function renderLog() {
+  const q      = fold($('#log-search').value);
+  const coach  = $('#log-coach').value;
+  const type   = $('#log-type').value;
+
+  const rows = state.interactions
+    .filter(it => !coach || it.userEmail === coach)
+    .filter(it => !type  || it.type === type)
+    .filter(it => !q || fold(it.personName).includes(q) || fold(it.notes).includes(q) || fold(it.type).includes(q))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+  $('#log-empty').hidden = rows.length > 0 || !state.ready.interactions;
+  $('#log-table').hidden = rows.length === 0;
+  $('#log-table tbody').innerHTML = rows.map(it => {
+    const mine = it.userEmail === state.user.email;
+    return `<tr>
+      <td class="nowrap">${esc(fmtDate(it.date))}</td>
+      <td><a href="#" data-person="${esc(it.personId)}">${esc(it.personName)}</a></td>
+      <td class="nowrap"><span class="pill"><span class="dot" style="background:${typeColor(it.type)}"></span>${esc(it.type)}</span></td>
+      <td>${esc(truncate(it.notes, 140))}</td>
+      <td class="nowrap">${esc(it.userName || it.userEmail)}</td>
+      <td class="nowrap">${mine ? `<button class="btn secondary small" data-edit="${it.id}">Edit</button>
+        <button class="btn danger small" data-del="${it.id}">Delete</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.addEventListener('click', (e) => {
+  const ed = e.target.closest('[data-edit]');   if (ed) { editInteraction(ed.dataset.edit); return; }
+  const dl = e.target.closest('[data-del]');    if (dl) { deleteInteraction(dl.dataset.del); return; }
+  const pr = e.target.closest('[data-person]'); if (pr) { e.preventDefault(); openDrawer(pr.dataset.person); }
+});
+
+/* ---------------------------------------------------------------
+   Stat tiles
+   --------------------------------------------------------------- */
+function tile(n, k, hint, cls) {
+  return `<div class="tile ${cls || ''}"><div class="n">${n}</div><div class="k">${esc(k)}</div>
+    ${hint ? `<div class="h">${esc(hint)}</div>` : ''}</div>`;
+}
+function renderTiles(el, list) {
+  const active      = list.filter(r => r.status === 'active').length;
+  const quiet       = list.filter(r => r.status === 'quiet').length;
+  const uncontacted = list.filter(r => r.status === 'uncontacted').length;
+  const month = todayISO().slice(0, 7);
+  const thisMonth = state.interactions.filter(i => (i.date || '').startsWith(month)).length;
+  el.innerHTML =
+    tile(active, 'Active relationships', `a touch in the last ${QUIET_DAYS} days`) +
+    tile(thisMonth, 'Interactions this month', 'across the whole office') +
+    tile(uncontacted, 'Invited, not yet contacted', 'signed up, nothing logged', 'flag') +
+    tile(quiet, 'Gone quiet', `${QUIET_DAYS}+ days since the last touch`, 'alert');
+}
+
+/* ---------------------------------------------------------------
+   Relationships table
+   --------------------------------------------------------------- */
+['#rel-search', '#rel-division', '#rel-status', '#rel-sort']
+  .forEach(s => $(s).addEventListener('input', renderRelationships));
+
+function filterRels() {
+  const q   = fold($('#rel-search').value);
+  const div = $('#rel-division').value;
+  const st  = $('#rel-status').value;
+  return rels
+    .filter(r => !div || r.division === div)
+    .filter(r => !st  || r.status === st)
+    .filter(r => !q || [r.name, r.email, r.subject, r.grade, r.imagining,
+                        ...r.invites.map(i => i.studentGoal + ' ' + i.instructionalGoal)]
+                        .some(v => fold(v).includes(q)));
+}
+
+function renderRelationships() {
+  renderTiles($('#rel-tiles'), rels);
+  const sort = $('#rel-sort').value;
+  const list = filterRels().sort((a, b) => {
+    if (sort === 'name')    return a.name.localeCompare(b.name);
+    if (sort === 'touches') return b.touches - a.touches || a.name.localeCompare(b.name);
+    if (sort === 'stale') {
+      // Never-contacted first, then longest gap.
+      const av = a.lastTouch ? a.daysSince : 1e6, bv = b.lastTouch ? b.daysSince : 1e6;
+      return bv - av || a.name.localeCompare(b.name);
+    }
+    return (b.last || '').localeCompare(a.last || '') || a.name.localeCompare(b.name);
+  });
+
+  const loaded = state.ready.interactions && state.ready.invites && state.ready.people;
+  $('#rel-empty').hidden = list.length > 0 || !loaded;
+  $('#rel-table').hidden = list.length === 0;
+  $('#rel-table tbody').innerHTML = list.map(r => {
+    const s = STATUS_META[r.status];
+    const gap = r.lastTouch ? `${r.daysSince}d ago` : '';
+    return `<tr style="cursor:pointer" data-person="${esc(r.id)}">
+      <td><strong>${esc(r.name)}</strong>${r.email ? `<div class="small muted">${esc(r.email)}</div>` : ''}</td>
+      <td class="nowrap">${esc(divLabel(r.division) || '—')}</td>
+      <td>${esc([r.grade, r.subject].filter(Boolean).join(' · ') || '—')}</td>
+      <td>${esc(r.imagining || '—')}</td>
+      <td class="nowrap">${r.touches}</td>
+      <td class="nowrap">${esc(r.first ? fmtDate(r.first) : '—')}</td>
+      <td class="nowrap">${esc(r.lastTouch ? fmtDate(r.lastTouch) : '—')}${gap ? `<div class="small muted">${gap}</div>` : ''}</td>
+      <td class="nowrap"><span class="pill ${s.cls}">${esc(s.label)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------------------------------------------------------------
+   Person drawer
+   --------------------------------------------------------------- */
+let drawerPersonId = null;
+function openDrawer(id) { drawerPersonId = id; renderDrawer(id); }
+function closeDrawer() {
+  drawerPersonId = null;
+  $('#drawer').hidden = true;
+  $('#drawer-scrim').hidden = true;
+}
+$('#drawer-scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerPersonId) closeDrawer(); });
+
+function renderDrawer(id) {
+  const r = rels.find(x => x.id === id);
+  if (!r) { closeDrawer(); return; }
+  const s = STATUS_META[r.status];
+
+  const events = [
+    ...r.invites.map(i => ({ kind: 'invite', date: i.date, data: i })),
+    ...r.interactions.map(i => ({ kind: 'touch', date: i.date, data: i }))
+  ].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const goals = r.invites.map(inv => `
+    <div class="goal">
+      <div class="k">Invite · ${esc(fmtDate(inv.date))}${inv.division ? ' · ' + esc(divLabel(inv.division)) : ''}</div>
+      ${inv.imagining ? `<div style="margin-top:.3rem"><strong>Imagined as:</strong> ${esc(inv.imagining)}</div>` : ''}
+      ${inv.grade || inv.subject ? `<div>${esc([inv.grade, inv.subject].filter(Boolean).join(' · '))}</div>` : ''}
+      ${inv.studentGoal ? `<div style="margin-top:.4rem"><strong>Student learning goal:</strong> ${esc(inv.studentGoal)}</div>` : ''}
+      ${inv.instructionalGoal ? `<div style="margin-top:.3rem"><strong>Instructional goal:</strong> ${esc(inv.instructionalGoal)}</div>` : ''}
+      ${inv.coplan ? `<div class="small muted" style="margin-top:.3rem">Co-planning: ${esc(inv.coplan)}</div>` : ''}
+      ${inv.coteach ? `<div class="small muted">Co-teaching: ${esc(inv.coteach)}</div>` : ''}
+      ${inv.startDate ? `<div class="small muted">Anticipated start: ${esc(inv.startDate)}${inv.flexible ? ' (flexible: ' + esc(inv.flexible) + ')' : ''}</div>` : ''}
+      ${inv.tags ? `<div class="small muted">Tags: ${esc(inv.tags)}</div>` : ''}
+      ${inv.extras ? Object.entries(inv.extras).map(([k, v]) =>
+          `<div class="small muted">${esc(k)}: ${esc(v)}</div>`).join('') : ''}
+    </div>`).join('');
+
+  $('#drawer').innerHTML = `
+    <div class="drawer-head">
+      <div style="flex:1">
+        <h2>${esc(r.name)}</h2>
+        <div class="small muted">${esc([r.email, divLabel(r.division), r.grade, r.subject].filter(Boolean).join(' · ') || '—')}</div>
+        <div style="margin-top:.5rem;display:flex;gap:.4rem;flex-wrap:wrap">
+          <span class="pill ${s.cls}">${esc(s.label)}</span>
+          <span class="pill">${r.touches} interaction${r.touches === 1 ? '' : 's'}</span>
+          ${r.first ? `<span class="pill">Started ${esc(fmtDate(r.first))}</span>` : ''}
+          ${r.coaches.size > 1 ? `<span class="pill">${r.coaches.size} coaches</span>` : ''}
+        </div>
+      </div>
+      <button class="btn secondary small" id="drawer-close">Close</button>
+    </div>
+    ${goals || '<div class="notice warn">No invite on file for this person &mdash; they were added straight from the log.</div>'}
+    <h3 style="font-size:.95rem;margin:1.25rem 0 .25rem">The arc so far</h3>
+    ${events.length ? events.map(e => {
+      if (e.kind === 'invite') return `
+        <div class="timeline-item">
+          <div class="bullet" style="background:var(--surface-1);border:2px solid var(--nido-blue)"></div>
+          <div class="body">
+            <div><strong>Coaching invite submitted</strong></div>
+            <div class="meta">${esc(fmtDate(e.date))}${e.data.imagining ? ' · ' + esc(e.data.imagining) : ''}</div>
+          </div>
+        </div>`;
+      const it = e.data, mine = it.userEmail === state.user.email;
+      return `
+        <div class="timeline-item">
+          <div class="bullet" style="background:${typeColor(it.type)}"></div>
+          <div class="body">
+            <div><strong>${esc(it.type)}</strong></div>
+            <div class="meta">${esc(fmtDate(it.date))} · ${esc(it.userName || it.userEmail)}</div>
+            ${it.notes ? `<div class="notes">${esc(it.notes)}</div>` : ''}
+            ${mine ? `<div style="margin-top:.4rem;display:flex;gap:.4rem">
+              <button class="btn secondary small" data-edit="${it.id}">Edit</button>
+              <button class="btn danger small" data-del="${it.id}">Delete</button></div>` : ''}
+          </div>
+        </div>`;
+    }).join('') : '<div class="empty">Nothing logged yet.</div>'}
+    <div style="margin-top:1.25rem">
+      <button class="btn" data-log-for="${esc(r.id)}">+ Log an interaction with ${esc(r.name.split(' ')[0])}</button>
+    </div>`;
+
+  $('#drawer').hidden = false;
+  $('#drawer-scrim').hidden = false;
+  $('#drawer-close').addEventListener('click', closeDrawer);
+  const quick = $('[data-log-for]', $('#drawer'));
+  if (quick) quick.addEventListener('click', () => {
+    closeDrawer(); setView('log'); resetLogForm(); openLogForm();
+    const p = state.people.get(r.id) || { id: r.id, name: r.name, email: r.email, division: r.division };
+    state.pick = { id: p.id, name: p.name, email: p.email || '', division: p.division || '', isNew: false };
+    acInput.value = p.name; renderChosen(); acClose();
+    $('#i-notes').focus();
+  });
+}
+
+/* ---------------------------------------------------------------
+   Timeline chart
+   --------------------------------------------------------------- */
+const tooltip = $('#tooltip');
+function showTip(html, evt) {
+  tooltip.innerHTML = html;
+  tooltip.style.opacity = 1;
+  const pad = 14, w = tooltip.offsetWidth, h = tooltip.offsetHeight;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + w > window.innerWidth - 8)  x = evt.clientX - w - pad;
+  if (y + h > window.innerHeight - 8) y = evt.clientY - h - pad;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+function hideTip() { tooltip.style.opacity = 0; }
+
+['#tl-division', '#tl-coach', '#tl-from', '#tl-to', '#tl-sort']
+  .forEach(s => $(s).addEventListener('input', renderTimeline));
+$('#tl-reset').addEventListener('click', () => {
+  ['#tl-division', '#tl-coach', '#tl-from', '#tl-to'].forEach(s => $(s).value = '');
+  $('#tl-sort').value = 'recent';
+  renderTimeline();
+});
+
+function renderTimeline() {
+  renderTiles($('#tl-tiles'), rels);
+
+  const div   = $('#tl-division').value;
+  const coach = $('#tl-coach').value;
+  const from  = $('#tl-from').value || null;
+  const to    = $('#tl-to').value || null;
+  const sort  = $('#tl-sort').value;
+  const inRange = (d) => !!d && (!from || d >= from) && (!to || d <= to);
+
+  // Keep a person only if something of theirs survives the filters.
+  const lanes = [];
+  for (const r of rels) {
+    if (div && r.division !== div) continue;
+    const touches = r.interactions.filter(i => inRange(i.date) && (!coach || i.userEmail === coach));
+    const invites = (coach ? [] : r.invites).filter(i => inRange(i.date));
+    if (!touches.length && !invites.length) continue;
+    const dates = touches.map(t => t.date).concat(invites.map(i => i.date)).sort();
+    lanes.push({ r, touches, invites, first: dates[0], last: dates[dates.length - 1] });
+  }
+
+  lanes.sort((a, b) => {
+    if (sort === 'name')  return a.r.name.localeCompare(b.r.name);
+    if (sort === 'first') return (a.first || '').localeCompare(b.first || '') || a.r.name.localeCompare(b.r.name);
+    return (b.last || '').localeCompare(a.last || '') || a.r.name.localeCompare(b.r.name);
+  });
+
+  // Legend: only the types actually on screen, plus the invite mark.
+  const used = [];
+  for (const l of lanes) for (const t of l.touches) if (!used.includes(t.type)) used.push(t.type);
+  used.sort((a, b) => (typeIndex(a) < 0 ? 99 : typeIndex(a)) - (typeIndex(b) < 0 ? 99 : typeIndex(b)));
+  $('#tl-legend').innerHTML = used.map(t =>
+    `<span class="item">${symbolSVG(typeShape(t), typeColor(t))}${esc(t)}</span>`).join('') +
+    (lanes.some(l => l.invites.length)
+      ? `<span class="item"><svg width="16" height="16" viewBox="-8 -8 16 16"><circle r="5" fill="#fff" stroke="#002365" stroke-width="2"/></svg>Coaching invite</span>`
+      : '') +
+    (lanes.some(l => l.last && daysBetween(l.last, todayISO()) > QUIET_DAYS)
+      ? `<span class="item"><svg width="18" height="16" viewBox="0 0 18 16"><line x1="1" y1="8" x2="17" y2="8" stroke="#a8620a" stroke-width="2" stroke-dasharray="2 4"/></svg>Nothing logged since</span>`
+      : '');
+
+  const svg = d3.select('#chart');
+  svg.selectAll('*').remove();
+  $('#tl-empty').hidden = lanes.length > 0;
+  if (!lanes.length) { svg.attr('width', 0).attr('height', 0); return; }
+
+  const wrap = $('#chart-wrap');
+  const M = { top: 34, right: 28, bottom: 12, left: 186 };
+  const rowH = 24;
+  const innerW = Math.max(420, (wrap.clientWidth || 900) - M.left - M.right - 2);
+  const H = M.top + lanes.length * rowH + M.bottom;
+  const W = M.left + innerW + M.right;
+  svg.attr('width', W).attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+
+  const today = new Date();
+  const allDates = lanes.flatMap(l => [toDate(l.first), toDate(l.last)]).filter(Boolean).concat([today]);
+  let [d0, d1] = d3.extent(allDates);
+  const padMs = Math.max((d1 - d0) * 0.03, 5 * 86400000);
+  const x = d3.scaleTime().domain([new Date(+d0 - padMs), new Date(+d1 + padMs)]).range([0, innerW]);
+
+  const g = svg.append('g').attr('transform', `translate(${M.left},${M.top})`);
+
+  // Recessive gridlines + axis.
+  const ticks = x.ticks(Math.max(3, Math.min(10, Math.round(innerW / 110))));
+  g.append('g').selectAll('line').data(ticks).join('line')
+    .attr('class', 'gridline').attr('x1', d => x(d)).attr('x2', d => x(d))
+    .attr('y1', -8).attr('y2', lanes.length * rowH);
+  g.append('g').selectAll('text').data(ticks).join('text')
+    .attr('class', 'axis-label').attr('x', d => x(d)).attr('y', -14)
+    .attr('text-anchor', 'middle')
+    .text(d => d3.timeFormat(d3.timeYear(d) < d ? '%b %Y' : '%Y')(d));
+
+  // "Today" reference.
+  if (x(today) >= 0 && x(today) <= innerW) {
+    g.append('line').attr('x1', x(today)).attr('x2', x(today)).attr('y1', -8)
+      .attr('y2', lanes.length * rowH).attr('stroke', 'var(--text-muted)')
+      .attr('stroke-width', 1).attr('stroke-dasharray', '3 3').attr('opacity', .6);
+    g.append('text').attr('class', 'axis-label').attr('x', x(today)).attr('y', -26)
+      .attr('text-anchor', 'middle').text('today');
+  }
+
+  const lane = g.selectAll('.lane').data(lanes).join('g')
+    .attr('class', 'lane').attr('transform', (d, i) => `translate(0,${i * rowH})`);
+
+  lane.filter((d, i) => i % 2 === 1).append('rect')
+    .attr('x', -M.left + 4).attr('y', 0).attr('width', M.left + innerW - 4).attr('height', rowH)
+    .attr('fill', 'var(--surface-2)');
+
+  lane.append('text').attr('class', 'row-label')
+    .attr('x', -10).attr('y', rowH / 2 + 4).attr('text-anchor', 'end')
+    .text(d => truncate(d.r.name, 26))
+    .on('click', (e, d) => openDrawer(d.r.id))
+    .append('title').text(d => d.r.name + (d.r.email ? ' · ' + d.r.email : ''));
+
+  // The arc: first event to last event.
+  lane.append('line').attr('class', 'lane-arc')
+    .attr('x1', d => x(toDate(d.first))).attr('x2', d => x(toDate(d.last)))
+    .attr('y1', rowH / 2).attr('y2', rowH / 2);
+
+  // Dashed tail when nothing has been logged since.
+  lane.filter(d => d.last && daysBetween(d.last, todayISO()) > QUIET_DAYS)
+    .append('line').attr('class', 'lane-quiet')
+    .attr('x1', d => x(toDate(d.last)) + 7).attr('x2', x(today))
+    .attr('y1', rowH / 2).attr('y2', rowH / 2);
+
+  lane.each(function (d) {
+    const row = d3.select(this);
+    row.selectAll('.invite-mark').data(d.invites).join('circle')
+      .attr('class', 'invite-mark').attr('r', 5)
+      .attr('cx', i => x(toDate(i.date))).attr('cy', rowH / 2)
+      .on('mousemove', (e, i) => showTip(
+        `<div class="t-title">${esc(d.r.name)}</div>
+         <div>Coaching invite · ${esc(fmtDate(i.date))}</div>
+         ${i.imagining ? `<div class="t-notes">Imagined as: ${esc(i.imagining)}</div>` : ''}
+         ${i.instructionalGoal ? `<div class="t-notes">${esc(truncate(i.instructionalGoal, 160))}</div>` : ''}`, e))
+      .on('mouseleave', hideTip)
+      .on('click', () => { hideTip(); openDrawer(d.r.id); });
+
+    row.selectAll('.mark').data(d.touches).join('path')
+      .attr('class', 'mark')
+      .attr('d', t => d3.symbol().type(symbolType(typeShape(t.type))).size(84)())
+      .attr('fill', t => typeColor(t.type))
+      .attr('transform', t => `translate(${x(toDate(t.date))},${rowH / 2})`)
+      .on('mousemove', (e, t) => showTip(
+        `<div class="t-title">${esc(d.r.name)}</div>
+         <div>${esc(t.type)} · ${esc(fmtDate(t.date))}</div>
+         <div class="small muted">${esc(t.userName || t.userEmail)}</div>
+         ${t.notes ? `<div class="t-notes">${esc(truncate(t.notes, 200))}</div>` : ''}`, e))
+      .on('mouseleave', hideTip)
+      .on('click', () => { hideTip(); openDrawer(d.r.id); });
+  });
+}
+
+function symbolType(name) {
+  return { circle: d3.symbolCircle, square: d3.symbolSquare, triangle: d3.symbolTriangle,
+           diamond: d3.symbolDiamond, plus: d3.symbolCross }[name] || d3.symbolCircle;
+}
+function symbolSVG(shape, color) {
+  const d = d3.symbol().type(symbolType(shape)).size(84)();
+  return `<svg width="16" height="16" viewBox="-8 -8 16 16" aria-hidden="true"><path d="${d}" fill="${color}" stroke="#fff" stroke-width="1.5"/></svg>`;
+}
+
+let resizeT;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => { if (state.view === 'timeline') renderTimeline(); }, 150);
+});
+
+/* ---------------------------------------------------------------
+   Import: parsing
+   --------------------------------------------------------------- */
+/** Delimited-text parser that survives Google Sheets' quoted, multi-line cells. */
+function parseTable(text) {
+  text = String(text).replace(/\r\n?/g, '\n').replace(/\n+$/, '');
+  if (!text.trim()) return [];
+  const delim = text.includes('\t') ? '\t' : ',';
+  const rows = [];
+  let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++; }
+        else q = false;
+      } else cell += c;
+    } else if (c === '"' && cell === '') {
+      q = true;
+    } else if (c === delim) {
+      row.push(cell); cell = '';
+    } else if (c === '\n') {
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += c;
+  }
+  row.push(cell); rows.push(row);
+  return rows.map(r => r.map(v => v.trim()));
+}
+
+const HEADER_MAP = [
+  ['timestamp',         /^timestamp$/i],
+  ['email',             /e-?mail/i],
+  ['name',              /your name/i],
+  ['grade',             /which grade/i],
+  ['subject',           /subject or (course|topic)/i],
+  ['studentGoal',       /student learning goal/i],
+  ['instructionalGoal', /instructional goal/i],
+  ['coplan',            /co-?planning/i],
+  ['coteach',           /co-?teaching/i],
+  ['startDate',         /anticipated.*start date/i],
+  ['flexible',          /flexible start/i],
+  ['imagining',         /most like a/i],
+  ['month',             /^month$/i],
+  ['tags',              /^tags?$/i]
+];
+
+function mapHeaders(header) {
+  const map = {}, unmapped = [];
+  header.forEach((h, i) => {
+    const name = h.trim();
+    const hit = HEADER_MAP.find(([, re]) => name && re.test(name));
+    // "most like a..." appears twice on the EYS/ES tab - keep the first column.
+    if (hit && !(hit[0] in map)) map[hit[0]] = i;
+    else if (name) unmapped.push({ i, name });
+    else unmapped.push({ i, name: 'Column ' + (i + 1) });
+  });
+  return { map, unmapped };
+}
+
+function detectDivision(header) {
+  const joined = header.join(' | ');
+  if (/subject or course/i.test(joined)) return 'MSHS';
+  if (/subject or topic/i.test(joined)) return 'EYSES';
+  return '';
+}
+
+/** M/D/Y vs D/M/Y is genuinely ambiguous, so decide it from the whole column. */
+function detectDateOrder(values) {
+  let mdy = 0, dmy = 0;
+  for (const v of values) {
+    const m = /^(\d{1,4})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/.exec(String(v).trim());
+    if (!m) continue;
+    if (m[1].length === 4) continue;            // already ISO
+    if (+m[1] > 12) dmy++;
+    else if (+m[2] > 12) mdy++;
+  }
+  return dmy > mdy ? 'dmy' : 'mdy';
+}
+
+function parseLooseDate(raw, order) {
+  const s = String(raw ?? '').trim();
+  if (!s) return null;
+  let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+  if (m) return `${m[1]}-${String(+m[2]).padStart(2, '0')}-${String(+m[3]).padStart(2, '0')}`;
+  m = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/.exec(s);
+  if (m) {
+    let a = +m[1], b = +m[2], y = +m[3];
+    if (y < 100) y += 2000;
+    let mo, d;
+    if (a > 12)      { d = a; mo = b; }
+    else if (b > 12) { mo = a; d = b; }
+    else if (order === 'dmy') { d = a; mo = b; }
+    else             { mo = a; d = b; }
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  const t = Date.parse(s);
+  if (!Number.isNaN(t)) {
+    const d = new Date(t);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  return null;
+}
+
+function hash32(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
+function buildImport() {
+  const rows = parseTable($('#paste').value);
+  if (rows.length < 2) throw new Error('Paste the header row plus at least one response row.');
+  const header = rows[0];
+  const { map, unmapped } = mapHeaders(header);
+  if (!('name' in map) && !('email' in map)) {
+    throw new Error('No "Your name" or "Email Address" column found. Include the header row in your copy.');
+  }
+  const divChoice = $('#imp-division').value;
+  const division = divChoice === 'auto' ? detectDivision(header) : divChoice;
+  const body = rows.slice(1).filter(r => r.some(c => c !== ''));
+  const order = detectDateOrder(body.map(r => r[map.timestamp] ?? ''));
+  const orderOverride = $('#imp-dateorder').value;
+  const useOrder = orderOverride || order;
+
+  const get = (r, k) => (k in map ? (r[map[k]] ?? '').trim() : '');
+  const existing = new Set(state.invites.map(i => i.id));
+
+  const records = body.map(r => {
+    const email = get(r, 'email').toLowerCase();
+    const name  = get(r, 'name') || email.split('@')[0];
+    const rawTs = get(r, 'timestamp');
+    const date  = parseLooseDate(rawTs, useOrder) || parseLooseDate(get(r, 'startDate'), useOrder);
+    const rec = {
+      personId: personId(email, name),
+      personName: name,
+      email,
+      division,
+      date,
+      timestampRaw: rawTs,
+      grade: get(r, 'grade'),
+      subject: get(r, 'subject'),
+      studentGoal: get(r, 'studentGoal'),
+      instructionalGoal: get(r, 'instructionalGoal'),
+      coplan: get(r, 'coplan'),
+      coteach: get(r, 'coteach'),
+      startDate: get(r, 'startDate'),
+      flexible: get(r, 'flexible'),
+      imagining: get(r, 'imagining'),
+      month: get(r, 'month'),
+      tags: get(r, 'tags')
+    };
+    const extras = {};
+    for (const u of unmapped) { const v = (r[u.i] ?? '').trim(); if (v) extras[u.name] = v; }
+    if (Object.keys(extras).length) rec.extras = extras;
+    rec.id = 'inv_' + slug(email || name).slice(0, 60) + '_' +
+             hash32([rawTs, rec.studentGoal, rec.instructionalGoal, rec.subject].join('|'));
+    rec.isDuplicate = existing.has(rec.id);
+    return rec;
+  }).filter(r => r.personName);
+
+  return { records, division, header, unmapped, dateOrder: useOrder, detectedOrder: order };
+}
+
+/* ---------------------------------------------------------------
+   Import: preview + write
+   --------------------------------------------------------------- */
+$('#parse-btn').addEventListener('click', () => {
+  try {
+    const parsed = buildImport();
+    state.parsed = parsed;
+    renderPreview(parsed);
+  } catch (e) {
+    state.parsed = null;
+    $('#imp-preview').hidden = true;
+    flash($('#imp-msg'), esc(e.message), 'err');
+  }
+});
+$('#imp-cancel').addEventListener('click', () => {
+  state.parsed = null; $('#imp-preview').hidden = true; flash($('#imp-msg'), '');
+});
+$('#imp-dateorder').addEventListener('change', () => { if (state.parsed) $('#parse-btn').click(); });
+$('#imp-division').addEventListener('change', () => { if (state.parsed) $('#parse-btn').click(); });
+
+const PREVIEW_COLS = [
+  ['personName', 'Name'], ['email', 'Email'], ['date', 'Submitted'], ['grade', 'Grade'],
+  ['subject', 'Subject'], ['imagining', 'Imagined as'], ['studentGoal', 'Student goal'],
+  ['instructionalGoal', 'Instructional goal'], ['tags', 'Tags']
+];
+
+function renderPreview(p) {
+  const fresh = p.records.filter(r => !r.isDuplicate);
+  const dupes = p.records.length - fresh.length;
+  const noDate = p.records.filter(r => !r.date).length;
+
+  let msg = `Read <strong>${p.records.length}</strong> response${p.records.length === 1 ? '' : 's'}`;
+  msg += p.division ? ` for <strong>${divLabel(p.division)}</strong>.` : `, but the division could not be detected &mdash; pick one above.`;
+  msg += ` <strong>${fresh.length}</strong> new`;
+  if (dupes) msg += `, ${dupes} already imported (they will be refreshed in place, not duplicated)`;
+  msg += `. Dates read as <strong>${p.dateOrder === 'dmy' ? 'day/month/year' : 'month/day/year'}</strong>`;
+  msg += p.dateOrder === p.detectedOrder ? ' (detected from the data).' : ' (your override).';
+  if (noDate) msg += ` ${noDate} row${noDate === 1 ? ' has' : 's have'} no readable date and will sit at the start of the timeline.`;
+  flash($('#imp-msg'), msg, p.division ? 'notice' : 'warn');
+
+  if (p.unmapped.length) {
+    $('#imp-msg').insertAdjacentHTML('beforeend',
+      `<div class="notice">Columns kept but not mapped to a field: ${p.unmapped.map(u => esc(u.name)).join(', ')}.
+       They are stored with each invite and shown on the person's page.</div>`);
+  }
+
+  $('#imp-table thead').innerHTML = '<tr><th></th>' + PREVIEW_COLS.map(c => `<th>${esc(c[1])}</th>`).join('') + '</tr>';
+  $('#imp-table tbody').innerHTML = p.records.slice(0, 50).map(r =>
+    `<tr>
+      <td class="nowrap">${r.isDuplicate ? '<span class="pill">seen</span>' : '<span class="pill good">new</span>'}</td>` +
+      PREVIEW_COLS.map(c => `<td>${esc(truncate(c[0] === 'date' ? (r.date ? fmtDate(r.date) : '—') : r[c[0]], 70))}</td>`).join('') +
+    '</tr>').join('');
+
+  $('#imp-count').textContent = p.records.length > 50 ? `showing the first 50 of ${p.records.length}` : '';
+  $('#imp-preview').hidden = false;
+  $('#import-btn').disabled = !p.division;
+  $('#import-btn').textContent = `Import ${p.records.length} response${p.records.length === 1 ? '' : 's'}`;
+}
+
+$('#import-btn').addEventListener('click', async () => {
+  const p = state.parsed;
+  if (!p) return;
+  const btn = $('#import-btn');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  try {
+    const ops = [];
+    const seenPeople = new Map();
+    for (const r of p.records) {
+      if (!seenPeople.has(r.personId)) {
+        seenPeople.set(r.personId, {
+          name: r.personName, email: r.email, division: r.division,
+          grade: r.grade, subject: r.subject,
+          createdBy: state.user.email, updatedAt: serverTimestamp()
+        });
+      }
+    }
+    for (const [id, data] of seenPeople) ops.push({ ref: doc(db, C.people, id), data });
+    for (const r of p.records) {
+      const { id, isDuplicate, ...data } = r;
+      ops.push({ ref: doc(db, C.invites, id), data: { ...data, importedBy: state.user.email, importedAt: serverTimestamp() } });
+    }
+
+    for (let i = 0; i < ops.length; i += 400) {
+      const batch = writeBatch(db);
+      for (const op of ops.slice(i, i + 400)) batch.set(op.ref, op.data, { merge: true });
+      await batch.commit();
+    }
+
+    state.parsed = null;
+    $('#imp-preview').hidden = true;
+    $('#paste').value = '';
+    flash($('#imp-msg'),
+      `Imported <strong>${p.records.length}</strong> response${p.records.length === 1 ? '' : 's'} and
+       <strong>${seenPeople.size}</strong> ${seenPeople.size === 1 ? 'person is' : 'people are'} now in the autocomplete.
+       <a href="#" data-goto="relationships">See the relationships</a>.`);
+  } catch (err) {
+    console.error(err);
+    flash($('#imp-msg'), 'Import failed: ' + esc(err.code || err.message) +
+      '. Nothing partial was left behind beyond the batches that already committed; re-running the same paste is safe.', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Import';
+  }
+});
+
+/* ---------------------------------------------------------------
+   Settings
+   --------------------------------------------------------------- */
+async function saveTypes(types) {
+  try {
+    await setDoc(doc(db, C.settings, 'config'),
+      { interactionTypes: types, updatedBy: state.user.email, updatedAt: serverTimestamp() }, { merge: true });
+    flash($('#types-msg'), '');
+  } catch (e) {
+    flash($('#types-msg'), 'Could not save: ' + esc(e.code || e.message), 'err');
+  }
+}
+
+$('#add-type-btn').addEventListener('click', () => {
+  const v = $('#new-type').value.trim();
+  if (!v) return;
+  if (state.types.some(t => fold(t) === fold(v))) { flash($('#types-msg'), 'That type already exists.', 'warn'); return; }
+  $('#new-type').value = '';
+  saveTypes(state.types.concat([v]));
+});
+$('#new-type').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#add-type-btn').click(); } });
+
+$('#types-list').addEventListener('click', (e) => {
+  const el = e.target.closest('[data-type-action]');
+  if (!el) return;
+  const i = +el.dataset.i;
+  const t = state.types.slice();
+  const action = el.dataset.typeAction;
+  if (action === 'up' && i > 0)                { [t[i - 1], t[i]] = [t[i], t[i - 1]]; }
+  else if (action === 'down' && i < t.length - 1) { [t[i + 1], t[i]] = [t[i], t[i + 1]]; }
+  else if (action === 'remove') {
+    const used = state.interactions.filter(x => x.type === t[i]).length;
+    const warn = used ? `\n\n${used} logged interaction${used === 1 ? '' : 's'} still use this type. They keep the label, but it will move to the neutral grey on the timeline.` : '';
+    if (!confirm(`Remove "${t[i]}" from the dropdown?${warn}`)) return;
+    t.splice(i, 1);
+  } else return;
+  saveTypes(t);
+});
+$('#types-list').addEventListener('change', (e) => {
+  const inp = e.target.closest('input[data-rename]');
+  if (!inp) return;
+  const i = +inp.dataset.rename, v = inp.value.trim();
+  if (!v || v === state.types[i]) { renderSettings(); return; }
+  const t = state.types.slice(); t[i] = v;
+  saveTypes(t);
+});
+
+$('#people-search').addEventListener('input', renderSettings);
+
+function renderSettings() {
+  $('#rules-pre').textContent = RULES_TEXT;
+
+  $('#types-list').innerHTML = state.types.map((t, i) => `
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+      ${symbolSVG(typeShape(t), typeColor(t))}
+      <input class="input" style="flex:1;max-width:320px" data-rename="${i}" value="${esc(t)}">
+      <button class="btn secondary small" data-type-action="up" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Move up">&uarr;</button>
+      <button class="btn secondary small" data-type-action="down" data-i="${i}" ${i === state.types.length - 1 ? 'disabled' : ''} title="Move down">&darr;</button>
+      <button class="btn danger small" data-type-action="remove" data-i="${i}">Remove</button>
+      ${i >= SERIES.length ? '<span class="small muted">shares the neutral grey</span>' : ''}
+    </div>`).join('') || '<div class="empty">No types yet &mdash; add one below.</div>';
+
+  const q = fold($('#people-search').value);
+  const counts = new Map(rels.map(r => [r.id, r]));
+  const people = Array.from(state.people.values())
+    .filter(p => !q || fold(p.name).includes(q) || fold(p.email).includes(q))
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  $('#people-table tbody').innerHTML = people.map(p => {
+    const r = counts.get(p.id);
+    return `<tr>
+      <td><a href="#" data-person="${esc(p.id)}">${esc(p.name)}</a></td>
+      <td>${esc(p.email || '—')}</td>
+      <td class="nowrap">${esc(divLabel(p.division) || '—')}</td>
+      <td class="nowrap">${r ? r.touches : 0}</td>
+      <td class="nowrap">${r ? r.invites.length : 0}</td>
+      <td class="nowrap"><button class="btn secondary small" data-merge="${esc(p.id)}">Merge&hellip;</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6"><div class="empty">No people yet.</div></td></tr>';
+}
+
+/* Merge: move every interaction and invite onto the record you keep. */
+document.addEventListener('click', async (e) => {
+  const el = e.target.closest('[data-merge]');
+  if (!el) return;
+  const src = state.people.get(el.dataset.merge);
+  if (!src) return;
+
+  const others = Array.from(state.people.values()).filter(p => p.id !== src.id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  if (!others.length) { alert('There is nobody else to merge into yet.'); return; }
+
+  const list = others.map((p, i) => `${i + 1}. ${p.name}${p.email ? ' (' + p.email + ')' : ''}`).join('\n');
+  const pickStr = prompt(`Merge "${src.name}" INTO which record?\n\nEverything logged against ${src.name} moves to the record you choose, and ${src.name} is removed.\n\n${list}\n\nType a number:`);
+  const idx = parseInt(pickStr, 10) - 1;
+  if (!(idx >= 0 && idx < others.length)) return;
+  const target = others[idx];
+
+  const its = state.interactions.filter(i => i.personId === src.id);
+  const ins = state.invites.filter(i => i.personId === src.id);
+  if (!confirm(`Move ${its.length} interaction${its.length === 1 ? '' : 's'} and ${ins.length} invite${ins.length === 1 ? '' : 's'} from "${src.name}" to "${target.name}", then remove "${src.name}"?`)) return;
+
+  try {
+    const ops = [
+      ...its.map(i => ({ ref: doc(db, C.interactions, i.id), data: { personId: target.id, personName: target.name } })),
+      ...ins.map(i => ({ ref: doc(db, C.invites, i.id), data: { personId: target.id, personName: target.name } }))
+    ];
+    for (let i = 0; i < ops.length; i += 400) {
+      const batch = writeBatch(db);
+      for (const op of ops.slice(i, i + 400)) batch.set(op.ref, op.data, { merge: true });
+      await batch.commit();
+    }
+    try {
+      await deleteDoc(doc(db, C.people, src.id));
+    } catch (delErr) {
+      alert(`Everything moved to "${target.name}", but "${src.name}" could not be removed from the people list ` +
+            `(${delErr.code || delErr.message}). Only whoever created that record, or an admin, can delete it. ` +
+            `It now has no interactions attached.`);
+    }
+  } catch (err) {
+    alert('Merge failed: ' + (err.code || err.message));
+  }
+});
+
+/* ---------------------------------------------------------------
+   Init
+   --------------------------------------------------------------- */
+$('#i-date').value = todayISO();
+$('#gate').hidden = false;
+setView('log');
+</script>
+</body>
+</html>

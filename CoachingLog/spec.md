@@ -114,17 +114,32 @@ assume it just happened.
 And a field for notes. What was discussed, a quick overview, maybe a
 transcript with notes.
 
-That's the input.
+That's the way we input information about our interaction.
 
 Another source of data we might want to use is our coaching invites.
-We want our own data. We might want to use Google Login so we have
-access to what comes with it, a calendar, the name tied to an email.
-That makes it easier to put in information. If we know we'll want an
+We want our own data in the way we've already collected it, if possible.
+
+That means we aren't necessarily opening a need to manually input our data into a new system. If we can copy from the spreadsheet we have into our new app and have all that data added in, it would save us a lot of time. We want to bring that
+information into our tool so we're not keeping track of different
+sources ourselves. That's something computers do really well.
+
+ We might want to use Google Login so we have
+access to  the name tied to an email.
+That makes it easier to put in information and track our own coaching interactions. If we know we'll want an
 email address to reach someone or share their info later, we can ask
 for that access at the start.
 
-We also want it to be easy to bring in information we already have. We
-have a coaching form, but that form data sits in a spreadsheet, which
-is the exact problem we just walked through. We want to bring that
-information into our tool so we're not keeping track of different
-sources ourselves. That's something computers do really well.
+
+These are the headers from across the spreadsheet for MS/HS:
+Timestamp	Email Address	Your name	For which grade would you like to partner?	For which subject or course would you like to partner?	What student learning goal are you interested in looking at during this coaching cycle?	What instructional goal is currently of interest to you? 	What are the best blocks for co-planning?	What are the best blocks for co-teaching? 	Please indicate an anticipated approximate start date. (Optional)	Is this a flexible start date?	I'm imagining this work might be most like a...	
+
+These are the headers for EYS/ES:
+Timestamp	Email Address	Your name	For which grade would you like to partner?	For which subject or topic would you like to partner?	What student learning goal are you interested in looking at?	What instructional goal is currently of interest to you? 	If signing up for a cycle, what days and times are best for co-planning? (Optional)	If signing up for a cycle, what days and times are best for co-teaching? (Optional)	Please indicate an anticipated approximate start date. (Optional)	Is this a flexible start date? 	I'm imagining this work might be most like a...	I'm imagining this work might be most like a...	Month	tags
+
+The tags column is something new I added in to address the colors in the spreadsheet. 
+
+I ultimately want a single page HTML file for this app. You can use CDNs for libraries if needed, but I'll leave it to you to find the best approach.
+
+I've included a firebase.js file with my Firebase credentials. I've also included a firebase_rules document to show what exists in the database already.
+
+If you have any questions for me before beginning building, let me know.

@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user is an admin
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Dispositions collection
+    match /hs-dispositions/{docId} {
+      allow read: if request.auth != null && (request.auth.token.email.matches('.*@nido\\.cl') || isAdmin());
+      
+      // For create and update, check the INCOMING data payload
+      allow create, update: if request.auth != null 
+        && (
+          (request.auth.token.email.matches('.*@nido\\.cl') && request.resource.data.userEmail == request.auth.token.email)
+          || isAdmin()
+        );
+        
+      // For delete, check the EXISTING data in the database
+      allow delete: if request.auth != null 
+        && (
+          (request.auth.token.email.matches('.*@nido\\.cl') && resource.data.userEmail == request.auth.token.email)
+          || isAdmin()
+        );
+    }
+
+    // Users profile collection
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null 
+                    && request.auth.uid == userId
+                    && !('role' in request.resource.data);
+                    
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+    }
+  }
+}
