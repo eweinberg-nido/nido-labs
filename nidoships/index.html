@@ -127,7 +127,8 @@
             query, 
             where, 
             orderBy, 
-            serverTimestamp 
+            serverTimestamp, 
+            increment 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Expose Firebase tools to global window object for React access
@@ -153,7 +154,8 @@
             query,
             where,
             orderBy,
-            serverTimestamp
+            serverTimestamp,
+            increment
         };
 
         window.dispatchEvent(new Event('firebase-sdk-ready'));
@@ -283,6 +285,41 @@
             }
         };
 
+        // Normalizes an opportunity's category tags so display, counts, and filters
+        // always agree. Handles legacy/loose data: a bare string instead of an array,
+        // mixed casing ("Experience"), stray whitespace, and unknown or missing values.
+        const normalizeTypes = (raw) => {
+            const list = Array.isArray(raw) ? raw : (typeof raw === 'string' ? [raw] : []);
+            const cleaned = [];
+            list.forEach(t => {
+                const key = String(t || '').trim().toLowerCase();
+                if (CATEGORIES[key] && !cleaned.includes(key)) cleaned.push(key);
+            });
+            return cleaned.length ? cleaned : ['experience'];
+        };
+
+        const getOppTypes = (opportunity) => normalizeTypes(opportunity?.types);
+
+        const getPrimaryCategory = (opportunity) => CATEGORIES[getOppTypes(opportunity)[0]];
+
+        const hasOppType = (opportunity, key) => getOppTypes(opportunity).includes(key);
+
+        // Pathways are multi-select. Older records stored a single `pathway` string,
+        // so read both shapes and always hand back an array.
+        const normalizePathways = (record) => {
+            const raw = record?.pathways != null ? record.pathways : record?.pathway;
+            const list = Array.isArray(raw) ? raw : (typeof raw === 'string' ? [raw] : []);
+            const cleaned = [];
+            list.forEach(p => {
+                const name = String(p || '').trim();
+                const match = PATHWAYS.find(known => known.toLowerCase() === name.toLowerCase());
+                if (match && !cleaned.includes(match)) cleaned.push(match);
+            });
+            return cleaned;
+        };
+
+        const hasPathway = (opportunity, name) => normalizePathways(opportunity).includes(name);
+
         const PATHWAYS = [
             'STEM & Tech',
             'Interdisciplinary',
@@ -316,11 +353,12 @@
                 submitterEmail: 'mrobertson@nido.cl',
                 submitterUid: 'staff-1',
                 externalUrl: '',
+                nextSteps: '<p>Great — here is how to take the next step:</p><ul><li>Email the Campus IT team with your grade level and a sentence about what you want to learn.</li><li>We will invite you to a 15-minute chat in the Technology Center during a free block.</li><li>Bring your school laptop to that chat.</li></ul>',
                 frequency: 'Ongoing',
                 curricularContext: 'Co-curricular',
                 creditStatus: 'Credit Available',
                 financialDetails: 'Unpaid / Volunteer',
-                pathway: 'STEM & Tech',
+                pathways: ['STEM & Tech'],
                 requiredResources: ['Nido Student Account', 'Basic Coding / Tech Comfort'],
                 status: 'approved',
                 reviewNotes: '',
@@ -347,11 +385,12 @@
                 submitterEmail: 'athorne@nido.cl',
                 submitterUid: 'alumni-1',
                 externalUrl: 'https://biotech-institute.org/students',
+                nextSteps: '<p>This externship is run by an outside partner, so there are two steps:</p><ul><li>Complete the student application on the partner site (link below).</li><li>Email the campus host so we know to expect your application and can send a school reference.</li></ul><p><b>Applications close two weeks before each session starts.</b></p>',
                 frequency: 'One-off',
                 curricularContext: 'Extra-curricular',
                 creditStatus: 'Credit Available',
                 financialDetails: 'Unpaid / Volunteer',
-                pathway: 'Health & BioSciences',
+                pathways: ['Health & BioSciences'],
                 requiredResources: ['Lab Safety Form Signed', 'Transportation to Facility'],
                 status: 'approved',
                 reviewNotes: '',
@@ -378,11 +417,12 @@
                 submitterEmail: 'cgomez@alumni.nido.cl',
                 submitterUid: 'alumni-2',
                 externalUrl: 'https://github.com/nido-alumni-mentorship',
+                nextSteps: '<p>To get matched with a mentor:</p><ul><li>Reply to the host email with a short note about the kind of project you want to build.</li><li>You will be matched with an alumni mentor within about a week.</li></ul>',
                 frequency: 'Ongoing',
                 curricularContext: 'Extra-curricular',
                 creditStatus: 'No Credit',
                 financialDetails: 'Unpaid / Volunteer',
-                pathway: 'STEM & Tech',
+                pathways: ['STEM & Tech'],
                 requiredResources: ['Personal Laptop', 'GitHub Account', 'Basic HTML/JS knowledge'],
                 status: 'approved',
                 reviewNotes: '',
@@ -409,11 +449,12 @@
                 submitterEmail: 'svalenzuela@nido.cl',
                 submitterUid: 'staff-2',
                 externalUrl: '',
+                nextSteps: '<p>Next step: email the host to set up a short planning meeting. Come ready to talk about how many hours per week you can commit.</p>',
                 frequency: 'Ongoing',
                 curricularContext: 'Extra-curricular',
                 creditStatus: 'Credit Available',
                 financialDetails: 'Unpaid / Volunteer',
-                pathway: 'Social Impact & Environment',
+                pathways: ['Social Impact & Environment'],
                 requiredResources: ['Passion for Sustainability', 'Leadership Commitment'],
                 status: 'approved',
                 reviewNotes: '',
@@ -440,11 +481,12 @@
                 submitterEmail: 'dlee@nido.cl',
                 submitterUid: 'staff-3',
                 externalUrl: 'https://hackathon.nido.cl',
+                nextSteps: '<p>Register your team on the hackathon site (link below), then email the host with your team name so we can reserve a table for you.</p>',
                 frequency: 'One-off',
                 curricularContext: 'Extra-curricular',
                 creditStatus: 'No Credit',
                 financialDetails: 'Unpaid / Volunteer',
-                pathway: 'STEM & Tech',
+                pathways: ['STEM & Tech'],
                 requiredResources: ['Laptop', 'Team Registration'],
                 status: 'approved',
                 reviewNotes: '',
@@ -471,11 +513,12 @@
                 submitterEmail: 'pmorales@nido.cl',
                 submitterUid: 'staff-4',
                 externalUrl: '',
+                nextSteps: '<p>Email the accounting office to arrange a trial week. No application form needed.</p>',
                 frequency: 'One-off',
                 curricularContext: 'Co-curricular',
                 creditStatus: 'Credit Available',
                 financialDetails: 'Paid Position',
-                pathway: 'Business & Entrepreneurship',
+                pathways: ['Business & Entrepreneurship'],
                 requiredResources: ['Advanced Google Sheets / Excel familiarity'],
                 status: 'pending',
                 reviewNotes: '',
@@ -537,9 +580,9 @@
         // 4. OPPORTUNITY CARD & DETAIL MODAL
         // =========================================================================
 
-        function OpportunityCard({ opportunity, onClick, isBookmarked = false, onToggleBookmark = null }) {
-            const oppTypes = opportunity.types || ['experience'];
-            const primaryCat = CATEGORIES[oppTypes[0]] || CATEGORIES.experience;
+        function OpportunityCard({ opportunity, onClick, isInterested = false, onToggleInterest = null, interestCount = 0 }) {
+            const oppTypes = getOppTypes(opportunity);
+            const primaryCat = getPrimaryCategory(opportunity);
 
             return (
                 <div 
@@ -582,17 +625,22 @@
                                         🎓 Credit
                                     </span>
                                 )}
-                                {onToggleBookmark && (
+                                {onToggleInterest && (
                                     <button 
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onToggleBookmark(opportunity.id);
+                                            onToggleInterest(opportunity);
                                         }}
-                                        className="p-1 text-slate-400 hover:text-amber-500 transition-colors ml-1"
-                                        title={isBookmarked ? "Remove Bookmark" : "Bookmark Opportunity"}
+                                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-colors ml-1 ${
+                                            isInterested
+                                                ? 'bg-amber-50 border-amber-300 text-amber-700'
+                                                : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600'
+                                        }`}
+                                        title={isInterested ? "Remove your interest" : "Mark yourself interested"}
                                     >
-                                        {isBookmarked ? '★' : '☆'}
+                                        <span>{isInterested ? '★' : '☆'}</span>
+                                        <span>{isInterested ? "Interested" : "I'm Interested"}</span>
                                     </button>
                                 )}
                             </div>
@@ -613,18 +661,25 @@
                             <span>•</span>
                             <span className="shrink-0 font-medium">{opportunity.location}</span>
                         </div>
-                        <span className="font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg shrink-0">
-                            {opportunity.grades?.[0] ? `${opportunity.grades[0]}+` : 'All Grades'}
-                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                            {interestCount > 0 && (
+                                <span className="font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg" title="Students who marked interest">
+                                    ★ {interestCount}
+                                </span>
+                            )}
+                            <span className="font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                {opportunity.grades?.[0] ? `${opportunity.grades[0]}+` : 'All Grades'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             );
         }
 
-        function OpportunityModal({ opportunity, onClose, isBookmarked = false, onToggleBookmark = null }) {
+        function OpportunityModal({ opportunity, onClose, isInterested = false, onToggleInterest = null, interestCount = 0, onCopyEmail = null, onShowNextSteps = null }) {
             if (!opportunity) return null;
 
-            const oppTypes = opportunity.types || ['experience'];
+            const oppTypes = getOppTypes(opportunity);
 
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-600/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -649,11 +704,11 @@
                                         ⚡ {opportunity.frequency}
                                     </span>
                                 )}
-                                {opportunity.pathway && (
-                                    <span className="bg-brand-50 text-brand-700 text-xs font-bold px-3 py-1 rounded-full border border-brand-200">
-                                        🎯 {opportunity.pathway}
+                                {normalizePathways(opportunity).map(path => (
+                                    <span key={path} className="bg-brand-50 text-brand-700 text-xs font-bold px-3 py-1 rounded-full border border-brand-200">
+                                        🎯 {path}
                                     </span>
-                                )}
+                                ))}
                                 {opportunity.status !== 'approved' && (
                                     <StatusBadge status={opportunity.status} />
                                 )}
@@ -664,15 +719,17 @@
                                     {opportunity.title}
                                 </h2>
                                 <div className="flex items-center gap-2 shrink-0">
-                                    {onToggleBookmark && (
+                                    {onToggleInterest && (
                                         <button 
-                                            onClick={() => onToggleBookmark(opportunity.id)}
-                                            className={`p-2 rounded-xl border text-sm transition-all ${
-                                                isBookmarked ? 'bg-amber-50 border-amber-300 text-amber-600' : 'border-slate-200 text-slate-400 hover:text-slate-600'
+                                            onClick={() => onToggleInterest(opportunity)}
+                                            className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all ${
+                                                isInterested 
+                                                    ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100' 
+                                                    : 'bg-brand-600 border-brand-600 text-white hover:bg-brand-700 shadow-sm'
                                             }`}
-                                            title="Bookmark"
+                                            title={isInterested ? "Remove your interest" : "Mark yourself interested"}
                                         >
-                                            {isBookmarked ? '★ Saved' : '☆ Save'}
+                                            {isInterested ? "★ Interested" : "☆ I'm Interested"}
                                         </button>
                                     )}
                                     <button 
@@ -771,15 +828,25 @@
                                             </svg>
                                         </a>
                                     )}
-                                    <a 
-                                        href={`mailto:${opportunity.contactEmail}?subject=Inquiry regarding Nidoship: ${encodeURIComponent(opportunity.title)}`}
-                                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl transition-all shadow-sm"
+                                    <button 
+                                        type="button"
+                                        onClick={() => onCopyEmail && onCopyEmail(opportunity.contactEmail)}
+                                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-xl transition-all shadow-sm"
                                     >
-                                        <span>Contact Host</span>
+                                        <span>Copy Host Email</span>
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                         </svg>
-                                    </a>
+                                    </button>
+                                    {isInterested && onShowNextSteps && (
+                                        <button 
+                                            type="button"
+                                            onClick={() => onShowNextSteps(opportunity)}
+                                            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium text-sm rounded-xl transition-all"
+                                        >
+                                            View next steps
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
@@ -836,9 +903,14 @@
                                 <div className="border-t border-slate-200 pt-4 text-xs">
                                     <h5 className="font-bold text-slate-400 uppercase tracking-wider mb-1">Host / Primary Contact</h5>
                                     <p className="font-bold text-slate-900 mb-0.5">{opportunity.contactOrg}</p>
-                                    <a href={`mailto:${opportunity.contactEmail}`} className="text-brand-600 hover:text-brand-700 font-medium underline break-all">
+                                    <button
+                                        type="button"
+                                        onClick={() => onCopyEmail && onCopyEmail(opportunity.contactEmail)}
+                                        className="text-brand-600 hover:text-brand-700 font-medium underline break-all text-left"
+                                        title="Copy this address to your clipboard"
+                                    >
                                         {opportunity.contactEmail}
-                                    </a>
+                                    </button>
                                 </div>
 
                                 {opportunity.submitterName && (
@@ -855,12 +927,157 @@
             );
         }
 
+
+        // =========================================================================
+        // 4b. NEXT STEPS MODAL (shown after a student marks interest)
+        // =========================================================================
+
+        function NextStepsModal({ opportunity, onClose, onCopyEmail, isPreview = false }) {
+            // Hooks run before the early return so the hook order stays stable
+            // as this modal is opened and closed.
+            const [confirmingExternal, setConfirmingExternal] = React.useState(false);
+
+            React.useEffect(() => {
+                setConfirmingExternal(false);
+            }, [opportunity?.id]);
+
+            if (!opportunity) return null;
+
+            const authoredSteps = (opportunity.nextSteps || '').trim();
+            const externalUrl = (opportunity.externalUrl || '').trim();
+
+            const handleOpenExternal = () => {
+                if (isPreview) return;
+                window.open(externalUrl, '_blank', 'noopener,noreferrer');
+                setConfirmingExternal(false);
+            };
+
+            return (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-brand-600/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                    <div className="absolute inset-0" onClick={onClose}></div>
+
+                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto z-10 border border-slate-100 my-auto">
+
+                        {isPreview && (
+                            <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-xs font-bold px-6 py-3 rounded-t-3xl">
+                                👁 Preview — this is what a student sees after clicking “Interested”. Buttons are inactive here.
+                            </div>
+                        )}
+
+                        <div className="p-6 sm:p-8 space-y-5">
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="space-y-1">
+                                    <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                                        ★ Interest saved
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-900 leading-snug pt-1">
+                                        {opportunity.title}
+                                    </h3>
+                                </div>
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
+                                    aria-label="Close next steps"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                This is saved to <span className="font-semibold text-slate-800">My Interests</span>, and the campus team can see that you are interested.
+                                {(authoredSteps || externalUrl) && ' Signing up happens outside this site — here is how:'}
+                            </p>
+
+                            {authoredSteps ? (
+                                <div
+                                    className="prose-sm text-sm text-slate-700 leading-relaxed space-y-2 bg-slate-50 border border-slate-200 rounded-2xl p-5 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_b]:text-slate-900 [&_a]:text-brand-600 [&_a]:underline"
+                                    dangerouslySetInnerHTML={{ __html: authoredSteps }}
+                                />
+                            ) : (
+                                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm text-slate-600">
+                                    The host has not listed specific next steps. Reach out to them directly to find out how to move forward.
+                                </div>
+                            )}
+
+                            {externalUrl && (
+                                <div className="border border-brand-200 bg-brand-50 rounded-2xl p-5 space-y-3">
+                                    <div className="text-sm font-bold text-brand-800">
+                                        Sign-up happens on an external site
+                                    </div>
+                                    {!confirmingExternal ? (
+                                        <>
+                                            <p className="text-xs text-brand-700 leading-relaxed break-all">
+                                                {externalUrl}
+                                            </p>
+                                            <button
+                                                onClick={() => setConfirmingExternal(true)}
+                                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all shadow-sm"
+                                            >
+                                                <span>Open external site</span>
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            <p className="text-sm text-brand-800 font-semibold">
+                                                Open the external site to sign up or learn more?
+                                            </p>
+                                            <p className="text-xs text-brand-700 break-all">{externalUrl}</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    onClick={handleOpenExternal}
+                                                    className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all shadow-sm"
+                                                >
+                                                    Yes, open it in a new tab
+                                                </button>
+                                                <button
+                                                    onClick={() => setConfirmingExternal(false)}
+                                                    className="px-5 py-2.5 bg-white border border-brand-200 text-brand-700 font-semibold text-sm rounded-xl hover:bg-brand-100 transition-all"
+                                                >
+                                                    Not now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {opportunity.contactEmail && (
+                                <div className="border border-slate-200 rounded-2xl p-5 space-y-2.5">
+                                    <div className="text-sm font-bold text-slate-800">Contact the host</div>
+                                    <div className="text-xs text-slate-500 font-medium break-all">{opportunity.contactEmail}</div>
+                                    <button
+                                        onClick={() => !isPreview && onCopyEmail && onCopyEmail(opportunity.contactEmail)}
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl transition-all"
+                                    >
+                                        📋 Copy host email
+                                    </button>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={onClose}
+                                className="w-full px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         // =========================================================================
         // 5. SUBMISSION & EDITING FORM
         // =========================================================================
 
         function SubmissionForm({ initialData = null, currentUser, onSubmitSuccess, onCancel, isEditing = false }) {
-            const [formData, setFormData] = React.useState(initialData || {
+            const [formData, setFormData] = React.useState(
+                initialData
+                    ? { ...initialData, types: normalizeTypes(initialData.types), pathways: normalizePathways(initialData) }
+                    : {
                 title: '',
                 types: ['internship'],
                 description: '',
@@ -881,16 +1098,19 @@
                 submitterEmail: currentUser?.email || '',
                 submitterUid: currentUser?.uid || '',
                 externalUrl: '',
+                nextSteps: '',
                 frequency: 'Ongoing',
                 curricularContext: 'Extra-curricular',
                 creditStatus: 'No Credit',
                 financialDetails: 'Unpaid / Volunteer',
-                pathway: 'STEM & Tech',
+                pathways: ['STEM & Tech'],
                 requiredResources: ['Nido Student Account']
-            });
+                      }
+            );
 
             const [errors, setErrors] = React.useState({});
             const [customPrereq, setCustomPrereq] = React.useState('');
+            const [isPreviewingNextSteps, setIsPreviewingNextSteps] = React.useState(false);
 
             const handleGradeToggle = (grade) => {
                 setFormData(prev => {
@@ -923,22 +1143,24 @@
                 setCustomPrereq('');
             };
 
-            const insertFormat = (tagOpen, tagClose = '') => {
-                const textarea = document.getElementById('detailedOverviewInput');
+            // Wraps the current selection of an HTML textarea in markup. `field` names
+            // the formData key, which is also the textarea's DOM id.
+            const insertFormat = (field, tagOpen, tagClose = '') => {
+                const textarea = document.getElementById(field + 'Input');
                 if (!textarea) return;
+                const value = formData[field] || '';
                 const start = textarea.selectionStart;
                 const end = textarea.selectionEnd;
-                const selectedText = formData.detailedOverview.substring(start, end);
+                const selectedText = value.substring(start, end);
                 const replacement = `${tagOpen}${selectedText}${tagClose}`;
-                const newText = formData.detailedOverview.substring(0, start) + replacement + formData.detailedOverview.substring(end);
-                setFormData({ ...formData, detailedOverview: newText });
+                setFormData({ ...formData, [field]: value.substring(0, start) + replacement + value.substring(end) });
             };
 
-            const addLinkPrompt = () => {
+            const addLinkPrompt = (field) => {
                 const url = prompt('Enter link URL (e.g. https://example.com):');
                 if (url) {
                     const label = prompt('Enter link display text:', 'Click Here') || url;
-                    insertFormat(`<a href="${url}" target="_blank" class="text-brand-600 underline">${label}</a>`);
+                    insertFormat(field, `<a href="${url}" target="_blank" class="text-brand-600 underline">${label}</a>`);
                 }
             };
 
@@ -948,7 +1170,9 @@
                 if (!formData.description.trim()) newErrors.description = 'Short teaser overview is required';
                 if (!formData.contactOrg.trim()) newErrors.contactOrg = 'Host/Organization Name is required';
                 if (!formData.contactEmail.trim() || !formData.contactEmail.includes('@')) newErrors.contactEmail = 'Valid contact email is required';
+                if (!formData.types || formData.types.length === 0) newErrors.types = 'Select at least one opportunity category';
                 if (!formData.grades || formData.grades.length === 0) newErrors.grades = 'Select at least one eligible grade';
+                if (!formData.pathways || formData.pathways.length === 0) newErrors.pathways = 'Select at least one subject pathway';
                 
                 setErrors(newErrors);
                 return Object.keys(newErrors).length === 0;
@@ -1095,6 +1319,7 @@
                                             );
                                         })}
                                     </div>
+                                    {errors.types && <p className="text-xs text-rose-500 mt-1">{errors.types}</p>}
                                 </div>
 
                                 <div>
@@ -1119,10 +1344,10 @@
                                             Full Details & Learning Objectives
                                         </label>
                                         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-bold">
-                                            <button type="button" onClick={() => insertFormat('<b>', '</b>')} className="px-2 py-0.5 hover:bg-white rounded" title="Bold">B</button>
-                                            <button type="button" onClick={() => insertFormat('<i>', '</i>')} className="px-2 py-0.5 hover:bg-white rounded italic" title="Italic">I</button>
-                                            <button type="button" onClick={() => insertFormat('<ul><li>', '</li></ul>')} className="px-2 py-0.5 hover:bg-white rounded" title="Bullet list">• List</button>
-                                            <button type="button" onClick={addLinkPrompt} className="px-2 py-0.5 hover:bg-white text-brand-600 rounded" title="Insert Link">🔗 Link</button>
+                                            <button type="button" onClick={() => insertFormat('detailedOverview', '<b>', '</b>')} className="px-2 py-0.5 hover:bg-white rounded" title="Bold">B</button>
+                                            <button type="button" onClick={() => insertFormat('detailedOverview', '<i>', '</i>')} className="px-2 py-0.5 hover:bg-white rounded italic" title="Italic">I</button>
+                                            <button type="button" onClick={() => insertFormat('detailedOverview', '<ul><li>', '</li></ul>')} className="px-2 py-0.5 hover:bg-white rounded" title="Bullet list">• List</button>
+                                            <button type="button" onClick={() => addLinkPrompt('detailedOverview')} className="px-2 py-0.5 hover:bg-white text-brand-600 rounded" title="Insert Link">🔗 Link</button>
                                         </div>
                                     </div>
                                     <textarea 
@@ -1133,6 +1358,38 @@
                                         onChange={e => setFormData({ ...formData, detailedOverview: e.target.value })}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500 transition-all font-mono text-xs"
                                     ></textarea>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center justify-between mb-1.5 gap-3 flex-wrap">
+                                        <label className="block text-sm font-semibold text-slate-800">
+                                            What should a student do next?
+                                        </label>
+                                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-bold">
+                                            <button type="button" onClick={() => insertFormat('nextSteps', '<b>', '</b>')} className="px-2 py-0.5 hover:bg-white rounded" title="Bold">B</button>
+                                            <button type="button" onClick={() => insertFormat('nextSteps', '<i>', '</i>')} className="px-2 py-0.5 hover:bg-white rounded italic" title="Italic">I</button>
+                                            <button type="button" onClick={() => insertFormat('nextSteps', '<ul><li>', '</li></ul>')} className="px-2 py-0.5 hover:bg-white rounded" title="Bullet list">• List</button>
+                                            <button type="button" onClick={() => addLinkPrompt('nextSteps')} className="px-2 py-0.5 hover:bg-white text-brand-600 rounded" title="Insert Link">🔗 Link</button>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mb-2 leading-relaxed">
+                                        Students see this in a pop-up the moment they mark themselves interested. Be concrete: who to email, which form to fill in, any deadline. Sign-ups do not happen on this site — this is the hand-off.
+                                    </p>
+                                    <textarea
+                                        id="nextStepsInput"
+                                        rows="4"
+                                        placeholder="e.g. Email Ms. Rivera with your grade level, then complete the Google Form linked below before Oct 1..."
+                                        value={formData.nextSteps || ''}
+                                        onChange={e => setFormData({ ...formData, nextSteps: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500 transition-all font-mono text-xs"
+                                    ></textarea>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsPreviewingNextSteps(true)}
+                                        className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all"
+                                    >
+                                        👁 Preview what the student sees
+                                    </button>
                                 </div>
 
                                 <div>
@@ -1221,23 +1478,38 @@
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Subject Pathway</label>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                                        Subject Pathways <span className="text-slate-400 font-normal">(select all that apply)</span>
+                                    </label>
                                     <div className="flex flex-wrap gap-2">
-                                        {PATHWAYS.map(path => (
-                                            <button
-                                                type="button"
-                                                key={path}
-                                                onClick={() => setFormData({ ...formData, pathway: path })}
-                                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                                                    formData.pathway === path 
-                                                        ? 'bg-brand-600 text-white shadow-2xs' 
-                                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                                }`}
-                                            >
-                                                {path}
-                                            </button>
-                                        ))}
+                                        {PATHWAYS.map(path => {
+                                            const isSelected = (formData.pathways || []).includes(path);
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={path}
+                                                    onClick={() => {
+                                                        const current = formData.pathways || [];
+                                                        setFormData({
+                                                            ...formData,
+                                                            pathways: current.includes(path)
+                                                                ? current.filter(p => p !== path)
+                                                                : [...current, path]
+                                                        });
+                                                    }}
+                                                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                                                        isSelected
+                                                            ? 'bg-brand-600 text-white shadow-2xs'
+                                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                    }`}
+                                                >
+                                                    {isSelected && <span className="mr-1">✓</span>}
+                                                    {path}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
+                                    {errors.pathways && <p className="text-xs text-rose-500 mt-1">{errors.pathways}</p>}
                                 </div>
                             </div>
 
@@ -1431,6 +1703,14 @@
 
                         </form>
                     </div>
+
+                    {isPreviewingNextSteps && (
+                        <NextStepsModal
+                            opportunity={formData}
+                            onClose={() => setIsPreviewingNextSteps(false)}
+                            isPreview={true}
+                        />
+                    )}
                 </div>
             );
         }
@@ -1439,7 +1719,7 @@
         // 6. MY SUBMISSIONS (POSTER DASHBOARD)
         // =========================================================================
 
-        function MySubmissions({ opportunities, currentUser, onEdit, onDelete, onPreview, onNewProposal }) {
+        function MySubmissions({ opportunities, currentUser, interests = [], onEdit, onDelete, onPreview, onNewProposal, onCopyEmail }) {
             const userSubmissions = opportunities.filter(o => 
                 (currentUser?.uid && o.submitterUid === currentUser.uid) ||
                 (currentUser?.email && o.submitterEmail === currentUser.email)
@@ -1480,7 +1760,7 @@
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {userSubmissions.map(item => {
-                                const cat = CATEGORIES[item.types?.[0]] || CATEGORIES.experience;
+                                const cat = getPrimaryCategory(item);
                                 return (
                                     <div key={item.id} className="bg-white rounded-3xl border border-slate-200/90 p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
                                         <div className="space-y-3">
@@ -1500,6 +1780,38 @@
                                                     <strong>Feedback:</strong> {item.reviewNotes}
                                                 </div>
                                             )}
+
+                                            {(() => {
+                                                const interestedStudents = interests.filter(i => i.opportunityId === item.id);
+                                                if (interestedStudents.length === 0) {
+                                                    return item.status === 'approved' ? (
+                                                        <p className="text-xs text-slate-400 pt-1">No students have marked interest yet.</p>
+                                                    ) : null;
+                                                }
+                                                return (
+                                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl space-y-2">
+                                                        <div className="text-xs font-bold text-amber-900">
+                                                            ★ {interestedStudents.length} student{interestedStudents.length === 1 ? '' : 's'} interested
+                                                        </div>
+                                                        <ul className="text-xs text-amber-900/90 space-y-1">
+                                                            {interestedStudents.slice(0, 6).map(i => (
+                                                                <li key={i.id} className="break-all">
+                                                                    <span className="font-semibold">{i.studentName}</span> — {i.studentEmail}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                        {interestedStudents.length > 6 && (
+                                                            <p className="text-[11px] text-amber-800">+ {interestedStudents.length - 6} more</p>
+                                                        )}
+                                                        <button
+                                                            onClick={() => onCopyEmail && onCopyEmail(interestedStudents.map(i => i.studentEmail).join(', '))}
+                                                            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[11px] rounded-lg transition-all"
+                                                        >
+                                                            📋 Copy student emails
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
 
                                         <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
@@ -1533,6 +1845,98 @@
             );
         }
 
+
+        // =========================================================================
+        // 6b. MY INTERESTS (STUDENT PORTFOLIO OF OPTIONS)
+        // =========================================================================
+
+        function MyInterests({ interests, opportunities, currentUser, onOpenOpportunity, onShowNextSteps, onRemoveInterest, onBrowse }) {
+            const mine = interests
+                .filter(i => i.studentUid === currentUser?.uid)
+                .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+
+            return (
+                <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">My Interests</h1>
+                        <p className="text-slate-500 text-sm">
+                            Your shortlist of options. Marking interest tells the campus team you want to move forward — the actual sign-up happens with the host or on their site.
+                        </p>
+                    </div>
+
+                    {mine.length === 0 ? (
+                        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
+                            <div className="text-3xl">★</div>
+                            <p className="font-bold text-slate-800 text-lg">You have not marked any opportunities yet</p>
+                            <p className="text-xs text-slate-400">Browse the portal and hit “I'm Interested” on anything you might want to pursue.</p>
+                            <button
+                                onClick={onBrowse}
+                                className="mt-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all"
+                            >
+                                Browse Opportunities
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {mine.map(record => {
+                                const opp = opportunities.find(o => o.id === record.opportunityId);
+                                const cat = opp ? getPrimaryCategory(opp) : CATEGORIES.experience;
+                                return (
+                                    <div key={record.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+                                        <div className="space-y-2 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border ${cat.pillBorder}`}>
+                                                    <span>{cat.icon}</span>
+                                                    <span>{cat.label}</span>
+                                                </span>
+                                                {!opp && (
+                                                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">
+                                                        No longer listed
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <h3 className="text-lg font-extrabold text-brand-600 leading-snug truncate">
+                                                {record.opportunityTitle}
+                                            </h3>
+                                            <p className="text-xs text-slate-500">
+                                                {record.contactOrg}
+                                                {record.createdAt && ` • marked ${String(record.createdAt).slice(0, 10)}`}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                                            {opp && (
+                                                <>
+                                                    <button
+                                                        onClick={() => onShowNextSteps(opp)}
+                                                        className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all"
+                                                    >
+                                                        Next steps
+                                                    </button>
+                                                    <button
+                                                        onClick={() => onOpenOpportunity(opp)}
+                                                        className="px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all"
+                                                    >
+                                                        View details
+                                                    </button>
+                                                </>
+                                            )}
+                                            <button
+                                                onClick={() => onRemoveInterest(opp || { id: record.opportunityId, title: record.opportunityTitle })}
+                                                className="px-4 py-2 text-slate-400 hover:text-rose-600 font-bold text-xs rounded-xl transition-all"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
         // =========================================================================
         // 7. ADMIN DASHBOARD & USER MANAGEMENT
         // =========================================================================
@@ -1541,6 +1945,8 @@
             opportunities, 
             users,
             invitations,
+            interests = [],
+            onCopyEmail,
             onApprove, 
             onRejectWithNote, 
             onEdit, 
@@ -1563,6 +1969,29 @@
 
             const pendingList = opportunities.filter(o => o.status === 'pending');
             const approvedList = opportunities.filter(o => o.status === 'approved');
+
+            // Group interest records by opportunity, busiest first.
+            const interestByOpportunity = React.useMemo(() => {
+                const groups = new Map();
+                interests.forEach(record => {
+                    if (!groups.has(record.opportunityId)) {
+                        const opp = opportunities.find(o => o.id === record.opportunityId);
+                        groups.set(record.opportunityId, {
+                            opportunityId: record.opportunityId,
+                            title: opp?.title || record.opportunityTitle || 'Removed opportunity',
+                            contactOrg: opp?.contactOrg || record.contactOrg || '',
+                            records: []
+                        });
+                    }
+                    groups.get(record.opportunityId).records.push(record);
+                });
+                return [...groups.values()]
+                    .map(g => ({
+                        ...g,
+                        records: g.records.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+                    }))
+                    .sort((a, b) => b.records.length - a.records.length);
+            }, [interests, opportunities]);
 
             const handleOpenReject = (opp) => {
                 setRejectionModalOpp(opp);
@@ -1626,6 +2055,10 @@
                                 <div className="text-[11px] text-slate-400 font-bold uppercase">Published</div>
                             </div>
                             <div className="bg-slate-800/90 px-5 py-3 rounded-2xl border border-slate-700">
+                                <div className="text-2xl font-black text-amber-300">{interests.length}</div>
+                                <div className="text-[11px] text-slate-400 font-bold uppercase">Interested</div>
+                            </div>
+                            <div className="bg-slate-800/90 px-5 py-3 rounded-2xl border border-slate-700">
                                 <div className="text-2xl font-black text-brand-300">{users.length}</div>
                                 <div className="text-[11px] text-slate-400 font-bold uppercase">Users</div>
                             </div>
@@ -1649,6 +2082,14 @@
                             }`}
                         >
                             Live Opportunity Catalog ({approvedList.length})
+                        </button>
+                        <button 
+                            onClick={() => setAdminTab('interest')}
+                            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all ${
+                                adminTab === 'interest' ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                            }`}
+                        >
+                            Student Interest ({interests.length})
                         </button>
                         <button 
                             onClick={() => setAdminTab('users')}
@@ -1680,7 +2121,7 @@
                             ) : (
                                 <div className="space-y-4">
                                     {pendingList.map(item => {
-                                        const cat = CATEGORIES[item.types?.[0]] || CATEGORIES.experience;
+                                        const cat = getPrimaryCategory(item);
                                         return (
                                             <div key={item.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
                                                 <div className="space-y-2 max-w-2xl">
@@ -1740,7 +2181,7 @@
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                 {approvedList.map(item => {
-                                    const cat = CATEGORIES[item.types?.[0]] || CATEGORIES.experience;
+                                    const cat = getPrimaryCategory(item);
                                     return (
                                         <div key={item.id} className="bg-white rounded-3xl border border-slate-200 p-6 flex flex-col justify-between shadow-xs">
                                             <div className="space-y-3">
@@ -1779,6 +2220,64 @@
                                     );
                                 })}
                             </div>
+                        </div>
+                    )}
+
+                    {/* TAB: STUDENT INTEREST */}
+                    {adminTab === 'interest' && (
+                        <div className="space-y-4">
+                            <p className="text-xs text-slate-500 max-w-3xl">
+                                Every time a student marks themselves interested it is recorded here. This site is a funnel, not an application system — use this list to follow up with students and to tell hosts who is coming.
+                            </p>
+
+                            {interestByOpportunity.length === 0 ? (
+                                <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center text-slate-500">
+                                    <div className="text-3xl mb-2">★</div>
+                                    <p className="font-bold text-slate-800">No students have marked interest yet</p>
+                                </div>
+                            ) : (
+                                interestByOpportunity.map(group => (
+                                    <div key={group.opportunityId} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <h3 className="text-base font-extrabold text-slate-900 truncate">{group.title}</h3>
+                                                <p className="text-xs text-slate-500">{group.contactOrg}</p>
+                                            </div>
+                                            <span className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-xl shrink-0">
+                                                ★ {group.records.length} interested
+                                            </span>
+                                        </div>
+
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-xs text-left">
+                                                <thead className="text-slate-400 uppercase tracking-wider">
+                                                    <tr>
+                                                        <th className="py-2 pr-4 font-bold">Student</th>
+                                                        <th className="py-2 pr-4 font-bold">Email</th>
+                                                        <th className="py-2 font-bold">Marked</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {group.records.map(r => (
+                                                        <tr key={r.id}>
+                                                            <td className="py-2.5 pr-4 font-semibold text-slate-800">{r.studentName}</td>
+                                                            <td className="py-2.5 pr-4 text-slate-600 break-all">{r.studentEmail}</td>
+                                                            <td className="py-2.5 text-slate-500">{String(r.createdAt || '').slice(0, 10)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <button
+                                            onClick={() => onCopyEmail(group.records.map(r => r.studentEmail).join(', '))}
+                                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all"
+                                        >
+                                            📋 Copy all student emails
+                                        </button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     )}
 
@@ -2111,7 +2610,7 @@
             const [invitations, setInvitations] = React.useState([
                 { email: 'mentor-external@partner.org', role: 'adult_contributor', note: 'Robotics Partner' }
             ]);
-            const [bookmarks, setBookmarks] = React.useState([]);
+            const [interests, setInterests] = React.useState([]);
 
             // Navigation & View State
             const [activeTab, setActiveTab] = React.useState('browse');
@@ -2122,6 +2621,7 @@
 
             // Modals
             const [activeModalOpportunity, setActiveModalOpportunity] = React.useState(null);
+            const [nextStepsOpportunity, setNextStepsOpportunity] = React.useState(null);
             const [editingOpportunity, setEditingOpportunity] = React.useState(null);
             const [isFirebaseModalOpen, setIsFirebaseModalOpen] = React.useState(false);
             const [toastMessage, setToastMessage] = React.useState(null);
@@ -2276,7 +2776,33 @@
                     showToast('Error reading opportunities: ' + err.message, 'error');
                 });
 
-                // 2. Subscribe to users (Admins only)
+                // 2. Subscribe to interest records.
+                // Admins see every record; posters see interest in their own listings;
+                // students see only their own so no one else's name is exposed.
+                let unsubscribeInterests = () => {};
+                if (currentUser) {
+                    let interestsQuery;
+                    if (currentUser.role === 'admin') {
+                        interestsQuery = collection(firebaseDb, 'interests');
+                    } else if (currentUser.role === 'adult_contributor') {
+                        interestsQuery = query(collection(firebaseDb, 'interests'), where('ownerUid', '==', currentUser.uid));
+                    } else {
+                        interestsQuery = query(collection(firebaseDb, 'interests'), where('studentUid', '==', currentUser.uid));
+                    }
+
+                    unsubscribeInterests = onSnapshot(interestsQuery, (snapshot) => {
+                        const list = [];
+                        snapshot.forEach(d => list.push({ ...d.data(), id: d.id }));
+                        setInterests(list);
+                    }, (err) => {
+                        console.warn('Firestore interests snapshot error:', err);
+                        showToast('Error reading student interest: ' + err.message, 'error');
+                    });
+                } else {
+                    setInterests([]);
+                }
+
+                // 3. Subscribe to users (Admins only)
                 let unsubscribeUsers = () => {};
                 if (currentUser && currentUser.role === 'admin') {
                     unsubscribeUsers = onSnapshot(collection(firebaseDb, 'users'), (snapshot) => {
@@ -2292,9 +2818,10 @@
 
                 return () => {
                     unsubscribeOpps();
+                    unsubscribeInterests();
                     unsubscribeUsers();
                 };
-            }, [firebaseDb, currentUser?.role]);
+            }, [firebaseDb, currentUser?.uid, currentUser?.role]);
 
             // Google Sign In
             const handleGoogleSignIn = async () => {
@@ -2323,13 +2850,106 @@
                 showToast('Signed out successfully.');
             };
 
-            // Bookmark toggle
-            const handleToggleBookmark = (id) => {
-                setBookmarks(prev => 
-                    prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]
-                );
-                showToast(bookmarks.includes(id) ? 'Removed from saved opportunities' : 'Saved to your bookmarked list!');
+            // Interest: students mark themselves interested, which is persisted so the
+            // campus team and the host can follow up. Signing up still happens off-site.
+            const interestDocId = (oppId, uid) => `${oppId}__${uid}`;
+
+            const myInterestIds = React.useMemo(
+                () => interests.filter(i => i.studentUid === currentUser?.uid).map(i => i.opportunityId),
+                [interests, currentUser?.uid]
+            );
+
+            const interestCountFor = React.useCallback((opp) => {
+                if (!opp) return 0;
+                const recorded = interests.filter(i => i.opportunityId === opp.id).length;
+                // Students only read their own interest docs, so fall back to the
+                // aggregate counter kept on the opportunity itself.
+                return Math.max(recorded, opp.interestCount || 0);
+            }, [interests]);
+
+            const handleCopyEmail = async (email) => {
+                if (!email) return;
+                try {
+                    await navigator.clipboard.writeText(email);
+                } catch (e) {
+                    // Clipboard API needs a secure context; fall back to a temp textarea.
+                    try {
+                        const el = document.createElement('textarea');
+                        el.value = email;
+                        el.style.position = 'fixed';
+                        el.style.opacity = '0';
+                        document.body.appendChild(el);
+                        el.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(el);
+                    } catch (inner) {
+                        showToast(`Copy failed — the host address is ${email}`, 'error');
+                        return;
+                    }
+                }
+                showToast(`The email address of the host (${email}) has been copied to your clipboard — paste this into whichever email platform you prefer.`, 'success');
             };
+
+            const handleToggleInterest = async (opportunity) => {
+                if (!currentUser) {
+                    showToast('Sign in to mark yourself interested.', 'error');
+                    return;
+                }
+
+                const alreadyInterested = myInterestIds.includes(opportunity.id);
+                const docId = interestDocId(opportunity.id, currentUser.uid);
+
+                if (alreadyInterested) {
+                    setInterests(prev => prev.filter(i => i.id !== docId));
+                    if (isFirebaseConnected && firebaseDb) {
+                        try {
+                            const { doc, deleteDoc, updateDoc, increment } = window.FirebaseSDK;
+                            await deleteDoc(doc(firebaseDb, 'interests', docId));
+                            await updateDoc(doc(firebaseDb, 'opportunities', opportunity.id), {
+                                interestCount: increment(-1)
+                            });
+                        } catch (err) {
+                            console.error('Error removing interest:', err);
+                            showToast('Could not remove your interest: ' + err.message, 'error');
+                            return;
+                        }
+                    }
+                    showToast('Removed from My Interests.');
+                    return;
+                }
+
+                const record = {
+                    id: docId,
+                    opportunityId: opportunity.id,
+                    opportunityTitle: opportunity.title,
+                    contactOrg: opportunity.contactOrg || '',
+                    ownerUid: opportunity.submitterUid || '',
+                    studentUid: currentUser.uid,
+                    studentName: currentUser.displayName || currentUser.email,
+                    studentEmail: currentUser.email,
+                    createdAt: new Date().toISOString()
+                };
+
+                setInterests(prev => [...prev.filter(i => i.id !== docId), record]);
+
+                if (isFirebaseConnected && firebaseDb) {
+                    try {
+                        const { doc, setDoc, updateDoc, increment } = window.FirebaseSDK;
+                        await setDoc(doc(firebaseDb, 'interests', docId), record);
+                        await updateDoc(doc(firebaseDb, 'opportunities', opportunity.id), {
+                            interestCount: increment(1)
+                        });
+                    } catch (err) {
+                        console.error('Error saving interest:', err);
+                        setInterests(prev => prev.filter(i => i.id !== docId));
+                        showToast('Could not save your interest: ' + err.message, 'error');
+                        return;
+                    }
+                }
+
+                setNextStepsOpportunity(opportunity);
+            };
+
 
             // Opportunity CRUD Actions
             const handleNewSubmission = async (newOpp) => {
@@ -2349,15 +2969,18 @@
             };
 
             const handleSaveEdit = async (updatedOpp) => {
+                // interestCount is maintained by students marking interest, so an edit
+                // must not write back the value this form was loaded with.
+                const { interestCount, ...editable } = updatedOpp;
                 if (isFirebaseConnected && firebaseDb) {
                     try {
                         const { doc, updateDoc } = window.FirebaseSDK;
-                        await updateDoc(doc(firebaseDb, 'opportunities', updatedOpp.id), updatedOpp);
+                        await updateDoc(doc(firebaseDb, 'opportunities', updatedOpp.id), editable);
                     } catch (e) {
                         console.error('Error updating in Firestore:', e);
                     }
                 }
-                setOpportunities(prev => prev.map(o => o.id === updatedOpp.id ? updatedOpp : o));
+                setOpportunities(prev => prev.map(o => o.id === updatedOpp.id ? { ...editable, interestCount: o.interestCount } : o));
                 setEditingOpportunity(null);
                 showToast('Opportunity updated successfully.', 'success');
             };
@@ -2454,9 +3077,9 @@
             const pendingCount = opportunities.filter(o => o.status === 'pending').length;
 
             const filteredOpportunities = liveOpportunities.filter(opp => {
-                const matchesCat = selectedCategory === 'all' || (opp.types && opp.types.includes(selectedCategory));
+                const matchesCat = selectedCategory === 'all' || hasOppType(opp, selectedCategory);
                 const matchesGrade = selectedGrade === 'all' || (opp.grades && opp.grades.includes(selectedGrade));
-                const matchesPathway = selectedPathway === 'all' || opp.pathway === selectedPathway;
+                const matchesPathway = selectedPathway === 'all' || hasPathway(opp, selectedPathway);
                 const matchesSearch = searchQuery === '' || 
                     opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     opp.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -2506,6 +3129,22 @@
                                 >
                                     Propose Nidoship
                                 </button>
+
+                                {currentUser && (
+                                    <button 
+                                        onClick={() => setActiveTab('my-interests')}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                                            activeTab === 'my-interests' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        My Interests
+                                        {myInterestIds.length > 0 && (
+                                            <span className="ml-2 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                                                {myInterestIds.length}
+                                            </span>
+                                        )}
+                                    </button>
+                                )}
 
                                 {currentUser && (currentUser.role === 'adult_contributor' || currentUser.role === 'admin') && (
                                     <button 
@@ -2592,6 +3231,11 @@
                         <div className="md:hidden border-t border-slate-100 px-4 py-2 flex justify-around bg-slate-50 text-xs font-bold">
                             <button onClick={() => setActiveTab('browse')} className={activeTab === 'browse' ? 'text-brand-600' : 'text-slate-500'}>Browse</button>
                             <button onClick={() => setActiveTab('submit')} className={activeTab === 'submit' ? 'text-brand-600' : 'text-slate-500'}>Propose</button>
+                            {currentUser && (
+                                <button onClick={() => setActiveTab('my-interests')} className={activeTab === 'my-interests' ? 'text-brand-600' : 'text-slate-500'}>
+                                    Interests{myInterestIds.length > 0 ? ` (${myInterestIds.length})` : ''}
+                                </button>
+                            )}
                             {currentUser && (currentUser.role === 'adult_contributor' || currentUser.role === 'admin') && (
                                 <button onClick={() => setActiveTab('my-postings')} className={activeTab === 'my-postings' ? 'text-brand-600' : 'text-slate-500'}>My Posts</button>
                             )}
@@ -2659,7 +3303,7 @@
 
                                     {Object.entries(CATEGORIES).map(([key, cat]) => {
                                         const isSelected = selectedCategory === key;
-                                        const count = liveOpportunities.filter(o => o.types && o.types.includes(key)).length;
+                                        const count = liveOpportunities.filter(o => hasOppType(o, key)).length;
                                         return (
                                             <button 
                                                 key={key}
@@ -2741,8 +3385,9 @@
                                                 key={opp.id} 
                                                 opportunity={opp} 
                                                 onClick={() => setActiveModalOpportunity(opp)}
-                                                isBookmarked={bookmarks.includes(opp.id)}
-                                                onToggleBookmark={handleToggleBookmark}
+                                                isInterested={myInterestIds.includes(opp.id)}
+                                                onToggleInterest={handleToggleInterest}
+                                                interestCount={interestCountFor(opp)}
                                             />
                                         ))}
                                     </div>
@@ -2760,11 +3405,26 @@
                             />
                         )}
 
+                        {/* TAB 2b: MY INTERESTS */}
+                        {activeTab === 'my-interests' && (
+                            <MyInterests 
+                                interests={interests}
+                                opportunities={liveOpportunities}
+                                currentUser={currentUser}
+                                onOpenOpportunity={(opp) => setActiveModalOpportunity(opp)}
+                                onShowNextSteps={(opp) => setNextStepsOpportunity(opp)}
+                                onRemoveInterest={handleToggleInterest}
+                                onBrowse={() => setActiveTab('browse')}
+                            />
+                        )}
+
                         {/* TAB 3: MY POSTINGS */}
                         {activeTab === 'my-postings' && (
                             <MySubmissions 
                                 opportunities={opportunities}
                                 currentUser={currentUser}
+                                interests={interests}
+                                onCopyEmail={handleCopyEmail}
                                 onEdit={(opp) => setEditingOpportunity(opp)}
                                 onDelete={handleDeleteOpportunity}
                                 onPreview={(opp) => setActiveModalOpportunity(opp)}
@@ -2778,6 +3438,8 @@
                                 opportunities={opportunities}
                                 users={users}
                                 invitations={invitations}
+                                interests={interests}
+                                onCopyEmail={handleCopyEmail}
                                 onApprove={handleApprove}
                                 onRejectWithNote={handleRejectWithNote}
                                 onEdit={(opp) => setEditingOpportunity(opp)}
@@ -2814,8 +3476,18 @@
                     <OpportunityModal 
                         opportunity={activeModalOpportunity}
                         onClose={() => setActiveModalOpportunity(null)}
-                        isBookmarked={activeModalOpportunity ? bookmarks.includes(activeModalOpportunity.id) : false}
-                        onToggleBookmark={handleToggleBookmark}
+                        isInterested={activeModalOpportunity ? myInterestIds.includes(activeModalOpportunity.id) : false}
+                        onToggleInterest={handleToggleInterest}
+                        interestCount={interestCountFor(activeModalOpportunity)}
+                        onCopyEmail={handleCopyEmail}
+                        onShowNextSteps={(opp) => setNextStepsOpportunity(opp)}
+                    />
+
+                    {/* Next Steps hand-off (after marking interest) */}
+                    <NextStepsModal 
+                        opportunity={nextStepsOpportunity}
+                        onClose={() => setNextStepsOpportunity(null)}
+                        onCopyEmail={handleCopyEmail}
                     />
 
                     {/* Firebase Credentials Modal */}

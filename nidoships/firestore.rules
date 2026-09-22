@@ -1,0 +1,87 @@
+rules_version = '2';
+
+// Proposed ruleset for the `nidoships` Firestore project.
+//
+// NOTE: this file was written alongside the student-interest feature. Diff it
+// against whatever is currently deployed in the Firebase console before you
+// publish it — it describes every collection the app touches, not just the new
+// `interests` one.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers -------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && userRole() == 'admin';
+    }
+
+    function isContributor() {
+      return isSignedIn() && (userRole() == 'adult_contributor' || userRole() == 'admin');
+    }
+
+    // Only the aggregate interest counter changed, nothing else.
+    function onlyChangesInterestCount() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['interestCount']);
+    }
+
+    // ---- users ---------------------------------------------------
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      // Role changes are an admin action; users may not promote themselves.
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---- opportunities -------------------------------------------
+    match /opportunities/{oppId} {
+      allow read: if isSignedIn();
+
+      allow create: if isContributor();
+
+      // Contributors edit their own listings; admins edit anything.
+      // Any signed-in student may bump ONLY the interest counter, which is what
+      // makes "12 students interested" visible without exposing who they are.
+      allow update: if isAdmin()
+        || (isContributor() && resource.data.submitterUid == request.auth.uid)
+        || (isSignedIn() && onlyChangesInterestCount());
+
+      allow delete: if isAdmin()
+        || (isContributor() && resource.data.submitterUid == request.auth.uid);
+    }
+
+    // ---- interests -----------------------------------------------
+    // One document per (opportunity, student), id `${opportunityId}__${uid}`.
+    match /interests/{interestId} {
+      // A student reads their own records; the host of the opportunity reads
+      // interest in their own listing; admins read everything.
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.studentUid == request.auth.uid)
+        || (isSignedIn() && resource.data.ownerUid == request.auth.uid);
+
+      // A student may only record interest as themselves.
+      allow create: if isSignedIn()
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.opportunityId is string;
+
+      allow update: if isSignedIn() && resource.data.studentUid == request.auth.uid;
+
+      // Students can withdraw their own interest; admins can clean up.
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.studentUid == request.auth.uid);
+    }
+
+    // ---- invitations ---------------------------------------------
+    match /invitations/{inviteId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

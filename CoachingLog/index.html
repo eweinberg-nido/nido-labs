@@ -179,6 +179,21 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
 .tile.flag .n { color: var(--status-warning); }
 .tile.alert .n { color: var(--nido-red); }
 
+/* ---------- Tag chips ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; min-height: 32px; }
+.chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .8rem; font-weight: 600;
+  padding: .25rem .35rem .25rem .6rem; border-radius: 999px;
+  background: #eef4ff; border: 1px solid #cfdefb; color: var(--nido-blue);
+}
+.chip button {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  color: inherit; font: inherit; line-height: 1; padding: 0 .15rem; opacity: .65;
+}
+.chip button:hover { opacity: 1; }
+.chips .none { color: var(--text-muted); font-size: .85rem; }
+
 /* ---------- Autocomplete ---------- */
 .ac { position: relative; }
 .ac-menu {
@@ -317,10 +332,20 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
           </div>
         </div>
 
-        <!-- shown only when adding somebody new -->
+        <div class="row">
+          <div class="field" style="flex:1 1 100%">
+            <label class="lbl" for="i-tag-add">What happened <span class="muted">&mdash; add as many as fit</span></label>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+              <select class="input" id="i-tag-add" style="width:auto;min-width:190px"></select>
+              <div class="chips" id="i-tags"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- shown once somebody is chosen; pre-filled from the invite import -->
         <div class="row" id="new-person-fields" hidden>
           <div class="field">
-            <label class="lbl" for="np-email">Email <span class="muted">(recommended &mdash; it is what keeps one person from becoming three)</span></label>
+            <label class="lbl" for="np-email">Email <span class="muted" id="np-email-hint">(recommended &mdash; it is what keeps one person from becoming three)</span></label>
             <input class="input" type="email" id="np-email" placeholder="name@nido.cl" autocomplete="off">
           </div>
           <div class="field" style="flex:0 1 200px">
@@ -362,10 +387,14 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
           <label class="lbl" for="log-type">Type</label>
           <select class="input" id="log-type"><option value="">All types</option></select>
         </div>
+        <div class="field">
+          <label class="lbl" for="log-tag">What happened</label>
+          <select class="input" id="log-tag"><option value="">All tags</option></select>
+        </div>
       </div>
       <div class="scroll-x"><table class="data" id="log-table">
         <thead><tr>
-          <th class="nowrap">Date</th><th>Person</th><th>Type</th><th>Notes</th><th class="nowrap">Logged by</th><th></th>
+          <th class="nowrap">Date</th><th>Person</th><th>Type</th><th>What happened</th><th>Notes</th><th class="nowrap">Logged by</th><th></th>
         </tr></thead>
         <tbody></tbody>
       </table></div>
@@ -439,6 +468,10 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
           <select class="input" id="tl-coach"><option value="">All coaches</option></select>
         </div>
         <div class="field">
+          <label class="lbl" for="tl-tag">What happened</label>
+          <select class="input" id="tl-tag"><option value="">All tags</option></select>
+        </div>
+        <div class="field">
           <label class="lbl" for="tl-from">From</label>
           <input class="input" type="date" id="tl-from">
         </div>
@@ -454,8 +487,9 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
             <option value="name">Name</option>
           </select>
         </div>
-        <div class="field" style="align-self:flex-end">
-          <button class="btn secondary small" id="tl-reset">Reset</button>
+        <div class="field" style="align-self:flex-end;display:flex;gap:.4rem">
+          <button class="btn secondary small" id="tl-reset">This year</button>
+          <button class="btn secondary small" id="tl-all">All time</button>
         </div>
       </div>
       <div class="legend" id="tl-legend"></div>
@@ -521,7 +555,7 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
       <h2>Interaction types</h2>
       <p class="sub">These fill the dropdown on the log form. The first five get their own colour on the timeline;
         anything past that shares a neutral grey.</p>
-      <div id="types-list"></div>
+      <div id="types-list" data-list="types"></div>
       <div class="row" style="margin-top:1rem">
         <div class="field" style="flex:1 1 240px">
           <input class="input" id="new-type" placeholder="Add a type&hellip;" autocomplete="off">
@@ -531,6 +565,38 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
         </div>
       </div>
       <div id="types-msg" class="small"></div>
+    </div>
+
+    <div class="card">
+      <h2>What happened</h2>
+      <p class="sub">The tags on the log form, for what a given interaction actually was. An interaction can carry
+        several. They are picked from this list rather than typed, so they stay filterable.</p>
+      <div id="tags-list" data-list="tags"></div>
+      <div class="row" style="margin-top:1rem">
+        <div class="field" style="flex:1 1 240px">
+          <input class="input" id="new-tag" placeholder="Add a tag&hellip;" autocomplete="off">
+        </div>
+        <div class="field" style="flex:0 0 auto;align-self:flex-start">
+          <button class="btn secondary" id="add-tag-btn">Add</button>
+        </div>
+      </div>
+      <div id="tags-msg" class="small"></div>
+    </div>
+
+    <div class="card">
+      <h2>Academic year</h2>
+      <p class="sub">The timeline opens on this date, so the default view is the year you are in rather than
+        everything ever logged. Nothing is hidden &mdash; <strong>All time</strong> on the timeline clears it.</p>
+      <div class="row">
+        <div class="field" style="flex:0 1 220px">
+          <label class="lbl" for="ay-start">Year starts</label>
+          <input class="input" type="date" id="ay-start">
+        </div>
+        <div class="field" style="align-self:flex-end;flex:0 0 auto">
+          <button class="btn secondary" id="ay-default">Use 1 July</button>
+        </div>
+      </div>
+      <div id="ay-msg" class="small"></div>
     </div>
 
     <div class="card">
@@ -565,8 +631,8 @@ table.data td.nowrap, table.data th.nowrap { white-space: nowrap; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc,
-         serverTimestamp, writeBatch, getDocs, query, where }
+import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, getDoc, updateDoc, deleteDoc,
+         serverTimestamp, writeBatch }
   from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -595,12 +661,22 @@ const C = {
    Editable on the Settings tab. */
 const DEFAULT_TYPES = ['Coaching cycle', 'Mini cycle', 'Drive-by coaching', 'One time consulting'];
 
+/* What the interaction actually was. An interaction can carry several of these,
+   and they are picked, never typed, so they stay filterable. */
+const DEFAULT_TAGS = ['Classroom visit', 'Co-planning', 'Check-in', 'Co-teaching', 'Curriculum'];
+
 /* Categorical slots, validated all-pairs for CVD on a light surface.
    Shape is a deliberate second encoding so type never rests on colour alone. */
 const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#4a3aa7', '#a34f9e'];
 const SERIES_OTHER = '#6b6f76';
 const SHAPES = ['circle', 'square', 'triangle', 'diamond', 'plus'];
 const QUIET_DAYS = 30;
+
+/** 1 July of the academic year today falls in, so this rolls over on its own. */
+function defaultYearStart(on = new Date()) {
+  const y = on.getMonth() >= 6 ? on.getFullYear() : on.getFullYear() - 1;
+  return `${y}-07-01`;
+}
 
 const RULES_TEXT = `// Shared reference data: the whole coaching office reads and maintains it.
 // Delete is open to the office so that merging a duplicate person actually
@@ -644,6 +720,25 @@ match /coaching-invites/{docId} {
 
 match /coaching-settings/{docId} {
   allow read, write: if isNidoUser() || isAdminUser();
+}
+
+// A new sign-in stamps its own profile with role 'coach'. The client can
+// only ever write that one value, and update refuses to touch a role that
+// is already set - so nobody can promote themselves, and an existing admin
+// is never overwritten. The second update clause backfills 'coach' onto
+// profiles created before this app existed.
+match /users/{userId} {
+  allow read: if request.auth != null;
+
+  allow create: if request.auth != null
+                && request.auth.uid == userId
+                && (!('role' in request.resource.data)
+                    || request.resource.data.role == 'coach');
+
+  allow update: if request.auth != null
+                && request.auth.uid == userId
+                && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+                    || (!('role' in resource.data) && request.resource.data.role == 'coach'));
 }`;
 
 /* ---------------------------------------------------------------
@@ -655,6 +750,9 @@ const state = {
   interactions: [],
   invites: [],
   types: DEFAULT_TYPES.slice(),
+  tags: DEFAULT_TAGS.slice(),
+  pickedTags: [],           // tags on the interaction being written
+  yearStart: defaultYearStart(),
   ready: { people: false, interactions: false, invites: false, settings: false },
   view: 'log',
   editingId: null,          // interaction being edited
@@ -840,10 +938,26 @@ onAuthStateChanged(auth, (user) => {
   $('#who').textContent = state.user.name + ' · ' + state.user.email;
   $('#signout-btn').hidden = false;
 
-  // Keep a lightweight profile so a name is available from an email elsewhere.
-  setDoc(doc(db, 'users', user.uid),
-    { email: user.email, displayName: user.displayName || '', lastSeen: serverTimestamp() },
-    { merge: true }).catch(() => {});
+  // Keep a lightweight profile so a name is available from an email elsewhere,
+  // and stamp a role on anyone new. The rules only ever accept 'coach' from the
+  // client and refuse to overwrite a role that is already set, so an admin
+  // signing in here is never demoted.
+  (async () => {
+    const ref = doc(db, 'users', user.uid);
+    const profile = { email: user.email, displayName: user.displayName || '', lastSeen: serverTimestamp() };
+    try {
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, { ...profile, role: 'coach', createdAt: serverTimestamp() });
+      } else if (!snap.data().role) {
+        await setDoc(ref, { ...profile, role: 'coach' }, { merge: true });
+      } else {
+        await setDoc(ref, profile, { merge: true });
+      }
+    } catch (e) {
+      console.warn('profile not written', e);
+    }
+  })();
 
   subscribe();
 });
@@ -871,8 +985,13 @@ function subscribe() {
   }, fail('invites')));
 
   unsubs.push(onSnapshot(doc(db, C.settings, 'config'), snap => {
-    const t = snap.exists() ? snap.data().interactionTypes : null;
+    const cfg = snap.exists() ? snap.data() : {};
+    const t = cfg.interactionTypes;
     state.types = Array.isArray(t) && t.length ? t : DEFAULT_TYPES.slice();
+    const g = cfg.interactionTags;
+    state.tags = Array.isArray(g) ? g : DEFAULT_TAGS.slice();
+    const ys = /^\d{4}-\d{2}-\d{2}$/.test(cfg.yearStart || '') ? cfg.yearStart : defaultYearStart();
+    if (ys !== state.yearStart) { state.yearStart = ys; tlFromSet = false; }
     state.ready.settings = true; renderAll();
   }, () => { state.ready.settings = true; renderAll(); }));
 }
@@ -893,14 +1012,17 @@ function setView(v) {
   renderAll();
 }
 
-let rafPending = false;
+// Coalesce the snapshot storm into one render. Deliberately a timer and not
+// requestAnimationFrame: browsers suspend rAF in a hidden tab, so a render
+// queued while the window is in the background would never run.
+let renderQueued = false;
 function renderAll() {
-  if (rafPending) return;
-  rafPending = true;
-  requestAnimationFrame(() => {
-    rafPending = false;
+  if (renderQueued) return;
+  renderQueued = true;
+  setTimeout(() => {
+    renderQueued = false;
     try { render(); } catch (e) { console.error('render', e); }
-  });
+  }, 0);
 }
 
 /* ---------------------------------------------------------------
@@ -911,6 +1033,7 @@ function render() {
   if (!state.user) return;
   rels = buildRelationships();
   syncTypeOptions();
+  syncTagOptions();
   syncCoachOptions();
   if (state.view === 'log')           renderLog();
   if (state.view === 'relationships') renderRelationships();
@@ -938,6 +1061,49 @@ function syncTypeOptions() {
   }
   if (prev) sel.value = prev;
   keepValue('#log-type', () => `<option value="">All types</option>` + opts);
+}
+
+function syncTagOptions() {
+  // Tags already on this interaction drop out of the picker.
+  const free = state.tags.filter(t => !state.pickedTags.includes(t));
+  const add = $('#i-tag-add');
+  add.innerHTML = `<option value="">${free.length ? '+ Add a tag…' : 'All tags added'}</option>` +
+    free.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  add.disabled = !free.length;
+
+  // Every tag ever used stays filterable, even one since retired.
+  const seen = new Set(state.tags);
+  for (const it of state.interactions) for (const t of (it.tags || [])) seen.add(t);
+  const opts = Array.from(seen).map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  keepValue('#log-tag', () => `<option value="">All tags</option>` + opts);
+  keepValue('#tl-tag',  () => `<option value="">All tags</option>` + opts);
+  renderTagChips();
+}
+
+function renderTagChips() {
+  $('#i-tags').innerHTML = state.pickedTags.length
+    ? state.pickedTags.map((t, i) =>
+        `<span class="chip">${esc(t)}<button type="button" data-untag="${i}" aria-label="Remove ${esc(t)}">&times;</button></span>`).join('')
+    : '<span class="none">Nothing tagged yet</span>';
+}
+
+$('#i-tag-add').addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (v && !state.pickedTags.includes(v)) state.pickedTags.push(v);
+  e.target.value = '';
+  syncTagOptions();
+});
+$('#i-tags').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-untag]');
+  if (!b) return;
+  state.pickedTags.splice(+b.dataset.untag, 1);
+  syncTagOptions();
+});
+
+/** Tags as pills, for tables, the drawer and the tooltip. */
+function tagPills(tags) {
+  if (!tags || !tags.length) return '';
+  return tags.map(t => `<span class="pill">${esc(t)}</span>`).join(' ');
 }
 
 function coachList() {
@@ -1019,17 +1185,26 @@ function acChoose(i) {
   if (it.kind === 'person') {
     state.pick = { id: it.p.id, name: it.p.name, email: it.p.email || '', division: it.p.division || '', isNew: false };
     acInput.value = it.p.name;
-    $('#new-person-fields').hidden = true;
+    // Whatever the invite import already knows, rather than asking for it again.
+    fillPersonFields(it.p.email || '', it.p.division || '', !!it.p.email);
   } else {
     state.pick = { id: null, name: it.name, email: '', division: '', isNew: true };
     acInput.value = it.name;
-    $('#new-person-fields').hidden = false;
-    $('#np-email').value = '';
-    $('#np-division').value = '';
+    fillPersonFields('', '', false);
   }
   renderChosen();
   acClose();
 }
+/** Show the email/division row with what we already have on file. */
+function fillPersonFields(email, division, known) {
+  $('#new-person-fields').hidden = false;
+  $('#np-email').value = email;
+  $('#np-division').value = division;
+  $('#np-email-hint').innerHTML = known
+    ? '&mdash; from the coaching invite. Edit it only if it is wrong.'
+    : '(recommended &mdash; it is what keeps one person from becoming three)';
+}
+
 function renderChosen() {
   const p = state.pick;
   if (!p) { acChosen.innerHTML = ''; return; }
@@ -1061,6 +1236,25 @@ acMenu.addEventListener('mousedown', (e) => {
 });
 document.addEventListener('click', (e) => { if (!e.target.closest('.ac')) acClose(); });
 
+/** Move every interaction and invite from one person record onto another.
+    Used when an email is added to a record keyed on a name, and when merging
+    two people by hand on the Settings tab. The source is not deleted here. */
+async function repointPerson(fromId, toId, toData) {
+  if (fromId === toId) return;
+  await setDoc(doc(db, C.people, toId), toData, { merge: true });
+  const ops = [
+    ...state.interactions.filter(i => i.personId === fromId)
+      .map(i => ({ ref: doc(db, C.interactions, i.id), data: { personId: toId, personName: toData.name } })),
+    ...state.invites.filter(i => i.personId === fromId)
+      .map(i => ({ ref: doc(db, C.invites, i.id), data: { personId: toId, personName: toData.name } }))
+  ];
+  for (let i = 0; i < ops.length; i += 400) {
+    const batch = writeBatch(db);
+    for (const op of ops.slice(i, i + 400)) batch.set(op.ref, op.data, { merge: true });
+    await batch.commit();
+  }
+}
+
 /* ---------------------------------------------------------------
    Log form
    --------------------------------------------------------------- */
@@ -1079,6 +1273,8 @@ function resetLogForm() {
   $('#np-email').value = ''; $('#np-division').value = '';
   $('#i-date').value = todayISO();
   $('#i-notes').value = '';
+  state.pickedTags = [];
+  syncTagOptions();
   if (state.types.length) $('#i-type').value = state.types[0];
   flash($('#log-msg'), '');
   $('#save-log-btn').textContent = 'Save interaction';
@@ -1114,21 +1310,38 @@ $('#log-form').addEventListener('submit', async (e) => {
   btn.disabled = true; btn.textContent = 'Saving…';
   try {
     let pid = state.pick.id;
+    const email = $('#np-email').value.trim().toLowerCase();
+    const division = $('#np-division').value;
+
     if (state.pick.isNew) {
-      const email = $('#np-email').value.trim().toLowerCase();
-      const division = $('#np-division').value;
       pid = personId(email, state.pick.name);
       if (!pid || pid === 'e_' || pid === 'n_') throw new Error('That name could not be turned into a record. Try adding an email.');
       await setDoc(doc(db, C.people, pid), {
         name: state.pick.name, email, division,
         createdBy: state.user.email, createdAt: serverTimestamp()
       }, { merge: true });
+    } else if (email !== (state.pick.email || '') || division !== (state.pick.division || '')) {
+      const data = { name: state.pick.name, email, division, updatedBy: state.user.email, updatedAt: serverTimestamp() };
+      const newId = personId(email, state.pick.name);
+      if (newId !== pid && newId !== 'e_' && newId !== 'n_') {
+        // The record is keyed on the email, so adding or correcting one re-keys
+        // it. Everything already logged moves with it.
+        await repointPerson(pid, newId, data);
+        try { await deleteDoc(doc(db, C.people, pid)); } catch (e) { console.warn('old person record kept', e); }
+        pid = newId;
+        state.pick.id = pid;
+      } else {
+        await setDoc(doc(db, C.people, pid), data, { merge: true });
+      }
+      state.pick.email = email;
+      state.pick.division = division;
     }
 
     const payload = {
       personId: pid,
       personName: state.pick.name,
       type, date,
+      tags: state.pickedTags.slice(),
       notes: $('#i-notes').value.trim(),
       userEmail: state.user.email,
       userName: state.user.name,
@@ -1158,9 +1371,11 @@ function editInteraction(id) {
   state.pick = { id: it.personId, name: p ? p.name : it.personName, email: p ? (p.email || '') : '', division: p ? (p.division || '') : '', isNew: false };
   acInput.value = state.pick.name;
   renderChosen();
-  $('#new-person-fields').hidden = true;
+  fillPersonFields(state.pick.email, state.pick.division, !!state.pick.email);
   $('#i-date').value = it.date || todayISO();
   $('#i-notes').value = it.notes || '';
+  state.pickedTags = Array.isArray(it.tags) ? it.tags.slice() : [];
+  syncTagOptions();
   $('#log-form').hidden = false;
   $('#open-log-btn').disabled = true;
   if (!state.types.includes(it.type)) {
@@ -1182,17 +1397,20 @@ async function deleteInteraction(id) {
 /* ---------------------------------------------------------------
    Log table
    --------------------------------------------------------------- */
-['#log-search', '#log-coach', '#log-type'].forEach(s => $(s).addEventListener('input', renderLog));
+['#log-search', '#log-coach', '#log-type', '#log-tag'].forEach(s => $(s).addEventListener('input', renderLog));
 
 function renderLog() {
   const q      = fold($('#log-search').value);
   const coach  = $('#log-coach').value;
   const type   = $('#log-type').value;
+  const tag    = $('#log-tag').value;
 
   const rows = state.interactions
     .filter(it => !coach || it.userEmail === coach)
     .filter(it => !type  || it.type === type)
-    .filter(it => !q || fold(it.personName).includes(q) || fold(it.notes).includes(q) || fold(it.type).includes(q))
+    .filter(it => !tag   || (it.tags || []).includes(tag))
+    .filter(it => !q || fold(it.personName).includes(q) || fold(it.notes).includes(q)
+                     || fold(it.type).includes(q) || (it.tags || []).some(t => fold(t).includes(q)))
     .sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
   $('#log-empty').hidden = rows.length > 0 || !state.ready.interactions;
@@ -1203,6 +1421,7 @@ function renderLog() {
       <td class="nowrap">${esc(fmtDate(it.date))}</td>
       <td><a href="#" data-person="${esc(it.personId)}">${esc(it.personName)}</a></td>
       <td class="nowrap"><span class="pill"><span class="dot" style="background:${typeColor(it.type)}"></span>${esc(it.type)}</span></td>
+      <td>${tagPills(it.tags) || '<span class="muted">&mdash;</span>'}</td>
       <td>${esc(truncate(it.notes, 140))}</td>
       <td class="nowrap">${esc(it.userName || it.userEmail)}</td>
       <td class="nowrap">${mine ? `<button class="btn secondary small" data-edit="${it.id}">Edit</button>
@@ -1358,6 +1577,7 @@ function renderDrawer(id) {
           <div class="body">
             <div><strong>${esc(it.type)}</strong></div>
             <div class="meta">${esc(fmtDate(it.date))} · ${esc(it.userName || it.userEmail)}</div>
+            ${it.tags && it.tags.length ? `<div style="margin-top:.35rem">${tagPills(it.tags)}</div>` : ''}
             ${it.notes ? `<div class="notes">${esc(it.notes)}</div>` : ''}
             ${mine ? `<div style="margin-top:.4rem;display:flex;gap:.4rem">
               <button class="btn secondary small" data-edit="${it.id}">Edit</button>
@@ -1378,6 +1598,7 @@ function renderDrawer(id) {
     const p = state.people.get(r.id) || { id: r.id, name: r.name, email: r.email, division: r.division };
     state.pick = { id: p.id, name: p.name, email: p.email || '', division: p.division || '', isNew: false };
     acInput.value = p.name; renderChosen(); acClose();
+    fillPersonFields(p.email || '', p.division || '', !!p.email);
     $('#i-notes').focus();
   });
 }
@@ -1398,19 +1619,31 @@ function showTip(html, evt) {
 }
 function hideTip() { tooltip.style.opacity = 0; }
 
-['#tl-division', '#tl-coach', '#tl-from', '#tl-to', '#tl-sort']
+['#tl-division', '#tl-coach', '#tl-tag', '#tl-from', '#tl-to', '#tl-sort']
   .forEach(s => $(s).addEventListener('input', renderTimeline));
+let tlFromSet = false;
 $('#tl-reset').addEventListener('click', () => {
-  ['#tl-division', '#tl-coach', '#tl-from', '#tl-to'].forEach(s => $(s).value = '');
+  ['#tl-division', '#tl-coach', '#tl-tag', '#tl-to'].forEach(s => $(s).value = '');
+  $('#tl-from').value = state.yearStart;
   $('#tl-sort').value = 'recent';
+  renderTimeline();
+});
+$('#tl-all').addEventListener('click', () => {
+  $('#tl-from').value = ''; $('#tl-to').value = '';
   renderTimeline();
 });
 
 function renderTimeline() {
   renderTiles($('#tl-tiles'), rels);
+  if (!tlFromSet && state.ready.settings) {
+    // Open on the current academic year; the coach can widen it from there.
+    $('#tl-from').value = state.yearStart;
+    tlFromSet = true;
+  }
 
   const div   = $('#tl-division').value;
   const coach = $('#tl-coach').value;
+  const tag   = $('#tl-tag').value;
   const from  = $('#tl-from').value || null;
   const to    = $('#tl-to').value || null;
   const sort  = $('#tl-sort').value;
@@ -1420,8 +1653,10 @@ function renderTimeline() {
   const lanes = [];
   for (const r of rels) {
     if (div && r.division !== div) continue;
-    const touches = r.interactions.filter(i => inRange(i.date) && (!coach || i.userEmail === coach));
-    const invites = (coach ? [] : r.invites).filter(i => inRange(i.date));
+    const touches = r.interactions.filter(i => inRange(i.date)
+      && (!coach || i.userEmail === coach)
+      && (!tag || (i.tags || []).includes(tag)));
+    const invites = (coach || tag ? [] : r.invites).filter(i => inRange(i.date));
     if (!touches.length && !invites.length) continue;
     const dates = touches.map(t => t.date).concat(invites.map(i => i.date)).sort();
     lanes.push({ r, touches, invites, first: dates[0], last: dates[dates.length - 1] });
@@ -1532,6 +1767,7 @@ function renderTimeline() {
         `<div class="t-title">${esc(d.r.name)}</div>
          <div>${esc(t.type)} · ${esc(fmtDate(t.date))}</div>
          <div class="small muted">${esc(t.userName || t.userEmail)}</div>
+         ${t.tags && t.tags.length ? `<div style="margin-top:.3rem">${tagPills(t.tags)}</div>` : ''}
          ${t.notes ? `<div class="t-notes">${esc(truncate(t.notes, 200))}</div>` : ''}`, e))
       .on('mouseleave', hideTip)
       .on('click', () => { hideTip(); openDrawer(d.r.id); });
@@ -1825,64 +2061,117 @@ $('#import-btn').addEventListener('click', async () => {
 /* ---------------------------------------------------------------
    Settings
    --------------------------------------------------------------- */
-async function saveTypes(types) {
+/* Interaction types and "what happened" tags are the same shape of editable
+   list, so they share one editor. The only difference is that a type owns a
+   colour slot on the timeline and a tag does not. */
+const LISTS = {
+  types: { field: 'interactionTypes', label: 'type', state: 'types', msg: '#types-msg',
+           el: '#types-list', input: '#new-type',
+           usedBy: (t) => state.interactions.filter(x => x.type === t).length,
+           retireNote: (n) => `${n} logged interaction${n === 1 ? '' : 's'} still use this type. They keep the label, but it moves to the neutral grey on the timeline.`,
+           swatch: (t) => symbolSVG(typeShape(t), typeColor(t)),
+           note: (i) => i >= SERIES.length ? 'shares the neutral grey' : '' },
+  tags:  { field: 'interactionTags', label: 'tag', state: 'tags', msg: '#tags-msg',
+           el: '#tags-list', input: '#new-tag',
+           usedBy: (t) => state.interactions.filter(x => (x.tags || []).includes(t)).length,
+           retireNote: (n) => `${n} logged interaction${n === 1 ? '' : 's'} still carry this tag. They keep it, and it stays in the filter, but it leaves the log form.`,
+           swatch: () => '', note: () => '' }
+};
+
+async function saveList(kind, items) {
+  const L = LISTS[kind];
   try {
     await setDoc(doc(db, C.settings, 'config'),
-      { interactionTypes: types, updatedBy: state.user.email, updatedAt: serverTimestamp() }, { merge: true });
-    flash($('#types-msg'), '');
+      { [L.field]: items, updatedBy: state.user.email, updatedAt: serverTimestamp() }, { merge: true });
+    flash($(L.msg), '');
   } catch (e) {
-    flash($('#types-msg'), 'Could not save: ' + esc(e.code || e.message), 'err');
+    flash($(L.msg), 'Could not save: ' + esc(e.code || e.message), 'err');
   }
 }
 
-$('#add-type-btn').addEventListener('click', () => {
-  const v = $('#new-type').value.trim();
+function addListItem(kind) {
+  const L = LISTS[kind];
+  const v = $(L.input).value.trim();
   if (!v) return;
-  if (state.types.some(t => fold(t) === fold(v))) { flash($('#types-msg'), 'That type already exists.', 'warn'); return; }
-  $('#new-type').value = '';
-  saveTypes(state.types.concat([v]));
-});
-$('#new-type').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#add-type-btn').click(); } });
+  if (state[L.state].some(t => fold(t) === fold(v))) {
+    flash($(L.msg), `That ${L.label} already exists.`, 'warn'); return;
+  }
+  $(L.input).value = '';
+  saveList(kind, state[L.state].concat([v]));
+}
 
-$('#types-list').addEventListener('click', (e) => {
-  const el = e.target.closest('[data-type-action]');
-  if (!el) return;
-  const i = +el.dataset.i;
-  const t = state.types.slice();
-  const action = el.dataset.typeAction;
-  if (action === 'up' && i > 0)                { [t[i - 1], t[i]] = [t[i], t[i - 1]]; }
-  else if (action === 'down' && i < t.length - 1) { [t[i + 1], t[i]] = [t[i], t[i + 1]]; }
-  else if (action === 'remove') {
-    const used = state.interactions.filter(x => x.type === t[i]).length;
-    const warn = used ? `\n\n${used} logged interaction${used === 1 ? '' : 's'} still use this type. They keep the label, but it will move to the neutral grey on the timeline.` : '';
-    if (!confirm(`Remove "${t[i]}" from the dropdown?${warn}`)) return;
-    t.splice(i, 1);
-  } else return;
-  saveTypes(t);
-});
-$('#types-list').addEventListener('change', (e) => {
-  const inp = e.target.closest('input[data-rename]');
-  if (!inp) return;
-  const i = +inp.dataset.rename, v = inp.value.trim();
-  if (!v || v === state.types[i]) { renderSettings(); return; }
-  const t = state.types.slice(); t[i] = v;
-  saveTypes(t);
-});
+for (const kind of Object.keys(LISTS)) {
+  const L = LISTS[kind];
+  $(`#add-${L.label}-btn`).addEventListener('click', () => addListItem(kind));
+  $(L.input).addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addListItem(kind); }
+  });
+
+  $(L.el).addEventListener('click', (e) => {
+    const el = e.target.closest('[data-list-action]');
+    if (!el) return;
+    const i = +el.dataset.i;
+    const t = state[L.state].slice();
+    const action = el.dataset.listAction;
+    if (action === 'up' && i > 0) { [t[i - 1], t[i]] = [t[i], t[i - 1]]; }
+    else if (action === 'down' && i < t.length - 1) { [t[i + 1], t[i]] = [t[i], t[i + 1]]; }
+    else if (action === 'remove') {
+      const used = L.usedBy(t[i]);
+      if (!confirm(`Remove "${t[i]}" from the log form?` + (used ? '\n\n' + L.retireNote(used) : ''))) return;
+      t.splice(i, 1);
+    } else return;
+    saveList(kind, t);
+  });
+
+  $(L.el).addEventListener('change', (e) => {
+    const inp = e.target.closest('input[data-rename]');
+    if (!inp) return;
+    const i = +inp.dataset.rename, v = inp.value.trim();
+    if (!v || v === state[L.state][i]) { renderSettings(); return; }
+    const t = state[L.state].slice(); t[i] = v;
+    saveList(kind, t);
+  });
+}
+
+function renderList(kind) {
+  const L = LISTS[kind];
+  const items = state[L.state];
+  $(L.el).innerHTML = items.map((t, i) => {
+    const note = L.note(i);
+    return `
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+      ${L.swatch(t)}
+      <input class="input" style="flex:1;max-width:320px" data-rename="${i}" value="${esc(t)}">
+      <button class="btn secondary small" data-list-action="up" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Move up">&uarr;</button>
+      <button class="btn secondary small" data-list-action="down" data-i="${i}" ${i === items.length - 1 ? 'disabled' : ''} title="Move down">&darr;</button>
+      <button class="btn danger small" data-list-action="remove" data-i="${i}">Remove</button>
+      ${note ? `<span class="small muted">${esc(note)}</span>` : ''}
+    </div>`;
+  }).join('') || `<div class="empty">No ${L.label}s yet &mdash; add one below.</div>`;
+}
 
 $('#people-search').addEventListener('input', renderSettings);
 
+async function saveYearStart(v) {
+  try {
+    await setDoc(doc(db, C.settings, 'config'),
+      { yearStart: v, updatedBy: state.user.email, updatedAt: serverTimestamp() }, { merge: true });
+    flash($('#ay-msg'), '');
+  } catch (e) {
+    flash($('#ay-msg'), 'Could not save: ' + esc(e.code || e.message), 'err');
+  }
+}
+$('#ay-start').addEventListener('change', (e) => {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) saveYearStart(e.target.value);
+});
+$('#ay-default').addEventListener('click', () => saveYearStart(defaultYearStart()));
+
 function renderSettings() {
   $('#rules-pre').textContent = RULES_TEXT;
+  if (document.activeElement !== $('#ay-start')) $('#ay-start').value = state.yearStart;
 
-  $('#types-list').innerHTML = state.types.map((t, i) => `
-    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
-      ${symbolSVG(typeShape(t), typeColor(t))}
-      <input class="input" style="flex:1;max-width:320px" data-rename="${i}" value="${esc(t)}">
-      <button class="btn secondary small" data-type-action="up" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Move up">&uarr;</button>
-      <button class="btn secondary small" data-type-action="down" data-i="${i}" ${i === state.types.length - 1 ? 'disabled' : ''} title="Move down">&darr;</button>
-      <button class="btn danger small" data-type-action="remove" data-i="${i}">Remove</button>
-      ${i >= SERIES.length ? '<span class="small muted">shares the neutral grey</span>' : ''}
-    </div>`).join('') || '<div class="empty">No types yet &mdash; add one below.</div>';
+  renderList('types');
+  renderList('tags');
 
   const q = fold($('#people-search').value);
   const counts = new Map(rels.map(r => [r.id, r]));
@@ -1925,15 +2214,10 @@ document.addEventListener('click', async (e) => {
   if (!confirm(`Move ${its.length} interaction${its.length === 1 ? '' : 's'} and ${ins.length} invite${ins.length === 1 ? '' : 's'} from "${src.name}" to "${target.name}", then remove "${src.name}"?`)) return;
 
   try {
-    const ops = [
-      ...its.map(i => ({ ref: doc(db, C.interactions, i.id), data: { personId: target.id, personName: target.name } })),
-      ...ins.map(i => ({ ref: doc(db, C.invites, i.id), data: { personId: target.id, personName: target.name } }))
-    ];
-    for (let i = 0; i < ops.length; i += 400) {
-      const batch = writeBatch(db);
-      for (const op of ops.slice(i, i + 400)) batch.set(op.ref, op.data, { merge: true });
-      await batch.commit();
-    }
+    await repointPerson(src.id, target.id, {
+      name: target.name, email: target.email || '', division: target.division || '',
+      updatedBy: state.user.email, updatedAt: serverTimestamp()
+    });
     try {
       await deleteDoc(doc(db, C.people, src.id));
     } catch (delErr) {
