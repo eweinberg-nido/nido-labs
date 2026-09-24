@@ -3,224 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Nido Skills & Dispositions</title>
+    <title>User Administration - Nido Skills &amp; Dispositions</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        * { box-sizing: border-box; }
-        body { background-color: #f4f6f8; margin: 0; padding: 0; font-family: sans-serif; }
-        .container { max-width: 1200px; margin: 2rem auto; background: var(--nido-white); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .hidden { display: none !important; }
-        .table-responsive { overflow-x: auto; margin-top: 1rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-        th { background-color: var(--nido-blue); color: white; }
-        .action-btn { margin-right: 5px; cursor: pointer; padding: 4px 8px; border: none; border-radius: 4px; color: white; font-size: 0.8rem; }
-        .btn-edit { background-color: #17a2b8; }
-        .btn-delete { background-color: var(--nido-red); }
-        .btn-view { background-color: #6c757d; }
-        .filter-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 2rem; border-radius: 8px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
-        .evidence-box { background: #f9f9f9; padding: 10px; border-left: 4px solid var(--nido-blue); margin-top: 5px; }
-        .syllabus-link { display: inline-block; margin-top: 4px; font-size: 0.8rem; font-weight: bold; color: var(--nido-blue); text-decoration: none; }
+        body { background-color: #f4f4f4; margin: 0; }
+        .container { max-width: 1100px; margin: 2rem auto; background: var(--nido-white); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .header-nav { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
         .header-nav a { color: white; text-decoration: none; }
         .header-nav a:hover { text-decoration: underline; }
-        /* Divider keeps the two links from reading as one run of text now that
-           "Course Syllabi" has no trailing arrow to close it off. */
-        .header-nav .nav-back { border-left: 1px solid rgba(255, 255, 255, 0.4); padding-left: 1.5rem; }
-        /* Below ~385px the two links wrap onto separate lines, which would leave
-           the divider floating beside the second one. */
-        @media (max-width: 480px) {
-            .header-nav .nav-back { border-left: none; padding-left: 0; }
-        }
-        /* .form-* classes are used throughout this page but were never defined,
-           so modal fields rendered at browser defaults. Match index.html. */
-        .modal-content .form-group { margin-bottom: 1rem; }
-        .modal-content .form-label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
-        .modal-content .form-control {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: var(--font-gotham);
-            font-size: 1rem;
-        }
-        .modal-content .form-control:focus {
-            outline: none;
-            border-color: var(--nido-blue);
-            box-shadow: 0 0 0 3px rgba(0, 35, 101, 0.12);
-        }
-        .syllabus-link:hover { text-decoration: underline; }
+        .header-nav .nav-back { border-left: 1px solid rgba(255,255,255,0.4); padding-left: 1.5rem; }
+
+        .toolbar { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .toolbar input[type="search"] { flex: 1; min-width: 220px; padding: 0.5rem 0.75rem; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
+
+        .counts { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .count { background: #f0f0ee; border-radius: 6px; padding: 0.5rem 0.9rem; }
+        .count b { display: block; font-size: 1.2rem; }
+        .count span { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; padding: 0.6rem 0.5rem; border-bottom: 2px solid #eee; }
+        td { padding: 0.7rem 0.5rem; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .uname { font-weight: 600; }
+        .uemail { color: #666; font-size: 0.85rem; word-break: break-all; }
+
+        .role-toggles { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .role-btn { border: 1px solid #ccc; background: #fff; border-radius: 99px; padding: 0.25rem 0.7rem; font-size: 0.8rem; cursor: pointer; font: inherit; }
+        .role-btn:hover { border-color: #999; }
+        .role-btn.on { background: var(--nido-blue); border-color: var(--nido-blue); color: #fff; font-weight: 600; }
+        .role-btn.on.super { background: var(--nido-red); border-color: var(--nido-red); }
+        .role-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .legacy { font-size: 0.72rem; color: #8a6d3b; background: #fcf8e3; border-radius: 4px; padding: 0.1rem 0.4rem; margin-left: 0.4rem; }
+        .note { background: #eef4fa; border-left: 4px solid var(--nido-blue); padding: 0.85rem 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .danger { background: #fdecea; border-left-color: var(--nido-red); }
+        .hidden { display: none; }
+        #flash { margin-bottom: 1rem; padding: 0.7rem 1rem; border-radius: 4px; font-size: 0.9rem; }
+        #flash.ok { background: #e6f4ea; color: #1e4620; }
+        #flash.err { background: #fdecea; color: #7a1c14; }
     </style>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
     <header class="bg-nido-blue text-white" style="padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <h1 class="font-bold" style="margin: 0; font-size: 1.5rem;">Admin Dashboard - Dispositions</h1>
+        <h1 class="font-bold" style="margin: 0; font-size: 1.5rem;">User Administration</h1>
         <nav class="header-nav">
+            <a href="browse.html">Browse Dispositions</a>
             <a href="syllabi.html">Course Syllabi</a>
             <a href="index.html" class="nav-back">&larr; Back to Main Site</a>
         </nav>
     </header>
 
     <main class="container">
-        <!-- Auth Section -->
-        <div id="auth-section" style="text-align: center; margin-bottom: 2rem;">
-            <h2>Admin Authentication Required</h2>
-            <button id="sign-in-btn" class="btn-nido-blue">Sign in with Google</button>
-            <p id="auth-message" style="color: var(--nido-red); margin-top: 1rem;"></p>
+        <!-- Signed out -->
+        <div id="auth-section" style="text-align: center;">
+            <h2 class="text-nido-blue font-medium" style="margin-top: 0;">Sign in to manage users</h2>
+            <p class="text-nido-dark">This page is restricted to superadministrators.</p>
+            <button id="sign-in-btn" class="btn-nido-blue">Sign In with Google</button>
         </div>
 
-        <!-- Dashboard Section -->
-        <div id="dashboard-section" class="hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                <h2 style="margin: 0;">All Course Configurations</h2>
-                <div style="display: flex; gap: 1rem;">
-                    <button id="export-csv-btn" class="btn-nido-dark" style="background-color: #28a745; color: white;">Export CSV</button>
-                    <button id="add-entry-btn" class="btn-nido-blue">+ Add New Entry</button>
-                </div>
-            </div>
-            <!-- Filters -->
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label class="form-label text-nido-blue">Status:</label>
-                    <select id="filter-status" class="form-control">
-                        <option value="all">All</option>
-                        <option value="entered">Entered Data</option>
-                        <option value="missing">Missing Data</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="form-label text-nido-blue">Teacher (Name/Email):</label>
-                    <input type="text" id="filter-teacher" class="form-control" placeholder="Search teacher...">
-                </div>
-                <div class="filter-group">
-                    <label class="form-label text-nido-blue">Department: <small style="font-weight: normal; color: #666;">(Cmd/Ctrl to multi-select)</small></label>
-                    <select id="filter-department" class="form-control" multiple size="4">
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="form-label text-nido-blue">Course: <small style="font-weight: normal; color: #666;">(Cmd/Ctrl to multi-select)</small></label>
-                    <select id="filter-course" class="form-control" multiple size="4">
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="form-label text-nido-blue">Grade: <small style="font-weight: normal; color: #666;">(Cmd/Ctrl to multi-select)</small></label>
-                    <select id="filter-grade" class="form-control" multiple size="4">
-                        <option value="9">Grade 9</option>
-                        <option value="10">Grade 10</option>
-                        <option value="11">Grade 11</option>
-                        <option value="12">Grade 12</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="form-label text-nido-blue">Disposition: <small style="font-weight: normal; color: #666;">(Cmd/Ctrl to multi-select)</small></label>
-                    <select id="filter-disposition" class="form-control" multiple size="4">
-                        <option value="Empathy">Empathy</option>
-                        <option value="Reflection">Reflection</option>
-                        <option value="Curiosity">Curiosity</option>
-                        <option value="Perseverance">Perseverance</option>
-                        <option value="Self-Direction">Self-Direction</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <div id="result-count" class="text-nido-blue font-bold" style="font-size: 0.95rem;">
-                    Showing 0 entries
-                </div>
-                <button id="clear-filters-btn" class="btn-nido-dark" style="background-color: #6c757d; color: white; padding: 0.25rem 0.75rem; font-size: 0.85rem;">Clear Filters</button>
-            </div>
-            <div style="background: #fff; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 class="text-nido-blue" style="margin: 0;">Filtered Visualization</h3>
-                    <div>
-                        <label class="form-label text-nido-blue" style="margin-right: 0.5rem;">Group By:</label>
-                        <select id="admin-viz-group" class="form-control" style="display: inline-block; width: auto; min-width: 150px;">
-                            <option value="disposition">Disposition</option>
-                            <option value="department">Department</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="admin-d3-container" style="width: 100%; height: 500px; position: relative;"></div>
-                <div id="admin-d3-tooltip" style="position: absolute; opacity: 0; background: white; border: 1px solid #ccc; padding: 10px; border-radius: 4px; pointer-events: none; font-size: 0.85rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 100;"></div>
+        <!-- Signed in, but not a superadmin -->
+        <div id="no-access" class="hidden" style="text-align: center;">
+            <h2 class="text-nido-red font-medium" style="margin-top: 0;">You do not have access</h2>
+            <p class="text-nido-dark">
+                Signed in as <strong id="na-email"></strong>. Managing roles requires the
+                <code>superadmin</code> role.
+            </p>
+            <button id="sign-out-btn-2" class="btn-nido-blue" style="background-color: #6c757d;">Sign Out</button>
+        </div>
+
+        <!-- Superadmin view -->
+        <div id="admin-section" class="hidden">
+            <p class="text-nido-dark font-medium" style="margin-top: 0;">
+                Signed in as <strong id="who"></strong>
+                <button id="sign-out-btn" class="btn-nido-blue" style="margin-left: 1rem; background-color: #6c757d;">Sign Out</button>
+            </p>
+
+            <div class="note">
+                <strong>Roles are permissions.</strong> Nobody can grant themselves one &mdash; only a
+                superadmin can, from this page. A person may hold several roles at once.
+                <br><br>
+                <strong>superadmin</strong> manages users here and implies the others &middot;
+                <strong>admin</strong> moderates dispositions on the Browse page &middot;
+                <strong>coach</strong> will gate the Coaching Log &middot;
+                <strong>teacher</strong> is informational for now &mdash; the dispositions app is open to
+                every <code>@nido.cl</code> account regardless.
             </div>
 
-            <div class="table-responsive">
-                <table id="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">Teacher</th>
-                            <th style="width: 15%;">Department</th>
-                            <th style="width: 15%;">Course</th>
-                            <th style="width: 15%;">Dispositions</th>
-                            <th style="width: 30%;">Evidence</th>
-                            <th style="width: 10%;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
+            <div id="flash" class="hidden"></div>
+
+            <div class="counts" id="counts"></div>
+
+            <div class="toolbar">
+                <input type="search" id="q" placeholder="Search name or email&hellip;">
+                <label style="font-size: 0.9rem;">
+                    <input type="checkbox" id="only-roles"> Only users with a role
+                </label>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 34%;">User</th>
+                        <th>Roles</th>
+                        <th style="width: 15%;">Last sign-in</th>
+                    </tr>
+                </thead>
+                <tbody id="user-rows"></tbody>
+            </table>
+
+            <p id="empty-state" class="text-nido-dark hidden" style="text-align: center; padding: 2rem;">
+                No users match.
+            </p>
+
+            <div class="note danger" style="margin-top: 2rem;">
+                <strong>Only users who have signed in at least once appear here</strong>, because a profile
+                is created on sign-in and keyed by their account ID. If someone is missing, ask them to open
+                any of these tools once, then reload this page.
             </div>
         </div>
     </main>
-
-    <!-- Evidence Modal -->
-    <div id="evidence-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2 class="text-nido-blue">Evidence Collection Ideas</h2>
-            <div id="evidence-content" style="margin: 1.5rem 0;"></div>
-            <button class="btn-nido-dark" onclick="document.getElementById('evidence-modal').classList.add('hidden')">Close</button>
-        </div>
-    </div>
-
-    <!-- Edit/Add Modal (simplified for admin rapid entry) -->
-    <div id="edit-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2 id="modal-title" class="text-nido-blue">Edit Entry</h2>
-            
-            <div class="form-group" style="margin-top: 1rem;">
-                <label class="form-label">Teacher Name:</label>
-                <input type="text" id="edit-teacher-name" class="form-control" required>
-            </div>
-            <div class="form-group" style="margin-top: 1rem;">
-                <label class="form-label">Teacher Email:</label>
-                <input type="email" id="edit-teacher-email" class="form-control" required>
-            </div>
-
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <div class="form-group" style="flex: 1;">
-                    <label class="form-label">Department:</label>
-                    <select id="edit-department" class="form-control" required></select>
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label class="form-label">Course:</label>
-                    <select id="edit-course" class="form-control" required></select>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-                <label class="form-label" for="edit-syllabus">Syllabus Link <small style="font-weight: normal; color: #666;">(optional &mdash; Google Drive)</small></label>
-                <input type="url" id="edit-syllabus" class="form-control" placeholder="https://drive.google.com/...">
-                <a id="edit-syllabus-open" class="syllabus-link hidden" target="_blank" rel="noopener noreferrer">Open current link &nearr;</a>
-            </div>
-
-            <div style="margin-top: 1.5rem;">
-                <label class="form-label">Dispositions (Check all that apply):</label>
-                <div id="edit-dispositions-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-                    <!-- checkboxes generated -->
-                </div>
-            </div>
-
-            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                <button class="btn-nido-dark" id="modal-cancel-btn" style="flex: 1;">Cancel</button>
-                <button class="btn-nido-blue" id="modal-save-btn" style="flex: 1;">Save Entry</button>
-            </div>
-        </div>
-    </div>
 
     <script type="module" src="admin.js"></script>
 </body>

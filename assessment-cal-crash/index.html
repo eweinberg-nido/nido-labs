@@ -254,9 +254,9 @@ details.cfg summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-weig
               <input type="text" id="rosterName" placeholder="e.g. IB Econ HL 1" style="width:100%">
             </div>
           </div>
-          <label class="fld" for="rosterText">Class list — emails and/or names, one per line</label>
-          <textarea id="rosterText" placeholder="ana.silva@nido.cl&#10;Bruno Tapia &lt;bruno.tapia@nido.cl&gt;&#10;Catalina Rojas&#10;diego.munoz@nido.cl"></textarea>
-          <div class="hint">Emails match exactly. Plain names are matched against calendar attendee names and email handles (accent- and order-insensitive).</div>
+          <label class="fld" for="rosterText">Class list — emails (comma-separated or one per line) and/or names</label>
+          <textarea id="rosterText" placeholder="ana.silva@nido.cl, bruno.tapia@nido.cl, catalina.rojas@nido.cl&#10;or one per line / CSV:&#10;Bruno Tapia &lt;bruno.tapia@nido.cl&gt;&#10;Catalina Rojas"></textarea>
+          <div class="hint">Paste emails separated by commas, semicolons, or newlines (e.g. copied from PowerSchool), or paste names. Emails match exactly; plain names match against calendar attendee names and email handles.</div>
           <div class="row" style="margin-top:12px">
             <button id="analyzeBtn" class="btn primary">Check this date</button>
             <label class="btn sm" style="margin:0">Upload file<input type="file" id="rosterFile" accept=".csv,.txt,.tsv" class="hidden"></label>
@@ -1037,27 +1037,75 @@ function closeDrawer() { $("#drawer").classList.add("hidden"); $("#drawer").inne
 /* =========================================================================
    CHECK A CLASS
    ========================================================================= */
-function parseRoster(text) {
-  const out = []; const seen = new Set();
-  String(text || "").split(/[\n\r]+/).forEach(line => {
-    const raw = line.trim();
-    if (!raw || /^(name|email|student|first|last)\b/i.test(raw) && raw.includes(",") && !/@/.test(raw)) return;
-    const emails = raw.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g);
-    if (emails && emails.length) {
-      emails.forEach(e => {
-        const email = e.toLowerCase();
-        let name = raw.replace(e, "").replace(/[<>"',;\t]+/g, " ").replace(/\s+/g, " ").trim();
-        if (!name || /^\W*$/.test(name)) name = nameFromEmail(email);
-        if (!seen.has(email)) { seen.add(email); out.push({ raw, email, name }); }
-      });
+function splitRosterEntries(line) {
+  const tokens = [];
+  let cur = "";
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"' || ch === "'") {
+      inQuote = !inQuote;
+      cur += ch;
+    } else if ((ch === "," || ch === ";") && !inQuote) {
+      if (cur.trim()) tokens.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.trim()) tokens.push(cur.trim());
+  return tokens;
+}
+
+function parseRosterItem(raw, seen, out) {
+  raw = raw.trim();
+  if (!raw) return;
+  if (/^(name|email|student|first|last)\b/i.test(raw) && raw.includes(",") && !/@/.test(raw)) return;
+
+  const emails = raw.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g);
+  if (emails && emails.length > 1) {
+    const subTokens = splitRosterEntries(raw);
+    if (subTokens.length > 1) {
+      subTokens.forEach(t => parseRosterItem(t, seen, out));
       return;
     }
-    // no email: keep alphabetic fields only ("Rojas, Catalina, 10A" -> "Rojas Catalina")
-    const parts = raw.split(/[,;\t|]+/).map(s => s.trim())
-      .filter(s => s && /[A-Za-zÀ-ÿ]{2,}/.test(s) && !/^\d+$/.test(s));
-    const name = (parts.length ? parts.slice(0, 2).join(" ") : raw).replace(/\s+/g, " ").trim();
-    const key = "n:" + nameKey(name);
-    if (name && !seen.has(key)) { seen.add(key); out.push({ raw, email: null, name }); }
+    emails.forEach(e => {
+      const email = e.toLowerCase();
+      if (!seen.has(email)) {
+        seen.add(email);
+        out.push({ raw: e, email, name: nameFromEmail(email) });
+      }
+    });
+    return;
+  }
+
+  if (emails && emails.length === 1) {
+    const email = emails[0].toLowerCase();
+    let name = raw.replace(emails[0], "").replace(/[<>"',;\t]+/g, " ").replace(/\s+/g, " ").trim();
+    if (!name || /^\W*$/.test(name)) name = nameFromEmail(email);
+    if (!seen.has(email)) {
+      seen.add(email);
+      out.push({ raw, email, name });
+    }
+    return;
+  }
+
+  // no email: keep alphabetic fields only ("Rojas, Catalina, 10A" -> "Rojas Catalina")
+  const parts = raw.split(/[,;\t|]+/).map(s => s.trim())
+    .filter(s => s && /[A-Za-zÀ-ÿ]{2,}/.test(s) && !/^\d+$/.test(s));
+  const name = (parts.length ? parts.slice(0, 2).join(" ") : raw).replace(/\s+/g, " ").trim();
+  const key = "n:" + nameKey(name);
+  if (name && !seen.has(key)) {
+    seen.add(key);
+    out.push({ raw, email: null, name });
+  }
+}
+
+function parseRoster(text) {
+  const out = [];
+  const seen = new Set();
+  String(text || "").split(/[\n\r]+/).forEach(line => {
+    parseRosterItem(line, seen, out);
   });
   return out;
 }
@@ -1362,7 +1410,7 @@ $("#loadSort").onchange = () => renderLoad();
 $("#loadOnlyRisk").onchange = () => renderLoad();
 $("#exportCsv").onclick = exportCsv;
 $("#saveExcl").onclick = () => {
-  state.exclusions = $("#exclText").value.split(/\n+/).map(s => s.trim()).filter(Boolean);
+  state.exclusions = $("#exclText").value.split(/[\n\r,;]+/).map(s => s.trim()).filter(Boolean);
   LS.set("exclusions", state.exclusions);
   reindex(); refreshCheck(); render();
 };

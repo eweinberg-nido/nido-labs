@@ -1,0 +1,143 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- helpers -------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Anyone signed in with a school account. Student addresses are
+    // firstname.lastname@students.nido.cl, which never contains the literal
+    // "@nido.cl", so they are excluded by this check.
+    function isNidoUser() {
+      return isSignedIn() && request.auth.token.email.matches('.*@nido\\.cl');
+    }
+
+    // The signed-in user's profile, or an empty map when they have no profile
+    // yet. The exists() guard matters: get() on a missing document raises and
+    // denies the request, which used to make a first sign-in fail confusingly.
+    function profile() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        : {};
+    }
+
+    // Roles live in a `roles` array so one person can be both a coach and a
+    // teacher. The legacy single `role` string is still honoured, because
+    // AssessmentCalendar, BlockScheduler and the dispositions admin page all
+    // still read role == 'admin'. Nothing has to migrate in lockstep.
+    function hasRole(r) {
+      return isSignedIn()
+        && (profile().get('roles', []).hasAny([r]) || profile().get('role', '') == r);
+    }
+
+    // Superadmin is the only role that can hand out roles. It sits above the
+    // others rather than beside them, so it implies both.
+    //
+    // admin and coach are deliberately siblings: moderating dispositions is
+    // not a reason to read the coaching log, so an admin does NOT get coach.
+    function isSuperAdmin() { return hasRole('superadmin'); }
+    function isAdminUser()  { return hasRole('admin') || isSuperAdmin(); }
+    function isCoach()      { return hasRole('coach') || isSuperAdmin(); }
+
+    // Kept so any older rule or reference still resolves. Now exists()-guarded.
+    function isAdmin() { return isAdminUser(); }
+
+    // ---- dispositions --------------------------------------------
+    match /hs-dispositions/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+
+      allow create: if isAdminUser()
+        || (isNidoUser() && request.resource.data.userEmail == request.auth.token.email);
+
+      // Both sides are checked. Testing only the incoming payload let any
+      // signed-in user overwrite another teacher's entry by supplying their
+      // own address, since document ids are readable school-wide. This matches
+      // the pattern already used by coaching-interactions below.
+      allow update: if isAdminUser()
+        || (isNidoUser()
+            && resource.data.userEmail == request.auth.token.email
+            && request.resource.data.userEmail == request.auth.token.email);
+
+      allow delete: if isAdminUser()
+        || (isNidoUser() && resource.data.userEmail == request.auth.token.email);
+    }
+
+    // ---- course syllabi ------------------------------------------
+    // Imported reference data: one document per course, produced by the
+    // Schoology crawl. Everyone reads it; only an admin runs the import.
+    // Teacher-entered syllabus links stay on their own hs-dispositions
+    // documents and are never written here.
+    match /course-syllabi/{courseCode} {
+      allow read:  if isNidoUser() || isAdminUser();
+      allow write: if isAdminUser();
+    }
+
+    // ---- coaching log --------------------------------------------
+    // STILL OPEN TO ALL STAFF ON PURPOSE. Do not narrow these to isCoach()
+    // until coach roles have actually been assigned, or the entire coaching
+    // office loses access to its own data the moment this is published.
+    // When the roles are in place, the change is isNidoUser() -> isCoach()
+    // in the four blocks below, and nothing else.
+    match /coaching-people/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+      allow create, update, delete: if isNidoUser() || isAdminUser();
+    }
+
+    match /coaching-interactions/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+
+      allow create: if isAdminUser()
+        || (isNidoUser() && request.resource.data.userEmail == request.auth.token.email);
+
+      allow update: if isAdminUser()
+        || (isNidoUser()
+            && resource.data.userEmail == request.auth.token.email
+            && request.resource.data.userEmail == request.auth.token.email)
+        || (isNidoUser()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['personId', 'personName']));
+
+      allow delete: if isAdminUser()
+        || (isNidoUser() && resource.data.userEmail == request.auth.token.email);
+    }
+
+    match /coaching-invites/{docId} {
+      allow read: if isNidoUser() || isAdminUser();
+      allow create, update: if isNidoUser() || isAdminUser();
+      allow delete: if isAdminUser()
+        || (isNidoUser() && resource.data.importedBy == request.auth.token.email);
+    }
+
+    match /coaching-settings/{docId} {
+      allow read, write: if isNidoUser() || isAdminUser();
+    }
+
+    // ---- user profiles -------------------------------------------
+    // A role is a permission, so it is never writable by the account it
+    // describes - only a superadmin grants or revokes one. Clients may still
+    // create and maintain their own profile (name, email, lastLogin); they
+    // just cannot attach `role` or `roles` to it.
+    //
+    // Bootstrap: the first superadmin has to be set by hand in the Firebase
+    // console, because this rule requires an existing one to make another.
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      // The self-service branch is tested first so an ordinary profile write
+      // (name, lastLogin) short-circuits without spending a document read on
+      // the superadmin lookup.
+      allow create: if (isSignedIn()
+                        && request.auth.uid == userId
+                        && !request.resource.data.keys().hasAny(['role', 'roles']))
+                    || isSuperAdmin();
+
+      allow update: if (isSignedIn()
+                        && request.auth.uid == userId
+                        && !request.resource.data.diff(resource.data)
+                              .affectedKeys().hasAny(['role', 'roles']))
+                    || isSuperAdmin();
+    }
+  }
+}
