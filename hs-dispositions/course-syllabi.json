@@ -1,0 +1,3216 @@
+{
+  "generatedAt": "2026-09-23T17:49:58.762Z",
+  "sourceDomain": "nido.schoology.com",
+  "courses": [
+    {
+      "courseCode": "136",
+      "courseName": "HS English: EAL Adapted I",
+      "departments": [
+        "English as an Additional Language (EAL)"
+      ],
+      "gradeRange": "9-11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447340906/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3507952932/source/29648443726a420c6ccca3a4f2b773f5.pdf",
+      "sourceTitle": "EAL Syllabus 2026-2027.pdf",
+      "sectionId": "8447340906",
+      "materialsUrl": "https://nido.schoology.com/course/8447340906/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "137",
+      "courseName": "HS English: EAL Adapted II",
+      "departments": [
+        "English as an Additional Language (EAL)"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447340907/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3513089021/source/29648443726a420c6ccca3a4f2b773f5.pdf",
+      "sourceTitle": "EAL Syllabus 2026-2027.pdf",
+      "sectionId": "8447340907",
+      "materialsUrl": "https://nido.schoology.com/course/8447340907/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "138",
+      "courseName": "English for Academic Purposes",
+      "departments": [
+        "English as an Additional Language (EAL)"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447340908/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3493039818/source/50cad489a8649fd5ebcfbc45edbb4e6c.pdf",
+      "sourceTitle": "English for Academic Purposes Syllabus C 2026-2027.pdf",
+      "sectionId": "8447340908",
+      "materialsUrl": "https://nido.schoology.com/course/8447340908/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "145",
+      "courseName": "Learning Lab 1",
+      "departments": [
+        "Learning Support"
+      ],
+      "gradeRange": "9/10",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340911",
+      "materialsUrl": "https://nido.schoology.com/course/8447340911/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "146",
+      "courseName": "Learning Lab 2",
+      "departments": [
+        "Learning Support"
+      ],
+      "gradeRange": "11/12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340913",
+      "materialsUrl": "https://nido.schoology.com/course/8447340913/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "995",
+      "courseName": "Internship",
+      "departments": [
+        "Core/University Program"
+      ],
+      "gradeRange": "12",
+      "credit": "N/A",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "996",
+      "courseName": "Junior Core",
+      "departments": [
+        "Core/University Program"
+      ],
+      "gradeRange": "11",
+      "credit": "N/A",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341815",
+      "materialsUrl": "https://nido.schoology.com/course/8447341815/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "997",
+      "courseName": "Senior Core",
+      "departments": [
+        "Core/University Program"
+      ],
+      "gradeRange": "12",
+      "credit": "N/A",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341816",
+      "materialsUrl": "https://nido.schoology.com/course/8447341816/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1000",
+      "courseName": "English 9",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1z9yxYUd9gFNzq0s5hjEfxg5-VdZ8-5-XVzd2jdKmLBQ/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "2026-27 Syllabus",
+      "sectionId": "8447340800",
+      "materialsUrl": "https://nido.schoology.com/course/8447340800/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1010",
+      "courseName": "English 10",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/18B-riL3FWZhF65hOhAZ0cWhCld7pPQmaXx_hECG2QPY/edit?tab=t.0",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Course Description Here",
+      "sectionId": "8447340871",
+      "materialsUrl": "https://nido.schoology.com/course/8447340871/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1018",
+      "courseName": "English: The Imperfect Art of Living",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "11-12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340880",
+      "materialsUrl": "https://nido.schoology.com/course/8447340880/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1019",
+      "courseName": "English: World Perspectives in Literature",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "11-12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1I01ed4vRTprA0ak_6Z2WJDIxzlSvRQH-JAix0i8Dppk/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447340882",
+      "materialsUrl": "https://nido.schoology.com/course/8447340882/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1070",
+      "courseName": "IB English A: Literature SLI",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ghHBWOyljKXKcA1UYo-_LVMa_VNPSTO0/edit",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Lit Syllabus ",
+      "sectionId": "8447340884",
+      "materialsUrl": "https://nido.schoology.com/course/8447340884/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1071",
+      "courseName": "IB English A: Literature SL II",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340885",
+      "materialsUrl": "https://nido.schoology.com/course/8447340885/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1080",
+      "courseName": "IB English A: Literature HLI",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ghHBWOyljKXKcA1UYo-_LVMa_VNPSTO0/edit",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Lit Syllabus ",
+      "sectionId": "8447340887",
+      "materialsUrl": "https://nido.schoology.com/course/8447340887/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1081",
+      "courseName": "IB English A: Literature HL II",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340888",
+      "materialsUrl": "https://nido.schoology.com/course/8447340888/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1090",
+      "courseName": "IB English A: Language & Literature HL I",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1SUNOHP_6M8dtxrQu1QihSwRf0F11AmoaDgfE3C29Fa8/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447340890",
+      "materialsUrl": "https://nido.schoology.com/course/8447340890/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1091",
+      "courseName": "IB English A: Language & Literature HL II",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340894",
+      "materialsUrl": "https://nido.schoology.com/course/8447340894/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1092",
+      "courseName": "IB English A: Language & Literature SL I",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1SUNOHP_6M8dtxrQu1QihSwRf0F11AmoaDgfE3C29Fa8/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447340898",
+      "materialsUrl": "https://nido.schoology.com/course/8447340898/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "1093",
+      "courseName": "IB English A: Language & Literature SL II",
+      "departments": [
+        "English"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340902",
+      "materialsUrl": "https://nido.schoology.com/course/8447340902/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2020",
+      "courseName": "US History",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ja93s-zQrUlY8GFGIfHAppUke5PDZAZxmZNd-czJLDU/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Grade 10 US History Syllabus 2026- 2027",
+      "sectionId": "8447340918",
+      "materialsUrl": "https://nido.schoology.com/course/8447340918/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2031",
+      "courseName": "World Studies",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1zG0nkNKbI3RRV7cIyUIMkcmUr2Mtyo3Ns96mOIXD0B4/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "World Studies 2026-2027 Syllabus",
+      "sectionId": "8447340921",
+      "materialsUrl": "https://nido.schoology.com/course/8447340921/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2039",
+      "courseName": "IB History HLI (Spanish)",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447340923/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3491248357/source/c03e2daf7f8812b5024b0c71fe9432e1.pdf",
+      "sourceTitle": "HL COURSE Syllabus.pdf",
+      "sectionId": "8447340923",
+      "materialsUrl": "https://nido.schoology.com/course/8447340923/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2040",
+      "courseName": "IB History HL II (Spanish)",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340925",
+      "materialsUrl": "https://nido.schoology.com/course/8447340925/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2041",
+      "courseName": "IB History SLI (Spanish)",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447340927/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3491261400/source/6c6594006782531a5defc316e585ca3e.pdf",
+      "sourceTitle": "SL COURSE Syllabus.pdf",
+      "sectionId": "8447340927",
+      "materialsUrl": "https://nido.schoology.com/course/8447340927/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2042",
+      "courseName": "IB History SL II (Spanish)",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341064",
+      "materialsUrl": "https://nido.schoology.com/course/8447341064/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2049",
+      "courseName": "IB Economics SL I",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "11-12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341066",
+      "materialsUrl": "https://nido.schoology.com/course/8447341066/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2051",
+      "courseName": "IB Economics SL II",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341070",
+      "materialsUrl": "https://nido.schoology.com/course/8447341070/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2052",
+      "courseName": "IB Economics HL I",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "11-12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341073",
+      "materialsUrl": "https://nido.schoology.com/course/8447341073/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2053",
+      "courseName": "IB Economics HL II",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341077",
+      "materialsUrl": "https://nido.schoology.com/course/8447341077/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2062",
+      "courseName": "IB TOK/Core I",
+      "departments": [
+        "IB Core/University"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341080",
+      "materialsUrl": "https://nido.schoology.com/course/8447341080/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2063",
+      "courseName": "IB TOK/ Core II",
+      "departments": [
+        "IB Core/University"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341081",
+      "materialsUrl": "https://nido.schoology.com/course/8447341081/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2111",
+      "courseName": "National Plan Social Studies 9",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341082",
+      "materialsUrl": "https://nido.schoology.com/course/8447341082/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2112",
+      "courseName": "National Plan Social Studies 10",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/15_LQKzlbbDwQePVPpyVrq0_zYGB73pQ0XRHEAVmHD28/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus ",
+      "sectionId": "8447341086",
+      "materialsUrl": "https://nido.schoology.com/course/8447341086/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2117",
+      "courseName": "Chilean Studies I",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "11",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341090/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3522592097/source/e9ceda6f19bf46220691b268c0a67679.pdf",
+      "sourceTitle": "Syllabus 11th.pdf",
+      "sectionId": "8447341090",
+      "materialsUrl": "https://nido.schoology.com/course/8447341090/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2118",
+      "courseName": "Chilean Studies II",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2132",
+      "courseName": "Philosophy I",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "11",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1vAICJ5fSdpMP5ttlhPVUSdrSP-nsZXgOw7vjp3P8Gak/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus ",
+      "sectionId": "6798576289",
+      "materialsUrl": "https://nido.schoology.com/course/6798576289/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2133",
+      "courseName": "Philosophy II",
+      "departments": [
+        "Social Studies National Plan"
+      ],
+      "gradeRange": "12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1vAICJ5fSdpMP5ttlhPVUSdrSP-nsZXgOw7vjp3P8Gak/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus ",
+      "sectionId": "8447341096",
+      "materialsUrl": "https://nido.schoology.com/course/8447341096/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2137",
+      "courseName": "Sustainable Design",
+      "departments": [
+        "Social Studies (International)",
+        "Design-Tech"
+      ],
+      "gradeRange": "10-12",
+      "credit": "0.5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2138",
+      "courseName": "Leadership (University of Delaware)",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "10-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341099",
+      "materialsUrl": "https://nido.schoology.com/course/8447341099/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2144",
+      "courseName": "Introduction to Entrepreneurship (Syracuse University)",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "11-12",
+      "credit": "1.0",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1Ox6Q5ZxiyGAoiSDfynSrytvl8IukU_H8STiq2GsvJiE/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "SUPA Entrepreneurship Syllabus",
+      "sectionId": "8447341100",
+      "materialsUrl": "https://nido.schoology.com/course/8447341100/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2155",
+      "courseName": "IB Psychology SL I",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/11VXp1AH0t8xlJYls7NPk9lAcBS13wm0Rw2vvnSsx3uQ/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Psychology Syllabus (2026-2028)",
+      "sectionId": "8447341102",
+      "materialsUrl": "https://nido.schoology.com/course/8447341102/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2157",
+      "courseName": "IB Psychology HL I",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/11VXp1AH0t8xlJYls7NPk9lAcBS13wm0Rw2vvnSsx3uQ/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Psychology Syllabus (2026-2028)",
+      "sectionId": "8447341104",
+      "materialsUrl": "https://nido.schoology.com/course/8447341104/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2158",
+      "courseName": "IB Psychology SL II",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341106",
+      "materialsUrl": "https://nido.schoology.com/course/8447341106/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "2159",
+      "courseName": "IB Psychology HL II",
+      "departments": [
+        "Social Studies (International)"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341107/materials/gp/8455814732",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341107",
+      "materialsUrl": "https://nido.schoology.com/course/8447341107/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3009",
+      "courseName": "Math Lab 1",
+      "departments": [
+        "Math",
+        "Learning Support"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3011",
+      "courseName": "Math 9",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1uoJ0aghIInvWdCs8sB4Wsy61sX1Xn1EwSQmx9YpechE/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Math 9 Course Syllabus",
+      "sectionId": "8447341109",
+      "materialsUrl": "https://nido.schoology.com/course/8447341109/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3012",
+      "courseName": "Math 9 Advanced",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1f8Nf6fFMilW3EtD0AlFnfKwsIL1U3cz7/edit?usp=sharing&ouid=106533360875301022957&rtpof=true&sd=true",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Welcome to Math 9A!",
+      "sectionId": "8447341113",
+      "materialsUrl": "https://nido.schoology.com/course/8447341113/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3013",
+      "courseName": "Math Lab 2",
+      "departments": [
+        "Math",
+        "Learning Support"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341116",
+      "materialsUrl": "https://nido.schoology.com/course/8447341116/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3014",
+      "courseName": "Math 10",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "9-11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ka0CupE3sQigDkPqIZh33zxq4r9oz6dzW6UztDk4Ex8/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Math 10 Course Syllabus",
+      "sectionId": "8447341117",
+      "materialsUrl": "https://nido.schoology.com/course/8447341117/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3016",
+      "courseName": "Math 10 Advanced",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1ccQy4CPaWDNv9cvGqSnp2r0rdgJAqIDgZEwGpI9zYDU/edit?tab=t.0",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341121",
+      "materialsUrl": "https://nido.schoology.com/course/8447341121/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3041",
+      "courseName": "Math 11",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1rArGg3-kFE9ruqJkUw-dmZ_G_krTn6n0D3Q5V-FHbJc/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Math 11 - Syllabus",
+      "sectionId": "8447341124",
+      "materialsUrl": "https://nido.schoology.com/course/8447341124/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3042",
+      "courseName": "Math 12",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341126",
+      "materialsUrl": "https://nido.schoology.com/course/8447341126/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3057",
+      "courseName": "Math Lab 3",
+      "departments": [
+        "Math",
+        "Learning Support"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341127",
+      "materialsUrl": "https://nido.schoology.com/course/8447341127/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3058",
+      "courseName": "Math Lab 4",
+      "departments": [
+        "Math",
+        "Learning Support"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341128",
+      "materialsUrl": "https://nido.schoology.com/course/8447341128/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3076",
+      "courseName": "IB Math SL Applications & Interpretation I",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/14afT5j1J5ht-V7OMvtBK7AZhaXetuRyTzknNw2pTYco/edit?tab=t.0",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341129",
+      "materialsUrl": "https://nido.schoology.com/course/8447341129/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3077",
+      "courseName": "IB Math SL Applications & Interpretation II",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341131",
+      "materialsUrl": "https://nido.schoology.com/course/8447341131/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3078",
+      "courseName": "IB Math HL Applications & Interpretation I",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341134",
+      "materialsUrl": "https://nido.schoology.com/course/8447341134/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3079",
+      "courseName": "IB Math HL Applications & Interpretation II",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341135",
+      "materialsUrl": "https://nido.schoology.com/course/8447341135/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3081",
+      "courseName": "IB Math SL Analysis & Approaches I",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://drive.google.com/file/d/14IKWtdaWhaneLnIIBXmYYI5MvozCKi2x/view?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB AA SL Syllabus",
+      "sectionId": "8447341136",
+      "materialsUrl": "https://nido.schoology.com/course/8447341136/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3082",
+      "courseName": "IB Math SL Analysis & Approaches II",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341139",
+      "materialsUrl": "https://nido.schoology.com/course/8447341139/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3083",
+      "courseName": "IB Math HL Analysis & Approaches I",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341142/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3495116417/source/283d946c0a6c852595cc37f14afae623.pdf",
+      "sourceTitle": "IB MAA syllabus content (2021).pdf",
+      "sectionId": "8447341142",
+      "materialsUrl": "https://nido.schoology.com/course/8447341142/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "3084",
+      "courseName": "IB Math HL Analysis & Approaches HL II",
+      "departments": [
+        "Math"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341143/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3495116435/source/283d946c0a6c852595cc37f14afae623.pdf",
+      "sourceTitle": "IB MAA syllabus content (2021).pdf",
+      "sectionId": "8447341143",
+      "materialsUrl": "https://nido.schoology.com/course/8447341143/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4011",
+      "courseName": "Science 9",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341145/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3498827503/source/42d39431545bd270df7487ffba1369ac.pdf",
+      "sourceTitle": "Science 9 Syllabus 2026-27 (Yester).pdf",
+      "sectionId": "8447341145",
+      "materialsUrl": "https://nido.schoology.com/course/8447341145/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4012",
+      "courseName": "Science 10",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1lVqKwI2ssrZTNfX9bq8TdhcUUIDpAmMm-Z3Vlpf2v1M/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Science 10 Syllabus",
+      "sectionId": "8447341151",
+      "materialsUrl": "https://nido.schoology.com/course/8447341151/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4019",
+      "courseName": "Astronomy",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "10-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1yf7AS78CJYf7VGNBSPhsRVCtgK-HswK0sGJ-Bzai37w/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Astronomy Syllabus 2026-27 (Moulton)",
+      "sectionId": "8447341158",
+      "materialsUrl": "https://nido.schoology.com/course/8447341158/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4026",
+      "courseName": "Engineering",
+      "departments": [
+        "Science",
+        "Design-Tech"
+      ],
+      "gradeRange": "10-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4027",
+      "courseName": "Culinary Science",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "10-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341164",
+      "materialsUrl": "https://nido.schoology.com/course/8447341164/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4031",
+      "courseName": "IB Biology SL II",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ynVJ2h-rZAyw7BzX0dBuuezEQjaRGFZa5QLCAnt0aSc/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Bio SL Syllabus",
+      "sectionId": "8447341500",
+      "materialsUrl": "https://nido.schoology.com/course/8447341500/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4041",
+      "courseName": "IB Biology HL II",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341502",
+      "materialsUrl": "https://nido.schoology.com/course/8447341502/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4050",
+      "courseName": "IB Biology SL I",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ynVJ2h-rZAyw7BzX0dBuuezEQjaRGFZa5QLCAnt0aSc/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Bio SL Syllabus",
+      "sectionId": "8447341505",
+      "materialsUrl": "https://nido.schoology.com/course/8447341505/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4051",
+      "courseName": "IB Biology HL I",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8466321292",
+      "materialsUrl": "https://nido.schoology.com/course/8466321292/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4101",
+      "courseName": "IB Chemistry SL II",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/12T2jXOSg2A9UXRV4DO3dAdmmUk4uIgWVjVLXRjF5AZM/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Chem SL Syllabus",
+      "sectionId": "8447341514",
+      "materialsUrl": "https://nido.schoology.com/course/8447341514/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4103",
+      "courseName": "IB Chemistry HL II",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341515/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3549544514/source/0d788da78e474aa52968e61321993c99.docx",
+      "sourceTitle": "Syllabus.docx",
+      "sectionId": "8447341515",
+      "materialsUrl": "https://nido.schoology.com/course/8447341515/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4106",
+      "courseName": "IB Chemistry SL I",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/12T2jXOSg2A9UXRV4DO3dAdmmUk4uIgWVjVLXRjF5AZM/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "IB Chem SL Syllabus",
+      "sectionId": "8447341516",
+      "materialsUrl": "https://nido.schoology.com/course/8447341516/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4107",
+      "courseName": "IB Chemistry HL I",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341517/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3549527415/source/0d788da78e474aa52968e61321993c99.docx",
+      "sourceTitle": "Class Syllabus",
+      "sectionId": "8447341517",
+      "materialsUrl": "https://nido.schoology.com/course/8447341517/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4202",
+      "courseName": "IB Physics SL II",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341519",
+      "materialsUrl": "https://nido.schoology.com/course/8447341519/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4204",
+      "courseName": "IB Physics HL II",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341520/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3494617355/source/98c9f46e030a36f637dde7c308f14fdc.docx",
+      "sourceTitle": "IB Physics HL Syllabus 2024-25 (Jasiewicz).docx",
+      "sectionId": "8447341520",
+      "materialsUrl": "https://nido.schoology.com/course/8447341520/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4205",
+      "courseName": "IB Physics SL I",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341521/materials/gp/8467965847",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341521",
+      "materialsUrl": "https://nido.schoology.com/course/8447341521/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4206",
+      "courseName": "IB Physics HL I",
+      "departments": [
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341522",
+      "materialsUrl": "https://nido.schoology.com/course/8447341522/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4305",
+      "courseName": "IB Env Systems & Society SL I",
+      "departments": [
+        "Social Studies (International)",
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341523",
+      "materialsUrl": "https://nido.schoology.com/course/8447341523/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4310",
+      "courseName": "IB Env. Systems & Society SL II",
+      "departments": [
+        "Social Studies (International)",
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341524",
+      "materialsUrl": "https://nido.schoology.com/course/8447341524/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4311",
+      "courseName": "IB Env Systems & Society HL I",
+      "departments": [
+        "Social Studies (International)",
+        "Science"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341525",
+      "materialsUrl": "https://nido.schoology.com/course/8447341525/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4312",
+      "courseName": "IB Env. Systems & Society HL II",
+      "departments": [
+        "Social Studies (International)",
+        "Science"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341526",
+      "materialsUrl": "https://nido.schoology.com/course/8447341526/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4315",
+      "courseName": "IB Design Technology SL I",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/188KBSrzB1lC-gVLbAYvajOo-7EnqGUBgxTpNx7Df7FE/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341533",
+      "materialsUrl": "https://nido.schoology.com/course/8447341533/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4316",
+      "courseName": "IB Design Technology HL I",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/188KBSrzB1lC-gVLbAYvajOo-7EnqGUBgxTpNx7Df7FE/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341534",
+      "materialsUrl": "https://nido.schoology.com/course/8447341534/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4317",
+      "courseName": "IB Design Technology SL II",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1OzURuDPFWH72yWb8U9JYOm000tcBAXuIcOr3CH5Hx0s/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341536",
+      "materialsUrl": "https://nido.schoology.com/course/8447341536/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "4318",
+      "courseName": "IB Design Technology HL II",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1OzURuDPFWH72yWb8U9JYOm000tcBAXuIcOr3CH5Hx0s/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341537",
+      "materialsUrl": "https://nido.schoology.com/course/8447341537/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5000",
+      "courseName": "Spanish 9",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341540",
+      "materialsUrl": "https://nido.schoology.com/course/8447341540/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5010",
+      "courseName": "Spanish 10",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1Z8sRXpOUd4pn7tMzHLBA7L4QbWBpPair0gk6_sY8ltk/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341547",
+      "materialsUrl": "https://nido.schoology.com/course/8447341547/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5031",
+      "courseName": "Spanish 12",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341550",
+      "materialsUrl": "https://nido.schoology.com/course/8447341550/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5040",
+      "courseName": "IB Spanish A: Literature SLI",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341551",
+      "materialsUrl": "https://nido.schoology.com/course/8447341551/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5041",
+      "courseName": "IB Spanish A: Literature SL II",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5042",
+      "courseName": "IB Spanish A; Language & Literature SLI",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341552",
+      "materialsUrl": "https://nido.schoology.com/course/8447341552/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5043",
+      "courseName": "IB Spanish A: Language & Literature SL II",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341556",
+      "materialsUrl": "https://nido.schoology.com/course/8447341556/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5044",
+      "courseName": "IB Spanish A; Language & Literature HLI",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341561",
+      "materialsUrl": "https://nido.schoology.com/course/8447341561/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5045",
+      "courseName": "IB Spanish A; Language & Literature HL II",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341527",
+      "materialsUrl": "https://nido.schoology.com/course/8447341527/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5050",
+      "courseName": "IB Spanish A: Literature HLI",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341567",
+      "materialsUrl": "https://nido.schoology.com/course/8447341567/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5051",
+      "courseName": "IB Spanish A: Literature HL II",
+      "departments": [
+        "Spanish as a First Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5154",
+      "courseName": "Spanish B Novice",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341568",
+      "materialsUrl": "https://nido.schoology.com/course/8447341568/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5155",
+      "courseName": "Spanish B Novice High",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1.0",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5156",
+      "courseName": "Spanish B Intermediate",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341570/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3506001664/source/fd83ba6b4c3ed6faf0328d05f89022ab.pdf",
+      "sourceTitle": "Syllabus Intermediate.pdf",
+      "sectionId": "8447341570",
+      "materialsUrl": "https://nido.schoology.com/course/8447341570/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5157",
+      "courseName": "Spanish B Advanced",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341573",
+      "materialsUrl": "https://nido.schoology.com/course/8447341573/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5158",
+      "courseName": "Spanish B Bridge",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341576/materials/gp/8467930416",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341576",
+      "materialsUrl": "https://nido.schoology.com/course/8447341576/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5200",
+      "courseName": "IB Spanish B HL I",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341577/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3505999884/source/367ccda4b63eb72ad487ba1217420f9d.pdf",
+      "sourceTitle": "Syllabus IB Spanish B HLI &amp;amp; II.pdf",
+      "sectionId": "8447341577",
+      "materialsUrl": "https://nido.schoology.com/course/8447341577/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5201",
+      "courseName": "IB Spanish B HL II",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341579/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3505999894/source/367ccda4b63eb72ad487ba1217420f9d.pdf",
+      "sourceTitle": "Syllabus IB Spanish B HLI &amp;amp; II.pdf",
+      "sectionId": "8447341579",
+      "materialsUrl": "https://nido.schoology.com/course/8447341579/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5202",
+      "courseName": "IB Spanish Ab Initio SL I",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341581",
+      "materialsUrl": "https://nido.schoology.com/course/8447341581/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5203",
+      "courseName": "IB Spanish Ab Initio SL II",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341582/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3507309717/source/e241e3c55f3e8fb515a84bddeb5107cb.pdf",
+      "sourceTitle": "Ab+Initio+Syllabus+(Span)",
+      "sectionId": "8447341582",
+      "materialsUrl": "https://nido.schoology.com/course/8447341582/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5205",
+      "courseName": "IB Spanish B SL I",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "10-11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://nido.schoology.com/course/8447341583/materials",
+      "urlKind": "materials-page",
+      "originalUrl": "https://api.schoology.com/v1/attachment/3505993849/source/6772acc36ab3fd84af24637b86e893cc.pdf",
+      "sourceTitle": "Programa IB español B SL",
+      "sectionId": "8447341583",
+      "materialsUrl": "https://nido.schoology.com/course/8447341583/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5206",
+      "courseName": "IB Spanish B SL II",
+      "departments": [
+        "Spanish as an Additional Language"
+      ],
+      "gradeRange": "11-12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341585",
+      "materialsUrl": "https://nido.schoology.com/course/8447341585/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5298",
+      "courseName": "School Supported Self Taught IB Language A: Literature SL I",
+      "departments": [
+        "Self Taught Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340869",
+      "materialsUrl": "https://nido.schoology.com/course/8447340869/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5299",
+      "courseName": "School Supported Self Taught IB Language A: Literature SL II",
+      "departments": [
+        "Self Taught Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340863",
+      "materialsUrl": "https://nido.schoology.com/course/8447340863/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5312",
+      "courseName": "IB French Ab Initio SL I",
+      "departments": [
+        "Self Taught Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341817",
+      "materialsUrl": "https://nido.schoology.com/course/8447341817/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5313",
+      "courseName": "IB French Ab Initio SL II",
+      "departments": [
+        "Self Taught Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340860",
+      "materialsUrl": "https://nido.schoology.com/course/8447340860/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5523",
+      "courseName": "IB Mandarin Ab Initio SL II",
+      "departments": [
+        "Self Taught Language"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340814",
+      "materialsUrl": "https://nido.schoology.com/course/8447340814/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "5524",
+      "courseName": "IB Mandarin Ab Initio SL I",
+      "departments": [
+        "Self Taught Language"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447340848",
+      "materialsUrl": "https://nido.schoology.com/course/8447340848/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6005",
+      "courseName": "Foundations of Art",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341587",
+      "materialsUrl": "https://nido.schoology.com/course/8447341587/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6038",
+      "courseName": "Visual Arts 2D Lab",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1sYMpeSBsHzWVidv7rlCUWLhkFhI3iGP45MXsb76VZLc/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus/Course Outline",
+      "sectionId": "8447341589",
+      "materialsUrl": "https://nido.schoology.com/course/8447341589/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6041",
+      "courseName": "IB Visual Arts SL II",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341591",
+      "materialsUrl": "https://nido.schoology.com/course/8447341591/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6042",
+      "courseName": "IB Visual Arts HL II",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1Il1WYxNqZ8peobM1jPhcOfYBfhATzj-kdrcWZHCmJ2s/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus/Course Outline",
+      "sectionId": "8447341592",
+      "materialsUrl": "https://nido.schoology.com/course/8447341592/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6043",
+      "courseName": "IB Visual Arts SL I",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1Il1WYxNqZ8peobM1jPhcOfYBfhATzj-kdrcWZHCmJ2s/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus/Course Outline",
+      "sectionId": "8447341593",
+      "materialsUrl": "https://nido.schoology.com/course/8447341593/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6044",
+      "courseName": "IB Visual Arts HL I",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1Il1WYxNqZ8peobM1jPhcOfYBfhATzj-kdrcWZHCmJ2s/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus/Course Outline",
+      "sectionId": "8447341594",
+      "materialsUrl": "https://nido.schoology.com/course/8447341594/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6045",
+      "courseName": "Visual Arts 3D Lab",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "possible",
+      "syllabusUrl": "https://docs.google.com/spreadsheets/d/17_wUn6a6RWB2hYuLYLUCAa0YWrtvvtJV1rSUUScr-nA/edit?gid=1461027426#gid=1461027426",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Course Overview",
+      "sectionId": "8447341596",
+      "materialsUrl": "https://nido.schoology.com/course/8447341596/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6047",
+      "courseName": "Digital Art Lab",
+      "departments": [
+        "Visual Arts"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6104",
+      "courseName": "Improv",
+      "departments": [
+        "Theater"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1sNct577Ux1v3NP-Yx1pnlni2CJBxxK9H18mtTysI8EQ/edit?usp=sharing",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Course Overview",
+      "sectionId": "8447341598",
+      "materialsUrl": "https://nido.schoology.com/course/8447341598/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6139",
+      "courseName": "Acting",
+      "departments": [
+        "Theater"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6153",
+      "courseName": "Stagecraft",
+      "departments": [
+        "Theater"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341601",
+      "materialsUrl": "https://nido.schoology.com/course/8447341601/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6210",
+      "courseName": "IB Music SL I",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341603",
+      "materialsUrl": "https://nido.schoology.com/course/8447341603/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6211",
+      "courseName": "IB Music HL I",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341604",
+      "materialsUrl": "https://nido.schoology.com/course/8447341604/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6212",
+      "courseName": "IB Music SL II",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341605",
+      "materialsUrl": "https://nido.schoology.com/course/8447341605/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6213",
+      "courseName": "IB Music HL II",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341606",
+      "materialsUrl": "https://nido.schoology.com/course/8447341606/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6219",
+      "courseName": "Foundations of Band",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1yeZGQZaVMjS0SWq3firAIdgI-kY9LWUgJm0sdYRlq6E/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Foundations of Band Syllabus",
+      "sectionId": "8447341607",
+      "materialsUrl": "https://nido.schoology.com/course/8447341607/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6220",
+      "courseName": "Concert Band",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1rbHrLnw-ItAl-iKCRXurgi_RJjrHaOgkFP2pvjIEsgY/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Concert Band Syllabus",
+      "sectionId": "8447341608",
+      "materialsUrl": "https://nido.schoology.com/course/8447341608/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6241",
+      "courseName": "Guitar",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1AFrgvwQ_dWWIYzjJRd9KlV8opZC_u5cZ7n-5uQT_5fI/preview?ouid=106823793504834154284",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341609",
+      "materialsUrl": "https://nido.schoology.com/course/8447341609/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6247",
+      "courseName": "Choir",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6409",
+      "courseName": "Music Composition",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341613",
+      "materialsUrl": "https://nido.schoology.com/course/8447341613/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6416",
+      "courseName": "Piano",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1pZ5dfBSSnjom8FQEa1OHI7fzvvuOMHKRLU1kTAZbvGs/edit?tab=t.0",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341614",
+      "materialsUrl": "https://nido.schoology.com/course/8447341614/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6418",
+      "courseName": "Percussion",
+      "departments": [
+        "Music"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6503",
+      "courseName": "IB Film SL I",
+      "departments": [
+        "Digital Design & Film"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1QSiUVRsj-1I3bEGfCUyW6DoL9hiB0hc_ymvlYb09Jck/edit?usp=sharing",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Course Overview",
+      "sectionId": "8447341765",
+      "materialsUrl": "https://nido.schoology.com/course/8447341765/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6504",
+      "courseName": "IB Film SL II",
+      "departments": [
+        "Digital Design & Film"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6506",
+      "courseName": "Graphic Design",
+      "departments": [
+        "Digital Design & Film"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1W-2ZQAfYjGm92Q35-GSaD0AbAQ4iLV12xay1tkyq1j4/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341767",
+      "materialsUrl": "https://nido.schoology.com/course/8447341767/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6507",
+      "courseName": "Foundations of Design Tech",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1yqMRWJZUpjlsIIVz6jAG1psa6SFf5ylMEQkiH4mgk0k/edit",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "FDT Syllabus",
+      "sectionId": "8455635262",
+      "materialsUrl": "https://nido.schoology.com/course/8455635262/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6508",
+      "courseName": "Design Lab",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1HzYRRS6yP2Z_n-VWESqF1lx5fXAnsQdKfJZ02ryER5I/edit",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341771",
+      "materialsUrl": "https://nido.schoology.com/course/8447341771/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6512",
+      "courseName": "IB Film HL I",
+      "departments": [
+        "Digital Design & Film"
+      ],
+      "gradeRange": "11",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1QSiUVRsj-1I3bEGfCUyW6DoL9hiB0hc_ymvlYb09Jck/edit?usp=sharing",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Course Overview",
+      "sectionId": "8447341773",
+      "materialsUrl": "https://nido.schoology.com/course/8447341773/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6513",
+      "courseName": "IB Film HL II",
+      "departments": [
+        "Digital Design & Film"
+      ],
+      "gradeRange": "12",
+      "credit": "1",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/1QSiUVRsj-1I3bEGfCUyW6DoL9hiB0hc_ymvlYb09Jck/edit?usp=sharing",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Course Overview",
+      "sectionId": "8447341774",
+      "materialsUrl": "https://nido.schoology.com/course/8447341774/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6514",
+      "courseName": "Foundations of Coding",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1ZaMpDtwgzVSZSVQqwXRZAMYt2xPGZkz6RfBmveZyhTM/edit?tab=t.0",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Syllabus",
+      "sectionId": "8447341775",
+      "materialsUrl": "https://nido.schoology.com/course/8447341775/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "6515",
+      "courseName": "Digital Filmmaking",
+      "departments": [
+        "Digital Design & Film"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "manual",
+      "syllabusUrl": "https://docs.google.com/document/d/15Oex2xlJSeIOtsOeoVzrWT0wABQE_tLiDM11EBn7x-c/edit?usp=sharing",
+      "urlKind": "manual",
+      "originalUrl": null,
+      "sourceTitle": "Course Overview",
+      "sectionId": "8447341776",
+      "materialsUrl": "https://nido.schoology.com/course/8447341776/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "7004",
+      "courseName": "Personal Fitness",
+      "departments": [
+        "Physical Education"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/14UJePWAR9CTqpCBODnxkKIUTiEmgIgAaUy_IreinDqg/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Personal Fitness Syllabus",
+      "sectionId": "8447341779",
+      "materialsUrl": "https://nido.schoology.com/course/8447341779/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "7040",
+      "courseName": "Foundations of PE",
+      "departments": [
+        "Physical Education"
+      ],
+      "gradeRange": "9-10",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341783",
+      "materialsUrl": "https://nido.schoology.com/course/8447341783/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "7041",
+      "courseName": "Wilderness Adventure",
+      "departments": [
+        "Physical Education"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "7045",
+      "courseName": "Mind & Body Wellness",
+      "departments": [
+        "Physical Education"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1FLUsJhUj8zq4QSJufJCXhykSeyhJStxBz5LoE5fcKjs/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Mind, Body, Wellness Syllabus",
+      "sectionId": "8447341791",
+      "materialsUrl": "https://nido.schoology.com/course/8447341791/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "7049",
+      "courseName": "Group Games & Leadership",
+      "departments": [
+        "Physical Education"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1WoglRSkJisEJHn0VAfB3TKmgVsQYgtECl0kZpAlV6Jg/edit?usp=sharing",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "Group Games and Leadership  - Syllabus",
+      "sectionId": "8447341793",
+      "materialsUrl": "https://nido.schoology.com/course/8447341793/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "8050",
+      "courseName": "Robotics",
+      "departments": [
+        "Design-Tech"
+      ],
+      "gradeRange": "9-12",
+      "credit": ".5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "8065",
+      "courseName": "First Year Seminar",
+      "departments": [
+        "Interdisciplinary"
+      ],
+      "gradeRange": "9",
+      "credit": "1",
+      "status": "found",
+      "confidence": "high",
+      "syllabusUrl": "https://docs.google.com/document/d/1027i2Zc-AukfBHxNOeOkK2kK89zwxxM502ZP1GrgmMc/edit?usp=drive_link",
+      "urlKind": "link",
+      "originalUrl": null,
+      "sourceTitle": "FYS Syllabus",
+      "sectionId": "8447341800",
+      "materialsUrl": "https://nido.schoology.com/course/8447341800/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "8066",
+      "courseName": "Changemakers",
+      "departments": [
+        "Interdisciplinary"
+      ],
+      "gradeRange": "10",
+      "credit": "1",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341806",
+      "materialsUrl": "https://nido.schoology.com/course/8447341806/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "8068",
+      "courseName": "Nidoships (Internships)",
+      "departments": [
+        "Interdisciplinary"
+      ],
+      "gradeRange": "11-12",
+      "credit": "0.5",
+      "status": "missing",
+      "confidence": "none",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": "8447341510",
+      "materialsUrl": "https://nido.schoology.com/course/8447341510/materials",
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "WWW9",
+      "courseName": "Week Without Walls 9",
+      "departments": [
+        "Outdoor Education"
+      ],
+      "gradeRange": "9",
+      "credit": ".25",
+      "status": "not_needed",
+      "confidence": "na",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "WWW10",
+      "courseName": "Week Without Walls 10",
+      "departments": [
+        "Outdoor Education"
+      ],
+      "gradeRange": "10",
+      "credit": ".25",
+      "status": "not_needed",
+      "confidence": "na",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "WWW11",
+      "courseName": "Week Without Walls 11",
+      "departments": [
+        "Outdoor Education"
+      ],
+      "gradeRange": "11",
+      "credit": ".25",
+      "status": "not_needed",
+      "confidence": "na",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    },
+    {
+      "courseCode": "WWW12",
+      "courseName": "Week Without Walls 12",
+      "departments": [
+        "Outdoor Education"
+      ],
+      "gradeRange": "12",
+      "credit": ".25",
+      "status": "not_needed",
+      "confidence": "na",
+      "syllabusUrl": null,
+      "urlKind": null,
+      "originalUrl": null,
+      "sourceTitle": null,
+      "sectionId": null,
+      "materialsUrl": null,
+      "note": null,
+      "source": "schoology-crawl",
+      "detectedAt": "2026-09-23T17:49:58.762Z"
+    }
+  ]
+}
