@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Can you make it work?</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/planck@1.5.0/dist/planck.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/p5.min.js"></script>
+</head>
+<body>
+  <main class="app">
+    <h1 class="title">Can you make it work?</h1>
+
+    <div id="stage" class="stage"></div>
+
+    <p id="message" class="message" aria-live="polite"></p>
+
+    <section id="controls" class="controls" aria-label="Controls">
+      <div class="group">
+        <span class="label">Ramp</span>
+        <div class="seg" id="ramp" role="group" aria-label="Ramp">
+          <button data-value="low">Low</button>
+          <button data-value="medium">Medium</button>
+          <button data-value="high">High</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="label">Cart load</span>
+        <div class="stepper">
+          <button id="brickMinus" aria-label="Remove a brick">−</button>
+          <span id="brickCount">8 bricks</span>
+          <button id="brickPlus" aria-label="Add a brick">+</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="label">Launcher</span>
+        <div class="seg" id="launcher" role="group" aria-label="Launcher">
+          <button data-value="free">Free</button>
+          <button data-value="anchored">Anchored</button>
+        </div>
+      </div>
+
+      <div class="group actions">
+        <button id="reset" class="btn">Reset</button>
+        <button id="run" class="btn primary">Run</button>
+      </div>
+
+      <div class="group">
+        <span class="label">Speed</span>
+        <div class="seg small" id="speed" role="group" aria-label="Playback speed">
+          <button data-value="0.25">¼×</button>
+          <button data-value="0.5">½×</button>
+          <button data-value="1">1×</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="notes">
+      <span id="pauseNote" hidden>Paused · P to resume</span>
+      <span id="cameraNote" hidden>Film camera on · C to turn off</span>
+    </p>
+
+    <aside id="teacher" class="teacher" hidden>
+      <header>
+        <strong>Teacher tuning</strong>
+        <span class="hint">T to hide · D debug overlay · C film camera · H hide UI · F fullscreen · P pause</span>
+      </header>
+      <div class="presets" id="presets">
+        <span>Presets:</span>
+        <button data-preset="low,8,0">Start (fails at ramp)</button>
+        <button data-preset="high,8,0">Ramp fixed</button>
+        <button data-preset="high,3,0">Ramp + load fixed</button>
+        <button data-preset="high,3,1">All fixed</button>
+      </div>
+      <div id="tuning" class="tuning"></div>
+      <div class="teacher-actions">
+        <button id="restoreDefaults" class="btn">Restore defaults</button>
+        <button id="copyValues" class="btn">Copy values</button>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/objects.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
