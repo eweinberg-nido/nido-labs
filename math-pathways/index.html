@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Pathways</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+/* ---------- tokens ---------- */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10); --hover: rgba(11,11,11,.05);
+  --node: #52514e; --node-none: #b5b4ad; --accent: #2a78d6;
+  /* IB course: hue = subject, depth = level (HL stronger) */
+  --c-aahl: #1c5cab; --c-aasl: #5598e7; --c-aihl: #b8461a; --c-aisl: #e8834f; --c-none: #d3d2cb;
+  /* Grade 9 track */
+  --t-adv: #2a78d6; --t-std: #eb6834;
+  /* Track change G9 -> G10 */
+  --ch-stayadv: #2a78d6; --ch-down: #eb6834; --ch-staystd: #1baf7a; --ch-up: #4a3aa7; --ch-other: #d3d2cb;
+  /* IB score, ordinal ramp */
+  --s1: #86b6ef; --s2: #6da7ec; --s3: #5598e7; --s4: #3987e5; --s5: #256abf; --s6: #184f95; --s7: #0d366b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10); --hover: rgba(255,255,255,.06);
+    --node: #c3c2b7; --node-none: #5a5955; --accent: #3987e5;
+    --c-aahl: #3987e5; --c-aasl: #2259a3; --c-aihl: #e06a30; --c-aisl: #a3421a; --c-none: #454541;
+    --t-adv: #3987e5; --t-std: #d95926;
+    --ch-stayadv: #3987e5; --ch-down: #d95926; --ch-staystd: #199e70; --ch-up: #e66767; --ch-other: #454541;
+    --s1: #184f95; --s2: #1c5cab; --s3: #2a78d6; --s4: #3987e5; --s5: #6da7ec; --s6: #9ec5f4; --s7: #cde2fb;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10); --hover: rgba(255,255,255,.06);
+  --node: #c3c2b7; --node-none: #5a5955; --accent: #3987e5;
+  --c-aahl: #3987e5; --c-aasl: #2259a3; --c-aihl: #e06a30; --c-aisl: #a3421a; --c-none: #454541;
+  --t-adv: #3987e5; --t-std: #d95926;
+  --ch-stayadv: #3987e5; --ch-down: #d95926; --ch-staystd: #199e70; --ch-up: #e66767; --ch-other: #454541;
+  --s1: #184f95; --s2: #1c5cab; --s3: #2a78d6; --s4: #3987e5; --s5: #6da7ec; --s6: #9ec5f4; --s7: #cde2fb;
+}
+
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+button, select, input { font: inherit; color: inherit; }
+button, .btn, select {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 10px; cursor: pointer; line-height: 1.3;
+}
+button:hover, .btn:hover { background: var(--hover); }
+button:focus-visible, select:focus-visible, .btn:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.muted { color: var(--muted); }
+.wrap { max-width: 1400px; margin: 0 auto; padding: 0 16px; }
+
+header.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding-top: 20px; padding-bottom: 12px; }
+h1 { font-size: 20px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+h1 .muted { font-weight: 400; }
+.meta { margin: 2px 0 0; color: var(--ink2); font-size: 13px; }
+.data-actions { display: flex; gap: 6px; align-items: center; }
+
+nav.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+nav.tabs button {
+  border: 0; border-radius: 0; background: none; padding: 8px 12px; color: var(--ink2);
+  border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+}
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+
+.filters { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 12px 0; }
+.fgroup { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.flabel { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 13px; }
+.chip[aria-pressed="false"] { color: var(--muted); }
+.chip[aria-pressed="false"] .sw { opacity: .25; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 18px 12px; margin-bottom: 16px;
+}
+.card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+h2 { font-size: 17px; margin: 0; font-weight: 650; }
+.vsub { margin: 2px 0 0; color: var(--ink2); font-size: 13px; }
+.tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.vcontrols { display: flex; gap: 12px; align-items: center; margin-right: 6px; font-size: 13px; color: var(--ink2); }
+.vcontrols label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 12px 0 4px; font-size: 12.5px; color: var(--ink2); }
+.legend span.item { display: inline-flex; align-items: center; gap: 6px; }
+.chart { position: relative; width: 100%; overflow-x: auto; margin-top: 6px; }
+.chart svg { display: block; width: 100%; height: auto; }
+.caption { color: var(--ink2); font-size: 12.5px; margin: 8px 0 0; max-width: 900px; }
+.foot { color: var(--muted); font-size: 11.5px; margin: 6px 0 0; }
+
+/* svg marks */
+.colhead { font-size: 12px; fill: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.ribbon { fill-opacity: .72; transition: fill-opacity .12s; cursor: pointer; }
+.ribbon.dim { fill-opacity: .10; }
+.ribbon.hot { fill-opacity: .95; }
+.jlabel { font-size: 11px; fill: var(--ink2); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3.5px; stroke-linejoin: round; }
+.node rect { fill: var(--node); }
+.node.none rect { fill: var(--node-none); }
+.node { cursor: pointer; }
+.nlabel, .plabel, .rlabel, .halo {
+  paint-order: stroke; stroke: var(--surface); stroke-width: 3.5px; stroke-linejoin: round;
+}
+.nlabel { font-size: 12.5px; fill: var(--ink); }
+.nlabel .ncount { font-weight: 650; }
+.node.none .nlabel { fill: var(--ink2); }
+.plabel { font-size: 11px; fill: var(--ink); font-weight: 600; pointer-events: none; }
+.axis path, .axis line { stroke: var(--axis); }
+.axis text { fill: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.rowline { stroke: var(--grid); }
+.rlabel { font-size: 13px; fill: var(--ink); }
+.rsub { font-size: 11.5px; fill: var(--muted); }
+.ghead { font-size: 12px; fill: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.stat { font-size: 13px; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.dot { stroke: var(--surface); stroke-width: 1.5; cursor: pointer; transition: opacity .12s; }
+.dot.dim { opacity: .15; }
+.dot.hot { stroke: var(--ink); stroke-width: 2; }
+.meanline { stroke: var(--ink2); stroke-width: 2; stroke-linecap: round; }
+.connector { fill: none; stroke: var(--ink); stroke-width: 1.5; pointer-events: none; }
+.rowhit { fill: transparent; cursor: pointer; }
+.rowhit:hover { fill: var(--hover); }
+.empty { padding: 48px 0; text-align: center; color: var(--ink2); }
+
+/* tables */
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+table.data th { color: var(--muted); font-weight: 500; font-size: 12px; position: sticky; top: 0; background: var(--surface); cursor: pointer; user-select: none; }
+table.data th[aria-sort] { color: var(--ink); }
+table.data td.num, table.data th.num { text-align: right; padding-right: 18px; }
+table.data tr:hover td { background: var(--hover); }
+.details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+.dhead { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+.tablewrap { max-height: 70vh; overflow: auto; }
+
+.notes { margin: 0 0 32px; color: var(--ink2); font-size: 13px; }
+.notes summary { cursor: pointer; color: var(--ink2); }
+.notes ul { margin: 6px 0; padding-left: 20px; }
+.error { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 24px 0; }
+
+/* tooltip */
+.tip {
+  position: fixed; z-index: 1000; pointer-events: none; max-width: 360px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 11px; font-size: 12.5px; line-height: 1.5;
+  box-shadow: 0 6px 24px rgba(0,0,0,.14);
+}
+.tip .t-title { font-weight: 650; margin-bottom: 3px; }
+.tip .t-big { font-size: 14px; }
+.tip .t-path { color: var(--ink2); }
+
+/* ---------- focus (single chart, full screen) ---------- */
+body.focus header.top, body.focus nav.tabs, body.focus .filters, body.focus .notes,
+body.focus .vcontrols, body.focus #focusBtn { display: none; }
+body.focus #exitBtn { display: inline-block !important; }
+body.focus .card {
+  position: fixed; inset: 0; z-index: 50; margin: 0; border-radius: 0; border: 0;
+  padding: 28px 36px; overflow: auto;
+}
+body.focus h2 { font-size: 22px; }
+body.focus .vsub { font-size: 14px; }
+
+/* ---------- print ---------- */
+@media print {
+  @page { size: landscape; margin: 12mm; }
+  body { background: #fff; }
+  header.top, nav.tabs, .filters, .notes, .tools, #details, .tip { display: none !important; }
+  .wrap { max-width: none; padding: 0; }
+  .card, body.focus .card { position: static; border: 0; padding: 0; margin: 0; }
+  .chart { overflow: visible; }
+  .chart svg { max-height: 150mm; }
+  .tablewrap { max-height: none; overflow: visible; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Math Pathways <span class="muted">· Grade 8 → IB</span></h1>
+      <p class="meta" id="meta">Loading data…</p>
+    </div>
+    <div class="data-actions">
+      <button id="reloadBtn" title="Reload pathways_data.tsv from the server">Reload data</button>
+      <label class="btn" title="Open a TSV file from your computer">Open TSV…<input type="file" id="fileInput" accept=".tsv,.txt,.tab" hidden></label>
+      <button id="themeBtn" title="Switch light / dark / automatic">◐</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+
+  <div class="filters" id="filters">
+    <div class="fgroup"><span class="flabel">IB course</span><div class="chips" id="courseChips"></div></div>
+    <div class="fgroup">
+      <label class="flabel" for="entrySel">Students</label>
+      <select id="entrySel">
+        <option value="all">Everyone</option>
+        <option value="g8">At school in Grade 8 (have MAP)</option>
+        <option value="later">Joined after Grade 8</option>
+      </select>
+    </div>
+    <div class="fgroup" id="cohortGroup" hidden>
+      <label class="flabel" for="cohortSel">Cohort</label>
+      <select id="cohortSel"></select>
+    </div>
+    <div class="fgroup">
+      <label class="flabel" for="groupSel">Order IB courses</label>
+      <select id="groupSel">
+        <option value="subject">By subject (A&amp;A, A&amp;I)</option>
+        <option value="level">By level (HL, SL)</option>
+      </select>
+    </div>
+    <div class="fgroup">
+      <label class="flabel" for="colorSel">Color by</label>
+      <select id="colorSel">
+        <option value="course">IB course</option>
+        <option value="score">IB score</option>
+        <option value="track">Grade 9 track</option>
+        <option value="change">Track change G9 → G10</option>
+      </select>
+    </div>
+  </div>
+
+  <main>
+    <section class="card" id="card">
+      <div class="card-head">
+        <div>
+          <h2 id="vtitle"></h2>
+          <p class="vsub" id="vsub"></p>
+        </div>
+        <div class="tools">
+          <span class="vcontrols" id="vcontrols"></span>
+          <button id="focusBtn" title="Show this chart full screen (Esc to exit)">⤢ Focus</button>
+          <button id="pngBtn" title="Save this chart as a PNG image">Save PNG</button>
+          <button id="printBtn" title="Print or save as PDF">Print</button>
+          <button id="exitBtn" hidden title="Exit focus (Esc)">Exit ✕</button>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="chart" id="chart"></div>
+      <p class="caption" id="caption"></p>
+      <div id="details"></div>
+      <p class="foot" id="foot"></p>
+    </section>
+    <details class="notes" id="notes" hidden>
+      <summary id="notesSummary">Data notes</summary>
+      <ul id="notesList"></ul>
+    </details>
+  </main>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+/* =====================================================================
+   Config
+   ===================================================================== */
+const DATA_FILE = 'pathways_data.tsv';
+const COURSE_ORDERS = {
+  subject: ['A&A HL', 'A&A SL', 'A&I HL', 'A&I SL'],   // A&A together, A&I together
+  level:   ['A&A HL', 'A&I HL', 'A&A SL', 'A&I SL']    // HL together, SL together
+};
+const courseOrder = () => COURSE_ORDERS[state.courseGroup];
+const COURSE_VAR = { 'A&A HL': '--c-aahl', 'A&A SL': '--c-aasl', 'A&I HL': '--c-aihl', 'A&I SL': '--c-aisl' };
+const COURSE_NAME = {
+  'A&A HL': 'Analysis & Approaches HL', 'A&A SL': 'Analysis & Approaches SL',
+  'A&I HL': 'Applications & Interpretation HL', 'A&I SL': 'Applications & Interpretation SL'
+};
+const CHANGE = [
+  { key: 'stayadv', label: 'Stayed advanced' },
+  { key: 'down',    label: 'Advanced → standard' },
+  { key: 'staystd', label: 'Stayed standard' },
+  { key: 'up',      label: 'Standard → advanced' },
+  { key: 'other',   label: 'Joined after G9 / incomplete record' }
+];
+const VIEWS = [
+  { key: 'flow',     label: 'Pathways',          title: 'Pathways from Grade 8 to IB' },
+  { key: 'outcomes', label: 'Outcomes by track', title: 'IB outcomes by Grade 9 → 10 track' },
+  { key: 'grades',   label: 'Course grades',     title: 'Grades in the tracked courses' },
+  { key: 'predict',  label: 'Predictors of IB',  title: 'What predicts the IB score?' },
+  { key: 'table',    label: 'Data table',        title: 'All students' }
+];
+const X_VARS = {
+  rit:  { label: 'Grade 8 MAP RIT',        short: 'G8 RIT' },
+  pct:  { label: 'Grade 8 MAP percentile', short: 'G8 percentile' },
+  g9g:  { label: 'Grade 9 course grade',   short: 'G9 grade' },
+  g10g: { label: 'Grade 10 course grade',  short: 'G10 grade' }
+};
+
+/* =====================================================================
+   State (mirrored to the URL hash so a view can be bookmarked / shared)
+   ===================================================================== */
+const state = {
+  view: 'flow', color: 'course', entry: 'all', cohort: 'all', courses: null,
+  courseGroup: 'subject', showScore: false, showCounts: true, xVar: 'rit', sort: { key: 'id', dir: 1 }, pinned: null
+};
+let ALL = [], NOTES = [], SOURCE = '', LOADED_AT = null, COURSES = [], COHORTS = [];
+
+function readHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (VIEWS.some(v => v.key === p.get('view'))) state.view = p.get('view');
+  if (['course', 'score', 'track', 'change'].includes(p.get('color'))) state.color = p.get('color');
+  if (['all', 'g8', 'later'].includes(p.get('entry'))) state.entry = p.get('entry');
+  if (p.get('x') in X_VARS) state.xVar = p.get('x');
+  if (p.has('score')) state.showScore = p.get('score') !== '0';
+  if (p.has('counts')) state.showCounts = p.get('counts') !== '0';
+  if (p.get('courses')) state.courses = new Set(p.get('courses').split(','));
+  if (p.get('cohort')) state.cohort = p.get('cohort');
+  if (p.get('group') in COURSE_ORDERS) state.courseGroup = p.get('group');
+}
+function writeHash() {
+  const p = new URLSearchParams({ view: state.view, color: state.color, entry: state.entry });
+  if (state.view === 'predict') p.set('x', state.xVar);
+  if (state.view === 'flow') { p.set('score', state.showScore ? 1 : 0); p.set('counts', state.showCounts ? 1 : 0); }
+  if (state.courses && state.courses.size < COURSES.length) p.set('courses', [...state.courses].join(','));
+  if (state.cohort !== 'all') p.set('cohort', state.cohort);
+  if (state.courseGroup !== 'subject') p.set('group', state.courseGroup);
+  history.replaceState(null, '', '#' + p.toString());
+}
+
+/* =====================================================================
+   Loading & parsing
+   ===================================================================== */
+async function loadFromServer() {
+  try {
+    const res = await fetch(DATA_FILE + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    ingest(await res.text(), DATA_FILE);
+  } catch (err) {
+    showLoadError(err);
+  }
+}
+function showLoadError(err) {
+  document.getElementById('meta').textContent = 'No data loaded';
+  document.getElementById('chart').innerHTML = `
+    <div class="error">
+      <b>Couldn't load <code>${DATA_FILE}</code></b> <span class="muted">(${escapeHTML(err.message || String(err))})</span>
+      <p>Browsers block a page opened directly from disk from reading files next to it.
+      Open this page through a local server (for example VS Code's <i>Live Server</i>, or
+      <code>python3 -m http.server</code> in this folder), or use <b>Open TSV…</b> above to choose the file.</p>
+    </div>`;
+}
+function ingest(text, sourceName) {
+  try {
+    const { students, notes } = parse(text);
+    ALL = students; NOTES = notes; SOURCE = sourceName; LOADED_AT = new Date();
+    COURSES = [...new Set(ALL.map(d => d.course))].sort(courseCmp);
+    COHORTS = [...new Set(ALL.map(d => d.cohort).filter(Boolean))].sort();
+    if (!state.courses) state.courses = new Set(COURSES);
+    else {
+      state.courses = new Set(COURSES.filter(c => state.courses.has(c)));
+      if (!state.courses.size) state.courses = new Set(COURSES);
+    }
+    if (state.cohort !== 'all' && !COHORTS.includes(state.cohort)) state.cohort = 'all';
+    buildFilters();
+    renderNotes();
+    render();
+  } catch (err) {
+    showLoadError(err);
+  }
+}
+
+function parse(text) {
+  const rows = d3.tsvParse(text.replace(/\r/g, ''));
+  const find = (...names) => rows.columns.find(c => names.some(n => c.trim().toLowerCase() === n.toLowerCase()));
+  const C = {
+    id: find('Student ID', 'ID'), ib: find('IB Score'), course: find('IB Course'),
+    rit: find('G8 RIT'), pct: find('G8 RIT Percentile', 'G8 Percentile'),
+    g9: find('G9 Course'), g9g: find('G9 Y1 Grade', 'G9 Grade'),
+    g10: find('G10 Course'), g10g: find('G10 Y1 Grade', 'G10 Grade'),
+    cohort: find('Cohort', 'Class', 'Graduating Class', 'Graduation Year')
+  };
+  const required = ['id', 'ib', 'course', 'rit', 'pct', 'g9', 'g9g', 'g10', 'g10g'];
+  const missing = required.filter(k => !C[k]);
+  if (missing.length) throw new Error('Missing column(s): ' + missing.join(', '));
+
+  const notes = [], students = [];
+  rows.forEach((r, i) => {
+    const get = k => (C[k] ? (r[C[k]] ?? '') : '').trim();
+    const id = get('id');
+    if (!id) {
+      if (Object.values(r).some(v => v && v.trim())) notes.push(`Row ${i + 2}: no Student ID, so the row was skipped.`);
+      return;
+    }
+    const num = (k, lo, hi, what) => {
+      const s = get(k);
+      if (!s) return null;
+      const v = +s.replace(',', '.');
+      if (!isFinite(v)) { notes.push(`Student ${id}: ${what} "${s}" is not a number (ignored).`); return null; }
+      if (v < lo || v > hi) { notes.push(`Student ${id}: ${what} ${s} is outside ${lo}–${hi} (ignored).`); return null; }
+      return v;
+    };
+    const d = {
+      id, idNum: +id,
+      ib: num('ib', 1, 7, 'IB score'),
+      course: get('course') || 'Unknown',
+      rit: num('rit', 100, 350, 'G8 RIT'),
+      pct: num('pct', 1, 99, 'G8 percentile'),
+      g9: get('g9') || null, g9g: num('g9g', 10, 100, 'G9 grade'),
+      g10: get('g10') || null, g10g: num('g10g', 10, 100, 'G10 grade'),
+      cohort: get('cohort') || null
+    };
+    if (d.ib == null) notes.push(`Student ${id}: no IB score.`);
+    if (!COURSE_VAR[d.course]) notes.push(`Student ${id}: unrecognized IB course "${d.course}".`);
+    if ((d.rit == null) !== (d.pct == null)) notes.push(`Student ${id}: has ${d.rit != null ? 'RIT but no percentile' : 'percentile but no RIT'}.`);
+    if (d.g9 && d.g9g == null) notes.push(`Student ${id}: in ${d.g9} but no G9 grade.`);
+    if (d.g10 && d.g10g == null) notes.push(`Student ${id}: in ${d.g10} but no G10 grade.`);
+
+    // Pathway states per year. NY = not yet at school, NR = was here before but no record this year.
+    const hasG8 = d.rit != null || d.pct != null;
+    d.s8 = hasG8 ? 'G8' : 'NY';
+    d.s9 = d.g9 || (hasG8 ? 'NR' : 'NY');
+    d.s10 = d.g10 || (hasG8 || d.g9 ? 'NR' : 'NY');
+    d.ibKey = d.ib == null ? 'none' : String(d.ib);
+    d.entry = hasG8 ? 'G8' : d.g9 ? 'G9' : d.g10 ? 'G10' : 'G11';
+    if (d.s9 === 'NR' || (d.s10 === 'NR')) notes.push(`Student ${id}: gap in course record (${d.s9 === 'NR' ? 'no G9 course' : 'no G10 course'}) — the band breaks for that year.`);
+    d.change = (d.g9 && d.g10)
+      ? (isAdv(d.g9) ? (isAdv(d.g10) ? 'stayadv' : 'down') : (isAdv(d.g10) ? 'up' : 'staystd'))
+      : 'other';
+    students.push(d);
+  });
+  return { students, notes };
+}
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+const isAdv = s => /adv/i.test(s || '');
+const courseCmp = (a, b) => {
+  const ia = courseOrder().indexOf(a), ib = courseOrder().indexOf(b);
+  return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || d3.ascending(a, b);
+};
+const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const avg = (arr, f) => { const v = arr.map(f).filter(x => x != null); return v.length ? d3.mean(v) : null; };
+const f1 = v => v == null ? '–' : v.toFixed(1);
+const f0 = v => v == null ? '–' : Math.round(v).toString();
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+function filtered() {
+  return ALL.filter(d =>
+    state.courses.has(d.course) &&
+    (state.entry === 'all' || (state.entry === 'g8' ? d.entry === 'G8' : d.entry !== 'G8')) &&
+    (state.cohort === 'all' || d.cohort === state.cohort));
+}
+
+// Label for a pathway state in a given column
+function stateLabel(col, v) {
+  if (v === 'NY') return 'Not yet at school';
+  if (v === 'NR') return 'No record';
+  if (col === 's8') return 'Grade 8 (MAP)';
+  if (col === 'ibKey') return v === 'none' ? 'No score' : 'IB ' + v;
+  return v;
+}
+// Vertical order of states in a column: advanced first, then standard, then gaps / not-yet
+function stateRank(col, v) {
+  if (v === 'NY') return 1000;
+  if (v === 'NR') return 900;
+  if (col === 'course') { const i = courseOrder().indexOf(v); return i < 0 ? 50 : i; }
+  if (col === 'ibKey') return v === 'none' ? 800 : 7 - +v;
+  return isAdv(v) ? 0 : 10;
+}
+function shortTrack(d) {
+  const s = v => v === 'NY' ? null : v === 'NR' ? 'no record' : v;
+  if (d.s9 === 'NY' && d.s10 === 'NY') return 'Joined in Grade 11';
+  if (d.s9 === 'NY') return `Joined in G10 → ${d.s10}`;
+  if (d.s9 === 'NR' && d.s10 === 'NR') return 'G8 only (no G9/G10 record)';
+  return `${s(d.s9)} → ${s(d.s10)}`;
+}
+
+/* ---------- color by mode ---------- */
+function colorOf(d) {
+  switch (state.color) {
+    case 'score':  return d.ib ? `var(--s${d.ib})` : 'var(--c-none)';
+    case 'track':  return d.g9 ? (isAdv(d.g9) ? 'var(--t-adv)' : 'var(--t-std)') : 'var(--c-none)';
+    case 'change': return `var(--ch-${d.change})`;
+    default:       return COURSE_VAR[d.course] ? `var(${COURSE_VAR[d.course]})` : 'var(--c-none)';
+  }
+}
+function legendItems(data) {
+  const has = f => data.some(f);
+  switch (state.color) {
+    case 'score':
+      return d3.range(7, 0, -1).filter(s => has(d => d.ib === s)).map(s => ({ label: 'IB ' + s, color: `var(--s${s})` }));
+    case 'track':
+      return [
+        { label: 'Math 9 Advanced', color: 'var(--t-adv)', on: has(d => isAdv(d.g9)) },
+        { label: 'Math 9', color: 'var(--t-std)', on: has(d => d.g9 && !isAdv(d.g9)) },
+        { label: 'Not in Grade 9 here', color: 'var(--c-none)', on: has(d => !d.g9) }
+      ].filter(x => x.on);
+    case 'change':
+      return CHANGE.filter(c => has(d => d.change === c.key)).map(c => ({ label: c.label, color: `var(--ch-${c.key})` }));
+    default:
+      return COURSES.filter(c => has(d => d.course === c)).map(c => ({ label: c, color: COURSE_VAR[c] ? `var(${COURSE_VAR[c]})` : 'var(--c-none)' }));
+  }
+}
+const colorModeLabel = () => document.querySelector(`#colorSel option[value="${state.color}"]`).textContent;
+
+/* ---------- tooltip ---------- */
+const tip = document.getElementById('tip');
+function showTip(html, ev) { tip.innerHTML = html; tip.hidden = false; moveTip(ev); }
+function moveTip(ev) {
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+function hideTip() { tip.hidden = true; }
+
+function scoreDist(sts) {
+  const c = d3.rollup(sts, v => v.length, d => d.ib);
+  return [...c].sort((a, b) => (b[0] ?? 0) - (a[0] ?? 0)).map(([s, n]) => `${s ?? '–'}: ${n}`).join(' · ');
+}
+function groupTipHTML(title, sts, total) {
+  const pct = total ? Math.round(100 * sts.length / total) : 0;
+  return `<div class="t-title">${title}</div>
+    <div class="t-big"><b>${plural(sts.length, 'student')}</b> <span class="muted">· ${pct}% of those shown</span></div>
+    <div>Mean IB score <b>${f1(avg(sts, d => d.ib))}</b> <span class="muted">(${scoreDist(sts)})</span></div>
+    <div class="muted">Avg G8 RIT ${f0(avg(sts, d => d.rit))} · G9 grade ${f1(avg(sts, d => d.g9g))} · G10 grade ${f1(avg(sts, d => d.g10g))}</div>
+    <div class="muted">Click to list these students</div>`;
+}
+function studentTipHTML(d) {
+  const ch = CHANGE.find(c => c.key === d.change).label;
+  return `<div class="t-title">Student ${escapeHTML(d.id)} · ${escapeHTML(d.course)} · IB ${d.ib ?? '–'}</div>
+    <div>G8 MAP: ${d.rit != null || d.pct != null ? `RIT ${d.rit ?? '–'} (${d.pct ?? '–'} percentile)` : '<span class="muted">not at school</span>'}</div>
+    <div>G9: ${d.g9 ? `${escapeHTML(d.g9)} — ${d.g9g ?? '–'}` : '<span class="muted">' + stateLabel('s9', d.s9) + '</span>'}</div>
+    <div>G10: ${d.g10 ? `${escapeHTML(d.g10)} — ${d.g10g ?? '–'}` : '<span class="muted">' + stateLabel('s10', d.s10) + '</span>'}</div>
+    <div class="muted">${ch}</div>`;
+}
+
+/* ---------- pinned selection → student list ---------- */
+function setPinned(p) {
+  state.pinned = p;
+  renderDetails();
+}
+function renderDetails() {
+  const el = document.getElementById('details');
+  const p = state.pinned;
+  if (!p || p.view !== state.view) { el.innerHTML = ''; return; }
+  const sts = filtered().filter(p.test);
+  el.innerHTML = `<div class="details">
+    <div class="dhead"><b>${p.title}</b><span class="muted">${plural(sts.length, 'student')}</span><button id="clearPin">Clear</button></div>
+    <div class="tablewrap">${studentTable(sts, false)}</div></div>`;
+  document.getElementById('clearPin').onclick = () => { setPinned(null); render(); };
+}
+
+/* =====================================================================
+   Filters, tabs, chrome
+   ===================================================================== */
+function buildTabs() {
+  const nav = document.getElementById('tabs');
+  nav.innerHTML = '';
+  VIEWS.forEach(v => {
+    const b = document.createElement('button');
+    b.textContent = v.label; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', v.key === state.view);
+    b.onclick = () => { state.view = v.key; state.pinned = null; buildTabs(); render(); };
+    nav.appendChild(b);
+  });
+}
+function buildFilters() {
+  const box = document.getElementById('courseChips');
+  box.innerHTML = '';
+  COURSES.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.title = COURSE_NAME[c] || c;
+    b.setAttribute('aria-pressed', state.courses.has(c));
+    b.innerHTML = `<span class="sw" style="background:${COURSE_VAR[c] ? `var(${COURSE_VAR[c]})` : 'var(--c-none)'}"></span>${escapeHTML(c)}`;
+    b.onclick = () => {
+      if (state.courses.has(c)) { if (state.courses.size > 1) state.courses.delete(c); }
+      else state.courses.add(c);
+      buildFilters(); render();
+    };
+    box.appendChild(b);
+  });
+  document.getElementById('entrySel').value = state.entry;
+  document.getElementById('colorSel').value = state.color;
+  document.getElementById('groupSel').value = state.courseGroup;
+  const cg = document.getElementById('cohortGroup');
+  cg.hidden = COHORTS.length < 2;
+  if (COHORTS.length >= 2) {
+    const sel = document.getElementById('cohortSel');
+    sel.innerHTML = `<option value="all">All cohorts</option>` + COHORTS.map(c => `<option>${escapeHTML(c)}</option>`).join('');
+    sel.value = state.cohort;
+  }
+}
+function renderNotes() {
+  const box = document.getElementById('notes');
+  box.hidden = !NOTES.length;
+  document.getElementById('notesSummary').textContent = `Data notes (${NOTES.length})`;
+  document.getElementById('notesList').innerHTML = NOTES.map(n => `<li>${escapeHTML(n)}</li>`).join('');
+}
+function filterSummary(data) {
+  const parts = [plural(data.length, 'student')];
+  parts.push(state.courses.size === COURSES.length ? 'all IB courses' : [...state.courses].sort(courseCmp).join(', '));
+  if (state.entry === 'g8') parts.push('at school in Grade 8');
+  if (state.entry === 'later') parts.push('joined after Grade 8');
+  if (state.cohort !== 'all') parts.push('cohort ' + state.cohort);
+  if (state.view !== 'table') parts.push('colored by ' + colorModeLabel().replace(/^[A-Z][a-z]/, w => w.toLowerCase()));
+  return parts.join(' · ');
+}
+
+/* =====================================================================
+   Render dispatcher
+   ===================================================================== */
+let lastWidth = 0;
+function render() {
+  if (!ALL.length) return;
+  hideTip();
+  writeHash();
+  const data = filtered();
+  const view = VIEWS.find(v => v.key === state.view);
+  document.getElementById('vtitle').textContent = view.title;
+  document.getElementById('vsub').textContent = filterSummary(data);
+  document.getElementById('meta').textContent =
+    `${plural(ALL.length, 'student')} in the IB cohort · source: ${SOURCE}`;
+  document.getElementById('foot').textContent =
+    `Source: ${SOURCE} · loaded ${LOADED_AT.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}`;
+  document.getElementById('pngBtn').hidden = state.view === 'table';
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = state.view === 'table' ? '' :
+    legendItems(data).map(i => `<span class="item"><span class="sw" style="background:${i.color}"></span>${escapeHTML(i.label)}</span>`).join('');
+
+  renderViewControls();
+  const el = document.getElementById('chart');
+  el.innerHTML = '';
+  lastWidth = el.clientWidth;
+  if (!data.length) { el.innerHTML = '<div class="empty">No students match these filters.</div>'; return; }
+  ({ flow: renderFlow, outcomes: renderOutcomes, grades: renderGrades, predict: renderPredict, table: renderTable })[state.view](el, data);
+  renderDetails();
+}
+
+function renderViewControls() {
+  const box = document.getElementById('vcontrols');
+  if (state.view === 'flow') {
+    box.innerHTML = `
+      <label><input type="checkbox" id="optScore" ${state.showScore ? 'checked' : ''}> IB score column</label>
+      <label><input type="checkbox" id="optCounts" ${state.showCounts ? 'checked' : ''}> Path counts</label>`;
+    box.querySelector('#optScore').onchange = e => { state.showScore = e.target.checked; state.pinned = null; render(); };
+    box.querySelector('#optCounts').onchange = e => { state.showCounts = e.target.checked; render(); };
+  } else if (state.view === 'predict') {
+    box.innerHTML = `<label>Compare IB score with
+      <select id="optX">${Object.entries(X_VARS).map(([k, v]) => `<option value="${k}" ${k === state.xVar ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label>`;
+    box.querySelector('#optX').onchange = e => { state.xVar = e.target.value; render(); };
+  } else box.innerHTML = '';
+}
+
+function chartHeight(el) {
+  if (document.body.classList.contains('focus')) {
+    const top = el.getBoundingClientRect().top;
+    return Math.max(360, innerHeight - top - 90);
+  }
+  return Math.max(460, Math.min(760, innerHeight - 250));
+}
+function makeSVG(el, W, H) {
+  return d3.select(el).append('svg')
+    .attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H)
+    .attr('font-family', 'system-ui, -apple-system, Segoe UI, sans-serif');
+}
+
+/* =====================================================================
+   View 1 — Pathways (path bundles from G8 through IB)
+   Every distinct full path is one ribbon; thickness = number of students.
+   ===================================================================== */
+function renderFlow(el, data) {
+  const cols = [
+    { key: 's8', label: 'Grade 8' }, { key: 's9', label: 'Grade 9' },
+    { key: 's10', label: 'Grade 10' }, { key: 'course', label: 'IB course' }
+  ];
+  if (state.showScore) cols.push({ key: 'ibKey', label: 'IB score' });
+  const nc = cols.length, N = data.length;
+  const W = Math.max(720, el.clientWidth), H = chartHeight(el);
+  const m = { t: 30, r: 118, b: 8, l: 2 }, nodeW = 10, pad = 18;
+
+  // Nodes per column — only years a student actually has a course (no "not yet at school" / "no record" nodes)
+  const real = v => v !== 'NY' && v !== 'NR';
+  const nodes = cols.map((c, i) =>
+    [...d3.group(data.filter(d => real(d[c.key])), d => d[c.key])]
+      .map(([v, sts]) => ({ col: i, key: c.key, v, sts, n: sts.length, label: stateLabel(c.key, v) }))
+      .sort((a, b) => stateRank(c.key, a.v) - stateRank(c.key, b.v) || d3.ascending(a.v, b.v)));
+  const rankIdx = nodes.map(ns => new Map(ns.map((n, j) => [n.v, j])));
+  const k = d3.min(nodes, ns => (H - m.t - m.b - (ns.length - 1) * pad) / d3.sum(ns, n => n.n));
+  const xs = cols.map((c, i) => m.l + i * (W - m.l - m.r - nodeW) / (nc - 1));
+  nodes.forEach((ns, i) => {
+    const used = d3.sum(ns, n => n.n) * k + (ns.length - 1) * pad;
+    let y = m.t + (H - m.t - m.b - used) / 2;
+    ns.forEach(n => { n.x = xs[i]; n.y = y; n.h = n.n * k; y += n.h + pad; });
+  });
+
+  // Bundles: one per distinct visible path (split by score when coloring by score without the score column)
+  const groupKey = d => cols.map(c => d[c.key]).join('|');
+  const split = state.color === 'score' && !state.showScore;
+  const bundles = [...d3.group(data, d => groupKey(d) + (split ? '|' + d.ibKey : ''))].map(([key, sts]) => ({
+    key, group: groupKey(sts[0]), states: cols.map(c => sts[0][c.key]), sts, n: sts.length,
+    ib: sts[0].ib ?? 0, yIn: [], yOut: []
+  }));
+  const cmpSeq = (a, b, idxs) => {
+    for (const j of idxs) {
+      const d = (rankIdx[j].get(a.states[j]) ?? 999) - (rankIdx[j].get(b.states[j]) ?? 999);
+      if (d) return d;
+    }
+    return b.ib - a.ib;
+  };
+  // Stack bundles inside each node. Each bundle keeps ONE position per bar (enters and leaves at the same height),
+  // so a path never appears to jump. Order within a bar by the average height of the bundle's neighbours
+  // on both sides (barycentre), refined over a few passes to reduce crossings.
+  const nodeOf = (b, j) => nodes[j].find(n => n.v === b.states[j]);
+  const center = (b, j) => b.yIn[j] != null ? b.yIn[j] + b.n * k / 2 : (n => n.y + n.h / 2)(nodeOf(b, j));
+  for (let pass = 0; pass < 6; pass++) {
+    for (let i = 0; i < nc; i++) {
+      const fwd = d3.range(i + 1, nc), back = d3.range(i - 1, -1, -1);
+      for (const node of nodes[i]) {
+        const mine = bundles.filter(b => b.states[i] === node.v);
+        mine.forEach(b => {
+          const nb = [i - 1, i + 1].filter(j => j >= 0 && j < nc && real(b.states[j]));
+          // new arrivals (no course the year before) always enter at the bottom of the bar
+          b.key = i > 0 && !real(b.states[i - 1]) ? Infinity
+            : nb.length ? d3.mean(nb, j => center(b, j)) : node.y + node.h / 2;
+        });
+        let y = node.y;
+        mine.sort((a, b) => (a.key === b.key ? 0 : a.key - b.key) || cmpSeq(a, b, [...fwd, ...back]))
+          .forEach(b => { b.yIn[i] = b.yOut[i] = y; y += b.n * k; });
+      }
+    }
+  }
+  const gap = k > 4 ? 1 : 0;
+  // Bands are drawn only between two years with a course. Where a student's record starts (joined later,
+  // or after a gap) the band fades in just before the bar; where it stops before a gap it fades out.
+  const stubW = Math.min(46, (xs[1] - xs[0]) * 0.18);
+  const bandH = b => Math.max(0.8, b.n * k - gap);
+  const rectD = (x, y, w, h) => `M${x},${y}h${w}v${h}h${-w}Z`;
+  const pathD = b => {
+    const h = bandH(b);
+    let d = '';
+    for (let i = 0; i < nc - 1; i++) {
+      if (!real(b.states[i]) || !real(b.states[i + 1])) continue;
+      const x0 = xs[i] + nodeW, x1 = xs[i + 1], xm = (x0 + x1) / 2;
+      const y0 = b.yOut[i] + gap / 2, y1 = b.yIn[i + 1] + gap / 2;
+      d += `M${x0},${y0}C${xm},${y0} ${xm},${y1} ${x1},${y1}L${x1},${y1 + h}C${xm},${y1 + h} ${xm},${y0 + h} ${x0},${y0 + h}Z`;
+    }
+    return d || null;
+  };
+  const stubInD = b => d3.range(1, nc).filter(i => real(b.states[i]) && !real(b.states[i - 1]))
+    .map(i => rectD(xs[i] - stubW, b.yIn[i] + gap / 2, stubW, bandH(b))).join('') || null;
+  const stubOutD = b => d3.range(0, nc - 1).filter(i => real(b.states[i]) && !real(b.states[i + 1]))
+    .map(i => rectD(xs[i] + nodeW, b.yOut[i] + gap / 2, stubW, bandH(b))).join('') || null;
+  // "Not yet at school → Not yet at school → Math 10 → A&A SL" reads as "Joined in Grade 10 → Math 10 → A&A SL"
+  const groupTitle = g => {
+    const st = g.split('|');
+    let j = 0;
+    while (j < 3 && st[j] === 'NY') j++;
+    const parts = st.slice(j).map((v, i) => stateLabel(cols[i + j].key, v));
+    if (j) parts.unshift(`Joined in Grade ${8 + j}`);
+    return parts.join(' → ');
+  };
+
+  const svg = makeSVG(el, W, H);
+  svg.on('click', () => { if (state.pinned) { setPinned(null); highlight(null); } });
+  svg.append('g').selectAll('text').data(cols).join('text')
+    .attr('class', 'colhead').attr('x', (c, i) => xs[i]).attr('y', 14).text(c => c.label);
+
+  const defs = svg.append('defs');
+  [['fadeIn', 0, 1], ['fadeOut', 1, 0]].forEach(([id, a, z]) => {
+    const g = defs.append('linearGradient').attr('id', id + 'G');
+    g.append('stop').attr('offset', 0).attr('stop-color', '#fff').attr('stop-opacity', a);
+    g.append('stop').attr('offset', 1).attr('stop-color', '#fff').attr('stop-opacity', z);
+    defs.append('mask').attr('id', id).attr('maskContentUnits', 'objectBoundingBox')
+      .append('rect').attr('width', 1).attr('height', 1).attr('fill', `url(#${id}G)`);
+  });
+  const gR = svg.append('g');
+  gR.selectAll('path.solid').data(bundles).join('path')
+    .attr('class', 'ribbon solid').attr('d', pathD).style('fill', b => colorOf(b.sts[0]));
+  gR.selectAll('path.stubin').data(bundles).join('path')
+    .attr('class', 'ribbon stubin').attr('d', stubInD).attr('mask', 'url(#fadeIn)').style('fill', b => colorOf(b.sts[0]));
+  gR.selectAll('path.stubout').data(bundles).join('path')
+    .attr('class', 'ribbon stubout').attr('d', stubOutD).attr('mask', 'url(#fadeOut)').style('fill', b => colorOf(b.sts[0]));
+  const ribbons = gR.selectAll('path.ribbon').filter(function () { return this.getAttribute('d'); })
+    .on('mouseenter', (ev, b) => {
+      highlight(x => x.group === b.group);
+      showTip(groupTipHTML(groupTitle(b.group), data.filter(d => groupKey(d) === b.group), N), ev);
+    })
+    .on('mousemove', moveTip)
+    .on('mouseleave', () => { highlight(null); hideTip(); })
+    .on('click', (ev, b) => {
+      ev.stopPropagation();
+      const g = b.group;
+      setPinned({ view: 'flow', title: groupTitle(g), test: d => groupKey(d) === g, hl: x => x.group === g });
+      highlight(null);
+    });
+
+  const gn = svg.append('g').selectAll('g').data(nodes.flat()).join('g')
+    .attr('class', n => 'node' + (n.v === 'NY' || n.v === 'NR' ? ' none' : ''))
+    .on('mouseenter', (ev, n) => {
+      highlight(b => b.states[n.col] === n.v);
+      showTip(groupTipHTML(`${cols[n.col].label}: ${n.label}`, n.sts, N), ev);
+    })
+    .on('mousemove', moveTip)
+    .on('mouseleave', () => { highlight(null); hideTip(); })
+    .on('click', (ev, n) => {
+      ev.stopPropagation();
+      setPinned({ view: 'flow', title: `${cols[n.col].label}: ${n.label}`, test: d => d[n.key] === n.v, hl: b => b.states[n.col] === n.v });
+      highlight(null);
+    });
+  // "+n joined" beside each bar that new students enter at
+  const joins = [];
+  nodes.forEach((ns, i) => { if (i) ns.forEach(n => {
+    const bs = bundles.filter(b => b.states[i] === n.v && b.states[i - 1] === 'NY');
+    if (bs.length) joins.push({ n: d3.sum(bs, b => b.n), x: xs[i] - stubW - 4,
+      y: (d3.min(bs, b => b.yIn[i]) + d3.max(bs, b => b.yIn[i] + b.n * k)) / 2 });
+  }); });
+  svg.append('g').selectAll('text').data(joins).join('text')
+    .attr('class', 'jlabel').attr('x', d => d.x).attr('y', d => d.y).attr('dy', '0.35em')
+    .attr('text-anchor', 'end').text(d => `+${d.n} joined`);
+
+  gn.append('rect').attr('x', n => n.x).attr('y', n => n.y).attr('width', nodeW)
+    .attr('height', n => Math.max(1.5, n.h)).attr('rx', 2);
+  const lab = gn.append('text').attr('class', 'nlabel')
+    .attr('x', n => n.x + nodeW + 6).attr('y', n => n.y + n.h / 2).attr('dy', '0.35em');
+  lab.append('tspan').text(n => n.label + '  ');
+  lab.append('tspan').attr('class', 'ncount').text(n => n.n);
+
+  if (state.showCounts) {
+    const last = nc - 1, labs = [];
+    for (const [g, bs] of d3.group(bundles, b => b.group)) {
+      const y0 = d3.min(bs, b => b.yIn[last]), y1 = d3.max(bs, b => b.yIn[last] + b.n * k);
+      if (y1 - y0 >= 11) labs.push({ n: d3.sum(bs, b => b.n), y: (y0 + y1) / 2 });
+    }
+    svg.append('g').selectAll('text').data(labs).join('text')
+      .attr('class', 'plabel').attr('x', xs[last] - 5).attr('y', d => d.y).attr('dy', '0.35em')
+      .attr('text-anchor', 'end').text(d => d.n);
+  }
+
+  function highlight(fn) {
+    const f = fn || (state.pinned && state.pinned.view === 'flow' ? state.pinned.hl : null);
+    ribbons.classed('dim', b => f && !f(b)).classed('hot', b => f && f(b));
+  }
+  highlight(null);
+
+  document.getElementById('caption').textContent =
+    'Each band follows a group of students who took exactly the same path; its thickness is the number of students. ' +
+    'Bars show how many students were in each course each year. Hover a band or bar to see how many students it covers and how they did; click to list them. ' +
+    'Students who joined the school later fade in at the year they arrived (“+n joined”). A band that fades out and back in marks a year with no course on record. ' +
+    (state.showCounts ? 'Numbers at the right end of bands give the size of each path (bands too thin to label are left out).' : '');
+}
+
+/* =====================================================================
+   View 2 — Outcomes by G9 → G10 track (unit dots by IB score)
+   ===================================================================== */
+function renderOutcomes(el, data) {
+  const r9 = v => v === 'NY' ? 3 : v === 'NR' ? 2 : isAdv(v) ? 0 : 1;
+  const groups = [...d3.group(data, d => d.s9 + '|' + d.s10)]
+    .map(([k, sts]) => ({ k, sts, label: shortTrack(sts[0]), s9: sts[0].s9, s10: sts[0].s10 }))
+    .sort((a, b) => r9(a.s9) - r9(b.s9) || r9(a.s10) - r9(b.s10));
+
+  const scores = d3.range(d3.min(data, d => d.ib ?? 7) ?? 1, 8);
+  const per = 5, step = 11, rr = 4.5;
+  const cellW = per * step + 16;
+  const labelW = 250, nW = 44, statW = 78;
+  const stats = [
+    { label: 'Mean IB', f: sts => f1(avg(sts, d => d.ib)) },
+    { label: 'Avg G8 RIT', f: sts => f0(avg(sts, d => d.rit)) },
+    { label: 'Avg G9 grade', f: sts => f1(avg(sts, d => d.g9g)) },
+    { label: 'Avg G10 grade', f: sts => f1(avg(sts, d => d.g10g)) }
+  ];
+  const x0Dots = labelW + nW + 8;
+  const x0Stats = x0Dots + scores.length * cellW + 12;
+  const W = Math.max(el.clientWidth, x0Stats + stats.length * statW + 4);
+  const headH = 40;
+  let y = headH;
+  groups.forEach(g => {
+    const maxCell = d3.max(scores, s => g.sts.filter(d => d.ib === s).length) || 1;
+    g.lines = Math.ceil(maxCell / per);
+    g.y = y; g.h = Math.max(34, g.lines * step + 18); y += g.h;
+  });
+  const H = y + 6;
+  const svg = makeSVG(el, W, H);
+
+  // headers
+  svg.append('text').attr('class', 'ghead').attr('x', 0).attr('y', 14).text('Grade 9 → Grade 10 track');
+  svg.append('text').attr('class', 'ghead').attr('x', labelW + nW).attr('y', 14).attr('text-anchor', 'end').text('n');
+  svg.append('text').attr('class', 'ghead').attr('x', x0Dots).attr('y', 14).text('IB score (one dot per student)');
+  scores.forEach((s, i) => svg.append('text').attr('class', 'stat').attr('font-weight', 600)
+    .attr('x', x0Dots + i * cellW + (per * step) / 2 - step / 2).attr('y', 32).attr('text-anchor', 'middle').text(s));
+  stats.forEach((s, i) => svg.append('text').attr('class', 'ghead').attr('x', x0Stats + (i + 1) * statW - 8)
+    .attr('y', 32).attr('text-anchor', 'end').text(s.label.replace('Avg ', '')));
+  svg.append('text').attr('class', 'ghead').attr('x', x0Stats).attr('y', 14).text('Averages');
+  scores.forEach((s, i) => { if (i) svg.append('line').attr('class', 'gridline')
+    .attr('x1', x0Dots + i * cellW - 8).attr('x2', x0Dots + i * cellW - 8).attr('y1', headH - 4).attr('y2', H - 4); });
+
+  const rows = svg.append('g').selectAll('g').data(groups).join('g').attr('transform', g => `translate(0,${g.y})`);
+  rows.append('line').attr('class', 'rowline').attr('x1', 0).attr('x2', W).attr('y1', 0).attr('y2', 0);
+  rows.append('rect').attr('class', 'rowhit').attr('x', 0).attr('y', 0).attr('width', labelW + nW + 4).attr('height', g => g.h)
+    .on('mouseenter', (ev, g) => showTip(groupTipHTML(g.label, g.sts, data.length), ev))
+    .on('mousemove', moveTip).on('mouseleave', hideTip)
+    .on('click', (ev, g) => setPinned({ view: 'outcomes', title: g.label, test: d => d.s9 + '|' + d.s10 === g.k }));
+  rows.append('text').attr('class', 'rlabel').attr('x', 0).attr('y', g => g.h / 2).attr('dy', '0.35em').style('pointer-events', 'none').text(g => g.label);
+  rows.append('text').attr('class', 'stat').attr('font-weight', 650).attr('x', labelW + nW).attr('y', g => g.h / 2).attr('dy', '0.35em')
+    .attr('text-anchor', 'end').style('pointer-events', 'none').text(g => g.sts.length);
+  stats.forEach((s, i) => rows.append('text').attr('class', 'stat').attr('x', x0Stats + (i + 1) * statW - 8)
+    .attr('y', g => g.h / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(g => s.f(g.sts)));
+
+  // unit dots
+  const colorOrder = d => colorOf(d);
+  const pts = [];
+  groups.forEach(g => scores.forEach((s, i) => {
+    const sts = g.sts.filter(d => d.ib === s).sort((a, b) => d3.ascending(colorOrder(a), colorOrder(b)) || a.idNum - b.idNum);
+    const top = g.y + (g.h - g.lines * step) / 2 + step / 2;
+    sts.forEach((d, j) => pts.push({ d, cx: x0Dots + i * cellW + (j % per) * step, cy: top + Math.floor(j / per) * step }));
+  }));
+  const dots = svg.append('g').selectAll('circle').data(pts).join('circle')
+    .attr('class', 'dot').attr('cx', p => p.cx).attr('cy', p => p.cy).attr('r', rr).style('fill', p => colorOf(p.d))
+    .on('mouseenter', (ev, p) => { dots.classed('hot', q => q === p); showTip(studentTipHTML(p.d), ev); })
+    .on('mousemove', moveTip).on('mouseleave', () => { dots.classed('hot', false); hideTip(); });
+
+  const noScore = data.filter(d => d.ib == null).length;
+  document.getElementById('caption').textContent =
+    'Each row is a combination of Grade 9 and Grade 10 courses. Each dot is one student, placed in the column for their IB score. ' +
+    'Averages leave out missing values; students who joined later have no G8 MAP or earlier grades. Hover a row label for a summary, click it to list the students.' +
+    (noScore ? ` ${plural(noScore, 'student')} with no IB score not shown as dots.` : '');
+}
+
+/* =====================================================================
+   Beeswarm rows (shared by Course grades and Predictors)
+   ===================================================================== */
+function dodge(pts, r) {
+  const placed = [];
+  pts.sort((a, b) => a.x - b.x);
+  for (const p of pts) {
+    const near = placed.filter(q => Math.abs(q.x - p.x) < 2 * r);
+    const cands = [0];
+    near.forEach(q => { const dy = Math.sqrt(Math.max(0, 4 * r * r - (q.x - p.x) ** 2)); cands.push(q.dy + dy, q.dy - dy); });
+    cands.sort((a, b) => Math.abs(a) - Math.abs(b));
+    p.dy = cands.find(c => near.every(q => (q.x - p.x) ** 2 + (q.dy - c) ** 2 >= 4 * r * r - 0.01)) ?? 0;
+    placed.push(p);
+  }
+}
+function renderSwarm(el, rows, opts) {
+  const W = Math.max(640, el.clientWidth), r = 5.5;
+  const m = { t: 8, r: 28, b: 44, l: Math.min(230, Math.max(150, W * 0.2)) };
+  const all = rows.flatMap(row => (row.sts || []).map(d => opts.x(d, row))).filter(v => v != null);
+  const x = d3.scaleLinear().domain(opts.domain || d3.extent(all)).nice().range([m.l, W - m.r]);
+  let y = m.t;
+  const pts = [];
+  rows.forEach(row => {
+    if (row.header) { row.y = y + 22; y += 30; return; }
+    const ps = row.sts.filter(d => opts.x(d, row) != null).map(d => ({ d, row, x: x(opts.x(d, row)) }));
+    dodge(ps, r + 0.8);
+    const ext = d3.max(ps, p => Math.abs(p.dy)) || 0;
+    row.y0 = y; row.h = Math.max(42, 2 * ext + 2 * r + 14); row.cy = y + row.h / 2;
+    ps.forEach(p => { p.cy = row.cy + p.dy; pts.push(p); });
+    row.pts = ps;
+    row.mean = avg(row.sts, d => opts.x(d, row));
+    y += row.h;
+  });
+  const H = y + m.b;
+  const svg = makeSVG(el, W, H);
+
+  svg.append('g').selectAll('line').data(x.ticks(8)).join('line').attr('class', 'gridline')
+    .attr('x1', d => x(d)).attr('x2', d => x(d)).attr('y1', m.t).attr('y2', y);
+  svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${y})`)
+    .call(d3.axisBottom(x).ticks(8).tickSizeOuter(0)).call(g => g.select('.domain').remove());
+  svg.append('text').attr('class', 'ghead').attr('x', W - m.r).attr('y', H - 6).attr('text-anchor', 'end').text(opts.xLabel);
+
+  rows.forEach(row => {
+    if (row.header) {
+      svg.append('text').attr('class', 'ghead').attr('x', 0).attr('y', row.y).text(row.label);
+      return;
+    }
+    svg.append('line').attr('class', 'rowline').attr('x1', 0).attr('x2', W - m.r).attr('y1', row.y0 + row.h).attr('y2', row.y0 + row.h);
+    svg.append('rect').attr('class', 'rowhit').attr('x', 0).attr('y', row.y0).attr('width', m.l - 12).attr('height', row.h)
+      .on('mouseenter', ev => showTip(groupTipHTML(row.tipTitle || row.label, row.sts, opts.total), ev))
+      .on('mousemove', moveTip).on('mouseleave', hideTip)
+      .on('click', () => setPinned({ view: state.view, title: row.tipTitle || row.label, test: row.test }));
+    svg.append('text').attr('class', 'rlabel').attr('x', 0).attr('y', row.cy - 3).style('pointer-events', 'none').text(row.label);
+    svg.append('text').attr('class', 'rsub').attr('x', 0).attr('y', row.cy + 13).style('pointer-events', 'none')
+      .text(`n = ${row.pts.length} · mean ${opts.fmt(row.mean)}`);
+    if (row.mean != null) svg.append('line').attr('class', 'meanline')
+      .attr('x1', x(row.mean)).attr('x2', x(row.mean)).attr('y1', row.y0 + 6).attr('y2', row.y0 + row.h - 6);
+  });
+
+  const conn = svg.append('path').attr('class', 'connector');
+  const dots = svg.append('g').selectAll('circle').data(pts).join('circle')
+    .attr('class', 'dot').attr('cx', p => p.x).attr('cy', p => p.cy).attr('r', r).style('fill', p => colorOf(p.d))
+    .on('mouseenter', (ev, p) => {
+      const mine = pts.filter(q => q.d === p.d);
+      dots.classed('dim', q => q.d !== p.d).classed('hot', q => q.d === p.d);
+      if (opts.connect && mine.length > 1) conn.attr('d', d3.line().x(q => q.x).y(q => q.cy)(mine)).raise();
+      dots.filter(q => q.d === p.d).raise();
+      showTip(studentTipHTML(p.d), ev);
+    })
+    .on('mousemove', moveTip)
+    .on('mouseleave', () => { dots.classed('dim', false).classed('hot', false); conn.attr('d', null); hideTip(); });
+}
+
+/* View 3 — Course grades in the tracked courses */
+function renderGrades(el, data) {
+  const courses = key => [...new Set(data.map(d => d[key]).filter(Boolean))].sort((a, b) => (isAdv(b) - isAdv(a)) || d3.ascending(a, b));
+  const rows = [];
+  [['g9', 'g9g', 'Grade 9'], ['g10', 'g10g', 'Grade 10']].forEach(([ck, gk, title]) => {
+    const cs = courses(ck);
+    if (!cs.length) return;
+    rows.push({ header: true, label: title });
+    cs.forEach(c => rows.push({ label: c, tipTitle: `${title}: ${c}`, sts: data.filter(d => d[ck] === c), field: gk, test: d => d[ck] === c }));
+  });
+  const allGrades = data.flatMap(d => [d.g9g, d.g10g]).filter(v => v != null);
+  renderSwarm(el, rows, {
+    x: (d, row) => d[row.field], domain: [Math.min(d3.min(allGrades) - 2, 70), 100], xLabel: 'Course grade (year)', fmt: f1,
+    connect: true, total: data.length
+  });
+  const missing = data.filter(d => d.g9 && d.g9g == null || d.g10 && d.g10g == null).length;
+  document.getElementById('caption').textContent =
+    'Each dot is one student’s year grade in that course; the dark vertical line is the course average. ' +
+    'Hover a student to see them in both years, joined by a line; hover a course name for a summary, click it to list the students.' +
+    (missing ? ` ${plural(missing, 'student')} with a missing grade not shown.` : '');
+}
+/* View 4 — Predictors of IB score */
+function renderPredict(el, data) {
+  const xv = X_VARS[state.xVar], key = state.xVar;
+  const scores = [...new Set(data.map(d => d.ib).filter(v => v != null))].sort((a, b) => b - a);
+  const rows = scores.map(s => ({ label: `IB ${s}`, tipTitle: `IB score ${s}`, sts: data.filter(d => d.ib === s), test: d => d.ib === s }));
+  renderSwarm(el, rows, {
+    x: d => d[key], xLabel: xv.label, fmt: key === 'rit' || key === 'pct' ? f0 : f1, connect: false, total: data.length
+  });
+  const pairs = data.filter(d => d[key] != null && d.ib != null);
+  const rr = pearson(pairs.map(d => d[key]), pairs.map(d => d.ib));
+  const missing = data.length - pairs.length;
+  document.getElementById('caption').textContent =
+    `Each dot is one student, in the row for their IB score and placed by ${xv.label}; the dark vertical line is the row average. ` +
+    (rr != null ? `Correlation between ${xv.short} and IB score: r = ${rr.toFixed(2)} (n = ${pairs.length}). ` : '') +
+    (missing ? `${plural(missing, 'student')} without a ${xv.short} value not shown. ` : '') +
+    'Hover a dot for the student’s full record; click an IB row label to list its students.';
+}
+function pearson(a, b) {
+  if (a.length < 3) return null;
+  const ma = d3.mean(a), mb = d3.mean(b);
+  let num = 0, da = 0, db = 0;
+  a.forEach((v, i) => { num += (v - ma) * (b[i] - mb); da += (v - ma) ** 2; db += (b[i] - mb) ** 2; });
+  return da && db ? num / Math.sqrt(da * db) : null;
+}
+
+/* =====================================================================
+   View 5 — Data table
+   ===================================================================== */
+const TABLE_COLS = [
+  { key: 'idNum', label: 'ID', num: true, show: d => d.id },
+  { key: 'entry', label: 'At school from', show: d => 'Grade ' + d.entry.slice(1), sortv: d => +d.entry.slice(1) },
+  { key: 'change', label: 'Track change', show: d => CHANGE.find(c => c.key === d.change).label, sortv: d => CHANGE.findIndex(c => c.key === d.change) },
+  { key: 'rit', label: 'G8 RIT', num: true },
+  { key: 'pct', label: 'G8 %ile', num: true },
+  { key: 'g9', label: 'G9 course', show: d => d.g9 ? escapeHTML(d.g9) : `<span class="muted">${stateLabel('s9', d.s9)}</span>` },
+  { key: 'g9g', label: 'G9 grade', num: true },
+  { key: 'g10', label: 'G10 course', show: d => d.g10 ? escapeHTML(d.g10) : `<span class="muted">${stateLabel('s10', d.s10)}</span>` },
+  { key: 'g10g', label: 'G10 grade', num: true },
+  { key: 'course', label: 'IB course', show: d => `<span class="sw" style="background:${COURSE_VAR[d.course] ? `var(${COURSE_VAR[d.course]})` : 'var(--c-none)'}"></span> ${escapeHTML(d.course)}`, sortv: d => courseOrder().indexOf(d.course) },
+  { key: 'ib', label: 'IB score', num: true }
+];
+function studentTable(sts, sortable) {
+  const s = state.sort, col = TABLE_COLS.find(c => c.key === s.key) || TABLE_COLS[0];
+  const val = col.sortv || (d => d[col.key]);
+  const rows = [...sts].sort((a, b) => {
+    const va = val(a), vb = val(b);
+    if (va == null && vb == null) return a.idNum - b.idNum;
+    if (va == null) return 1; if (vb == null) return -1;
+    return (va < vb ? -1 : va > vb ? 1 : 0) * s.dir || a.idNum - b.idNum;
+  });
+  const head = TABLE_COLS.map(c => `<th class="${c.num ? 'num' : ''}" data-key="${c.key}" ${sortable && c.key === s.key ? `aria-sort="${s.dir > 0 ? 'ascending' : 'descending'}"` : ''}>${c.label}${sortable && c.key === s.key ? (s.dir > 0 ? ' ↑' : ' ↓') : ''}</th>`).join('');
+  const body = rows.map(d => '<tr>' + TABLE_COLS.map(c => {
+    const v = c.show ? c.show(d) : d[c.key];
+    return `<td class="${c.num ? 'num' : ''}">${v == null ? '<span class="muted">–</span>' : v}</td>`;
+  }).join('') + '</tr>').join('');
+  return `<table class="data"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function renderTable(el, data) {
+  el.innerHTML = `<div class="tablewrap">${studentTable(data, true)}</div>`;
+  el.querySelectorAll('th').forEach(th => th.onclick = () => {
+    const k = th.dataset.key;
+    state.sort = { key: k, dir: state.sort.key === k ? -state.sort.dir : 1 };
+    render();
+  });
+  document.getElementById('caption').textContent =
+    'Click a column heading to sort. A dash means no value in the data file. “At school from” is worked out from the first year with data.';
+}
+
+/* =====================================================================
+   Export: PNG (title + legend + chart) and print
+   ===================================================================== */
+const STYLE_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-linejoin', 'stroke-linecap',
+  'opacity', 'font-family', 'font-size', 'font-weight', 'paint-order', 'text-anchor', 'letter-spacing', 'text-transform', 'display'];
+function resolveColor(c) {
+  const mm = /var\((--[\w-]+)\)/.exec(c);
+  return mm ? getComputedStyle(document.documentElement).getPropertyValue(mm[1]).trim() : c;
+}
+function exportPNG() {
+  const svg = document.querySelector('#chart svg');
+  if (!svg) return;
+  const W = +svg.getAttribute('width'), H = +svg.getAttribute('height');
+  const clone = svg.cloneNode(true);
+  const src = svg.querySelectorAll('*'), dst = clone.querySelectorAll('*');
+  src.forEach((n, i) => {
+    const cs = getComputedStyle(n);
+    dst[i].setAttribute('style', STYLE_PROPS.map(p => `${p}:${cs.getPropertyValue(p)}`).join(';'));
+    if (n.tagName === 'text' || n.tagName === 'tspan') {
+      if (cs.textTransform === 'uppercase' && n.childNodes.length === 1 && n.firstChild.nodeType === 3) dst[i].textContent = n.textContent.toUpperCase();
+    }
+  });
+  const css = getComputedStyle(document.documentElement);
+  const v = n => css.getPropertyValue(n).trim();
+  const pad = 28, font = 'system-ui, -apple-system, Segoe UI, sans-serif';
+  const items = legendItems(filtered());
+  const headH = 58, legH = items.length ? 26 : 0, footH = 26;
+  const TW = W + pad * 2, TH = headH + legH + H + footH + pad;
+  const NS = 'http://www.w3.org/2000/svg';
+  const out = document.createElementNS(NS, 'svg');
+  out.setAttribute('xmlns', NS); out.setAttribute('width', TW); out.setAttribute('height', TH);
+  out.setAttribute('viewBox', `0 0 ${TW} ${TH}`);
+  const add = (tag, attrs, text) => {
+    const e = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([a, b]) => e.setAttribute(a, b));
+    if (text != null) e.textContent = text;
+    out.appendChild(e); return e;
+  };
+  add('rect', { x: 0, y: 0, width: TW, height: TH, fill: v('--surface') });
+  add('text', { x: pad, y: pad + 8, 'font-family': font, 'font-size': 20, 'font-weight': 650, fill: v('--ink') }, document.getElementById('vtitle').textContent);
+  add('text', { x: pad, y: pad + 30, 'font-family': font, 'font-size': 13, fill: v('--ink2') }, document.getElementById('vsub').textContent);
+  let lx = pad;
+  items.forEach(it => {
+    add('rect', { x: lx, y: headH + 6, width: 10, height: 10, rx: 3, fill: resolveColor(it.color) });
+    add('text', { x: lx + 15, y: headH + 15, 'font-family': font, 'font-size': 12.5, fill: v('--ink2') }, it.label);
+    lx += 15 + it.label.length * 7 + 18;
+  });
+  const g = add('g', { transform: `translate(${pad},${headH + legH})` });
+  g.appendChild(clone);
+  add('text', { x: pad, y: TH - pad / 2 - 4, 'font-family': font, 'font-size': 11.5, fill: v('--muted') }, document.getElementById('foot').textContent);
+
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(out));
+  const img = new Image();
+  img.onload = () => {
+    const scale = 2, cv = document.createElement('canvas');
+    cv.width = TW * scale; cv.height = TH * scale;
+    const ctx = cv.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0);
+    cv.toBlob(b => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = `math-pathways-${state.view}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    });
+  };
+  img.src = url;
+}
+
+let themeBeforePrint = null;
+window.addEventListener('beforeprint', () => {
+  themeBeforePrint = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', 'light');
+});
+window.addEventListener('afterprint', () => {
+  if (themeBeforePrint) document.documentElement.setAttribute('data-theme', themeBeforePrint);
+  else document.documentElement.removeAttribute('data-theme');
+});
+
+/* =====================================================================
+   Wiring
+   ===================================================================== */
+function setFocus(on) {
+  document.body.classList.toggle('focus', on);
+  document.getElementById('exitBtn').hidden = !on;
+  render();
+}
+document.getElementById('focusBtn').onclick = () => setFocus(true);
+document.getElementById('exitBtn').onclick = () => setFocus(false);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('focus')) setFocus(false); });
+document.getElementById('printBtn').onclick = () => window.print();
+document.getElementById('pngBtn').onclick = exportPNG;
+document.getElementById('reloadBtn').onclick = loadFromServer;
+document.getElementById('fileInput').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  f.text().then(t => ingest(t, f.name));
+  e.target.value = '';
+};
+document.getElementById('entrySel').onchange = e => { state.entry = e.target.value; render(); };
+document.getElementById('cohortSel').onchange = e => { state.cohort = e.target.value; render(); };
+document.getElementById('colorSel').onchange = e => { state.color = e.target.value; render(); };
+document.getElementById('groupSel').onchange = e => {
+  state.courseGroup = e.target.value;
+  COURSES.sort(courseCmp);
+  buildFilters(); render();
+};
+
+const THEMES = [null, 'light', 'dark'];
+document.getElementById('themeBtn').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  if (next) document.documentElement.setAttribute('data-theme', next);
+  else document.documentElement.removeAttribute('data-theme');
+  document.getElementById('themeBtn').title = 'Theme: ' + (next || 'automatic');
+};
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (ALL.length) render(); }, 120);
+});
+
+readHash();
+buildTabs();
+loadFromServer();
+</script>
+</body>
+</html>
