@@ -46,7 +46,7 @@ function groundShadow(p, x, w, strength = 1) {
   if (strength <= 0) return;
   p.noStroke();
   p.fill(20, 24, 30, 20 * strength);
-  p.ellipse(x, CONFIG.world.groundY + 1, w, 7);
+  p.ellipse(x, ENGINE.world.groundY + 1, w, 7);
 }
 
 // Seeded RNG so confetti is identical every take.
@@ -62,7 +62,7 @@ function mulberry32(seed) {
 // ---------------------------------------------------------------- scene
 
 function drawBackdrop(p) {
-  const { groundY } = CONFIG.world;
+  const { groundY } = ENGINE.world;
   p.background(COLORS.wall);
   p.noStroke();
   p.fill(COLORS.floor);
@@ -73,9 +73,9 @@ function drawBackdrop(p) {
 }
 
 function drawRamp(p) {
-  const r = CONFIG.ramp;
+  const r = ENGINE.ramp;
   const g = rampGeometry(Sim.settings.ramp);
-  const { groundY } = CONFIG.world;
+  const { groundY } = ENGINE.world;
   const rp = pose(Sim.ramp);
 
   // Support block under the top end, following the ramp's underside.
@@ -101,9 +101,9 @@ function drawRamp(p) {
 }
 
 function drawBall(p) {
-  const b = CONFIG.ball;
+  const b = ENGINE.ball;
   const bp = pose(Sim.ball);
-  const lift = CONFIG.world.groundY - bp.y - b.radius;
+  const lift = ENGINE.world.groundY - bp.y - b.radius;
   groundShadow(p, bp.x, b.radius * 2, Math.max(0, 1 - lift / 120));
 
   const ctx = p.drawingContext;
@@ -123,7 +123,7 @@ function drawBall(p) {
 }
 
 function drawDominoes(p) {
-  const d = CONFIG.domino;
+  const d = ENGINE.domino;
   p.stroke(COLORS.dominoEdge);
   p.strokeWeight(1);
   p.fill(COLORS.domino);
@@ -161,7 +161,7 @@ function drawWheel(p, x, y, r, angle) {
 }
 
 function drawCart(p) {
-  const c = CONFIG.cart;
+  const c = ENGINE.cart;
   const cp = pose(Sim.cart);
   const left = cp.x - c.width / 2;
   const top = cp.y - c.height / 2;
@@ -203,13 +203,13 @@ function drawCart(p) {
 }
 
 function cartFrontX() {
-  return pose(Sim.cart).x + CONFIG.cart.width / 2;
+  return pose(Sim.cart).x + ENGINE.cart.width / 2;
 }
 
 // The lever hangs on the post's face; the cart's front pushes it back.
 function leverGeometry() {
-  const t = CONFIG.trigger;
-  const gy = CONFIG.world.groundY;
+  const t = ENGINE.trigger;
+  const gy = ENGINE.world.groundY;
   const pivot = { x: t.x - 1, y: gy - t.height + 6 };
   const len = 26;
   const restTipX = t.x - 11;
@@ -223,12 +223,12 @@ function leverGeometry() {
 }
 
 function latchPoint(lp) {
-  return { x: lp.x - CONFIG.launcher.width / 2 + 4, y: lp.y - CONFIG.launcher.height / 2 + 2 };
+  return { x: lp.x - ENGINE.launcher.width / 2 + 4, y: lp.y - ENGINE.launcher.height / 2 + 2 };
 }
 
 function drawTrigger(p) {
-  const t = CONFIG.trigger;
-  const gy = CONFIG.world.groundY;
+  const t = ENGINE.trigger;
+  const gy = ENGINE.world.groundY;
   p.noStroke();
   p.fill(COLORS.charcoalMid);
   p.rect(t.x, gy - t.height, t.width, t.height, 2, 2, 0, 0);
@@ -247,7 +247,7 @@ function drawTrigger(p) {
   // ends come closer (e.g. when the launcher rolls back).
   const lp = pose(Sim.launcher.base);
   const end = latchPoint(lp);
-  const rest = latchPoint({ x: CONFIG.launcher.x + CONFIG.launcher.width / 2, y: lp.y });
+  const rest = latchPoint({ x: ENGINE.launcher.x + ENGINE.launcher.width / 2, y: lp.y });
   const restLen = Math.hypot(rest.x - (t.x - 1), rest.y - (gy - t.height - 6)) * 1.03;
   const d = Math.hypot(end.x - L.handle.x, end.y - L.handle.y);
   const sag = d < restLen ? Math.sqrt(restLen * restLen - d * d) * 0.6 : 0;
@@ -269,7 +269,7 @@ function springExtension() {
 }
 
 function drawLauncher(p) {
-  const l = CONFIG.launcher;
+  const l = ENGINE.launcher;
   const lp = pose(Sim.launcher.base);
   const bottom = lp.y + l.height / 2;
   const left = lp.x - l.width / 2;
@@ -332,7 +332,7 @@ function drawLauncher(p) {
 
 // Wheel chocks + a floor bracket bolted to the chassis.
 function drawAnchor(p, lp, left, bottom, wr) {
-  const l = CONFIG.launcher;
+  const l = ENGINE.launcher;
   p.noStroke();
   p.fill(COLORS.steelBracket);
   for (const x of [left + 14, left + l.width - 14]) {
@@ -351,11 +351,11 @@ function drawAnchor(p, lp, left, bottom, wr) {
 }
 
 function drawProjectile(p) {
-  const r = CONFIG.projectile.radius;
+  const r = ENGINE.projectile.radius;
   let pos;
   if (Sim.projectile) {
     pos = pose(Sim.projectile);
-    const lift = CONFIG.world.groundY - pos.y - r;
+    const lift = ENGINE.world.groundY - pos.y - r;
     groundShadow(p, pos.x, r * 2, Math.max(0, 1 - lift / 150));
   } else {
     pos = barrelTip(pose(Sim.launcher.base)); // sitting in the muzzle
@@ -386,7 +386,7 @@ function drawCup(p) {
   p.noStroke();
   p.fill(COLORS.cupShade);
   const y = g.top + 12;
-  const half = g.topHalf - ((g.topHalf - g.bottomHalf) * 12) / CONFIG.cup.height;
+  const half = g.topHalf - ((g.topHalf - g.bottomHalf) * 12) / ENGINE.cup.height;
   p.rect(g.cx - half + 2, y, half * 2 - 4, 2);
 }
 
@@ -427,7 +427,7 @@ const Confetti = {
       c.y += c.vy * dt;
       c.rot += c.vr * dt;
       c.age += dt;
-      if (c.y > CONFIG.world.groundY - 2) { c.y = CONFIG.world.groundY - 2; c.vx *= 0.6; c.vy = 0; c.vr = 0; }
+      if (c.y > ENGINE.world.groundY - 2) { c.y = ENGINE.world.groundY - 2; c.vx *= 0.6; c.vy = 0; c.vr = 0; }
     }
   },
 
@@ -475,18 +475,26 @@ function drawDebugBodies(p) {
 }
 
 function drawDebugHud(p, fps) {
-  const sp = b => (b ? b.getLinearVelocity().length().toFixed(2) : "–");
+  // Readouts in SI units, converted from engine values.
+  const si = unitConverters().toSI;
+  const sp = b => (b ? si.speed(b.getLinearVelocity().length()).toFixed(2) + " m/s" : "–");
+  const moved = b => {
+    const d = si.metres(pose(b).x - b.getUserData().startX);
+    return (Math.abs(d) < 5e-4 ? 0 : d).toFixed(3) + " m";
+  };
+  const p0 = Sim.metrics.launchMomentum;
   const lines = [
     `FPS            ${fps.toFixed(0)}`,
     `state          ${Sim.state}${Sim.stopped ? " (stopped)" : ""}`,
-    `time           ${(Sim.time / 1000).toFixed(2)} s`,
-    `ball speed     ${sp(Sim.ball)} m/s`,
-    `cart speed     ${sp(Sim.cart)} m/s`,
-    `cart mass      ${cartMass(Sim.settings.bricks).toFixed(2)}  (${Sim.settings.bricks} bricks)`,
-    `cart moved     ${(pose(Sim.cart).x - Sim.cart.getUserData().startX).toFixed(0)} px`,
-    `launcher speed ${Sim.launcher.anchored ? "anchored" : sp(Sim.launcher.base) + " m/s"}`,
-    `launcher moved ${(pose(Sim.launcher.base).x - Sim.launcher.base.getUserData().startX).toFixed(0)} px`,
-    `projectile     ${sp(Sim.projectile)} m/s`,
+    `time           ${si.seconds(Sim.time).toFixed(2)} s`,
+    `ball speed     ${sp(Sim.ball)}`,
+    `wagon speed    ${sp(Sim.cart)}`,
+    `wagon mass     ${si.kg(cartMass(Sim.settings.bricks)).toFixed(2)} kg  (${Sim.settings.bricks} bricks)`,
+    `wagon moved    ${moved(Sim.cart)}`,
+    `launcher speed ${Sim.launcher.anchored ? "anchored" : sp(Sim.launcher.base)}`,
+    `launcher moved ${moved(Sim.launcher.base)}`,
+    `projectile     ${sp(Sim.projectile)}`,
+    `launch p       ${p0 ? si.momentum(p0).toFixed(3) + " kg·m/s" : "–"}`,
     `domino 1 max   ${Sim.metrics.firstDominoMaxAngle.toFixed(1)}°`,
     `events         ${Sim.events.filter(e => !/^domino\d/.test(e.name)).map(e => e.name).join(" › ")}`,
   ];

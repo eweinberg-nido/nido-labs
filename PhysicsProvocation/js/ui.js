@@ -9,21 +9,21 @@
 const RAMP_SETTINGS = ["low", "medium", "high"];
 const SPEEDS = [0.25, 0.5, 1];
 
-// Teacher-mode tuning controls: [label, CONFIG path, min, max, step]
+// Teacher-mode tuning controls, in SI units: [label, CONFIG path, min, max, step]
 const TUNING = [
   ["Ramp angle — low (°)", "ramp.angles.low", 2, 30, 0.5],
   ["Ramp angle — medium (°)", "ramp.angles.medium", 2, 30, 0.5],
   ["Ramp angle — high (°)", "ramp.angles.high", 2, 30, 0.5],
-  ["Ball mass", "ball.mass", 0.1, 3, 0.05],
-  ["Domino mass", "domino.mass", 0.1, 3, 0.05],
-  ["Cart mass (empty)", "cart.baseMass", 0.1, 5, 0.1],
-  ["Mass per brick", "cart.brickMass", 0.1, 4, 0.05],
-  ["Cart rolling resistance", "cart.rollingResistance", 0, 0.1, 0.001],
-  ["Launcher mass", "launcher.mass", 0.2, 10, 0.1],
+  ["Ball mass (kg)", "ball.mass", 0.1, 3, 0.05],
+  ["Domino mass (kg)", "domino.mass", 0.1, 3, 0.05],
+  ["Wagon mass, empty (kg)", "cart.baseMass", 0.1, 5, 0.1],
+  ["Mass per brick (kg)", "cart.brickMass", 0.1, 4, 0.05],
+  ["Wagon rolling resistance", "cart.rollingResistance", 0, 0.1, 0.001],
+  ["Launcher mass (kg)", "launcher.mass", 0.2, 10, 0.1],
   ["Launcher rolling resistance", "launcher.rollingResistance", 0, 0.5, 0.005],
-  ["Spring energy", "launcher.springEnergy", 2, 40, 0.5],
+  ["Spring energy (J)", "launcher.springEnergy", 0.5, 10, 0.001],
   ["Barrel angle (°)", "launcher.barrelAngle", 20, 80, 1],
-  ["Gravity", "gravity", 2, 40, 0.5],
+  ["Gravity (m/s²)", "gravity", 1, 20, 0.01],
 ];
 
 const $ = sel => document.querySelector(sel);
@@ -50,7 +50,7 @@ function initUI(p) {
     if (v) changeSetting("ramp", v);
   });
   $("#brickMinus").addEventListener("click", () => changeSetting("bricks", Math.max(1, Sim.settings.bricks - 1)));
-  $("#brickPlus").addEventListener("click", () => changeSetting("bricks", Math.min(CONFIG.cart.maxBricks, Sim.settings.bricks + 1)));
+  $("#brickPlus").addEventListener("click", () => changeSetting("bricks", Math.min(ENGINE.cart.maxBricks, Sim.settings.bricks + 1)));
   $("#launcher").addEventListener("click", e => {
     const v = e.target.dataset.value;
     if (v) changeSetting("anchored", v === "anchored");
@@ -127,7 +127,7 @@ function syncControls() {
   for (const b of document.querySelectorAll("#speed button")) b.setAttribute("aria-pressed", Number(b.dataset.value) === UIState.speed);
   $("#brickCount").textContent = `${s.bricks} brick${s.bricks === 1 ? "" : "s"}`;
   $("#brickMinus").disabled = s.bricks <= 1;
-  $("#brickPlus").disabled = s.bricks >= CONFIG.cart.maxBricks;
+  $("#brickPlus").disabled = s.bricks >= ENGINE.cart.maxBricks;
   $("#run").textContent = Sim.state === STATES.READY ? "Run" : "Run again";
   $("#pauseNote").hidden = !UIState.paused;
   $("#cameraNote").hidden = !UIState.camera;
@@ -159,10 +159,11 @@ function buildTeacherPanel() {
     const show = () => {
       const v = getPath(CONFIG, path);
       input.value = v;
-      out.textContent = Number(v).toFixed(step < 0.01 ? 3 : step < 1 ? 2 : 0);
+      out.textContent = Number(v).toFixed(Math.max(0, -Math.floor(Math.log10(step))));
     };
     input.addEventListener("input", () => {
       setPath(CONFIG, path, Number(input.value));
+      rebuildEngineConfig();
       show();
       reset();
     });
@@ -182,6 +183,7 @@ function buildTeacherPanel() {
   $("#restoreDefaults").addEventListener("click", () => {
     const fresh = JSON.parse(JSON.stringify(CONFIG_DEFAULTS));
     for (const k of Object.keys(fresh)) CONFIG[k] = fresh[k];
+    rebuildEngineConfig();
     for (const row of document.querySelectorAll(".tune")) row.refresh();
     reset();
   });
@@ -205,7 +207,7 @@ function applyUrlParams() {
   const q = new URLSearchParams(location.search);
   if (RAMP_SETTINGS.includes(q.get("ramp"))) Sim.settings.ramp = q.get("ramp");
   const b = Number(q.get("bricks"));
-  if (b >= 1 && b <= CONFIG.cart.maxBricks) Sim.settings.bricks = b;
+  if (b >= 1 && b <= ENGINE.cart.maxBricks) Sim.settings.bricks = b;
   if (q.get("launcher")) Sim.settings.anchored = q.get("launcher") === "anchored";
   const sp = Number(q.get("speed"));
   if (SPEEDS.includes(sp)) UIState.speed = sp;

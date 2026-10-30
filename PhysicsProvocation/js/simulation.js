@@ -41,7 +41,7 @@ function simEventTime(name) {
 
 // Full rebuild. Settings (ramp, bricks, anchored) survive; physical state doesn't.
 function simReset() {
-  const world = new planck.World({ gravity: planck.Vec2(0, CONFIG.gravity) });
+  const world = new planck.World({ gravity: planck.Vec2(0, ENGINE.gravity) });
   Sim.world = world;
 
   const s = Sim.settings;
@@ -93,7 +93,7 @@ function onBeginContact(contact) {
   if ((p = contactPair(contact, "domino", "domino"))) {
     simLog("domino" + Math.max(p[0].getUserData().index, p[1].getUserData().index));
   }
-  if ((p = contactPair(contact, "domino", "cart")) && p[0].getUserData().index === CONFIG.domino.count - 1) {
+  if ((p = contactPair(contact, "domino", "cart")) && p[0].getUserData().index === ENGINE.domino.count - 1) {
     simLog("cartHit");
   }
   if (contactPair(contact, "cart", "launcherTrigger") && !Sim.launcher.hasFired) {
@@ -122,8 +122,8 @@ function fireLauncher() {
   L.firedAt = Sim.time;
   simLog("fire");
 
-  const lc = CONFIG.launcher;
-  const mp = CONFIG.projectile.mass;
+  const lc = ENGINE.launcher;
+  const mp = ENGINE.projectile.mass;
   const invMass = 1 / mp + (L.anchored ? 0 : 1 / lc.mass);
   const p = Math.sqrt((2 * lc.springEnergy) / invMass);
   const a = lc.barrelAngle * DEG;
@@ -165,7 +165,7 @@ function applyRollingResistance(body, crr, dt) {
   if (body.isStatic()) return;
   const v = body.getLinearVelocity();
   if (v.x === 0) return;
-  const dv = crr * CONFIG.gravity * dt;
+  const dv = crr * ENGINE.gravity * dt;
   const vx = Math.abs(v.x) <= dv ? 0 : v.x - Math.sign(v.x) * dv;
   body.setLinearVelocity(planck.Vec2(vx, v.y));
 }
@@ -173,12 +173,12 @@ function applyRollingResistance(body, crr, dt) {
 // One fixed physics step.
 function simStep() {
   if (Sim.state === STATES.READY || Sim.stopped) return;
-  const dt = 1 / CONFIG.stepHz;
+  const dt = 1 / ENGINE.stepHz;
 
-  applyRollingResistance(Sim.cart, CONFIG.cart.rollingResistance, dt);
-  applyRollingResistance(Sim.launcher.base, CONFIG.launcher.rollingResistance, dt);
+  applyRollingResistance(Sim.cart, ENGINE.cart.rollingResistance, dt);
+  applyRollingResistance(Sim.launcher.base, ENGINE.launcher.rollingResistance, dt);
 
-  Sim.world.step(dt, CONFIG.velocityIterations, CONFIG.positionIterations);
+  Sim.world.step(dt, ENGINE.velocityIterations, ENGINE.positionIterations);
   Sim.time += dt * 1000;
 
   if (Sim.pendingFire) {
@@ -190,14 +190,14 @@ function simStep() {
   Sim.metrics.firstDominoMaxAngle = Math.max(Sim.metrics.firstDominoMaxAngle, a0);
 
   // Stop detection: everything still for a while, or a success has settled.
-  const v = CONFIG.stop.speed;
+  const v = ENGINE.stop.speed;
   const still = dynamicBodies().every(
     b => b.getLinearVelocity().length() < v && Math.abs(b.getAngularVelocity()) < v * 5
   );
   Sim.stillFor = still ? Sim.stillFor + dt * 1000 : 0;
 
-  const settledSuccess = Sim.state === STATES.SUCCESS && Sim.time - Sim.successAt > CONFIG.stop.successHoldMs;
-  if (Sim.stillFor > CONFIG.stop.holdMs || settledSuccess || Sim.time > CONFIG.stop.maxRunMs) {
+  const settledSuccess = Sim.state === STATES.SUCCESS && Sim.time - Sim.successAt > ENGINE.stop.successHoldMs;
+  if (Sim.stillFor > ENGINE.stop.holdMs || settledSuccess || Sim.time > ENGINE.stop.maxRunMs) {
     Sim.stopped = true;
     Sim.state = classifyStop();
     simLog("stopped");

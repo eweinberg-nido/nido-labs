@@ -16,7 +16,7 @@ const FilmCamera = {
   },
 
   frame(x0, x1, y0, y1, maxZoom = 2.2) {
-    const { width, height } = CONFIG.world;
+    const { width, height } = ENGINE.world;
     const zoom = Math.max(1, Math.min(maxZoom, width / (x1 - x0), height / (y1 - y0)));
     const hw = width / 2 / zoom, hh = height / 2 / zoom;
     const margin = 120; // the backdrop extends a little past the stage edges
@@ -28,11 +28,11 @@ const FilmCamera = {
   },
 
   target() {
-    const gy = CONFIG.world.groundY;
+    const gy = ENGINE.world.groundY;
     if (Sim.state === STATES.READY) return this.wide();
 
     if (simHas("success")) {
-      const c = CONFIG.cup.x;
+      const c = ENGINE.cup.x;
       return this.frame(c - 170, c + 120, gy - 190, gy + 40);
     }
     if (Sim.stopped) return this.wide();
@@ -40,11 +40,11 @@ const FilmCamera = {
     if (simHas("fire")) {
       const l = pose(Sim.launcher.base);
       const top = Sim.projectile ? Math.min(pose(Sim.projectile).y - 60, gy - 230) : gy - 230;
-      return this.frame(Math.min(l.x - 110, CONFIG.trigger.x - 20), CONFIG.cup.x + 60, top, gy + 40);
+      return this.frame(Math.min(l.x - 110, ENGINE.trigger.x - 20), ENGINE.cup.x + 60, top, gy + 40);
     }
     if (simHas("cartHit")) {
       const c = pose(Sim.cart);
-      return this.frame(c.x - CONFIG.cart.width / 2 - 70, CONFIG.launcher.x + CONFIG.launcher.width + 40, gy - 190, gy + 40);
+      return this.frame(c.x - ENGINE.cart.width / 2 - 70, ENGINE.launcher.x + ENGINE.launcher.width + 40, gy - 190, gy + 40);
     }
     if (simHas("ballHitDomino")) {
       let lead = 0;
@@ -53,7 +53,7 @@ const FilmCamera = {
       return this.frame(x - 230, x + 190, gy - 170, gy + 40);
     }
     const g = rampGeometry(Sim.settings.ramp);
-    return this.frame(g.top.x - 30, CONFIG.domino.firstX + 80, Math.min(g.top.y - 60, gy - 200), gy + 40);
+    return this.frame(g.top.x - 30, ENGINE.domino.firstX + 80, Math.min(g.top.y - 60, gy - 200), gy + 40);
   },
 
   // dtMs: frame time scaled by playback speed, so slow motion slows the camera too.
@@ -66,7 +66,7 @@ const FilmCamera = {
   },
 
   apply(p) {
-    const { width, height } = CONFIG.world;
+    const { width, height } = ENGINE.world;
     p.translate(width / 2, height / 2);
     p.scale(this.zoom);
     p.translate(-this.x, -this.y);

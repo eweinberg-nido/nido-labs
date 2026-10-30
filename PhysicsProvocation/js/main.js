@@ -22,7 +22,7 @@ function onWorldReset() {
 
 new p5(p => {
   p.setup = () => {
-    const canvas = p.createCanvas(CONFIG.world.width, CONFIG.world.height);
+    const canvas = p.createCanvas(ENGINE.world.width, ENGINE.world.height);
     canvas.parent("stage");
     p.frameRate(60);
     p.pixelDensity(Math.max(2, window.devicePixelRatio || 1));
@@ -35,7 +35,7 @@ new p5(p => {
   p.draw = () => {
     const running = Sim.state !== STATES.READY && !Sim.stopped;
     if (running && !UIState.paused) {
-      stepAccumulator += (UIState.speed * CONFIG.stepHz) / 60;
+      stepAccumulator += (UIState.speed * ENGINE.stepHz) / 60;
       while (stepAccumulator >= 1) {
         simStep();
         stepAccumulator -= 1;
@@ -73,7 +73,7 @@ new p5(p => {
 // Scale the 1280×720 stage to the space available, keeping 16:9.
 function fitCanvas(p) {
   const stage = document.getElementById("stage");
-  const { width, height } = CONFIG.world;
+  const { width, height } = ENGINE.world;
   let w;
   if (UIState.clean) {
     w = Math.min(window.innerWidth, (window.innerHeight * width) / height);
