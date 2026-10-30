@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nido Diamond Challenge | Mentor Scheduler</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .badge-blue { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-green { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-red { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .badge-purple { background-color: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col" onclick="closeAllDropdowns(event)">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="p-2 bg-indigo-600 text-white rounded-lg shadow-sm">
+            <i data-lucide="gem" class="w-5 h-5"></i>
+          </span>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">Nido Diamond Challenge: Mentor Sign-Up</h1>
+        </div>
+        <div class="flex items-center gap-2 mt-0.5">
+          <p class="text-xs sm:text-sm text-slate-500">
+            Changemakers & Intro to Entrepreneurship guest mentor scheduling.
+          </p>
+          <span class="text-slate-300">&bull;</span>
+          <button onclick="openScriptModal()" id="sheet-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 underline">
+            <span class="w-2 h-2 rounded-full bg-amber-400" id="sheet-status-dot"></span>
+            <span id="sheet-status-text">Google Sheet: Setup Webhook</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation & Cart -->
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
+        <nav class="flex bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-medium">
+          <button id="view-schedule-btn" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-900 font-semibold transition" onclick="switchTab('schedule')">
+            Available Slots
+          </button>
+          <button id="view-admin-btn" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5" onclick="switchTab('admin')">
+            <i data-lucide="sheet" class="w-4 h-4"></i> Roster & Sign-Ups
+          </button>
+        </nav>
+        
+        <button onclick="openBookingDrawer()" class="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-semibold transition shadow-sm">
+          <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Selected</span> (<span id="cart-count">0</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- SCHEDULE TAB -->
+    <div id="schedule-tab" class="space-y-6">
+
+      <!-- Phase Badges -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200">
+          <div class="flex items-center gap-2 font-bold text-blue-900 text-sm mb-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Phase 1: Problem Research
+          </div>
+          <p class="text-xs text-blue-800 leading-relaxed">
+            Listen to problem definitions, challenge assumptions, and advise on user empathy and validation.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+          <div class="flex items-center gap-2 font-bold text-emerald-900 text-sm mb-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Phase 2: Design & Test
+          </div>
+          <p class="text-xs text-emerald-800 leading-relaxed">
+            Review early prototypes, testing methodology, customer feedback, and solution viability.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-rose-50/70 border border-rose-200">
+          <div class="flex items-center gap-2 font-bold text-rose-900 text-sm mb-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Phase 3: Pitch Coaching
+          </div>
+          <p class="text-xs text-rose-800 leading-relaxed">
+            Critique 10-15 slide decks, coach narrative timing, delivery presence, and Q&A readiness.
+          </p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-purple-50/70 border border-purple-200">
+          <div class="flex items-center gap-2 font-bold text-purple-900 text-sm mb-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Phase 4: Demo Day Judge
+          </div>
+          <p class="text-xs text-purple-800 leading-relaxed">
+            Official pitch judge: 5-minute team presentation followed by 3 minutes of live judge Q&A.
+          </p>
+        </div>
+      </section>
+
+      <!-- FILTER CONTROLS BAR -->
+      <section class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        
+        <div class="flex flex-wrap items-center gap-3">
+          
+          <!-- 1. TIME OF DAY SCANNER DROPDOWN -->
+          <div class="relative">
+            <button id="time-filter-btn" type="button" onclick="toggleTimeDropdown(event)" class="inline-flex items-center gap-2 bg-slate-50 border border-slate-300 hover:border-slate-400 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-800 shadow-sm transition">
+              <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+              <span id="time-filter-label">All Times</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+            </button>
+
+            <!-- Custom Dropdown Menu -->
+            <div id="time-dropdown-menu" class="hidden absolute left-0 mt-1.5 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs sm:text-sm font-medium">
+              <button onclick="setTimeFilter('ALL', 'All Times')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+                <span>All Times</span>
+                <i data-lucide="check" class="w-4 h-4 text-indigo-600 time-check" id="check-ALL"></i>
+              </button>
+              <button onclick="setTimeFilter('MORNING', 'Morning (8:05 - 11:00)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+                <span>Morning (8:05 - 11:00)</span>
+                <i data-lucide="check" class="w-4 h-4 text-indigo-600 hidden time-check" id="check-MORNING"></i>
+              </button>
+              <button onclick="setTimeFilter('MIDDAY', 'Midday (11:20 - 1:05)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+                <span>Midday (11:20 - 1:05)</span>
+                <i data-lucide="check" class="w-4 h-4 text-indigo-600 hidden time-check" id="check-MIDDAY"></i>
+              </button>
+              <button onclick="setTimeFilter('AFTERNOON', 'Afternoon (1:15 - 3:15)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+                <span>Afternoon (1:15 - 3:15)</span>
+                <i data-lucide="check" class="w-4 h-4 text-indigo-600 hidden time-check" id="check-AFTERNOON"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Course Filter -->
+          <div class="flex items-center gap-1.5">
+            <select id="filter-course" onchange="renderSchedule()" class="text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 font-medium">
+              <option value="ALL">All Courses (Changemaker & Entrepreneurship)</option>
+              <option value="Changemaker">Changemakers</option>
+              <option value="Entrepreneurship">Intro to Entrepreneurship</option>
+            </select>
+          </div>
+
+          <!-- 3. Focus Phase Filter -->
+          <div class="flex items-center gap-1.5">
+            <select id="filter-phase" onchange="renderSchedule()" class="text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 font-medium">
+              <option value="ALL">All Focus Phases</option>
+              <option value="BLUE">Phase 1: Problem Research</option>
+              <option value="GREEN">Phase 2: Solution Design & Testing</option>
+              <option value="RED">Phase 3: Pitch Rehearsal</option>
+              <option value="DEMO">Phase 4: Demo Day Judging</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Toggles: Hide Past & Hide Claimed -->
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="hide-claimed" onchange="renderSchedule()" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer" />
+            <label for="hide-claimed" class="text-xs sm:text-sm text-slate-600 select-none cursor-pointer">Hide claimed blocks</label>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="hide-past" checked onchange="renderSchedule()" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer" />
+            <label for="hide-past" class="text-xs sm:text-sm text-slate-600 select-none cursor-pointer">Hide October</label>
+          </div>
+
+          <button onclick="refreshLiveBookings()" title="Sync live availability from Google Sheet" class="p-1.5 text-slate-500 hover:text-indigo-600 border border-slate-200 hover:border-indigo-300 rounded-lg bg-slate-50">
+            <i data-lucide="refresh-cw" class="w-4 h-4" id="refresh-icon"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- SLOTS CONTAINER -->
+      <div id="schedule-container" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- ADMIN / SIGN-UPS TAB -->
+    <div id="admin-tab" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-200 gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Registered Mentor Sign-Ups</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Live claimed blocks stored in your Google Sheet.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openScriptModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-50 text-indigo-700 bg-indigo-50/50">
+              <i data-lucide="link" class="w-4 h-4"></i> Google Sheet Webhook URL
+            </button>
+            <button onclick="exportCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-700">
+              <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+            </button>
+            <button onclick="copyAllEmails()" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-700">
+              <i data-lucide="copy" class="w-4 h-4"></i> Copy All Emails
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-xs border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Time</th>
+                <th class="py-3 px-4">Block</th>
+                <th class="py-3 px-4">Teacher</th>
+                <th class="py-3 px-4">Course</th>
+                <th class="py-3 px-4">Mentor Name</th>
+                <th class="py-3 px-4">Email</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-slate-100 font-normal">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FLOATING BOTTOM SUMMARY BAR -->
+  <div id="bottom-bar" class="fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur text-white p-3.5 border-t border-slate-800 shadow-xl transform translate-y-full transition-transform duration-300 z-30">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="bg-indigo-500 text-white rounded-full w-7 h-7 flex items-center justify-center font-bold text-xs" id="sticky-count">0</span>
+        <span class="text-xs sm:text-sm text-slate-200 font-medium">class block(s) selected</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="clearSelection()" class="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition">Clear</button>
+        <button onclick="openBookingDrawer()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 shadow">
+          <span>Review & Finish Sign-Up</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKING FORM SLIDE-OVER DRAWER -->
+  <div id="booking-drawer" class="fixed inset-0 z-50 overflow-hidden hidden" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeBookingDrawer()"></div>
+
+    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+      <div class="pointer-events-auto w-screen max-w-lg bg-white shadow-2xl flex flex-col justify-between">
+        
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
+              <i data-lucide="clipboard-pen" class="w-5 h-5"></i>
+            </span>
+            <h2 class="text-base font-bold text-slate-900">Sign Up for Selected Blocks</h2>
+          </div>
+          <button onclick="closeBookingDrawer()" class="text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-6 overflow-y-auto space-y-5 flex-1">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Selected Schedule Blocks</label>
+            <div id="drawer-slot-list" class="space-y-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div class="space-y-3.5 pt-3 border-t border-slate-200">
+            <div>
+              <label for="mentor-name" class="block text-xs font-semibold text-slate-700">Your Full Name *</label>
+              <input type="text" id="mentor-name" required placeholder="e.g. Alex Rivera" class="mt-1 w-full text-xs sm:text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label for="mentor-email" class="block text-xs font-semibold text-slate-700">Your Email Address *</label>
+              <input type="email" id="mentor-email" required placeholder="alex@company.com" class="mt-1 w-full text-xs sm:text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label for="mentor-org" class="block text-xs font-semibold text-slate-700">Company / Title / LinkedIn (Optional)</label>
+              <input type="text" id="mentor-org" placeholder="Product Lead at FinTech / Founder" class="mt-1 w-full text-xs sm:text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label for="mentor-notes" class="block text-xs font-semibold text-slate-700">Notes / Areas of Expertise</label>
+              <textarea id="mentor-notes" rows="2" placeholder="e.g., Happy to give feedback on unit economics, social impact metrics, pitch delivery..." class="mt-1 w-full text-xs sm:text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="p-6 border-t border-slate-200 bg-slate-50 space-y-2">
+          <button onclick="submitBooking()" id="submit-booking-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-sm">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Complete & View Confirmation
+          </button>
+          <button onclick="closeBookingDrawer()" class="w-full py-2 text-slate-600 hover:text-slate-800 text-xs font-medium">
+            Cancel
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS & ACTIONS MODAL -->
+  <div id="success-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSuccessModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+      <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200">
+        
+        <div class="p-6">
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="check" class="w-6 h-6"></i>
+          </div>
+
+          <h3 class="text-lg font-bold text-slate-900 text-center">You're Confirmed!</h3>
+          <p class="text-xs sm:text-sm text-slate-500 text-center mt-1" id="success-status-note">
+            Your mentorship commitment has been saved.
+          </p>
+
+          <!-- 1. Google Calendar Chrome Links -->
+          <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-slate-700 mb-2.5">
+              <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> Add to Google Calendar (Chrome)
+            </div>
+            <div id="gcal-buttons-list" class="space-y-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- 2. Copy Formatted Email -->
+          <div class="mt-4 p-4 rounded-xl bg-indigo-50/70 border border-indigo-100">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-bold text-xs uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                <i data-lucide="mail" class="w-4 h-4"></i> Confirmation Email Draft
+              </span>
+              <button onclick="copyEmailToClipboard()" id="copy-email-btn" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> <span>Copy Email Text</span>
+              </button>
+            </div>
+            <div class="relative">
+              <pre id="email-preview-box" class="bg-white p-3 rounded-lg border border-indigo-200 text-[11px] leading-relaxed text-slate-700 font-mono overflow-x-auto whitespace-pre-wrap max-h-40"></pre>
+            </div>
+            <div class="mt-2.5 flex items-center justify-between text-xs text-indigo-950 font-medium">
+              <span>Organizer: <code class="bg-indigo-100 px-1.5 py-0.5 rounded text-indigo-800" id="organizer-email-display">changemaker@nido.cl</code></span>
+              <button onclick="copyOrganizerEmail()" class="text-indigo-600 hover:underline">Copy Email Address</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+          <button onclick="closeSuccessModal()" class="px-5 py-2 bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-semibold rounded-lg transition">
+            Done
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- GOOGLE APPS SCRIPT WEBHOOK CONFIG MODAL -->
+  <div id="script-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 text-center sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeScriptModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+      <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200">
+        <div class="p-6">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div class="flex items-center gap-2">
+              <span class="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
+                <i data-lucide="sheet" class="w-5 h-5"></i>
+              </span>
+              <h3 class="text-base font-bold text-slate-900">Google Sheet Connection</h3>
+            </div>
+            <button onclick="closeScriptModal()" class="text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <div class="mt-4 space-y-4 text-xs sm:text-sm">
+            <p class="text-slate-600 leading-relaxed">
+              Paste your deployed Google Apps Script Web App URL below. The app will both <strong>save new sign-ups</strong> and <strong>load claimed slots in real time to gray them out</strong>.
+            </p>
+
+            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div>
+                <label class="block font-semibold text-slate-700 text-xs">Google Apps Script Web App URL *</label>
+                <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec" class="mt-1 w-full px-3 py-2 bg-white border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
+                <span class="text-[11px] text-slate-400">From Google Sheet: <em>Extensions &gt; Apps Script &gt; Deploy &gt; Web app</em></span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-100 rounded-lg text-xs text-slate-700 space-y-1">
+              <p class="font-bold text-slate-900">Columns automatically written to your Google Sheet:</p>
+              <p class="font-mono text-[11px] text-slate-600 select-all leading-normal">
+                Booking ID, Slot ID, Date, Time, Block, Teacher, Course, Phase, Topic, Mentor Name, Mentor Email, Organization, Notes, Submitted At
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 flex items-center justify-between border-t border-slate-200 pt-4">
+            <button onclick="clearScriptConfig()" class="text-xs text-rose-600 hover:underline">Clear URL</button>
+            <div class="flex gap-2">
+              <button onclick="closeScriptModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button onclick="saveScriptConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm">Save Connection</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const ORGANIZER_EMAIL = "changemaker@nido.cl";
+    const SCRIPT_STORAGE_KEY = "nido_gas_webhook_url";
+
+    // --- FULL SCHEDULE DATA WITH BLOCK & TEACHER MAPPINGS ---
+    const RAW_SCHEDULE = [
+      // OCTOBER DATES (Completed)
+      { id: "oct13-1", date: "2026-10-13", displayDate: "Tue, Oct 13", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Hult Business School Visit (Pedro Almeida)" },
+      { id: "oct13-2", date: "2026-10-13", displayDate: "Tue, Oct 13", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Hult Business School Visit (Pedro Almeida)" },
+      { id: "oct14-1", date: "2026-10-14", displayDate: "Wed, Oct 14", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "BLUE", isPast: true, topic: "Hult Business School Visit" },
+      { id: "oct15-1", date: "2026-10-15", displayDate: "Thu, Oct 15", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Debrief Hult & Launch Diamond Challenge" },
+      { id: "oct15-2", date: "2026-10-15", displayDate: "Thu, Oct 15", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Debrief Hult & Launch Diamond Challenge" },
+      { id: "oct19-1", date: "2026-10-19", displayDate: "Mon, Oct 19", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct19-2", date: "2026-10-19", displayDate: "Mon, Oct 19", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct21-1", date: "2026-10-21", displayDate: "Wed, Oct 21", time: "11:20 - 12:35", timeSlot: "MIDDAY", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct21-2", date: "2026-10-21", displayDate: "Wed, Oct 21", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct26-1", date: "2026-10-26", displayDate: "Mon, Oct 26", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct26-2", date: "2026-10-26", displayDate: "Mon, Oct 26", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct28-1", date: "2026-10-28", displayDate: "Wed, Oct 28", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct28-2", date: "2026-10-28", displayDate: "Wed, Oct 28", time: "9:35 - 10:55", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct30-1", date: "2026-10-30", displayDate: "Fri, Oct 30", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct30-2", date: "2026-10-30", displayDate: "Fri, Oct 30", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+      { id: "oct30-3", date: "2026-10-30", displayDate: "Fri, Oct 30", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Identifying & Researching a Problem" },
+
+      // ACTIVE NOVEMBER: PHASE 1 (Problem Research)
+      { id: "nov02-1", date: "2026-11-02", displayDate: "Mon, Nov 2", time: "9:40 - 10:55", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov02-2", date: "2026-11-02", displayDate: "Mon, Nov 2", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      
+      { id: "nov03-1", date: "2026-11-03", displayDate: "Tue, Nov 3", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov03-2", date: "2026-11-03", displayDate: "Tue, Nov 3", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov03-3", date: "2026-11-03", displayDate: "Tue, Nov 3", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+
+      { id: "nov04-1", date: "2026-11-04", displayDate: "Wed, Nov 4", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov04-2", date: "2026-11-04", displayDate: "Wed, Nov 4", time: "11:20 - 12:35", timeSlot: "MIDDAY", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+
+      { id: "nov05-1", date: "2026-11-05", displayDate: "Thu, Nov 5", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov05-2", date: "2026-11-05", displayDate: "Thu, Nov 5", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov05-3", date: "2026-11-05", displayDate: "Thu, Nov 5", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+
+      { id: "nov06-1", date: "2026-11-06", displayDate: "Fri, Nov 6", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+      { id: "nov06-2", date: "2026-11-06", displayDate: "Fri, Nov 6", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "BLUE", isPast: false, topic: "Identifying & Researching a Problem" },
+
+      // PHASE 2 (Design & Test)
+      { id: "nov09-1", date: "2026-11-09", displayDate: "Mon, Nov 9", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "GREEN", isPast: false, topic: "Design & Test Solution (Assumption Testing)" },
+      { id: "nov09-2", date: "2026-11-09", displayDate: "Mon, Nov 9", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution (Assumption Testing)" },
+      { id: "nov09-3", date: "2026-11-09", displayDate: "Mon, Nov 9", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "GREEN", isPast: false, topic: "Design & Test Solution (Assumption Testing)" },
+
+      { id: "nov10-1", date: "2026-11-10", displayDate: "Tue, Nov 10", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov10-2", date: "2026-11-10", displayDate: "Tue, Nov 10", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov11-1", date: "2026-11-11", displayDate: "Wed, Nov 11", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov11-2", date: "2026-11-11", displayDate: "Wed, Nov 11", time: "9:35 - 10:55", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov11-3", date: "2026-11-11", displayDate: "Wed, Nov 11", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov12-1", date: "2026-11-12", displayDate: "Thu, Nov 12", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov12-2", date: "2026-11-12", displayDate: "Thu, Nov 12", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov13-1", date: "2026-11-13", displayDate: "Fri, Nov 13", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov13-2", date: "2026-11-13", displayDate: "Fri, Nov 13", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov13-3", date: "2026-11-13", displayDate: "Fri, Nov 13", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov16-1", date: "2026-11-16", displayDate: "Mon, Nov 16", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov16-2", date: "2026-11-16", displayDate: "Mon, Nov 16", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov17-1", date: "2026-11-17", displayDate: "Tue, Nov 17", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov17-2", date: "2026-11-17", displayDate: "Tue, Nov 17", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov17-3", date: "2026-11-17", displayDate: "Tue, Nov 17", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov18-1", date: "2026-11-18", displayDate: "Wed, Nov 18", time: "9:35 - 10:55", timeSlot: "MORNING", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov18-2", date: "2026-11-18", displayDate: "Wed, Nov 18", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov19-1", date: "2026-11-19", displayDate: "Thu, Nov 19", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov19-2", date: "2026-11-19", displayDate: "Thu, Nov 19", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov19-3", date: "2026-11-19", displayDate: "Thu, Nov 19", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      { id: "nov20-1", date: "2026-11-20", displayDate: "Fri, Nov 20", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+      { id: "nov20-2", date: "2026-11-20", displayDate: "Fri, Nov 20", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "GREEN", isPast: false, topic: "Design & Test Solution" },
+
+      // PHASE 3 (Pitch Coaching)
+      { id: "nov23-1", date: "2026-11-23", displayDate: "Mon, Nov 23", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+      { id: "nov23-2", date: "2026-11-23", displayDate: "Mon, Nov 23", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+      { id: "nov23-3", date: "2026-11-23", displayDate: "Mon, Nov 23", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+
+      { id: "nov24-1", date: "2026-11-24", displayDate: "Tue, Nov 24", time: "9:40 - 10:55", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+      { id: "nov24-2", date: "2026-11-24", displayDate: "Tue, Nov 24", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+
+      { id: "nov25-1", date: "2026-11-25", displayDate: "Wed, Nov 25", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+      { id: "nov25-2", date: "2026-11-25", displayDate: "Wed, Nov 25", time: "11:20 - 12:35", timeSlot: "MIDDAY", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+      { id: "nov25-3", date: "2026-11-25", displayDate: "Wed, Nov 25", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "RED", isPast: false, topic: "Pitch Deck Design & Delivery Practice" },
+
+      { id: "nov30-1", date: "2026-11-30", displayDate: "Mon, Nov 30", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "RED", isPast: false, topic: "Pitch Practice & Submission Polish" },
+      { id: "nov30-2", date: "2026-11-30", displayDate: "Mon, Nov 30", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "RED", isPast: false, topic: "Pitch Practice & Submission Polish" },
+
+      { id: "dec01-1", date: "2026-12-01", displayDate: "Tue, Dec 1", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "RED", isPast: false, topic: "Pitch Practice & Timing" },
+      { id: "dec01-2", date: "2026-12-01", displayDate: "Tue, Dec 1", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "RED", isPast: false, topic: "Pitch Practice & Timing" },
+      { id: "dec01-3", date: "2026-12-01", displayDate: "Tue, Dec 1", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Pitch Practice & Timing" },
+
+      { id: "dec02-1", date: "2026-12-02", displayDate: "Wed, Dec 2", time: "9:35 - 10:55", timeSlot: "MORNING", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "RED", isPast: false, topic: "Pitch Practice & Timing" },
+      { id: "dec02-2", date: "2026-12-02", displayDate: "Wed, Dec 2", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "RED", isPast: false, topic: "Pitch Practice & Timing" },
+
+      { id: "dec07-1", date: "2026-12-07", displayDate: "Mon, Dec 7", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
+      { id: "dec07-2", date: "2026-12-07", displayDate: "Mon, Dec 7", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
+      { id: "dec07-3", date: "2026-12-07", displayDate: "Mon, Dec 7", time: "1:55 - 3:15", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
+
+      { id: "dec09-1", date: "2026-12-09", displayDate: "Wed, Dec 9", time: "9:35 - 10:55", timeSlot: "MORNING", course: "Changemaker", block: "Block H", teacher: "Kathleen and Jason", phase: "RED", isPast: false, topic: "Final Pitch Polish" },
+      { id: "dec09-2", date: "2026-12-09", displayDate: "Wed, Dec 9", time: "1:15 - 2:30", timeSlot: "AFTERNOON", course: "Intro to Entrepreneurship", block: "Block F", teacher: "Entrepreneurship", phase: "RED", isPast: false, topic: "Final Pitch Polish" },
+
+      { id: "dec10-1", date: "2026-12-10", displayDate: "Thu, Dec 10", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
+      { id: "dec10-2", date: "2026-12-10", displayDate: "Thu, Dec 10", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker & Entrepreneurship", block: "Block F & H", teacher: "Natalie & Kathleen & Jason", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
+
+      // PHASE 4 (Demo Days)
+      { id: "dec11-demo", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "All Day", timeSlot: "MORNING", course: "Intro to Entrepreneurship & Changemaker", block: "Block F", teacher: "Natalie & Entrepreneurship", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" },
+      { id: "dec14-demo1", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" },
+      { id: "dec14-demo2", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "1:10 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" },
+      { id: "dec14-demo3", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "All Day", timeSlot: "MORNING", course: "Changemaker", block: "Block D & H", teacher: "Kathleen & Jason", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" }
+    ];
+
+    // --- STATE ---
+    let selectedSlotIds = new Set();
+    let claimedSlotsMap = new Map(); // slotId -> mentorName
+    let currentTimeFilter = "ALL";
+    const STORAGE_KEY = "nido_diamond_mentors_sheets_v2";
+
+    function getStoredBookings() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveBookings(bookings) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+    }
+
+    function getScriptUrl() {
+      return localStorage.getItem(SCRIPT_STORAGE_KEY) || "";
+    }
+
+    function updateScriptBadge() {
+      const url = getScriptUrl();
+      const dot = document.getElementById("sheet-status-dot");
+      const text = document.getElementById("sheet-status-text");
+      if (url && url.includes("script.google.com")) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        text.innerText = "Google Sheet: Connected";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400";
+        text.innerText = "Google Sheet: Setup Webhook";
+      }
+    }
+
+    // --- FETCH LIVE CLAIMED SLOTS FROM GOOGLE SHEET (doGet) ---
+    async function refreshLiveBookings() {
+      const icon = document.getElementById("refresh-icon");
+      if (icon) icon.classList.add("animate-spin");
+
+      // 1. Populate from local storage cache first
+      claimedSlotsMap.clear();
+      const localBookings = getStoredBookings();
+      localBookings.forEach(b => {
+        if (b.slotId) claimedSlotsMap.set(b.slotId, b.mentorName.split(" ")[0]);
+      });
+
+      // 2. Query Google Sheet via GET
+      const scriptUrl = getScriptUrl();
+      if (scriptUrl) {
+        try {
+          const res = await fetch(scriptUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              data.forEach(item => {
+                if (item.slotId) {
+                  claimedSlotsMap.set(item.slotId, item.mentorName || "Volunteer");
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.warn("Could not query live sheet, using local records:", err);
+        }
+      }
+
+      if (icon) icon.classList.remove("animate-spin");
+      renderSchedule();
+    }
+
+    // --- POST TO GOOGLE APPS SCRIPT ---
+    async function syncToGoogleSheet(entries) {
+      const scriptUrl = getScriptUrl();
+
+      if (!scriptUrl) {
+        return { success: false, message: "Google Sheet Webhook not configured (Saved locally)" };
+      }
+
+      try {
+        await fetch(scriptUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(entries)
+        });
+
+        return { success: true, message: "Saved directly to your Google Sheet" };
+      } catch (err) {
+        console.error("Network error talking to Google Apps Script:", err);
+        return { success: false, message: "Network error calling Google Sheet" };
+      }
+    }
+
+    // --- TIME FILTER DROPDOWN LOGIC ---
+    function toggleTimeDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById("time-dropdown-menu");
+      menu.classList.toggle("hidden");
+    }
+
+    function closeAllDropdowns(e) {
+      const menu = document.getElementById("time-dropdown-menu");
+      if (menu && !menu.classList.contains("hidden")) {
+        menu.classList.add("hidden");
+      }
+    }
+
+    function setTimeFilter(value, label) {
+      currentTimeFilter = value;
+      document.getElementById("time-filter-label").innerText = label;
+
+      document.querySelectorAll(".time-check").forEach(el => el.classList.add("hidden"));
+      const activeCheck = document.getElementById("check-" + value);
+      if (activeCheck) activeCheck.classList.remove("hidden");
+
+      document.getElementById("time-dropdown-menu").classList.add("hidden");
+      renderSchedule();
+    }
+
+    // --- RENDER SCHEDULE ---
+    function renderSchedule() {
+      const container = document.getElementById("schedule-container");
+      const courseFilter = document.getElementById("filter-course").value;
+      const phaseFilter = document.getElementById("filter-phase").value;
+      const hidePast = document.getElementById("hide-past").checked;
+      const hideClaimed = document.getElementById("hide-claimed").checked;
+
+      const filtered = RAW_SCHEDULE.filter(slot => {
+        if (hidePast && slot.isPast) return false;
+        if (hideClaimed && claimedSlotsMap.has(slot.id)) return false;
+        if (currentTimeFilter !== "ALL" && slot.timeSlot !== currentTimeFilter && slot.time !== "All Day") return false;
+        if (courseFilter !== "ALL" && !slot.course.includes(courseFilter)) return false;
+        if (phaseFilter !== "ALL" && slot.phase !== phaseFilter) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 bg-white rounded-xl border border-slate-200">
+            <i data-lucide="calendar-x" class="w-10 h-10 mx-auto text-slate-400 mb-2"></i>
+            <p class="text-sm font-semibold text-slate-700">No class blocks match your selected filters.</p>
+            <p class="text-xs text-slate-400 mt-1">Try resetting the meeting time or toggling claimed blocks.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const grouped = {};
+      filtered.forEach(slot => {
+        if (!grouped[slot.date]) grouped[slot.date] = [];
+        grouped[slot.date].push(slot);
+      });
+
+      let html = "";
+      for (const [dateStr, slots] of Object.entries(grouped)) {
+        const displayDate = slots[0].displayDate;
+        
+        html += `
+          <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div class="bg-slate-50/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+              <span class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> ${displayDate}
+              </span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                ${slots.length} ${slots.length === 1 ? 'block' : 'blocks'}
+              </span>
+            </div>
+            
+            <div class="divide-y divide-slate-100">
+              ${slots.map(slot => renderSlotItem(slot)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function renderSlotItem(slot) {
+      const isSelected = selectedSlotIds.has(slot.id);
+      const isClaimed = claimedSlotsMap.has(slot.id);
+      const claimedByName = claimedSlotsMap.get(slot.id) || "Volunteer";
+      
+      let badgeClass = "badge-blue";
+      let phaseLabel = "Phase 1: Problem Research";
+      if (slot.phase === "GREEN") {
+        badgeClass = "badge-green";
+        phaseLabel = "Phase 2: Design & Testing";
+      } else if (slot.phase === "RED") {
+        badgeClass = "badge-red";
+        phaseLabel = "Phase 3: Pitch Coaching";
+      } else if (slot.phase === "DEMO") {
+        badgeClass = "badge-purple";
+        phaseLabel = "Phase 4: Demo Day Judge";
+      }
+
+      // Grayed-out styling when claimed
+      if (isClaimed) {
+        return `
+          <div class="p-4 sm:flex items-center justify-between gap-4 bg-slate-100/70 opacity-60">
+            <div class="space-y-1 mb-3 sm:mb-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-bold text-slate-600 line-through text-sm sm:text-base">${slot.time}</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700">
+                  Claimed by ${claimedByName}
+                </span>
+                <span class="text-xs px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 font-medium">
+                  ${slot.course}
+                </span>
+                <span class="text-[11px] px-2 py-0.5 rounded bg-slate-300/60 text-slate-600 font-mono">
+                  ${slot.block}
+                </span>
+              </div>
+              <p class="text-xs text-slate-500">${slot.topic}</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button disabled class="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold bg-slate-200 text-slate-400 cursor-not-allowed flex items-center justify-center gap-1.5">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                <span>Slot Claimed</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // Active, available block
+      return `
+        <div class="p-4 sm:flex items-center justify-between gap-4 transition hover:bg-slate-50/70 ${isSelected ? 'bg-indigo-50/40' : ''}">
+          <div class="space-y-1 mb-3 sm:mb-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-bold text-slate-900 text-sm sm:text-base">${slot.time}</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${badgeClass}">
+                ${phaseLabel}
+              </span>
+              <span class="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
+                ${slot.course}
+              </span>
+              <span class="text-[11px] px-2 py-0.5 rounded bg-slate-200/70 text-slate-600 font-mono">
+                ${slot.block}
+              </span>
+            </div>
+            <p class="text-xs text-slate-600">${slot.topic}</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="toggleSlotSelection('${slot.id}')" 
+              class="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                isSelected 
+                  ? 'bg-indigo-600 text-white shadow-sm' 
+                  : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-400'
+              }">
+              <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-4 h-4"></i>
+              <span>${isSelected ? 'Selected' : 'Select Block'}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- SELECTION & CART ---
+    function toggleSlotSelection(id) {
+      if (claimedSlotsMap.has(id)) return; // Prevent selection if claimed
+
+      if (selectedSlotIds.has(id)) {
+        selectedSlotIds.delete(id);
+      } else {
+        selectedSlotIds.add(id);
+      }
+      updateCartUI();
+      renderSchedule();
+    }
+
+    function updateCartUI() {
+      const count = selectedSlotIds.size;
+      document.getElementById("cart-count").innerText = count;
+      document.getElementById("sticky-count").innerText = count;
+
+      const bar = document.getElementById("bottom-bar");
+      if (count > 0) {
+        bar.classList.remove("translate-y-full");
+      } else {
+        bar.classList.add("translate-y-full");
+      }
+    }
+
+    function clearSelection() {
+      selectedSlotIds.clear();
+      updateCartUI();
+      renderSchedule();
+    }
+
+    // --- DRAWER & SUBMISSION ---
+    function openBookingDrawer() {
+      if (selectedSlotIds.size === 0) {
+        alert("Please select at least one class block to proceed!");
+        return;
+      }
+
+      const listContainer = document.getElementById("drawer-slot-list");
+      const selected = RAW_SCHEDULE.filter(s => selectedSlotIds.has(s.id));
+
+      listContainer.innerHTML = selected.map(s => `
+        <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+          <div>
+            <div class="font-bold text-slate-900">${s.displayDate} &bull; ${s.time}</div>
+            <div class="text-slate-500">${s.course} (${s.block})</div>
+          </div>
+          <button onclick="toggleSlotSelection('${s.id}'); openBookingDrawer();" class="text-slate-400 hover:text-rose-600 p-1">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `).join('');
+
+      document.getElementById("booking-drawer").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeBookingDrawer() {
+      document.getElementById("booking-drawer").classList.add("hidden");
+    }
+
+    async function submitBooking() {
+      const name = document.getElementById("mentor-name").value.trim();
+      const email = document.getElementById("mentor-email").value.trim();
+      const org = document.getElementById("mentor-org").value.trim();
+      const notes = document.getElementById("mentor-notes").value.trim();
+
+      if (!name || !email) {
+        alert("Please provide your name and email address.");
+        return;
+      }
+
+      const btn = document.getElementById("submit-booking-btn");
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Saving to Google Sheet...`;
+
+      const selectedSlots = RAW_SCHEDULE.filter(s => selectedSlotIds.has(s.id));
+
+      // 1. Prepare Entries with Block, Teacher, and Slot ID
+      const newEntries = selectedSlots.map(s => ({
+        bookingId: "BK-" + Date.now() + "-" + Math.floor(Math.random()*1000),
+        slotId: s.id,
+        date: s.displayDate,
+        rawDate: s.date,
+        time: s.time,
+        block: s.block,
+        teacher: s.teacher,
+        course: s.course,
+        phase: s.phase,
+        topic: s.topic,
+        mentorName: name,
+        mentorEmail: email,
+        mentorOrg: org,
+        mentorNotes: notes,
+        createdAt: new Date().toISOString()
+      }));
+
+      // 2. Mark immediately as claimed locally
+      newEntries.forEach(e => {
+        claimedSlotsMap.set(e.slotId, name.split(" ")[0]);
+      });
+
+      // 3. Post to Google Apps Script
+      const syncResult = await syncToGoogleSheet(newEntries);
+      newEntries.forEach(e => e.sheetStatus = syncResult.message);
+
+      // 4. Save to Local Cache
+      const existing = getStoredBookings();
+      saveBookings([...existing, ...newEntries]);
+
+      // Cache details for confirmation modal
+      const lastBookingDetails = {
+        name,
+        email,
+        org,
+        notes,
+        slots: selectedSlots,
+        syncResult
+      };
+
+      // Reset Form & UI
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Complete & View Confirmation`;
+      clearSelection();
+      closeBookingDrawer();
+
+      // Launch Confirmation Screen
+      openSuccessModal(lastBookingDetails);
+    }
+
+    // --- SUCCESS MODAL ---
+    function openSuccessModal(details) {
+      const note = document.getElementById("success-status-note");
+      if (details.syncResult.success) {
+        note.innerHTML = `<span class="text-emerald-700 font-semibold">✓ ${details.syncResult.message}</span>. You can also add these blocks to your Google Calendar below:`;
+      } else {
+        note.innerHTML = `Saved locally in browser. (${details.syncResult.message})`;
+      }
+
+      // 1. Google Calendar links
+      const gcalContainer = document.getElementById("gcal-buttons-list");
+      gcalContainer.innerHTML = details.slots.map(s => {
+        const url = generateGoogleCalendarUrl(s, details);
+        return `
+          <a href="${url}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition group">
+            <div class="text-xs">
+              <span class="font-bold text-slate-800">${s.displayDate}</span>
+              <span class="text-slate-500 font-medium">(${s.time})</span>
+              <div class="text-[11px] text-slate-500 truncate max-w-[240px]">${s.course}: ${s.topic}</div>
+            </div>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 group-hover:text-indigo-700">
+              <span>Add to GCal</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </span>
+          </a>
+        `;
+      }).join('');
+
+      // 2. Draft Email Text
+      let emailText = `To: ${ORGANIZER_EMAIL}\n`;
+      emailText += `Subject: Diamond Challenge Mentor Sign-Up: ${details.name}\n\n`;
+      emailText += `Hello Team,\n\n`;
+      emailText += `I have signed up to mentor students for the Diamond Challenge! Here are my confirmed sessions:\n\n`;
+      details.slots.forEach(s => {
+        emailText += `• ${s.displayDate} from ${s.time} - ${s.course} (${s.topic})\n`;
+      });
+      emailText += `\nMy Contact Details:\n`;
+      emailText += `• Name: ${details.name}\n`;
+      emailText += `• Email: ${details.email}\n`;
+      if (details.org) emailText += `• Organization / Background: ${details.org}\n`;
+      if (details.notes) emailText += `• Focus Areas / Notes: ${details.notes}\n`;
+      emailText += `\nLooking forward to working with the students!\n\nBest regards,\n${details.name}`;
+
+      document.getElementById("email-preview-box").innerText = emailText;
+      document.getElementById("organizer-email-display").innerText = ORGANIZER_EMAIL;
+
+      const copyBtn = document.getElementById("copy-email-btn");
+      copyBtn.innerHTML = `<i data-lucide="copy" class="w-3.5 h-3.5"></i> <span>Copy Email Text</span>`;
+
+      document.getElementById("success-modal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeSuccessModal() {
+      document.getElementById("success-modal").classList.add("hidden");
+    }
+
+    function generateGoogleCalendarUrl(slot, details) {
+      const cleanDate = slot.date.replace(/-/g, "");
+
+      let startTime = "090000";
+      let endTime = "103000";
+
+      if (slot.time.includes("8:05")) { startTime = "080500"; endTime = "092500"; }
+      else if (slot.time.includes("9:40")) { startTime = "094000"; endTime = "110000"; }
+      else if (slot.time.includes("9:35")) { startTime = "093500"; endTime = "105500"; }
+      else if (slot.time.includes("11:20")) { startTime = "112000"; endTime = "123500"; }
+      else if (slot.time.includes("11:45")) { startTime = "114500"; endTime = "130500"; }
+      else if (slot.time.includes("1:15") || slot.time.includes("1:10")) { startTime = "131500"; endTime = "143000"; }
+      else if (slot.time.includes("1:55")) { startTime = "135500"; endTime = "151500"; }
+
+      const datesParam = `${cleanDate}T${startTime}/${cleanDate}T${endTime}`;
+      const title = encodeURIComponent(`Mentoring: Diamond Challenge (${slot.course})`);
+      const detailsBody = encodeURIComponent(`Nido Diamond Challenge Mentorship Session\n\nTopic: ${slot.topic}\nCourse: ${slot.course}\nTime: ${slot.time}\nMentor: ${details.name} (${details.email})\nNotes: ${details.notes || 'None'}`);
+      const location = encodeURIComponent("International School Nido de Aguilas, Innovation Lab");
+
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${detailsBody}&location=${location}`;
+    }
+
+    function copyEmailToClipboard() {
+      const text = document.getElementById("email-preview-box").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.getElementById("copy-email-btn");
+        copyBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> <span>Copied!</span>`;
+        lucide.createIcons();
+        setTimeout(() => {
+          copyBtn.innerHTML = `<i data-lucide="copy" class="w-3.5 h-3.5"></i> <span>Copy Email Text</span>`;
+          lucide.createIcons();
+        }, 3000);
+      });
+    }
+
+    function copyOrganizerEmail() {
+      navigator.clipboard.writeText(ORGANIZER_EMAIL).then(() => {
+        alert(`Copied organizer email (${ORGANIZER_EMAIL}) to clipboard.`);
+      });
+    }
+
+    // --- SCRIPT URL SETTINGS MODAL ---
+    function openScriptModal() {
+      document.getElementById("cfg-script-url").value = getScriptUrl();
+      document.getElementById("script-modal").classList.remove("hidden");
+    }
+
+    function closeScriptModal() {
+      document.getElementById("script-modal").classList.add("hidden");
+    }
+
+    function saveScriptConfig() {
+      const url = document.getElementById("cfg-script-url").value.trim();
+      localStorage.setItem(SCRIPT_STORAGE_KEY, url);
+      updateScriptBadge();
+      closeScriptModal();
+      refreshLiveBookings();
+      alert("Google Sheet Webhook URL saved successfully!");
+    }
+
+    function clearScriptConfig() {
+      if (!confirm("Remove the Google Sheet Webhook URL?")) return;
+      localStorage.removeItem(SCRIPT_STORAGE_KEY);
+      updateScriptBadge();
+      closeScriptModal();
+    }
+
+    // --- ADMIN TABLE & EXPORTS ---
+    function renderAdminTable() {
+      const tbody = document.getElementById("admin-table-body");
+      const bookings = getStoredBookings();
+
+      if (bookings.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="text-center py-8 text-slate-400">
+              No mentor sign-ups registered yet.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = bookings.map(b => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-2.5 px-4 font-semibold text-slate-900">${b.date}</td>
+          <td class="py-2.5 px-4">${b.time}</td>
+          <td class="py-2.5 px-4 font-mono font-medium text-slate-700">${b.block || '-'}</td>
+          <td class="py-2.5 px-4 text-slate-700">${b.teacher || '-'}</td>
+          <td class="py-2.5 px-4">${b.course}</td>
+          <td class="py-2.5 px-4 font-bold text-slate-800">${b.mentorName}</td>
+          <td class="py-2.5 px-4"><a href="mailto:${b.mentorEmail}" class="text-indigo-600 hover:underline">${b.mentorEmail}</a></td>
+          <td class="py-2.5 px-4 text-xs font-medium text-slate-500">${b.sheetStatus || 'Local only'}</td>
+          <td class="py-2.5 px-4 text-right">
+            <button onclick="removeBooking('${b.bookingId}')" class="text-rose-600 hover:text-rose-800 p-1">
+              <i data-lucide="trash" class="w-4 h-4 inline"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function removeBooking(bookingId) {
+      if (!confirm("Remove this mentor sign-up from local list?")) return;
+      const bookings = getStoredBookings().filter(b => b.bookingId !== bookingId);
+      saveBookings(bookings);
+      renderAdminTable();
+      refreshLiveBookings();
+    }
+
+    function exportCSV() {
+      const bookings = getStoredBookings();
+      if (bookings.length === 0) {
+        alert("No data to export!");
+        return;
+      }
+
+      let csv = "BookingID,Date,Time,Block,Teacher,Course,Phase,MentorName,MentorEmail,Organization,Notes,CreatedAt\n";
+      bookings.forEach(b => {
+        csv += `"${b.bookingId}","${b.date}","${b.time}","${b.block || ''}","${b.teacher || ''}","${b.course}","${b.phase}","${b.mentorName}","${b.mentorEmail}","${b.mentorOrg || ''}","${(b.mentorNotes || '').replace(/"/g, '""')}","${b.createdAt}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Diamond_Challenge_Mentors_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function copyAllEmails() {
+      const bookings = getStoredBookings();
+      const emails = [...new Set(bookings.map(b => b.mentorEmail))];
+      if (emails.length === 0) {
+        alert("No emails found.");
+        return;
+      }
+      navigator.clipboard.writeText(emails.join(", "));
+      alert(`Copied ${emails.length} unique email(s) to clipboard:\n${emails.join(", ")}`);
+    }
+
+    function switchTab(tab) {
+      const schedTab = document.getElementById("schedule-tab");
+      const adminTab = document.getElementById("admin-tab");
+      const schedBtn = document.getElementById("view-schedule-btn");
+      const adminBtn = document.getElementById("view-admin-btn");
+
+      if (tab === "admin") {
+        schedTab.classList.add("hidden");
+        adminTab.classList.remove("hidden");
+        adminBtn.classList.add("bg-white", "shadow-sm", "text-slate-900", "font-semibold");
+        schedBtn.classList.remove("bg-white", "shadow-sm", "text-slate-900", "font-semibold");
+        schedBtn.classList.add("text-slate-600");
+        renderAdminTable();
+      } else {
+        adminTab.classList.add("hidden");
+        schedTab.classList.remove("hidden");
+        schedBtn.classList.add("bg-white", "shadow-sm", "text-slate-900", "font-semibold");
+        adminBtn.classList.remove("bg-white", "shadow-sm", "text-slate-900", "font-semibold");
+        adminBtn.classList.add("text-slate-600");
+        refreshLiveBookings();
+      }
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+      updateScriptBadge();
+      refreshLiveBookings();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
