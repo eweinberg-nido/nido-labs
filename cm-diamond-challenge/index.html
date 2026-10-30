@@ -382,8 +382,8 @@
       <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeScriptModal()"></div>
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
-      <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200">
-        <div class="p-6">
+      <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-slate-200 max-h-[90vh] flex flex-col">
+        <div class="p-6 overflow-y-auto space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-slate-200">
             <div class="flex items-center gap-2">
               <span class="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
@@ -396,36 +396,133 @@
             </button>
           </div>
 
-          <div class="mt-4 space-y-4 text-xs sm:text-sm">
-            <p class="text-slate-600 leading-relaxed">
-              Paste your deployed Google Apps Script Web App URL below. The app will both <strong>save new sign-ups</strong> and <strong>load claimed slots in real time to gray them out</strong>.
-            </p>
-
-            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <div>
-                <label class="block font-semibold text-slate-700 text-xs">Google Apps Script Web App URL *</label>
-                <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec" class="mt-1 w-full px-3 py-2 bg-white border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
-                <span class="text-[11px] text-slate-400">From Google Sheet: <em>Extensions &gt; Apps Script &gt; Deploy &gt; Web app</em></span>
+          <!-- Webhook URL input -->
+          <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+              <label class="block font-semibold text-slate-700 text-xs">Google Apps Script Web App URL *</label>
+              <div class="flex gap-2 mt-1">
+                <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
+                <button type="button" onclick="testConnection()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+                  Test URL
+                </button>
               </div>
-            </div>
-
-            <div class="p-3 bg-slate-100 rounded-lg text-xs text-slate-700 space-y-1">
-              <p class="font-bold text-slate-900">Columns automatically written to your Google Sheet:</p>
-              <p class="font-mono text-[11px] text-slate-600 select-all leading-normal">
-                Booking ID, Slot ID, Date, Time, Block, Teacher, Course, Phase, Topic, Mentor Name, Mentor Email, Organization, Notes, Submitted At
-              </p>
+              <p id="test-connection-msg" class="text-xs mt-2 font-medium"></p>
             </div>
           </div>
 
-          <div class="mt-6 flex items-center justify-between border-t border-slate-200 pt-4">
-            <button onclick="clearScriptConfig()" class="text-xs text-rose-600 hover:underline">Clear URL</button>
-            <div class="flex gap-2">
-              <button onclick="closeScriptModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
-              <button onclick="saveScriptConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm">Save Connection</button>
+          <!-- Critical CORS Warning -->
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs space-y-1">
+            <div class="flex items-center gap-1.5 font-bold text-amber-800">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+              <span>Crucial Setting to avoid CORS errors:</span>
             </div>
+            <p>In Apps Script <strong>Deploy &gt; New deployment</strong> (or Manage deployments):</p>
+            <ul class="list-disc list-inside space-y-0.5 ml-1">
+              <li><strong>Execute as:</strong> <code class="font-bold">Me</code></li>
+              <li><strong>Who has access:</strong> <code class="font-bold text-rose-700">Anyone</code> <em>(NOT "Only myself" or "Anyone in Nido" &mdash; Google restricts those with login redirects that trigger CORS blocks)</em></li>
+            </ul>
           </div>
 
+          <!-- One-click Apps Script Code -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden text-xs">
+            <div class="bg-slate-100 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between">
+              <span class="font-bold text-slate-700">Recommended Google Apps Script (Code.gs)</span>
+              <button type="button" onclick="copyGasCode()" id="copy-gas-btn" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-white px-2 py-1 rounded border border-slate-200">
+                <i data-lucide="copy" class="w-3 h-3"></i> <span>Copy Code.gs</span>
+              </button>
+            </div>
+            <pre id="gas-code-box" class="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] leading-relaxed max-h-48 overflow-y-auto select-all">function doGet(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = sheet.getDataRange().getValues();
+    var rows = [];
+    if (data.length > 1) {
+      var headers = data[0];
+      for (var i = 1; i < data.length; i++) {
+        var row = {};
+        for (var j = 0; j < headers.length; j++) {
+          row[headers[j]] = data[i][j];
+        }
+        rows.push(row);
+      }
+    }
+    var json = JSON.stringify(rows);
+    var callback = e && e.parameter ? e.parameter.callback : null;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + json + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(json)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    var errObj = JSON.stringify({ error: err.toString() });
+    var callback = e && e.parameter ? e.parameter.callback : null;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + errObj + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(errObj)
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "Booking ID", "Slot ID", "Date", "Time", "Block", "Teacher", 
+        "Course", "Phase", "Topic", "Mentor Name", "Mentor Email", 
+        "Organization", "Notes", "Submitted At"
+      ]);
+    }
+    var body = e.postData ? e.postData.contents : "";
+    var entries = JSON.parse(body);
+    if (!Array.isArray(entries)) entries = [entries];
+    entries.forEach(function(item) {
+      sheet.appendRow([
+        item.bookingId || "",
+        item.slotId || "",
+        item.date || "",
+        item.time || "",
+        item.block || "",
+        item.teacher || "",
+        item.course || "",
+        item.phase || "",
+        item.topic || "",
+        item.mentorName || "",
+        item.mentorEmail || "",
+        item.mentorOrg || "",
+        item.mentorNotes || "",
+        item.createdAt || new Date().toISOString()
+      ]);
+    });
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}</pre>
+          </div>
         </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+          <button onclick="clearScriptConfig()" class="text-xs text-rose-600 hover:underline">Clear URL</button>
+          <div class="flex gap-2">
+            <button onclick="closeScriptModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+            <button onclick="saveScriptConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm">Save Connection</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -570,20 +667,63 @@
       return localStorage.getItem(SCRIPT_STORAGE_KEY) || "";
     }
 
-    function updateScriptBadge() {
+    function updateScriptBadge(status = "default") {
       const url = getScriptUrl();
       const dot = document.getElementById("sheet-status-dot");
       const text = document.getElementById("sheet-status-text");
-      if (url && url.includes("script.google.com")) {
-        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        text.innerText = "Google Sheet: Connected";
-      } else {
+      
+      if (!url) {
         dot.className = "w-2 h-2 rounded-full bg-amber-400";
         text.innerText = "Google Sheet: Setup Webhook";
+        return;
+      }
+      
+      if (status === "connected") {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        text.innerText = "Google Sheet: Connected";
+      } else if (status === "error") {
+        dot.className = "w-2 h-2 rounded-full bg-rose-500 animate-pulse";
+        text.innerText = "Google Sheet: CORS/Access Error";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        text.innerText = "Google Sheet: Configured";
       }
     }
 
-    // --- FETCH LIVE CLAIMED SLOTS FROM GOOGLE SHEET (doGet) ---
+    // --- JSONP HELPER (Bypasses CORS restrictions) ---
+    function fetchJsonp(url) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'gas_cb_' + Math.random().toString(36).substring(2, 9);
+        const script = document.createElement('script');
+        
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error("JSONP request timed out. Verify deployment is accessible."));
+        }, 8000);
+
+        function cleanup() {
+          clearTimeout(timer);
+          if (script.parentNode) script.parentNode.removeChild(script);
+          delete window[callbackName];
+        }
+
+        window[callbackName] = function(data) {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error("Script tag load failed. Verify 'Who has access: Anyone'."));
+        };
+
+        const joinChar = url.includes('?') ? '&' : '?';
+        script.src = `${url}${joinChar}callback=${callbackName}&_=${Date.now()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    // --- FETCH LIVE CLAIMED SLOTS (FETCH + JSONP FALLBACK) ---
     async function refreshLiveBookings() {
       const icon = document.getElementById("refresh-icon");
       if (icon) icon.classList.add("animate-spin");
@@ -592,26 +732,40 @@
       claimedSlotsMap.clear();
       const localBookings = getStoredBookings();
       localBookings.forEach(b => {
-        if (b.slotId) claimedSlotsMap.set(b.slotId, b.mentorName.split(" ")[0]);
+        if (b.slotId) claimedSlotsMap.set(b.slotId, (b.mentorName || "Volunteer").split(" ")[0]);
       });
 
-      // 2. Query Google Sheet via GET
+      // 2. Query Google Sheet
       const scriptUrl = getScriptUrl();
       if (scriptUrl) {
+        let loadedData = null;
+
+        // Try standard fetch first
         try {
           const res = await fetch(scriptUrl);
           if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) {
-              data.forEach(item => {
-                if (item.slotId) {
-                  claimedSlotsMap.set(item.slotId, item.mentorName || "Volunteer");
-                }
-              });
-            }
+            loadedData = await res.json();
           }
-        } catch (err) {
-          console.warn("Could not query live sheet, using local records:", err);
+        } catch (fetchErr) {
+          // If fetch fails (CORS error), attempt JSONP
+          try {
+            loadedData = await fetchJsonp(scriptUrl);
+          } catch (jsonpErr) {
+            console.warn("Could not query live sheet via fetch or JSONP. Local records active.", jsonpErr);
+            updateScriptBadge("error");
+          }
+        }
+
+        if (Array.isArray(loadedData)) {
+          loadedData.forEach(item => {
+            // Flexible keys (Slot ID / slotId)
+            const slotId = item.slotId || item["Slot ID"] || item["slot_id"];
+            const mentorName = item.mentorName || item["Mentor Name"] || item["mentor_name"] || "Volunteer";
+            if (slotId) {
+              claimedSlotsMap.set(String(slotId).trim(), String(mentorName).trim().split(" ")[0]);
+            }
+          });
+          updateScriptBadge("connected");
         }
       }
 
@@ -631,6 +785,7 @@
         await fetch(scriptUrl, {
           method: "POST",
           mode: "no-cors",
+          cache: "no-cache",
           headers: {
             "Content-Type": "text/plain;charset=utf-8"
           },
@@ -815,7 +970,7 @@
 
     // --- SELECTION & CART ---
     function toggleSlotSelection(id) {
-      if (claimedSlotsMap.has(id)) return; // Prevent selection if claimed
+      if (claimedSlotsMap.has(id)) return;
 
       if (selectedSlotIds.has(id)) {
         selectedSlotIds.delete(id);
@@ -892,7 +1047,6 @@
 
       const selectedSlots = RAW_SCHEDULE.filter(s => selectedSlotIds.has(s.id));
 
-      // 1. Prepare Entries with Block, Teacher, and Slot ID
       const newEntries = selectedSlots.map(s => ({
         bookingId: "BK-" + Date.now() + "-" + Math.floor(Math.random()*1000),
         slotId: s.id,
@@ -911,20 +1065,19 @@
         createdAt: new Date().toISOString()
       }));
 
-      // 2. Mark immediately as claimed locally
+      // Mark claimed immediately locally
       newEntries.forEach(e => {
         claimedSlotsMap.set(e.slotId, name.split(" ")[0]);
       });
 
-      // 3. Post to Google Apps Script
+      // Post to Google Apps Script
       const syncResult = await syncToGoogleSheet(newEntries);
       newEntries.forEach(e => e.sheetStatus = syncResult.message);
 
-      // 4. Save to Local Cache
+      // Save to Local Cache
       const existing = getStoredBookings();
       saveBookings([...existing, ...newEntries]);
 
-      // Cache details for confirmation modal
       const lastBookingDetails = {
         name,
         email,
@@ -934,13 +1087,11 @@
         syncResult
       };
 
-      // Reset Form & UI
       btn.disabled = false;
       btn.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4"></i> Complete & View Confirmation`;
       clearSelection();
       closeBookingDrawer();
 
-      // Launch Confirmation Screen
       openSuccessModal(lastBookingDetails);
     }
 
@@ -1042,10 +1193,12 @@
       });
     }
 
-    // --- SCRIPT URL SETTINGS MODAL ---
+    // --- SCRIPT URL SETTINGS & DIAGNOSTICS ---
     function openScriptModal() {
       document.getElementById("cfg-script-url").value = getScriptUrl();
+      document.getElementById("test-connection-msg").innerText = "";
       document.getElementById("script-modal").classList.remove("hidden");
+      lucide.createIcons();
     }
 
     function closeScriptModal() {
@@ -1058,7 +1211,6 @@
       updateScriptBadge();
       closeScriptModal();
       refreshLiveBookings();
-      alert("Google Sheet Webhook URL saved successfully!");
     }
 
     function clearScriptConfig() {
@@ -1066,6 +1218,50 @@
       localStorage.removeItem(SCRIPT_STORAGE_KEY);
       updateScriptBadge();
       closeScriptModal();
+    }
+
+    function copyGasCode() {
+      const code = document.getElementById("gas-code-box").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById("copy-gas-btn");
+        btn.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> <span class="text-emerald-700">Copied!</span>`;
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = `<i data-lucide="copy" class="w-3 h-3"></i> <span>Copy Code.gs</span>`;
+          lucide.createIcons();
+        }, 3000);
+      });
+    }
+
+    async function testConnection() {
+      const url = document.getElementById("cfg-script-url").value.trim();
+      const msg = document.getElementById("test-connection-msg");
+
+      if (!url) {
+        msg.innerHTML = `<span class="text-rose-600">Please paste a Web App URL first.</span>`;
+        return;
+      }
+
+      msg.innerHTML = `<span class="text-indigo-600 animate-pulse">Testing Web App connection...</span>`;
+
+      try {
+        let rows = null;
+        try {
+          const res = await fetch(url);
+          if (res.ok) rows = await res.json();
+        } catch (fetchErr) {
+          // Attempt JSONP if fetch hit CORS
+          rows = await fetchJsonp(url);
+        }
+
+        if (Array.isArray(rows)) {
+          msg.innerHTML = `<span class="text-emerald-700 font-bold">✓ Connected successfully!</span> (${rows.length} rows read from sheet)`;
+        } else {
+          msg.innerHTML = `<span class="text-amber-700 font-semibold">✓ Webhook reachable!</span> (Empty sheet or initialized)`;
+        }
+      } catch (err) {
+        msg.innerHTML = `<span class="text-rose-700 font-semibold">✕ Connection Failed:</span> <span class="text-slate-600">Check that 'Who has access' is set to <strong>Anyone</strong> in Apps Script.</span>`;
+      }
     }
 
     // --- ADMIN TABLE & EXPORTS ---
