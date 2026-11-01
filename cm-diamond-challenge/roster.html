@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coordinator Roster | Nido Diamond Challenge</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="p-2 bg-indigo-600 text-white rounded-lg shadow-sm">
+            <i data-lucide="sheet" class="w-5 h-5"></i>
+          </span>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">Mentor Sign-Up Roster & Management</h1>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+          Diamond Challenge & Changemakers Guest Mentor Database.
+        </p>
+      </div>
+
+      <!-- Navigation & Setup -->
+      <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
+        <a href="index.html" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Public Schedule
+        </a>
+        <button onclick="openScriptModal()" id="sheet-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50">
+          <span class="w-2 h-2 rounded-full bg-emerald-500" id="sheet-status-dot"></span>
+          <span id="sheet-status-text">Webhook Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- KPI STATS -->
+    <section class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Sign-Ups</div>
+        <div class="text-2xl font-bold text-slate-900 mt-1" id="stat-total-signups">0</div>
+      </div>
+      <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unique Mentors</div>
+        <div class="text-2xl font-bold text-indigo-600 mt-1" id="stat-unique-mentors">0</div>
+      </div>
+      <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Claimed Blocks</div>
+        <div class="text-2xl font-bold text-emerald-600 mt-1" id="stat-claimed-blocks">0</div>
+      </div>
+      <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sheet Status</div>
+        <div class="text-sm font-bold text-slate-700 mt-2 flex items-center gap-1.5" id="stat-sheet-indicator">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Connected
+        </div>
+      </div>
+    </section>
+
+    <!-- ROSTER TABLE PANEL -->
+    <section class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+      
+      <!-- Toolbar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+        <div class="flex items-center gap-2 flex-1 max-w-sm">
+          <div class="relative w-full">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="search-input" onkeyup="filterRosterTable()" placeholder="Search mentor, course, or block..." class="w-full pl-9 pr-3 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="syncFromGoogleSheet()" title="Reload directly from Google Sheet" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-700">
+            <i data-lucide="refresh-cw" class="w-4 h-4" id="table-sync-icon"></i> Sync Sheet
+          </button>
+          <button onclick="exportCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold hover:bg-slate-50 text-slate-700">
+            <i data-lucide="download" class="w-4 h-4"></i> Export CSV
+          </button>
+          <button onclick="copyAllEmails()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-semibold hover:bg-indigo-100 text-indigo-700">
+            <i data-lucide="copy" class="w-4 h-4"></i> Copy All Emails
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+          <thead class="bg-slate-50 text-slate-700 font-semibold uppercase text-[11px] border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-3">Date</th>
+              <th class="py-3 px-3">Time</th>
+              <th class="py-3 px-3">Block</th>
+              <th class="py-3 px-3">Block ID</th>
+              <th class="py-3 px-3">Teacher</th>
+              <th class="py-3 px-3">Course</th>
+              <th class="py-3 px-3">Mentor Name</th>
+              <th class="py-3 px-3">Email</th>
+              <th class="py-3 px-3">Org / Notes</th>
+              <th class="py-3 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="roster-table-body" class="divide-y divide-slate-100 font-normal">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- WEBHOOK MODAL -->
+  <div id="script-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 text-center sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeScriptModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+      <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-slate-200 max-h-[90vh] flex flex-col">
+        <div class="p-6 overflow-y-auto space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div class="flex items-center gap-2">
+              <span class="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
+                <i data-lucide="sheet" class="w-5 h-5"></i>
+              </span>
+              <h3 class="text-base font-bold text-slate-900">Google Sheet Connection</h3>
+            </div>
+            <button onclick="closeScriptModal()" class="text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Webhook input -->
+          <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div>
+              <label class="block font-semibold text-slate-700 text-xs">Google Apps Script Web App URL *</label>
+              <div class="flex gap-2 mt-1">
+                <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
+                <button type="button" onclick="testConnection()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold whitespace-nowrap">
+                  Test URL
+                </button>
+              </div>
+              <p id="test-connection-msg" class="text-xs mt-2 font-medium"></p>
+            </div>
+          </div>
+
+          <!-- Row 1 Headers Guide -->
+          <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs space-y-1">
+            <span class="font-bold text-indigo-900">Row 1 Headers to paste in cell A1 of Google Sheet:</span>
+            <pre class="bg-white p-2 rounded border border-indigo-200 text-[11px] font-mono text-slate-700 select-all overflow-x-auto whitespace-pre">Booking ID	Block ID	Date	Time	Block	Teacher	Course	Phase	Topic	Mentor Name	Mentor Email	Organization	Notes	Submitted At</pre>
+          </div>
+
+          <!-- Code.gs -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden text-xs">
+            <div class="bg-slate-100 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between">
+              <span class="font-bold text-slate-700">Google Apps Script (Code.gs)</span>
+              <button type="button" onclick="copyGasCode()" id="copy-gas-btn" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-white px-2 py-1 rounded border border-slate-200">
+                <i data-lucide="copy" class="w-3 h-3"></i> <span>Copy Script</span>
+              </button>
+            </div>
+            <pre id="gas-code-box" class="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] leading-relaxed max-h-40 overflow-y-auto select-all">function doGet(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = sheet.getDataRange().getValues();
+    var rows = [];
+    if (data.length > 1) {
+      var headers = data[0];
+      for (var i = 1; i < data.length; i++) {
+        var row = {};
+        for (var j = 0; j < headers.length; j++) {
+          row[headers[j]] = data[i][j];
+        }
+        rows.push(row);
+      }
+    }
+    var json = JSON.stringify(rows);
+    var callback = e && e.parameter ? e.parameter.callback : null;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + json + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(json)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    var errObj = JSON.stringify({ error: err.toString() });
+    var callback = e && e.parameter ? e.parameter.callback : null;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + errObj + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(errObj)
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "Booking ID", "Block ID", "Date", "Time", "Block", "Teacher", 
+        "Course", "Phase", "Topic", "Mentor Name", "Mentor Email", 
+        "Organization", "Notes", "Submitted At"
+      ]);
+    }
+    var body = e.postData ? e.postData.contents : "";
+    var entries = JSON.parse(body);
+    if (!Array.isArray(entries)) entries = [entries];
+    entries.forEach(function(item) {
+      sheet.appendRow([
+        item.bookingId || "",
+        item.slotId || item.blockId || "",
+        item.date || "",
+        item.time || "",
+        item.block || "",
+        item.teacher || "",
+        item.course || "",
+        item.phase || "",
+        item.topic || "",
+        item.mentorName || "",
+        item.mentorEmail || "",
+        item.mentorOrg || "",
+        item.mentorNotes || "",
+        item.createdAt || new Date().toISOString()
+      ]);
+    });
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}</pre>
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+          <button onclick="clearScriptConfig()" class="text-xs text-rose-600 hover:underline">Clear URL</button>
+          <div class="flex gap-2">
+            <button onclick="closeScriptModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+            <button onclick="saveScriptConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm">Save Connection</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const SCRIPT_STORAGE_KEY = "nido_gas_webhook_url";
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxUR_f0p_U2xlVO1a3dMp2SgogK9o_ElLRGHulimn3Brv7v0e8wMDEckO1AVaWhax7h/exec";
+    const STORAGE_KEY = "https://script.google.com/macros/s/AKfycbxUR_f0p_U2xlVO1a3dMp2SgogK9o_ElLRGHulimn3Brv7v0e8wMDEckO1AVaWhax7h/exec";
+
+    let combinedBookings = [];
+
+    function getScriptUrl() {
+      return localStorage.getItem(SCRIPT_STORAGE_KEY) || DEFAULT_GAS_URL;
+    }
+
+    function getLocalBookings() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveLocalBookings(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    // JSONP Helper for CORS Bypass
+    function fetchJsonp(url) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'gas_roster_' + Math.random().toString(36).substring(2, 9);
+        const script = document.createElement('script');
+        
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error("Timeout"));
+        }, 8000);
+
+        function cleanup() {
+          clearTimeout(timer);
+          if (script.parentNode) script.parentNode.removeChild(script);
+          delete window[callbackName];
+        }
+
+        window[callbackName] = function(data) {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error("Script error"));
+        };
+
+        const joinChar = url.includes('?') ? '&' : '?';
+        script.src = `${url}${joinChar}callback=${callbackName}&_=${Date.now()}`;
+        document.body.appendChild(script);
+      });
+    }
+
+    // Load from Sheet + Local Cache
+    async function syncFromGoogleSheet() {
+      const icon = document.getElementById("table-sync-icon");
+      if (icon) icon.classList.add("animate-spin");
+
+      const scriptUrl = getScriptUrl();
+      let sheetData = [];
+
+      if (scriptUrl) {
+        try {
+          const res = await fetch(scriptUrl);
+          if (res.ok) sheetData = await res.json();
+        } catch (fetchErr) {
+          try {
+            sheetData = await fetchJsonp(scriptUrl);
+          } catch (jsonpErr) {
+            console.warn("Could not load live sheet:", jsonpErr);
+          }
+        }
+      }
+
+      const localData = getLocalBookings();
+
+      if (Array.isArray(sheetData) && sheetData.length > 0) {
+        combinedBookings = sheetData.map(item => ({
+          bookingId: item["Booking ID"] || item.bookingId || "BK-" + Math.floor(Math.random()*10000),
+          slotId: item["Block ID"] || item["Slot ID"] || item.slotId || "-",
+          date: item["Date"] || item.date || "-",
+          time: item["Time"] || item.time || "-",
+          block: item["Block"] || item.block || "-",
+          teacher: item["Teacher"] || item.teacher || "-",
+          course: item["Course"] || item.course || "-",
+          mentorName: item["Mentor Name"] || item.mentorName || "-",
+          mentorEmail: item["Mentor Email"] || item.mentorEmail || "-",
+          mentorOrg: item["Organization"] || item.mentorOrg || "",
+          mentorNotes: item["Notes"] || item.mentorNotes || ""
+        }));
+      } else {
+        combinedBookings = localData;
+      }
+
+      renderRosterTable(combinedBookings);
+      updateStats();
+
+      if (icon) icon.classList.remove("animate-spin");
+    }
+
+    function renderRosterTable(list) {
+      const tbody = document.getElementById("roster-table-body");
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="text-center py-10 text-slate-400">
+              No registered mentor sign-ups found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map(b => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-2.5 px-3 font-semibold text-slate-900">${b.date}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${b.time}</td>
+          <td class="py-2.5 px-3 font-mono font-medium text-slate-700">${b.block}</td>
+          <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">${b.slotId}</td>
+          <td class="py-2.5 px-3 text-slate-700">${b.teacher}</td>
+          <td class="py-2.5 px-3 font-medium text-slate-800">${b.course}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-900">${b.mentorName}</td>
+          <td class="py-2.5 px-3"><a href="mailto:${b.mentorEmail}" class="text-indigo-600 hover:underline">${b.mentorEmail}</a></td>
+          <td class="py-2.5 px-3 text-xs max-w-xs truncate" title="${b.mentorNotes || ''}">
+            ${b.mentorOrg ? `<span class="font-semibold text-slate-700">${b.mentorOrg}: </span>` : ''}
+            <span class="text-slate-500">${b.mentorNotes || '-'}</span>
+          </td>
+          <td class="py-2.5 px-3 text-right">
+            <button onclick="removeBooking('${b.bookingId}')" class="text-rose-500 hover:text-rose-700 p-1" title="Delete record">
+              <i data-lucide="trash-2" class="w-4 h-4 inline"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function filterRosterTable() {
+      const q = document.getElementById("search-input").value.toLowerCase();
+      const filtered = combinedBookings.filter(b => 
+        (b.mentorName && b.mentorName.toLowerCase().includes(q)) ||
+        (b.mentorEmail && b.mentorEmail.toLowerCase().includes(q)) ||
+        (b.course && b.course.toLowerCase().includes(q)) ||
+        (b.block && b.block.toLowerCase().includes(q)) ||
+        (b.date && b.date.toLowerCase().includes(q))
+      );
+      renderRosterTable(filtered);
+    }
+
+    function removeBooking(bookingId) {
+      if (!confirm("Remove this entry from the local display?")) return;
+      combinedBookings = combinedBookings.filter(b => b.bookingId !== bookingId);
+      saveLocalBookings(combinedBookings);
+      renderRosterTable(combinedBookings);
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById("stat-total-signups").innerText = combinedBookings.length;
+      const unique = new Set(combinedBookings.map(b => b.mentorEmail.toLowerCase()).filter(Boolean));
+      document.getElementById("stat-unique-mentors").innerText = unique.size;
+      const claimedSlots = new Set(combinedBookings.map(b => b.slotId).filter(id => id && id !== "-"));
+      document.getElementById("stat-claimed-blocks").innerText = claimedSlots.size;
+    }
+
+    function exportCSV() {
+      if (combinedBookings.length === 0) {
+        alert("No entries to export!");
+        return;
+      }
+
+      let csv = "Booking ID,Block ID,Date,Time,Block,Teacher,Course,Phase,Topic,Mentor Name,Mentor Email,Organization,Notes,Submitted At\n";
+      combinedBookings.forEach(b => {
+        csv += `"${b.bookingId}","${b.slotId || ''}","${b.date}","${b.time}","${b.block || ''}","${b.teacher || ''}","${b.course || ''}","${b.phase || ''}","${b.topic || ''}","${b.mentorName}","${b.mentorEmail}","${b.mentorOrg || ''}","${(b.mentorNotes || '').replace(/"/g, '""')}","${new Date().toISOString()}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Diamond_Challenge_Roster_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function copyAllEmails() {
+      const emails = [...new Set(combinedBookings.map(b => b.mentorEmail).filter(Boolean))];
+      if (emails.length === 0) {
+        alert("No emails found.");
+        return;
+      }
+      navigator.clipboard.writeText(emails.join(", "));
+      alert(`Copied ${emails.length} unique email(s) to clipboard:\n\n${emails.join(", ")}`);
+    }
+
+    // Modal & Script setup
+    function openScriptModal() {
+      document.getElementById("cfg-script-url").value = getScriptUrl();
+      document.getElementById("test-connection-msg").innerText = "";
+      document.getElementById("script-modal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeScriptModal() {
+      document.getElementById("script-modal").classList.add("hidden");
+    }
+
+    function saveScriptConfig() {
+      const url = document.getElementById("cfg-script-url").value.trim();
+      localStorage.setItem(SCRIPT_STORAGE_KEY, url);
+      closeScriptModal();
+      syncFromGoogleSheet();
+    }
+
+    function clearScriptConfig() {
+      if (!confirm("Clear custom webhook URL and reset to default?")) return;
+      localStorage.removeItem(SCRIPT_STORAGE_KEY);
+      closeScriptModal();
+      syncFromGoogleSheet();
+    }
+
+    function copyGasCode() {
+      const code = document.getElementById("gas-code-box").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById("copy-gas-btn");
+        btn.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> <span class="text-emerald-700">Copied!</span>`;
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = `<i data-lucide="copy" class="w-3 h-3"></i> <span>Copy Script</span>`;
+          lucide.createIcons();
+        }, 3000);
+      });
+    }
+
+    async function testConnection() {
+      const url = document.getElementById("cfg-script-url").value.trim();
+      const msg = document.getElementById("test-connection-msg");
+
+      if (!url) {
+        msg.innerHTML = `<span class="text-rose-600">Please paste a URL.</span>`;
+        return;
+      }
+
+      msg.innerHTML = `<span class="text-indigo-600 animate-pulse">Testing Webhook...</span>`;
+
+      try {
+        let rows = null;
+        try {
+          const res = await fetch(url);
+          if (res.ok) rows = await res.json();
+        } catch (fetchErr) {
+          rows = await fetchJsonp(url);
+        }
+
+        if (Array.isArray(rows)) {
+          msg.innerHTML = `<span class="text-emerald-700 font-bold">✓ Connected!</span> (${rows.length} rows read)`;
+        } else {
+          msg.innerHTML = `<span class="text-amber-700 font-semibold">✓ Webhook reachable!</span>`;
+        }
+      } catch (err) {
+        msg.innerHTML = `<span class="text-rose-700 font-semibold">✕ Failed:</span> Ensure "Who has access" is set to <strong>Anyone</strong>.`;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      syncFromGoogleSheet();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
