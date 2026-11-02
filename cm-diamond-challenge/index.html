@@ -85,7 +85,7 @@
           <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Phase 4: Demo Day Judge
         </div>
         <p class="text-xs text-purple-800 leading-relaxed">
-          Official pitch judge: 5-minute team presentation followed by 3 minutes of live judge Q&A.
+          Official pitch judge: Mentoring (8-11), Networking (11-12), or Judging (12-3).
         </p>
       </div>
     </section>
@@ -94,7 +94,7 @@
     <section class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
       
       <div class="flex flex-wrap items-center gap-3">
-        <!-- 1. TIME OF DAY FILTER -->
+        <!-- Time Filter Dropdown -->
         <div class="relative">
           <button id="time-filter-btn" type="button" onclick="toggleTimeDropdown(event)" class="inline-flex items-center gap-2 bg-slate-50 border border-slate-300 hover:border-slate-400 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-slate-800 shadow-sm transition">
             <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
@@ -102,28 +102,27 @@
             <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
           </button>
 
-          <!-- Dropdown Menu -->
-          <div id="time-dropdown-menu" class="hidden absolute left-0 mt-1.5 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs sm:text-sm font-medium">
+          <div id="time-dropdown-menu" class="hidden absolute left-0 mt-1.5 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-xs sm:text-sm font-medium">
             <button onclick="setTimeFilter('ALL', 'All Times')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
               <span>All Times</span>
               <i data-lucide="check" class="w-4 h-4 text-indigo-600 time-check" id="check-ALL"></i>
             </button>
-            <button onclick="setTimeFilter('MORNING', 'Morning (8:05 - 11:00)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
-              <span>Morning (8:05 - 11:00)</span>
+            <button onclick="setTimeFilter('MORNING', 'Morning (8:00 - 11:00)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+              <span>Morning (8:00 - 11:00)</span>
               <i data-lucide="check" class="w-4 h-4 text-indigo-600 hidden time-check" id="check-MORNING"></i>
             </button>
-            <button onclick="setTimeFilter('MIDDAY', 'Midday (11:20 - 1:05)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
-              <span>Midday (11:20 - 1:05)</span>
+            <button onclick="setTimeFilter('MIDDAY', 'Midday (11:00 - 1:05)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+              <span>Midday (11:00 - 1:05)</span>
               <i data-lucide="check" class="w-4 h-4 text-indigo-600 hidden time-check" id="check-MIDDAY"></i>
             </button>
-            <button onclick="setTimeFilter('AFTERNOON', 'Afternoon (1:15 - 3:15)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
-              <span>Afternoon (1:15 - 3:15)</span>
+            <button onclick="setTimeFilter('AFTERNOON', 'Afternoon (12:00 - 3:15)')" class="w-full px-3.5 py-2 text-left flex items-center justify-between hover:bg-slate-50 text-slate-900">
+              <span>Afternoon (12:00 - 3:15)</span>
               <i data-lucide="check" class="w-4 h-4 text-indigo-600 hidden time-check" id="check-AFTERNOON"></i>
             </button>
           </div>
         </div>
 
-        <!-- 2. Course Filter -->
+        <!-- Course Filter -->
         <div class="flex items-center gap-1.5">
           <select id="filter-course" onchange="renderSchedule()" class="text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 font-medium">
             <option value="ALL">All Courses (Changemaker & Entrepreneurship)</option>
@@ -132,14 +131,14 @@
           </select>
         </div>
 
-        <!-- 3. Focus Phase Filter -->
+        <!-- Phase Filter -->
         <div class="flex items-center gap-1.5">
           <select id="filter-phase" onchange="renderSchedule()" class="text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 font-medium">
             <option value="ALL">All Focus Phases</option>
             <option value="BLUE">Phase 1: Problem Research</option>
             <option value="GREEN">Phase 2: Solution Design & Testing</option>
             <option value="RED">Phase 3: Pitch Rehearsal</option>
-            <option value="DEMO">Phase 4: Demo Day Judging</option>
+            <option value="DEMO">Phase 4: Demo Day (Mentoring, Networking, Judging)</option>
           </select>
         </div>
       </div>
@@ -163,9 +162,7 @@
     </section>
 
     <!-- SLOTS CONTAINER -->
-    <div id="schedule-container" class="space-y-4">
-      <!-- Rendered dynamically -->
-    </div>
+    <div id="schedule-container" class="space-y-4"></div>
   </main>
 
   <!-- FOOTER -->
@@ -219,12 +216,26 @@
         <div class="p-6 overflow-y-auto space-y-5 flex-1">
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Selected Schedule Blocks</label>
-            <div id="drawer-slot-list" class="space-y-2">
-              <!-- Rendered via JS -->
-            </div>
+            <div id="drawer-slot-list" class="space-y-2"></div>
           </div>
 
           <div class="space-y-3.5 pt-3 border-t border-slate-200">
+            
+            <!-- ATTENDANCE PREFERENCE: Virtual vs In Person -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Attendance Mode *</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-300 hover:border-indigo-400 cursor-pointer text-xs font-semibold text-slate-800 bg-white has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/60 has-[:checked]:text-indigo-900 transition">
+                  <input type="radio" name="mentor-attendance" value="In Person" checked class="text-indigo-600 focus:ring-indigo-500" />
+                  <span>🏫 In Person (Campus)</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-300 hover:border-indigo-400 cursor-pointer text-xs font-semibold text-slate-800 bg-white has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/60 has-[:checked]:text-indigo-900 transition">
+                  <input type="radio" name="mentor-attendance" value="Virtual" class="text-indigo-600 focus:ring-indigo-500" />
+                  <span>💻 Virtual (Zoom / Meet)</span>
+                </label>
+              </div>
+            </div>
+
             <div>
               <label for="mentor-name" class="block text-xs font-semibold text-slate-700">Your Full Name *</label>
               <input type="text" id="mentor-name" required placeholder="e.g. Alex Rivera" class="mt-1 w-full text-xs sm:text-sm px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
@@ -279,14 +290,17 @@
             Your mentorship commitment has been saved.
           </p>
 
+          <!-- Attendance badge in confirmation -->
+          <div class="mt-3 text-center">
+            <span id="confirm-attendance-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
+          </div>
+
           <!-- Google Calendar Links -->
-          <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
             <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-slate-700 mb-2.5">
               <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> Add to Google Calendar (Chrome)
             </div>
-            <div id="gcal-buttons-list" class="space-y-2">
-              <!-- Rendered via JS -->
-            </div>
+            <div id="gcal-buttons-list" class="space-y-2"></div>
           </div>
 
           <!-- Confirmation Email Draft -->
@@ -324,9 +338,9 @@
   <script>
     const ORGANIZER_EMAIL = "jcancella@nido.cl";
     const SCRIPT_STORAGE_KEY = "https://script.google.com/macros/s/AKfycbxUR_f0p_U2xlVO1a3dMp2SgogK9o_ElLRGHulimn3Brv7v0e8wMDEckO1AVaWhax7h/exec";
-    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxUR_f0p_U2xlVO1a3dMp2SgogK9o_ElLRGHulimn3Brv7v0e8wMDEckO1AVaWhax7h/exec";
+    const DEFAULT_GAS_URL =  "https://script.google.com/macros/s/AKfycbxUR_f0p_U2xlVO1a3dMp2SgogK9o_ElLRGHulimn3Brv7v0e8wMDEckO1AVaWhax7h/exec";
 
-    // --- FULL SCHEDULE DATA ---
+    // --- FULL SCHEDULE WITH UPDATED DEMO DAY TIMES ---
     const RAW_SCHEDULE = [
       // OCTOBER DATES (Completed)
       { id: "oct13-1", date: "2026-10-13", displayDate: "Tue, Oct 13", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Hult Business School Visit (Pedro Almeida)" },
@@ -432,11 +446,18 @@
       { id: "dec10-1", date: "2026-12-10", displayDate: "Thu, Dec 10", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
       { id: "dec10-2", date: "2026-12-10", displayDate: "Thu, Dec 10", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker & Entrepreneurship", block: "Block F & H", teacher: "Natalie & Kathleen & Jason", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
 
-      // PHASE 4 (Demo Days)
-      { id: "dec11-demo", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "All Day", timeSlot: "MORNING", course: "Intro to Entrepreneurship & Changemaker", block: "Block F", teacher: "Natalie & Entrepreneurship", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" },
-      { id: "dec14-demo1", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" },
-      { id: "dec14-demo2", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "1:10 - 2:30", timeSlot: "AFTERNOON", course: "Changemaker", block: "Block C", teacher: "Chris and Jason", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" },
-      { id: "dec14-demo3", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "All Day", timeSlot: "MORNING", course: "Changemaker", block: "Block D & H", teacher: "Kathleen & Jason", phase: "DEMO", isPast: false, topic: "DEMO DAY: Guest Pitch Judge (5m pitch + 3m Q&A)" }
+      // PHASE 4 (DEMO DAY SLOTS: DEC 11 & DEC 14)
+      // Friday, Dec 11
+      { id: "dec11-demo-morn", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "8:00 - 11:00", timeSlot: "MORNING", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "Morning Mentoring (Prep, Pitch Feedback & Strategy)" },
+      { id: "dec11-demo-mid", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "11:00 - 12:00", timeSlot: "MIDDAY", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "Midday Networking & Student Showcase" },
+      { id: "dec11-demo-aft", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "12:00 - 3:00", timeSlot: "AFTERNOON", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "Afternoon Judges (5m pitch + 3m live Q&A panel)" },
+      { id: "dec11-demo-all", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "8:00 - 3:00", timeSlot: "ALL", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "All Day: Morning Mentoring, Midday Networking & Afternoon Judging" },
+
+      // Monday, Dec 14
+      { id: "dec14-demo-morn", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "8:00 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "Morning Mentoring (Deck Polish & Q&A Prep)" },
+      { id: "dec14-demo-mid", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "11:00 - 12:00", timeSlot: "MIDDAY", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "Midday Networking & Showcase" },
+      { id: "dec14-demo-aft", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "12:00 - 3:00", timeSlot: "AFTERNOON", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "Afternoon Judges (Final Round Pitch Evaluations)" },
+      { id: "dec14-demo-all", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "8:00 - 3:00", timeSlot: "ALL", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "All Day: Mentoring, Networking & Pitch Judging" }
     ];
 
     // --- STATE ---
@@ -461,16 +482,11 @@
       return localStorage.getItem(SCRIPT_STORAGE_KEY) || DEFAULT_GAS_URL;
     }
 
-    // --- JSONP HELPER (CORS Bypass) ---
     function fetchJsonp(url) {
       return new Promise((resolve, reject) => {
         const callbackName = 'gas_cb_' + Math.random().toString(36).substring(2, 9);
         const script = document.createElement('script');
-        
-        const timer = setTimeout(() => {
-          cleanup();
-          reject(new Error("JSONP timed out"));
-        }, 8000);
+        const timer = setTimeout(() => { cleanup(); reject(new Error("Timeout")); }, 8000);
 
         function cleanup() {
           clearTimeout(timer);
@@ -478,15 +494,8 @@
           delete window[callbackName];
         }
 
-        window[callbackName] = function(data) {
-          cleanup();
-          resolve(data);
-        };
-
-        script.onerror = function() {
-          cleanup();
-          reject(new Error("JSONP script load error"));
-        };
+        window[callbackName] = function(data) { cleanup(); resolve(data); };
+        script.onerror = function() { cleanup(); reject(new Error("JSONP load error")); };
 
         const joinChar = url.includes('?') ? '&' : '?';
         script.src = `${url}${joinChar}callback=${callbackName}&_=${Date.now()}`;
@@ -494,19 +503,16 @@
       });
     }
 
-    // --- REFRESH LIVE CLAIMED SLOTS ---
     async function refreshLiveBookings() {
       const icon = document.getElementById("refresh-icon");
       if (icon) icon.classList.add("animate-spin");
 
-      // 1. Load local cache first
       claimedSlotsMap.clear();
       const localBookings = getStoredBookings();
       localBookings.forEach(b => {
         if (b.slotId) claimedSlotsMap.set(b.slotId, (b.mentorName || "Volunteer").split(" ")[0]);
       });
 
-      // 2. Fetch live Google Sheet data
       const scriptUrl = getScriptUrl();
       if (scriptUrl) {
         let loadedData = null;
@@ -526,7 +532,6 @@
             let slotId = item["Block ID"] || item["Slot ID"] || item.slotId || item.blockId;
             const mentorName = item["Mentor Name"] || item.mentorName || "Volunteer";
 
-            // Fallback match by Date & Time if Block ID missing
             if (!slotId && item["Date"] && item["Time"]) {
               const match = RAW_SCHEDULE.find(s => s.displayDate === item["Date"] && s.time === item["Time"]);
               if (match) slotId = match.id;
@@ -543,7 +548,6 @@
       renderSchedule();
     }
 
-    // --- SUBMIT DIRECTLY TO GOOGLE SHEET ---
     async function syncToGoogleSheet(entries) {
       const scriptUrl = getScriptUrl();
       if (!scriptUrl) return { success: false, message: "Saved locally" };
@@ -563,7 +567,7 @@
       }
     }
 
-    // --- TIME FILTER DROPDOWN LOGIC ---
+    // Time filter dropdown
     function toggleTimeDropdown(e) {
       e.stopPropagation();
       document.getElementById("time-dropdown-menu").classList.toggle("hidden");
@@ -588,7 +592,7 @@
       renderSchedule();
     }
 
-    // --- RENDER SCHEDULE ---
+    // Render schedule
     function renderSchedule() {
       const container = document.getElementById("schedule-container");
       const courseFilter = document.getElementById("filter-course").value;
@@ -599,7 +603,7 @@
       const filtered = RAW_SCHEDULE.filter(slot => {
         if (hidePast && slot.isPast) return false;
         if (hideClaimed && claimedSlotsMap.has(slot.id)) return false;
-        if (currentTimeFilter !== "ALL" && slot.timeSlot !== currentTimeFilter && slot.time !== "All Day") return false;
+        if (currentTimeFilter !== "ALL" && slot.timeSlot !== currentTimeFilter && slot.timeSlot !== "ALL") return false;
         if (courseFilter !== "ALL" && !slot.course.includes(courseFilter)) return false;
         if (phaseFilter !== "ALL" && slot.phase !== phaseFilter) return false;
         return true;
@@ -664,7 +668,7 @@
         phaseLabel = "Phase 3: Pitch Coaching";
       } else if (slot.phase === "DEMO") {
         badgeClass = "badge-purple";
-        phaseLabel = "Phase 4: Demo Day Judge";
+        phaseLabel = "Phase 4: Demo Day";
       }
 
       if (isClaimed) {
@@ -729,10 +733,9 @@
       `;
     }
 
-    // --- SELECTION & CART ---
+    // Selection & cart
     function toggleSlotSelection(id) {
       if (claimedSlotsMap.has(id)) return;
-
       if (selectedSlotIds.has(id)) {
         selectedSlotIds.delete(id);
       } else {
@@ -761,7 +764,6 @@
       renderSchedule();
     }
 
-    // --- DRAWER & SUBMISSION ---
     function openBookingDrawer() {
       if (selectedSlotIds.size === 0) {
         alert("Please select at least one class block to proceed!");
@@ -796,6 +798,9 @@
       const email = document.getElementById("mentor-email").value.trim();
       const org = document.getElementById("mentor-org").value.trim();
       const notes = document.getElementById("mentor-notes").value.trim();
+      
+      // Attendance Mode (Virtual vs In Person)
+      const attendance = document.querySelector('input[name="mentor-attendance"]:checked')?.value || "In Person";
 
       if (!name || !email) {
         alert("Please provide your name and email address.");
@@ -819,6 +824,7 @@
         course: s.course,
         phase: s.phase,
         topic: s.topic,
+        attendance: attendance,
         mentorName: name,
         mentorEmail: email,
         mentorOrg: org,
@@ -842,6 +848,7 @@
       const lastBookingDetails = {
         name,
         email,
+        attendance,
         org,
         notes,
         slots: selectedSlots,
@@ -856,15 +863,23 @@
       openSuccessModal(lastBookingDetails);
     }
 
-    // --- SUCCESS MODAL ---
     function openSuccessModal(details) {
       const note = document.getElementById("success-status-note");
       if (details.syncResult.success) {
-        note.innerHTML = `<span class="text-emerald-700 font-semibold">✓ ${details.syncResult.message}</span>. You can also add these blocks to your Google Calendar below:`;
+        note.innerHTML = `<span class="text-emerald-700 font-semibold">✓ ${details.syncResult.message}</span>. Add your sessions to Google Calendar below:`;
       } else {
         note.innerHTML = `Saved. You can add these blocks to your Google Calendar below:`;
       }
 
+      // Display attendance preference badge
+      const attBadge = document.getElementById("confirm-attendance-badge");
+      if (details.attendance === "Virtual") {
+        attBadge.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5"></i> Attending Virtually (Zoom/Meet link will be provided)`;
+      } else {
+        attBadge.innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Attending In Person (Nido Innovation Lab)`;
+      }
+
+      // Calendar links
       const gcalContainer = document.getElementById("gcal-buttons-list");
       gcalContainer.innerHTML = details.slots.map(s => {
         const url = generateGoogleCalendarUrl(s, details);
@@ -883,8 +898,9 @@
         `;
       }).join('');
 
+      // Confirmation email draft
       let emailText = `To: ${ORGANIZER_EMAIL}\n`;
-      emailText += `Subject: Diamond Challenge Mentor Sign-Up: ${details.name}\n\n`;
+      emailText += `Subject: Diamond Challenge Mentor Sign-Up: ${details.name} (${details.attendance})\n\n`;
       emailText += `Hello Team,\n\n`;
       emailText += `I have signed up to mentor students for the Diamond Challenge! Here are my confirmed sessions:\n\n`;
       details.slots.forEach(s => {
@@ -893,6 +909,7 @@
       emailText += `\nMy Contact Details:\n`;
       emailText += `• Name: ${details.name}\n`;
       emailText += `• Email: ${details.email}\n`;
+      emailText += `• Attendance Mode: ${details.attendance}\n`;
       if (details.org) emailText += `• Organization / Background: ${details.org}\n`;
       if (details.notes) emailText += `• Focus Areas / Notes: ${details.notes}\n`;
       emailText += `\nLooking forward to working with the students!\n\nBest regards,\n${details.name}`;
@@ -916,7 +933,12 @@
       let startTime = "090000";
       let endTime = "103000";
 
-      if (slot.time.includes("8:05")) { startTime = "080500"; endTime = "092500"; }
+      // Precise time parsing
+      if (slot.time.includes("8:00 - 11:00")) { startTime = "080000"; endTime = "110000"; }
+      else if (slot.time.includes("11:00 - 12:00")) { startTime = "110000"; endTime = "120000"; }
+      else if (slot.time.includes("12:00 - 3:00")) { startTime = "120000"; endTime = "150000"; }
+      else if (slot.time.includes("8:00 - 3:00")) { startTime = "080000"; endTime = "150000"; }
+      else if (slot.time.includes("8:05")) { startTime = "080500"; endTime = "092500"; }
       else if (slot.time.includes("9:40")) { startTime = "094000"; endTime = "110000"; }
       else if (slot.time.includes("9:35")) { startTime = "093500"; endTime = "105500"; }
       else if (slot.time.includes("11:20")) { startTime = "112000"; endTime = "123500"; }
@@ -925,9 +947,14 @@
       else if (slot.time.includes("1:55")) { startTime = "135500"; endTime = "151500"; }
 
       const datesParam = `${cleanDate}T${startTime}/${cleanDate}T${endTime}`;
-      const title = encodeURIComponent(`Mentoring: Diamond Challenge (${slot.course})`);
-      const detailsBody = encodeURIComponent(`Nido Diamond Challenge Mentorship Session\n\nTopic: ${slot.topic}\nCourse: ${slot.course}\nTime: ${slot.time}\nMentor: ${details.name} (${details.email})\nNotes: ${details.notes || 'None'}`);
-      const location = encodeURIComponent("International School Nido de Aguilas, Innovation Lab");
+      const title = encodeURIComponent(`Mentoring (${details.attendance}): Diamond Challenge (${slot.course})`);
+      const detailsBody = encodeURIComponent(`Nido Diamond Challenge Mentorship Session\n\nTopic: ${slot.topic}\nCourse: ${slot.course}\nTime: ${slot.time}\nAttendance: ${details.attendance}\nMentor: ${details.name} (${details.email})\nNotes: ${details.notes || 'None'}`);
+      
+      const location = encodeURIComponent(
+        details.attendance === "Virtual" 
+          ? "Virtual (Google Meet / Zoom link will be sent)" 
+          : "International School Nido de Aguilas, Innovation Lab"
+      );
 
       return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${detailsBody}&location=${location}`;
     }
