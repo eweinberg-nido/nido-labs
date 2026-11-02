@@ -82,10 +82,10 @@
 
       <div class="p-3.5 rounded-xl bg-purple-50/70 border border-purple-200">
         <div class="flex items-center gap-2 font-bold text-purple-900 text-sm mb-1">
-          <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Phase 4: Demo Day Judge
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Phase 4: Demo Day (Dec 14)
         </div>
         <p class="text-xs text-purple-800 leading-relaxed">
-          Official pitch judge: Mentoring (8-11), Networking (11-12), or Judging (12-3).
+          Multiple judges & mentors welcome: Morning (8-11), Midday (11-12), Afternoon (12-3), or All Day (8-3).
         </p>
       </div>
     </section>
@@ -138,7 +138,7 @@
             <option value="BLUE">Phase 1: Problem Research</option>
             <option value="GREEN">Phase 2: Solution Design & Testing</option>
             <option value="RED">Phase 3: Pitch Rehearsal</option>
-            <option value="DEMO">Phase 4: Demo Day (Mentoring, Networking, Judging)</option>
+            <option value="DEMO">Phase 4: Demo Day (Dec 14)</option>
           </select>
         </div>
       </div>
@@ -340,7 +340,7 @@
     const SCRIPT_STORAGE_KEY = "nido_gas_webhook_url";
     const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxUR_f0p_U2xlVO1a3dMp2SgogK9o_ElLRGHulimn3Brv7v0e8wMDEckO1AVaWhax7h/exec";
 
-    // --- FULL SCHEDULE WITH UPDATED DEMO DAY TIMES ---
+    // --- FULL SCHEDULE (DEC 11 REMOVED, DEC 14 MULTI-MENTOR OPEN) ---
     const RAW_SCHEDULE = [
       // OCTOBER DATES (Completed)
       { id: "oct13-1", date: "2026-10-13", displayDate: "Tue, Oct 13", time: "9:40 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Block B", teacher: "Natalie", phase: "BLUE", isPast: true, topic: "Hult Business School Visit (Pedro Almeida)" },
@@ -446,23 +446,16 @@
       { id: "dec10-1", date: "2026-12-10", displayDate: "Thu, Dec 10", time: "8:05 - 9:25", timeSlot: "MORNING", course: "Changemaker", block: "Block D", teacher: "Kathleen", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
       { id: "dec10-2", date: "2026-12-10", displayDate: "Thu, Dec 10", time: "11:45 - 1:05", timeSlot: "MIDDAY", course: "Changemaker & Entrepreneurship", block: "Block F & H", teacher: "Natalie & Kathleen & Jason", phase: "RED", isPast: false, topic: "Final Pitch Rehearsals" },
 
-      // PHASE 4 (DEMO DAY SLOTS: DEC 11 & DEC 14)
-      // Friday, Dec 11
-      { id: "dec11-demo-morn", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "8:00 - 11:00", timeSlot: "MORNING", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "Morning Mentoring (Prep, Pitch Feedback & Strategy)" },
-      { id: "dec11-demo-mid", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "11:00 - 12:00", timeSlot: "MIDDAY", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "Midday Networking & Student Showcase" },
-      { id: "dec11-demo-aft", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "12:00 - 3:00", timeSlot: "AFTERNOON", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "Afternoon Judges (5m pitch + 3m live Q&A panel)" },
-      { id: "dec11-demo-all", date: "2026-12-11", displayDate: "Fri, Dec 11", time: "8:00 - 3:00", timeSlot: "ALL", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, topic: "All Day: Morning Mentoring, Midday Networking & Afternoon Judging" },
-
-      // Monday, Dec 14
-      { id: "dec14-demo-morn", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "8:00 - 11:00", timeSlot: "MORNING", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "Morning Mentoring (Deck Polish & Q&A Prep)" },
-      { id: "dec14-demo-mid", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "11:00 - 12:00", timeSlot: "MIDDAY", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "Midday Networking & Showcase" },
-      { id: "dec14-demo-aft", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "12:00 - 3:00", timeSlot: "AFTERNOON", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "Afternoon Judges (Final Round Pitch Evaluations)" },
-      { id: "dec14-demo-all", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "8:00 - 3:00", timeSlot: "ALL", course: "Changemaker", block: "Demo Day", teacher: "Chris, Jason & Natalie", phase: "DEMO", isPast: false, topic: "All Day: Mentoring, Networking & Pitch Judging" }
+      // PHASE 4: OFFICIAL DEMO DAY (MONDAY, DEC 14) - UNLIMITED MENTOR SIGN-UPS
+      { id: "dec14-demo-morn", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "8:00 - 11:00", timeSlot: "MORNING", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, allowMultiple: true, topic: "Morning Mentoring: Final deck polish, pitch feedback & Q&A prep" },
+      { id: "dec14-demo-mid", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "11:00 - 12:00", timeSlot: "MIDDAY", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, allowMultiple: true, topic: "Midday Networking: Student venture showcase & mentor mixer" },
+      { id: "dec14-demo-aft", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "12:00 - 3:00", timeSlot: "AFTERNOON", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, allowMultiple: true, topic: "Afternoon Judges: Official pitch evaluation panels (5m pitch + 3m live Q&A)" },
+      { id: "dec14-demo-all", date: "2026-12-14", displayDate: "Mon, Dec 14", time: "8:00 - 3:00", timeSlot: "ALL", course: "Changemakers & Entrepreneurship", block: "Demo Day", teacher: "All Faculty", phase: "DEMO", isPast: false, allowMultiple: true, topic: "All Day: Morning Mentoring, Midday Networking & Afternoon Pitch Judging" }
     ];
 
     // --- STATE ---
     let selectedSlotIds = new Set();
-    let claimedSlotsMap = new Map();
+    let claimedSlotsMap = new Map(); // slotId -> Array of mentor names
     let currentTimeFilter = "ALL";
     const STORAGE_KEY = "nido_diamond_mentors_sheets_v2";
 
@@ -508,11 +501,17 @@
       if (icon) icon.classList.add("animate-spin");
 
       claimedSlotsMap.clear();
+
+      // Load local cache into map
       const localBookings = getStoredBookings();
       localBookings.forEach(b => {
-        if (b.slotId) claimedSlotsMap.set(b.slotId, (b.mentorName || "Volunteer").split(" ")[0]);
+        if (b.slotId) {
+          if (!claimedSlotsMap.has(b.slotId)) claimedSlotsMap.set(b.slotId, []);
+          claimedSlotsMap.get(b.slotId).push((b.mentorName || "Volunteer").split(" ")[0]);
+        }
       });
 
+      // Load live sheet
       const scriptUrl = getScriptUrl();
       if (scriptUrl) {
         let loadedData = null;
@@ -528,6 +527,8 @@
         }
 
         if (Array.isArray(loadedData)) {
+          // Clear and rebuild from fresh sheet data
+          claimedSlotsMap.clear();
           loadedData.forEach(item => {
             let slotId = item["Block ID"] || item["Slot ID"] || item.slotId || item.blockId;
             const mentorName = item["Mentor Name"] || item.mentorName || "Volunteer";
@@ -538,7 +539,9 @@
             }
 
             if (slotId) {
-              claimedSlotsMap.set(String(slotId).trim(), String(mentorName).trim().split(" ")[0]);
+              const key = String(slotId).trim();
+              if (!claimedSlotsMap.has(key)) claimedSlotsMap.set(key, []);
+              claimedSlotsMap.get(key).push(String(mentorName).trim().split(" ")[0]);
             }
           });
         }
@@ -567,7 +570,6 @@
       }
     }
 
-    // Time filter dropdown
     function toggleTimeDropdown(e) {
       e.stopPropagation();
       document.getElementById("time-dropdown-menu").classList.toggle("hidden");
@@ -592,7 +594,6 @@
       renderSchedule();
     }
 
-    // Render schedule
     function renderSchedule() {
       const container = document.getElementById("schedule-container");
       const courseFilter = document.getElementById("filter-course").value;
@@ -602,7 +603,10 @@
 
       const filtered = RAW_SCHEDULE.filter(slot => {
         if (hidePast && slot.isPast) return false;
-        if (hideClaimed && claimedSlotsMap.has(slot.id)) return false;
+        
+        // Hide claimed only applies to single-mentor slots that are filled
+        if (hideClaimed && !slot.allowMultiple && claimedSlotsMap.has(slot.id)) return false;
+        
         if (currentTimeFilter !== "ALL" && slot.timeSlot !== currentTimeFilter && slot.timeSlot !== "ALL") return false;
         if (courseFilter !== "ALL" && !slot.course.includes(courseFilter)) return false;
         if (phaseFilter !== "ALL" && slot.phase !== phaseFilter) return false;
@@ -655,8 +659,9 @@
 
     function renderSlotItem(slot) {
       const isSelected = selectedSlotIds.has(slot.id);
-      const isClaimed = claimedSlotsMap.has(slot.id);
-      const claimedByName = claimedSlotsMap.get(slot.id) || "Volunteer";
+      const claimList = claimedSlotsMap.get(slot.id) || [];
+      const isClaimed = claimList.length > 0;
+      const allowsMultiple = Boolean(slot.allowMultiple);
       
       let badgeClass = "badge-blue";
       let phaseLabel = "Phase 1: Problem Research";
@@ -671,14 +676,15 @@
         phaseLabel = "Phase 4: Demo Day";
       }
 
-      if (isClaimed) {
+      // CASE 1: Single-mentor slot that is already claimed -> LOCK
+      if (isClaimed && !allowsMultiple) {
         return `
           <div class="p-4 sm:flex items-center justify-between gap-4 bg-slate-100/70 opacity-60">
             <div class="space-y-1 mb-3 sm:mb-0">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="font-bold text-slate-600 line-through text-sm sm:text-base">${slot.time}</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700">
-                  Claimed by ${claimedByName}
+                  Claimed by ${claimList[0]}
                 </span>
                 <span class="text-xs px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 font-medium">
                   ${slot.course}
@@ -700,6 +706,49 @@
         `;
       }
 
+      // CASE 2: Multi-mentor Demo Day slot -> OPEN TO UNLIMITED JUDGES/MENTORS
+      if (allowsMultiple) {
+        const participantCount = claimList.length;
+        const participantBadge = participantCount > 0
+          ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-200">
+               👥 ${participantCount} Signed Up (${claimList.slice(0, 2).join(', ')}${participantCount > 2 ? ' +' + (participantCount - 2) : ''})
+             </span>`
+          : `<span class="text-xs font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+               Open for Multiple Judges & Mentors
+             </span>`;
+
+        return `
+          <div class="p-4 sm:flex items-center justify-between gap-4 transition hover:bg-slate-50/70 ${isSelected ? 'bg-indigo-50/40' : ''}">
+            <div class="space-y-1 mb-3 sm:mb-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-bold text-slate-900 text-sm sm:text-base">${slot.time}</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${badgeClass}">
+                  ${phaseLabel}
+                </span>
+                ${participantBadge}
+                <span class="text-[11px] px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-mono font-semibold">
+                  Demo Day Panel
+                </span>
+              </div>
+              <p class="text-xs text-slate-700 font-medium">${slot.topic}</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="toggleSlotSelection('${slot.id}')" 
+                class="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                  isSelected 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-400'
+                }">
+                <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-4 h-4"></i>
+                <span>${isSelected ? 'Selected' : 'Join as Judge/Mentor'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // CASE 3: Standard available classroom slot
       return `
         <div class="p-4 sm:flex items-center justify-between gap-4 transition hover:bg-slate-50/70 ${isSelected ? 'bg-indigo-50/40' : ''}">
           <div class="space-y-1 mb-3 sm:mb-0">
@@ -723,7 +772,7 @@
               class="w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
                 isSelected 
                   ? 'bg-indigo-600 text-white shadow-sm' 
-                  : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-400'
+                    : 'bg-white border border-slate-300 text-slate-700 hover:border-indigo-400'
               }">
               <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-4 h-4"></i>
               <span>${isSelected ? 'Selected' : 'Select Block'}</span>
@@ -733,9 +782,11 @@
       `;
     }
 
-    // Selection & cart
     function toggleSlotSelection(id) {
-      if (claimedSlotsMap.has(id)) return;
+      const slot = RAW_SCHEDULE.find(s => s.id === id);
+      // Only single-mentor slots lock out selection once claimed
+      if (slot && !slot.allowMultiple && claimedSlotsMap.has(id)) return;
+
       if (selectedSlotIds.has(id)) {
         selectedSlotIds.delete(id);
       } else {
@@ -798,8 +849,6 @@
       const email = document.getElementById("mentor-email").value.trim();
       const org = document.getElementById("mentor-org").value.trim();
       const notes = document.getElementById("mentor-notes").value.trim();
-      
-      // Attendance Mode (Virtual vs In Person)
       const attendance = document.querySelector('input[name="mentor-attendance"]:checked')?.value || "In Person";
 
       if (!name || !email) {
@@ -832,12 +881,13 @@
         createdAt: new Date().toISOString()
       }));
 
-      // Immediate local claimed update
+      // Update local memory
       newEntries.forEach(e => {
-        claimedSlotsMap.set(e.slotId, name.split(" ")[0]);
+        if (!claimedSlotsMap.has(e.slotId)) claimedSlotsMap.set(e.slotId, []);
+        claimedSlotsMap.get(e.slotId).push(name.split(" ")[0]);
       });
 
-      // Google Sheet sync
+      // Post to Google Sheet
       const syncResult = await syncToGoogleSheet(newEntries);
       newEntries.forEach(e => e.sheetStatus = syncResult.message);
 
@@ -871,7 +921,6 @@
         note.innerHTML = `Saved. You can add these blocks to your Google Calendar below:`;
       }
 
-      // Display attendance preference badge
       const attBadge = document.getElementById("confirm-attendance-badge");
       if (details.attendance === "Virtual") {
         attBadge.innerHTML = `<i data-lucide="video" class="w-3.5 h-3.5"></i> Attending Virtually (Zoom/Meet link will be provided)`;
@@ -879,7 +928,6 @@
         attBadge.innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Attending In Person (Nido Innovation Lab)`;
       }
 
-      // Calendar links
       const gcalContainer = document.getElementById("gcal-buttons-list");
       gcalContainer.innerHTML = details.slots.map(s => {
         const url = generateGoogleCalendarUrl(s, details);
@@ -898,7 +946,6 @@
         `;
       }).join('');
 
-      // Confirmation email draft
       let emailText = `To: ${ORGANIZER_EMAIL}\n`;
       emailText += `Subject: Diamond Challenge Mentor Sign-Up: ${details.name} (${details.attendance})\n\n`;
       emailText += `Hello Team,\n\n`;
@@ -933,7 +980,6 @@
       let startTime = "090000";
       let endTime = "103000";
 
-      // Precise time parsing
       if (slot.time.includes("8:00 - 11:00")) { startTime = "080000"; endTime = "110000"; }
       else if (slot.time.includes("11:00 - 12:00")) { startTime = "110000"; endTime = "120000"; }
       else if (slot.time.includes("12:00 - 3:00")) { startTime = "120000"; endTime = "150000"; }
@@ -978,7 +1024,6 @@
       });
     }
 
-    // Init
     document.addEventListener("DOMContentLoaded", () => {
       refreshLiveBookings();
       lucide.createIcons();
