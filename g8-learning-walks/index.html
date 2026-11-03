@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G8 Learning Walks</title>
+<style>
+:root{
+  --bg:#f6f7f9;--surface:#fff;--soft:#eef1f5;--ink:#1d2532;--muted:#5d6878;--line:#d7dde5;
+  --accent:#2457c5;--accent-ink:#fff;--accent-soft:#e7eefc;
+  --good:#1e7a46;--goodbg:#e6f4ec;--warn:#8a5a00;--warnbg:#fff3d6;--bad:#b42318;--badbg:#fdecea;
+  --bA:#4c78a8;--bB:#d9741f;--bC:#4e9a47;--bD:#cc4848;--bE:#3f9993;--bF:#9c5e8f;--bG:#b8921a;--bH:#86654d;
+  --win:rgba(36,87,197,.18);--radius:6px;color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#12161d;--surface:#1a2029;--soft:#232a35;--ink:#e6e9ee;--muted:#9aa5b4;--line:#323b48;
+  --accent:#7aa2ff;--accent-ink:#0b1020;--accent-soft:#1f2b47;
+  --good:#6fd39a;--goodbg:#173325;--warn:#f0bf5a;--warnbg:#3a2e14;--bad:#ff8a7e;--badbg:#3d1d1a;
+  --win:rgba(122,162,255,.22);color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+.small{font-size:13px}.muted{color:var(--muted)}
+h1{font-size:20px;margin:0;font-weight:650;letter-spacing:-.01em}
+h2{font-size:22px;margin:0;font-weight:650;letter-spacing:-.01em}
+h3{font-size:16px;margin:0 0 8px;font-weight:600}
+
+.topbar{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.topbar .wrap{display:flex;align-items:center;gap:24px;min-height:56px;flex-wrap:wrap}
+.tabs{display:flex;gap:2px}
+.tabs button{border:0;background:none;padding:16px 12px;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.saved{margin-left:auto}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:6px 12px;cursor:pointer}
+.btn:hover{background:var(--soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.sm{padding:3px 9px;font-size:13px}
+.link{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:13px}
+input[type=text],input[type=number],input[type=time],input[type=search],select{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:5px 8px}
+input[type=number]{width:64px}
+
+.blk{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:4px;color:#fff;font-weight:700;font-size:13px}
+.b-A{background:var(--bA)}.b-B{background:var(--bB)}.b-C{background:var(--bC)}.b-D{background:var(--bD)}
+.b-E{background:var(--bE)}.b-F{background:var(--bF)}.b-G{background:var(--bG)}.b-H{background:var(--bH)}
+
+/* date strip */
+.strip{display:flex;gap:6px;overflow-x:auto;padding:16px 0 12px;scrollbar-width:thin}
+.dchip{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:6px 10px 7px;cursor:pointer;min-width:86px;position:relative}
+.dchip .dd{font-size:13px;white-space:nowrap}
+.dchip .row{display:flex;gap:6px;align-items:center}
+.dchip .cnt{font-size:12px;color:var(--muted)}
+.dchip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.dchip.wk{margin-left:10px}
+.dchip.full .cnt{color:var(--good)}
+.dchip.gap .cnt{color:var(--warn)}
+
+/* day header + timeline */
+.dayhead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:6px 0 12px}
+.dayhead .sub{color:var(--muted);margin-top:2px}
+.special{background:var(--warnbg);color:var(--warn);border-radius:var(--radius);padding:6px 10px;margin:0 0 12px;font-size:14px}
+.timeline{position:relative;height:74px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:18px;overflow:hidden}
+.tl-seg{position:absolute;top:22px;height:32px;border-radius:4px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;opacity:.38}
+.tl-seg.hot{opacity:1}
+.tl-seg.x{background:var(--soft);color:var(--muted);font-weight:500;font-size:12px;opacity:1}
+.tl-win{position:absolute;top:8px;bottom:8px;background:var(--win);border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
+.tl-winlbl{position:absolute;top:4px;font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap;transform:translateX(-50%)}
+.tl-tick{position:absolute;bottom:3px;font-size:11px;color:var(--muted);transform:translateX(-50%)}
+
+.plan{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;align-items:start;padding-bottom:40px}
+@media (max-width:900px){.plan{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.panel-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.panel-h h3{margin:0;margin-right:auto}
+.panel-b{padding:12px 14px}
+.empty{color:var(--muted);padding:18px 4px;text-align:center}
+
+.walk{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;background:var(--surface)}
+.walk.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.w-head{display:flex;align-items:baseline;gap:8px}
+.w-name{border:0;background:none;padding:0;font-weight:650;font-size:16px;cursor:pointer;color:var(--ink)}
+.w-name:hover{color:var(--accent)}
+.w-head .del{margin-left:auto}
+.icon{border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
+.icon:hover{color:var(--bad)}
+.w-meta{display:flex;gap:14px;align-items:center;margin:8px 0;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.w-meta label{display:flex;gap:6px;align-items:center}
+.slot{border:1.5px dashed var(--line);border-radius:var(--radius);min-height:58px;transition:border-color .12s,background .12s}
+.slot.over,#cand-panel.over{border-color:var(--accent);background:var(--accent-soft)}
+body.dragging .slot{border-color:var(--muted)}
+.empty-slot{color:var(--muted);font-size:13px;padding:18px 12px;text-align:center}
+.assigned{padding:9px 11px;cursor:grab;border-radius:var(--radius)}
+.assigned:active{cursor:grabbing}
+.notes{width:100%;margin-top:8px}
+.partner{font-size:12px;color:var(--muted);margin-top:6px}
+
+.c-title{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.c-sub{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:2px}
+.cat{font-size:11px;border:1px solid var(--line);border-radius:99px;padding:0 7px;color:var(--muted)}
+.flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.flag{font-size:12px;border-radius:4px;padding:1px 7px}
+.flag.good{background:var(--goodbg);color:var(--good)}
+.flag.warn{background:var(--warnbg);color:var(--warn)}
+.flag.block{background:var(--badbg);color:var(--bad)}
+.flag.info{background:var(--soft);color:var(--muted)}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:2px 11px;font-size:13px;cursor:pointer}
+.pill[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.filters input[type=search]{margin-left:auto;width:220px}
+.cand{display:grid;grid-template-columns:4px 1fr auto;gap:0 12px;padding:10px 14px 10px 0;border-bottom:1px solid var(--line);align-items:start}
+.cand:last-child{border-bottom:0}
+.cand::before{content:"";align-self:stretch;border-radius:0 3px 3px 0}
+.cand.lvl-good::before{background:var(--good)}
+.cand.lvl-warn::before{background:var(--warn)}
+.cand.lvl-block::before{background:var(--bad)}
+.cand.lvl-block{opacity:.72}
+.cand[draggable=true]{cursor:grab}
+.cand .btn{margin-top:2px}
+.hidden-note{padding:10px 14px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+
+/* other tabs */
+.page{padding:22px 0 50px}
+.page-h{display:flex;align-items:flex-end;gap:16px;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 18px}
+.stat b{display:block;font-size:24px;font-weight:650;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+.adv{padding:10px 0;border-top:1px solid var(--line)}
+.adv:first-of-type{border-top:0}
+.adv-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adv-h input{width:120px}.adv-h input.room{width:80px}
+.prog{display:flex;gap:10px;font-size:13px;margin-left:auto}
+.prog .done{color:var(--good)}
+.wl{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.wl button{text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:4px;padding:4px 8px;font-size:13px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.wl button:hover{border-color:var(--accent)}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;font-size:13px;color:var(--muted);background:var(--soft);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+.bt{border:0;width:24px;height:24px;border-radius:4px;color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin:0 2px 2px 0}
+.bt.off{background:var(--soft)!important;color:var(--bad);text-decoration:line-through}
+.bt.none{background:transparent!important;color:var(--line);cursor:default;border:1px dashed var(--line)}
+.st-yes{color:var(--good)}.st-maybe{color:var(--warn)}.st-no{color:var(--bad)}.st-unknown{color:var(--muted)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.settings{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:22px}
+.settings .panel-b label{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+
+dialog{border:1px solid var(--line);border-radius:10px;padding:0;background:var(--surface);color:var(--ink);width:min(560px,94vw)}
+dialog::backdrop{background:rgba(10,15,25,.4)}
+.dlg-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.dlg-h h3{margin:0;margin-right:auto}
+.dlg-b{padding:14px 18px}
+.dlg-b .grid{display:grid;grid-template-columns:auto 1fr;gap:10px 12px;align-items:center;margin-bottom:14px}
+.dlg-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.wk-row{display:grid;grid-template-columns:110px 34px 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.note{font-size:13px;color:var(--warn);margin-top:8px}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:9px 16px;border-radius:var(--radius);font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.print-only{display:none}
+@media print{
+  body{background:#fff;color:#000;font-size:12px}
+  .topbar,.no-print,[data-page]:not(#page-print){display:none!important}
+  #page-print{display:block!important;padding:0}
+  .tbl-wrap{border:0}
+  th{background:#eee;color:#000}
+  .print-only{display:block}
+  h2.ptitle{font-size:16px;margin:16px 0 6px;break-after:avoid}
+  .pbreak{break-before:page}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <h1>G8 Learning Walks</h1>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="plan">Plan</button>
+      <button role="tab" data-tab="advisors">Advisors</button>
+      <button role="tab" data-tab="hosts">Host teachers</button>
+      <button role="tab" data-tab="print">Print</button>
+      <button role="tab" data-tab="data">Settings</button>
+    </nav>
+    <span class="saved small muted" id="saved">Saved in this browser</span>
+  </div>
+</header>
+<main class="wrap">
+  <section data-page id="page-plan"></section>
+  <section data-page id="page-advisors" class="page" hidden></section>
+  <section data-page id="page-hosts" class="page" hidden></section>
+  <section data-page id="page-print" class="page" hidden></section>
+  <section data-page id="page-data" class="page" hidden></section>
+</main>
+<dialog id="dlg-week" aria-labelledby="wk-title"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const D = {"sections":[{"id":"28.1","num":"28","course":"IB HL Extension","dept":"Other","block":"A","term":"26-27","teacher":"Matter, Susan","room":"Library","students":12},{"id":"28.2","num":"28","course":"IB HL Extension","dept":"Other","block":"B","term":"26-27","teacher":"Matter, Susan","room":"Library","students":11},{"id":"28.3","num":"28","course":"IB HL Extension","dept":"Other","block":"C","term":"26-27","teacher":"Matter, Susan","room":"Library","students":28},{"id":"28.4","num":"28","course":"IB HL Extension","dept":"Other","block":"D","term":"26-27","teacher":"Matter, Susan","room":"Library","students":16},{"id":"28.5","num":"28","course":"IB HL Extension","dept":"Other","block":"E","term":"26-27","teacher":"Matter, Susan","room":"Library","students":6},{"id":"28.6","num":"28","course":"IB HL Extension","dept":"Other","block":"F","term":"26-27","teacher":"Matter, Susan","room":"Library","students":27},{"id":"28.7","num":"28","course":"IB HL Extension","dept":"Other","block":"G","term":"26-27","teacher":"Matter, Susan","room":"Library","students":12},{"id":"28.8","num":"28","course":"IB HL Extension","dept":"Other","block":"H","term":"26-27","teacher":"Matter, Susan","room":"Library","students":31},{"id":"136.1","num":"136","course":"HS English: EAL Adapted I","dept":"English","block":"H","term":"26-27","teacher":"Rodgers, Georgia","room":"L5","students":4},{"id":"137.1","num":"137","course":"HS English: EAL Adapted II","dept":"English","block":"D","term":"26-27","teacher":"Rodgers, Georgia","room":"L5","students":6},{"id":"137.2","num":"137","course":"HS English: EAL Adapted II","dept":"English","block":"H","term":"26-27","teacher":"Rodgers, Georgia","room":"L5","students":4},{"id":"138.1","num":"138","course":"English for Academic Purposes","dept":"English","block":"C","term":"26-27","teacher":"Rodgers, Georgia","room":"L4","students":10},{"id":"138.2","num":"138","course":"English for Academic Purposes","dept":"English","block":"E","term":"26-27","teacher":"Rodgers, Georgia","room":"L6","students":7},{"id":"138.3","num":"138","course":"English for Academic Purposes","dept":"English","block":"F","term":"26-27","teacher":"Rodgers, Georgia","room":"L6","students":10},{"id":"145.1","num":"145","course":"Learning Lab 1","dept":"L. Support","block":"F","term":"26-27","teacher":"Ramirez, Pablo","room":"LS1","students":4},{"id":"145.2","num":"145","course":"Learning Lab 1","dept":"L. Support","block":"G","term":"26-27","teacher":"Ramirez, Pablo","room":"L2","students":5},{"id":"146.1","num":"146","course":"Learning Lab 2","dept":"L. Support","block":"B","term":"26-27","teacher":"Johnson, Jaime","room":"LS2","students":5},{"id":"146.2","num":"146","course":"Learning Lab 2","dept":"L. Support","block":"F","term":"26-27","teacher":"Johnson, Jaime","room":"LS2","students":4},{"id":"147.1","num":"147","course":"Learning Lab 3","dept":"L. Support","block":"D","term":"26-27","teacher":"LaJoie, Andrea","room":"LS2","students":6},{"id":"147.2","num":"147","course":"Learning Lab 3","dept":"L. Support","block":"F","term":"26-27","teacher":"LaJoie, Andrea","room":"FH2","students":5},{"id":"996.1","num":"996","course":"Junior Core","dept":null,"block":"G","term":"26-27","teacher":"Chaparro, Jose Manuel","room":"HS4","students":28},{"id":"996.2","num":"996","course":"Junior Core","dept":null,"block":"G","term":"26-27","teacher":"Dumay, Colomba","room":"Library","students":28},{"id":"997.1","num":"997","course":"Senior Core","dept":null,"block":"H","term":"26-27","teacher":"Dumay, Colomba","room":"HS1","students":21},{"id":"997.2","num":"997","course":"Senior Core","dept":null,"block":"H","term":"26-27","teacher":"Araujo, Mateo","room":"PE1","students":20},{"id":"1000.1","num":"1000","course":"English 9","dept":"English","block":"E","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":19},{"id":"1000.2","num":"1000","course":"English 9","dept":"English","block":"G","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":16},{"id":"1000.3","num":"1000","course":"English 9","dept":"English","block":"A","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":12},{"id":"1000.4","num":"1000","course":"English 9","dept":"English","block":"B","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":18},{"id":"1000.5","num":"1000","course":"English 9","dept":"English","block":"C","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":13},{"id":"1000.6","num":"1000","course":"English 9","dept":"English","block":"F","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":20},{"id":"1010.1","num":"1010","course":"English 10","dept":"English","block":"D","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":19},{"id":"1010.2","num":"1010","course":"English 10","dept":"English","block":"D","term":"26-27","teacher":"Cade, Christiana","room":"ST301","students":18},{"id":"1010.3","num":"1010","course":"English 10","dept":"English","block":"F","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":21},{"id":"1010.4","num":"1010","course":"English 10","dept":"English","block":"G","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":16},{"id":"1010.5","num":"1010","course":"English 10","dept":"English","block":"G","term":"26-27","teacher":"Cade, Christiana","room":"ST301","students":15},{"id":"1010.6","num":"1010","course":"English 10","dept":"English","block":"G","term":"26-27","teacher":"Braithwaite, Richard","room":"ZE2","students":13},{"id":"1010.7","num":"1010","course":"English 10","dept":"English","block":"H","term":"26-27","teacher":"Braithwaite, Richard","room":"ZE2","students":15},{"id":"1018.1","num":"1018","course":"English: The Imperfect Art of Living","dept":"English","block":"A","term":"26-27","teacher":"Braithwaite, Richard","room":"ZE2","students":13},{"id":"1018.2","num":"1018","course":"English: The Imperfect Art of Living","dept":"English","block":"E","term":"26-27","teacher":"Braithwaite, Richard","room":"ZE2","students":18},{"id":"1019.1","num":"1019","course":"English: World Perspectives in Literature","dept":"English","block":"B","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":19},{"id":"1019.2","num":"1019","course":"English: World Perspectives in Literature","dept":"English","block":"E","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":9},{"id":"1024.1","num":"1024","course":"English: World Perspectives in Literature - Modified/Adjusted","dept":"English","block":"B","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":1},{"id":"1070.1","num":"1070","course":"IB English A: Literature SLI","dept":"English","block":"A","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":7},{"id":"1071.1","num":"1071","course":"IB English A: Literature SLII","dept":"English","block":"A","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":3},{"id":"1071.2","num":"1071","course":"IB English A: Literature SLII","dept":"English","block":"C","term":"26-27","teacher":"Braithwaite, Richard","room":"ZE2","students":2},{"id":"1080.1","num":"1080","course":"IB English A: Literature HLI","dept":"English","block":"A","term":"26-27","teacher":"Pritchard, Jesse","room":"ZE3","students":14},{"id":"1081.1","num":"1081","course":"IB English A: Literature HLII","dept":"English","block":"A","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":9},{"id":"1081.2","num":"1081","course":"IB English A: Literature HLII","dept":"English","block":"C","term":"26-27","teacher":"Braithwaite, Richard","room":"ZE2","students":6},{"id":"1090.1","num":"1090","course":"IB English A: Lang & Lit HLI","dept":"English","block":"A","term":"26-27","teacher":"Murphy, Natalie","room":"ZE1","students":5},{"id":"1090.2","num":"1090","course":"IB English A: Lang & Lit HLI","dept":"English","block":"C","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":12},{"id":"1090.3","num":"1090","course":"IB English A: Lang & Lit HLI","dept":"English","block":"D","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":11},{"id":"1090.4","num":"1090","course":"IB English A: Lang & Lit HLI","dept":"English","block":"E","term":"26-27","teacher":"Murphy, Natalie","room":"ZE1","students":8},{"id":"1091.1","num":"1091","course":"IB English A: Lang & Lit HLII","dept":"English","block":"A","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":9},{"id":"1091.2","num":"1091","course":"IB English A: Lang & Lit HLII","dept":"English","block":"E","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":8},{"id":"1091.3","num":"1091","course":"IB English A: Lang & Lit HLII","dept":"English","block":"B","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":10},{"id":"1091.4","num":"1091","course":"IB English A: Lang & Lit HLII","dept":"English","block":"D","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":8},{"id":"1092.1","num":"1092","course":"IB English A: Lang & Lit SLI","dept":"English","block":"A","term":"26-27","teacher":"Murphy, Natalie","room":"ZE1","students":12},{"id":"1092.2","num":"1092","course":"IB English A: Lang & Lit SLI","dept":"English","block":"C","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":9},{"id":"1092.3","num":"1092","course":"IB English A: Lang & Lit SLI","dept":"English","block":"D","term":"26-27","teacher":"Lee, Hazel","room":"HS1","students":10},{"id":"1092.4","num":"1092","course":"IB English A: Lang & Lit SLI","dept":"English","block":"E","term":"26-27","teacher":"Murphy, Natalie","room":"ZE1","students":11},{"id":"1093.1","num":"1093","course":"IB English A: Lang & Lit SLII","dept":"English","block":"A","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":7},{"id":"1093.2","num":"1093","course":"IB English A: Lang & Lit SLII","dept":"English","block":"E","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":7},{"id":"1093.3","num":"1093","course":"IB English A: Lang & Lit SLII","dept":"English","block":"B","term":"26-27","teacher":"Killion, Caitlin","room":"ZE4","students":7},{"id":"1093.4","num":"1093","course":"IB English A: Lang & Lit SLII","dept":"English","block":"D","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":7},{"id":"2017.1","num":"2017","course":"Pamoja - IB Business Management HLI","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2017.2","num":"2017","course":"Pamoja - IB Business Management HLI","dept":"Soc. Stud.","block":"H","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2017.3","num":"2017","course":"Pamoja - IB Business Management HLI","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2020.1","num":"2020","course":"US History","dept":"Soc. Stud.","block":"A","term":"26-27","teacher":"Ferreira, Blake","room":"FH3","students":12},{"id":"2020.2","num":"2020","course":"US History","dept":"Soc. Stud.","block":"C","term":"26-27","teacher":"Ferreira, Blake","room":"FH3","students":19},{"id":"2020.3","num":"2020","course":"US History","dept":"Soc. Stud.","block":"E","term":"26-27","teacher":"Ferreira, Blake","room":"FH3","students":14},{"id":"2023.1","num":"2023","course":"Pamoja - IB Business Management SLI","dept":null,"block":"C","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2023.2","num":"2023","course":"Pamoja - IB Business Management SLI","dept":null,"block":"F","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2024.1","num":"2024","course":"HPSA","dept":null,"block":"G","term":"S1","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2025.1","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"A","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.2","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"B","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.3","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"C","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.4","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"D","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.5","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"E","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.6","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"F","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.7","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"G","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"2025.8","num":"2025","course":"Pamoja - IB Computer Science HLI","dept":"Science","block":"H","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2026.1","num":"2026","course":"Pamoja - IB Global Politics HLI","dept":"SocialStudies","block":"H","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"2031.1","num":"2031","course":"World Studies","dept":"Soc. Stud.","block":"A","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":21},{"id":"2031.2","num":"2031","course":"World Studies","dept":"Soc. Stud.","block":"E","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":14},{"id":"2039.1","num":"2039","course":"IB History HLI (Spanish)","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Borel, Giannina","room":"FH1","students":9},{"id":"2039.2","num":"2039","course":"IB History HLI (Spanish)","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Duque, Paulina","room":"HS4","students":10},{"id":"2040.1","num":"2040","course":"IB History HLII (Spanish)","dept":"Soc. Stud.","block":"A","term":"26-27","teacher":"Mallegas, Maria Paz","room":"HS6","students":6},{"id":"2040.2","num":"2040","course":"IB History HLII (Spanish)","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Mallegas, Maria Paz","room":"HS6","students":4},{"id":"2041.1","num":"2041","course":"IB History SLI (Spanish)","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Borel, Giannina","room":"FH1","students":13},{"id":"2041.2","num":"2041","course":"IB History SLI (Spanish)","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Duque, Paulina","room":"HS4","students":11},{"id":"2042.1","num":"2042","course":"IB History SLII (Spanish)","dept":"Soc. Stud.","block":"A","term":"26-27","teacher":"Mallegas, Maria Paz","room":"HS6","students":13},{"id":"2042.2","num":"2042","course":"IB History SLII (Spanish)","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Mallegas, Maria Paz","room":"HS6","students":11},{"id":"2049.1","num":"2049","course":"IB Economics SLI","dept":"Soc. Stud.","block":"C","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":8},{"id":"2049.2","num":"2049","course":"IB Economics SLI","dept":"Soc. Stud.","block":"D","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":8},{"id":"2049.3","num":"2049","course":"IB Economics SLI","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":7},{"id":"2049.4","num":"2049","course":"IB Economics SLI","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":4},{"id":"2051.1","num":"2051","course":"IB Economics SLII","dept":"Soc. Stud.","block":"E","term":"26-27","teacher":"Murray, William","room":"FH1","students":5},{"id":"2051.2","num":"2051","course":"IB Economics SLII","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Murray, William","room":"FH1","students":7},{"id":"2051.3","num":"2051","course":"IB Economics SLII","dept":"Soc. Stud.","block":"G","term":"26-27","teacher":"Murray, William","room":"FH1","students":3},{"id":"2052.1","num":"2052","course":"IB Economics HLI","dept":"Soc. Stud.","block":"C","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":13},{"id":"2052.2","num":"2052","course":"IB Economics HLI","dept":"Soc. Stud.","block":"D","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":13},{"id":"2052.3","num":"2052","course":"IB Economics HLI","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":12},{"id":"2052.4","num":"2052","course":"IB Economics HLI","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":10},{"id":"2053.1","num":"2053","course":"IB Economics HLII","dept":"Soc. Stud.","block":"E","term":"26-27","teacher":"Murray, William","room":"FH1","students":17},{"id":"2053.2","num":"2053","course":"IB Economics HLII","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Murray, William","room":"FH1","students":15},{"id":"2053.3","num":"2053","course":"IB Economics HLII","dept":"Soc. Stud.","block":"G","term":"26-27","teacher":"Murray, William","room":"FH1","students":14},{"id":"2062.1","num":"2062","course":"IB TOK / Core I","dept":"Soc. Stud.","block":"G","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":19},{"id":"2062.2","num":"2062","course":"IB TOK / Core I","dept":"Soc. Stud.","block":"G","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":19},{"id":"2062.3","num":"2062","course":"IB TOK / Core I","dept":"Soc. Stud.","block":"G","term":"26-27","teacher":"Jasiewicz, Adam","room":"ST204","students":18},{"id":"2062.4","num":"2062","course":"IB TOK / Core I","dept":"Soc. Stud.","block":"G","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":20},{"id":"2063.1","num":"2063","course":"IB TOK / Core II","dept":"Soc. Stud.","block":"H","term":"26-27","teacher":"Cokerdem, Shayne","room":"HS3","students":17},{"id":"2063.2","num":"2063","course":"IB TOK / Core II","dept":"Soc. Stud.","block":"H","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":18},{"id":"2063.3","num":"2063","course":"IB TOK / Core II","dept":"Soc. Stud.","block":"H","term":"26-27","teacher":"Jasiewicz, Adam","room":"ST204","students":17},{"id":"2063.4","num":"2063","course":"IB TOK / Core II","dept":"Soc. Stud.","block":"H","term":"26-27","teacher":"Lloyd, James","room":"ST302","students":15},{"id":"2111.1","num":"2111","course":"National Plan Soc. Studies 9","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Duque, Paulina","room":"HS4","students":17},{"id":"2111.2","num":"2111","course":"National Plan Soc. Studies 9","dept":"Soc. Stud.","block":"A","term":"26-27","teacher":"Duque, Paulina","room":"HS4","students":16},{"id":"2111.3","num":"2111","course":"National Plan Soc. Studies 9","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Quintanilla, Sergio","room":"HS14","students":17},{"id":"2111.4","num":"2111","course":"National Plan Soc. Studies 9","dept":"Soc. Stud.","block":"D","term":"26-27","teacher":"Vergara, Francisca","room":"FH1","students":18},{"id":"2112.1","num":"2112","course":"National Plan Soc. Studies 10","dept":"Soc. Stud.","block":"A","term":"26-27","teacher":"Quintanilla, Sergio","room":"HS14","students":21},{"id":"2112.2","num":"2112","course":"National Plan Soc. Studies 10","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Quintanilla, Sergio","room":"HS14","students":22},{"id":"2112.3","num":"2112","course":"National Plan Soc. Studies 10","dept":"Soc. Stud.","block":"D","term":"26-27","teacher":"Mallegas, Maria Paz","room":"HS6","students":18},{"id":"2112.4","num":"2112","course":"National Plan Soc. Studies 10","dept":"Soc. Stud.","block":"E","term":"26-27","teacher":"Mallegas, Maria Paz","room":"HS6","students":18},{"id":"2117.1","num":"2117","course":"Chilean Studies I","dept":"Soc. Stud.","block":"D","term":"S1","teacher":"Duque, Paulina","room":"HS4","students":13},{"id":"2117.2","num":"2117","course":"Chilean Studies I","dept":"Soc. Stud.","block":"H","term":"S1","teacher":"Duque, Paulina","room":"HS4","students":19},{"id":"2118.1","num":"2118","course":"Chilean Studies II","dept":"Soc. Stud.","block":"C","term":"S2","teacher":"Duque, Paulina","room":"HS4","students":18},{"id":"2118.2","num":"2118","course":"Chilean Studies II","dept":"Soc. Stud.","block":"G","term":"S2","teacher":"Duque, Paulina","room":"HS4","students":11},{"id":"2123.1","num":"2123","course":"Chilean Studies I - Modified/Adjusted","dept":"SocialStudies","block":"H","term":"S1","teacher":"Duque, Paulina","room":"HS4","students":1},{"id":"2132.1","num":"2132","course":"Philosophy I","dept":"Soc. Stud.","block":"D","term":"S2","teacher":"Quintanilla, Sergio","room":"HS14","students":13},{"id":"2132.2","num":"2132","course":"Philosophy I","dept":"Soc. Stud.","block":"H","term":"S2","teacher":"Quintanilla, Sergio","room":"HS14","students":19},{"id":"2133.1","num":"2133","course":"Philosophy II","dept":"Soc. Stud.","block":"C","term":"S1","teacher":"Quintanilla, Sergio","room":"HS14","students":18},{"id":"2133.2","num":"2133","course":"Philosophy II","dept":"Soc. Stud.","block":"G","term":"S1","teacher":"Quintanilla, Sergio","room":"HS14","students":13},{"id":"2134.1","num":"2134","course":"Philosophy I - Modified/Adjusted","dept":"Soc. Stud.","block":"H","term":"S2","teacher":"Quintanilla, Sergio","room":"HS14","students":1},{"id":"2137.1","num":"2137","course":"Sustainable Design","dept":"Soc. Stud.","block":"C","term":"S2","teacher":"Gawura, Scott","room":"ST304","students":16},{"id":"2138.1","num":"2138","course":"Leadership","dept":"Soc. Stud.","block":"A","term":"S1","teacher":"Murray, William","room":"FH1","students":15},{"id":"2138.2","num":"2138","course":"Leadership","dept":"Soc. Stud.","block":"D","term":"S2","teacher":"Murray, William","room":null,"students":22},{"id":"2144.1","num":"2144","course":"Introduction to Entrepreneurism","dept":"Soc. Stud.","block":"F","term":"26-27","teacher":"Cancella, Jason","room":"HS12","students":8},{"id":"2155.1","num":"2155","course":"IB Psychology SLI","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":8},{"id":"2155.2","num":"2155","course":"IB Psychology SLI","dept":"Soc. Stud.","block":"D","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":10},{"id":"2157.1","num":"2157","course":"IB Psychology HLI","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":4},{"id":"2157.2","num":"2157","course":"IB Psychology HLI","dept":"Soc. Stud.","block":"D","term":"26-27","teacher":"Murphy, Jim","room":"FH2","students":8},{"id":"2158.1","num":"2158","course":"IB Psychology SLII","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Ferreira, Blake","room":"FH3","students":9},{"id":"2159.1","num":"2159","course":"IB Psychology HLII","dept":"Soc. Stud.","block":"B","term":"26-27","teacher":"Ferreira, Blake","room":"FH3","students":12},{"id":"3011.1","num":"3011","course":"Math 9","dept":"Math","block":"C","term":"26-27","teacher":"Brock, Kristen","room":"HS7","students":21},{"id":"3011.2","num":"3011","course":"Math 9","dept":"Math","block":"B","term":"26-27","teacher":"Lawrence, David","room":"HS13","students":17},{"id":"3011.3","num":"3011","course":"Math 9","dept":"Math","block":"D","term":"26-27","teacher":"Lawrence, David","room":"HS13","students":14},{"id":"3011.4","num":"3011","course":"Math 9","dept":"Math","block":"H","term":"26-27","teacher":"Lawrence, David","room":"HS15","students":12},{"id":"3012.1","num":"3012","course":"Math 9 Advanced","dept":"Math","block":"A","term":"26-27","teacher":"Ortiz, Michael","room":"HS5","students":9},{"id":"3012.2","num":"3012","course":"Math 9 Advanced","dept":"Math","block":"D","term":"26-27","teacher":"Ortiz, Michael","room":"HS5","students":14},{"id":"3012.3","num":"3012","course":"Math 9 Advanced","dept":"Math","block":"G","term":"26-27","teacher":"Ortiz, Michael","room":"HS5","students":16},{"id":"3013.1","num":"3013","course":"Math Lab 2","dept":"Math","block":"E","term":"26-27","teacher":"LaJoie, Andrea","room":"LS2","students":3},{"id":"3014.1","num":"3014","course":"Math 10","dept":"Math","block":"A","term":"26-27","teacher":"Napear, Emily","room":"HS15","students":19},{"id":"3014.2","num":"3014","course":"Math 10","dept":"Math","block":"H","term":"26-27","teacher":"Napear, Emily","room":"HS7","students":15},{"id":"3014.3","num":"3014","course":"Math 10","dept":"Math","block":"E","term":"26-27","teacher":"Cokerdem - DePriest, Diane","room":"HS13","students":18},{"id":"3014.4","num":"3014","course":"Math 10","dept":"Math","block":"H","term":"26-27","teacher":"Cokerdem - DePriest, Diane","room":"HS13","students":17},{"id":"3016.1","num":"3016","course":"Math 10 Advanced","dept":"Math","block":"G","term":"26-27","teacher":"Cokerdem - DePriest, Diane","room":"HS13","students":13},{"id":"3016.2","num":"3016","course":"Math 10 Advanced","dept":"Math","block":"F","term":"26-27","teacher":"Stevenson, Peter","room":"HS5","students":21},{"id":"3016.3","num":"3016","course":"Math 10 Advanced","dept":"Math","block":"H","term":"26-27","teacher":"Stevenson, Peter","room":"HS5","students":17},{"id":"3041.1","num":"3041","course":"Math 11","dept":"Math","block":"B","term":"26-27","teacher":"Brock, Kristen","room":"HS7","students":14},{"id":"3041.2","num":"3041","course":"Math 11","dept":"Math","block":"F","term":"26-27","teacher":"Brock, Kristen","room":"HS13","students":19},{"id":"3042.1","num":"3042","course":"Math 12","dept":"Math","block":"G","term":"26-27","teacher":"Napear, Emily","room":"HS7","students":21},{"id":"3057.1","num":"3057","course":"Math Lab 3","dept":"Math","block":"E","term":"26-27","teacher":"Lovejoy, Howard","room":"HS3","students":3},{"id":"3058.1","num":"3058","course":"Math Lab 4","dept":"Math","block":"E","term":"26-27","teacher":"LaJoie, Andrea","room":"LS2","students":1},{"id":"3076.1","num":"3076","course":"IB Math SL Apps & Interpretation I","dept":"Math","block":"A","term":"26-27","teacher":"Cokerdem - DePriest, Diane","room":"HS13","students":12},{"id":"3076.2","num":"3076","course":"IB Math SL Apps & Interpretation I","dept":"Math","block":"C","term":"26-27","teacher":"Cokerdem - DePriest, Diane","room":"HS15","students":17},{"id":"3077.1","num":"3077","course":"IB Math SL Apps & Interpretation II","dept":"Math","block":"C","term":"26-27","teacher":"Lawrence, David","room":"HS13","students":18},{"id":"3077.2","num":"3077","course":"IB Math SL Apps & Interpretation II","dept":"Math","block":"F","term":"26-27","teacher":"Lawrence, David","room":"HS15","students":12},{"id":"3078.1","num":"3078","course":"IB Math HL Apps & Interpretation I","dept":"Math","block":"E","term":"26-27","teacher":"Stevenson, Peter","room":"HS5","students":12},{"id":"3079.1","num":"3079","course":"IB Math HL Apps & Interpretation II","dept":"Math","block":"A","term":"26-27","teacher":"Stevenson, Peter","room":"HS12","students":7},{"id":"3081.1","num":"3081","course":"IB Math SL Analysis & Approaches I","dept":"Math","block":"E","term":"26-27","teacher":"Brock, Kristen","room":"HS7","students":24},{"id":"3081.2","num":"3081","course":"IB Math SL Analysis & Approaches I","dept":"Math","block":"A","term":"26-27","teacher":"Brock, Kristen","room":"HS7","students":17},{"id":"3082.1","num":"3082","course":"IB Math SL Analysis & Approaches II","dept":"Math","block":"D","term":"26-27","teacher":"Napear, Emily","room":"HS7","students":11},{"id":"3082.2","num":"3082","course":"IB Math SL Analysis & Approaches II","dept":"Math","block":"F","term":"26-27","teacher":"Napear, Emily","room":"HS7","students":15},{"id":"3082.3","num":"3082","course":"IB Math SL Analysis & Approaches II","dept":"Math","block":"D","term":"26-27","teacher":"Stevenson, Peter","room":"HS15","students":12},{"id":"3083.1","num":"3083","course":"IB Math HL Analysis & Approaches I","dept":"Math","block":"E","term":"26-27","teacher":"Ortiz, Michael","room":"HS15","students":17},{"id":"3084.1","num":"3084","course":"IB Math HL Analysis & Approaches II","dept":"Math","block":"C","term":"26-27","teacher":"Ortiz, Michael","room":"HS5","students":12},{"id":"4011.1","num":"4011","course":"Science 9","dept":"Science","block":"C","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":12},{"id":"4011.2","num":"4011","course":"Science 9","dept":"Science","block":"C","term":"26-27","teacher":"Biros-Lloyd, Yester","room":"ST203","students":9},{"id":"4011.3","num":"4011","course":"Science 9","dept":"Science","block":"F","term":"26-27","teacher":"Biros-Lloyd, Yester","room":"ST203","students":20},{"id":"4011.4","num":"4011","course":"Science 9","dept":"Science","block":"F","term":"26-27","teacher":"Moulton, Geoff","room":"ST101","students":21},{"id":"4011.5","num":"4011","course":"Science 9","dept":"Science","block":"G","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":22},{"id":"4011.6","num":"4011","course":"Science 9","dept":"Science","block":"H","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":19},{"id":"4012.1","num":"4012","course":"Science 10","dept":"Science","block":"B","term":"26-27","teacher":"Moulton, Geoff","room":"ST101","students":19},{"id":"4012.2","num":"4012","course":"Science 10","dept":"Science","block":"G","term":"26-27","teacher":"Moulton, Geoff","room":"ST101","students":18},{"id":"4012.3","num":"4012","course":"Science 10","dept":"Science","block":"A","term":"26-27","teacher":"Kelley, James Kendall","room":"ST201","students":15},{"id":"4012.4","num":"4012","course":"Science 10","dept":"Science","block":"D","term":"26-27","teacher":"Kelley, James Kendall","room":"ST201","students":12},{"id":"4012.5","num":"4012","course":"Science 10","dept":"Science","block":"B","term":"26-27","teacher":"Phillips, Maxwell","room":"ST102","students":20},{"id":"4012.6","num":"4012","course":"Science 10","dept":"Science","block":"E","term":"26-27","teacher":"Phillips, Maxwell","room":"ST102","students":17},{"id":"4012.7","num":"4012","course":"Science 10","dept":"Science","block":"F","term":"26-27","teacher":"Phillips, Maxwell","room":"ST102","students":23},{"id":"4019.1","num":"4019","course":"Astronomy","dept":"Science","block":"C","term":"S1","teacher":"Moulton, Geoff","room":"ST101","students":22},{"id":"4019.2","num":"4019","course":"Astronomy","dept":"Science","block":"A","term":"S2","teacher":"Moulton, Geoff","room":"ST101","students":16},{"id":"4026.1","num":"4026","course":"Engineering","dept":"Science","block":"D","term":"S1","teacher":"Moulton, Geoff","room":"ST101","students":17},{"id":"4026.2","num":"4026","course":"Engineering","dept":"Science","block":"A","term":"S2","teacher":"Urrutia, Carlos","room":"ST203","students":17},{"id":"4026.3","num":"4026","course":"Engineering","dept":"Science","block":"C","term":"S2","teacher":"Moulton, Geoff","room":"ST101","students":18},{"id":"4026.4","num":"4026","course":"Engineering","dept":"Science","block":"F","term":"S2","teacher":"Urrutia, Carlos","room":"ST302","students":11},{"id":"4027.1","num":"4027","course":"Culinary Science","dept":"Science","block":"A","term":"S1","teacher":"Jasiewicz, Adam","room":"ST204","students":16},{"id":"4027.2","num":"4027","course":"Culinary Science","dept":"Science","block":"F","term":"S1","teacher":"Jasiewicz, Adam","room":"ST204","students":16},{"id":"4027.3","num":"4027","course":"Culinary Science","dept":"Science","block":"A","term":"S2","teacher":"Jasiewicz, Adam","room":"ST204","students":13},{"id":"4027.4","num":"4027","course":"Culinary Science","dept":"Science","block":"E","term":"S2","teacher":"Jasiewicz, Adam","room":"ST204","students":12},{"id":"4028.1","num":"4028","course":"Astronomy - Modified/Adjusted","dept":"Science","block":"C","term":"S1","teacher":"Moulton, Geoff","room":"ST101","students":1},{"id":"4031.1","num":"4031","course":"IB Biology SLII","dept":"Science","block":"D","term":"26-27","teacher":"Cancella, Eileen","room":"ST202","students":17},{"id":"4041.1","num":"4041","course":"IB Biology HLII","dept":"Science","block":"D","term":"26-27","teacher":"Biros-Lloyd, Yester","room":"ST203","students":13},{"id":"4041.2","num":"4041","course":"IB Biology HLII","dept":"Science","block":"G","term":"26-27","teacher":"Biros-Lloyd, Yester","room":"ST203","students":12},{"id":"4050.1","num":"4050","course":"IB Biology SLI","dept":"Science","block":"E","term":"26-27","teacher":"Cancella, Eileen","room":"ST202","students":14},{"id":"4050.2","num":"4050","course":"IB Biology SLI","dept":"Science","block":"H","term":"26-27","teacher":"Cancella, Eileen","room":"ST202","students":19},{"id":"4051.1","num":"4051","course":"IB Biology HLI","dept":"Science","block":"H","term":"26-27","teacher":"Biros-Lloyd, Yester","room":"ST203","students":21},{"id":"4068.1","num":"4068","course":"Nidoships (Internships)","dept":"SocialStudies","block":"D","term":"S1","teacher":"Cancella, Jason","room":"HS12","students":8},{"id":"4068.2","num":"4068","course":"Nidoships (Internships)","dept":"SocialStudies","block":"A","term":"S2","teacher":"Cancella, Jason","room":"HS12","students":7},{"id":"4069.1","num":"4069","course":"Nidoships (Internships) - Modified/Adjusted","dept":"SocialStudies","block":"G","term":"S1","teacher":"Benavente Soto, Nicolas","room":"SOAR","students":1},{"id":"4069.2","num":"4069","course":"Nidoships (Internships) - Modified/Adjusted","dept":"SocialStudies","block":"G","term":"S2","teacher":"Benavente Soto, Nicolas","room":"SOAR","students":1},{"id":"4101.1","num":"4101","course":"IB Chemistry SLII","dept":"Science","block":"B","term":"26-27","teacher":"Cancella, Eileen","room":"ST202","students":16},{"id":"4103.1","num":"4103","course":"IB Chemistry HLII","dept":"Science","block":"E","term":"26-27","teacher":"Kelley, James Kendall","room":"ST201","students":18},{"id":"4106.1","num":"4106","course":"IB Chemistry SLI","dept":"Science","block":"C","term":"26-27","teacher":"Cancella, Eileen","room":"ST202","students":9},{"id":"4106.2","num":"4106","course":"IB Chemistry SLI","dept":"Science","block":"F","term":"26-27","teacher":"Kelley, James Kendall","room":"ST201","students":1},{"id":"4107.1","num":"4107","course":"IB Chemistry HLI","dept":"Science","block":"B","term":"26-27","teacher":"Kelley, James Kendall","room":"ST201","students":10},{"id":"4107.2","num":"4107","course":"IB Chemistry HLI","dept":"Science","block":"F","term":"26-27","teacher":"Kelley, James Kendall","room":"ST201","students":16},{"id":"4202.1","num":"4202","course":"IB Physics SLII","dept":"Science","block":"C","term":"26-27","teacher":"Phillips, Maxwell","room":"ST102","students":13},{"id":"4204.1","num":"4204","course":"IB Physics HLII","dept":"Science","block":"D","term":"26-27","teacher":"Jasiewicz, Adam","room":"ST204","students":12},{"id":"4205.1","num":"4205","course":"IB Physics SLI","dept":"Science","block":"A","term":"26-27","teacher":"Phillips, Maxwell","room":"ST102","students":13},{"id":"4206.1","num":"4206","course":"IB Physics HLI","dept":"Science","block":"C","term":"26-27","teacher":"Jasiewicz, Adam","room":"ST204","students":17},{"id":"4305.1","num":"4305","course":"IB Env. Systems & Society SLI","dept":"Science","block":"D","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":7},{"id":"4310.1","num":"4310","course":"IB Env. Systems & Society SLII","dept":"Science","block":"F","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":14},{"id":"4311.1","num":"4311","course":"IB Env. Systems & Society HLI","dept":"Science","block":"D","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":3},{"id":"4312.1","num":"4312","course":"IB Env. Systems & Society HLII","dept":"Science","block":"F","term":"26-27","teacher":"Brookes-Phillips, Alice","room":"ST103","students":1},{"id":"4315.1","num":"4315","course":"IB Design Technology SLI","dept":"DesignTech","block":"H","term":"26-27","teacher":"Gawura, Scott","room":"ST304","students":12},{"id":"4316.1","num":"4316","course":"IB Design Technology HLI","dept":"DesignTech","block":"F","term":"26-27","teacher":"Gawura, Scott","room":"ST304","students":7},{"id":"4316.2","num":"4316","course":"IB Design Technology HLI","dept":"DesignTech","block":"H","term":"26-27","teacher":"Gawura, Scott","room":"ST304","students":7},{"id":"4317.1","num":"4317","course":"IB Design Technology SLII","dept":"DesignTech","block":"E","term":"26-27","teacher":"Gawura, Scott","room":"ST304","students":4},{"id":"4318.1","num":"4318","course":"IB Design Technology HLII","dept":"DesignTech","block":"E","term":"26-27","teacher":"Gawura, Scott","room":"ST304","students":8},{"id":"5000.1","num":"5000","course":"Spanish 9","dept":"Spanish","block":"A","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":12},{"id":"5000.2","num":"5000","course":"Spanish 9","dept":"Spanish","block":"C","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":18},{"id":"5000.3","num":"5000","course":"Spanish 9","dept":"Spanish","block":"A","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":11},{"id":"5000.4","num":"5000","course":"Spanish 9","dept":"Spanish","block":"D","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":16},{"id":"5000.5","num":"5000","course":"Spanish 9","dept":"Spanish","block":"G","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":14},{"id":"5010.1","num":"5010","course":"Spanish 10","dept":"Spanish","block":"A","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":15},{"id":"5010.2","num":"5010","course":"Spanish 10","dept":"Spanish","block":"H","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":18},{"id":"5010.3","num":"5010","course":"Spanish 10","dept":"Spanish","block":"C","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":21},{"id":"5010.4","num":"5010","course":"Spanish 10","dept":"Spanish","block":"E","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":18},{"id":"5010.5","num":"5010","course":"Spanish 10","dept":"Spanish","block":"G","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":19},{"id":"5031.1","num":"5031","course":"Spanish 12","dept":"Spanish","block":"F","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":16},{"id":"5032.1","num":"5032","course":"Spanish 11 - Modified/Adjusted","dept":"Languages","block":"A","term":"26-27","teacher":"Benavente Soto, Nicolas","room":"SOAR","students":1},{"id":"5040.1","num":"5040","course":"IB Spanish A: Literature SLI","dept":"Spanish","block":"D","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":9},{"id":"5042.1","num":"5042","course":"IB Spanish A: Lang & Lit SLI","dept":"Spanish","block":"A","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":15},{"id":"5042.2","num":"5042","course":"IB Spanish A: Lang & Lit SLI","dept":"Spanish","block":"B","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":17},{"id":"5042.3","num":"5042","course":"IB Spanish A: Lang & Lit SLI","dept":"Spanish","block":"D","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":19},{"id":"5042.4","num":"5042","course":"IB Spanish A: Lang & Lit SLI","dept":"Spanish","block":"E","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":14},{"id":"5043.1","num":"5043","course":"IB Spanish A: Lang & Lit SLII","dept":"Spanish","block":"B","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":12},{"id":"5043.2","num":"5043","course":"IB Spanish A: Lang & Lit SLII","dept":"Spanish","block":"C","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":13},{"id":"5043.3","num":"5043","course":"IB Spanish A: Lang & Lit SLII","dept":"Spanish","block":"E","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":11},{"id":"5043.4","num":"5043","course":"IB Spanish A: Lang & Lit SLII","dept":"Spanish","block":"G","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":13},{"id":"5044.1","num":"5044","course":"IB Spanish A: Lang & Lit HLI","dept":"Spanish","block":"A","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":5},{"id":"5044.2","num":"5044","course":"IB Spanish A: Lang & Lit HLI","dept":"Spanish","block":"B","term":"26-27","teacher":"Trewik, Daniela","room":"L1","students":1},{"id":"5044.3","num":"5044","course":"IB Spanish A: Lang & Lit HLI","dept":"Spanish","block":"D","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":3},{"id":"5044.4","num":"5044","course":"IB Spanish A: Lang & Lit HLI","dept":"Spanish","block":"E","term":"26-27","teacher":"Olivas, Cristina","room":"L2","students":2},{"id":"5045.1","num":"5045","course":"IB Spanish A: Lang & Lit HLII","dept":"Spanish","block":"B","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":3},{"id":"5045.2","num":"5045","course":"IB Spanish A: Lang & Lit HLII","dept":"Spanish","block":"C","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":5},{"id":"5045.3","num":"5045","course":"IB Spanish A: Lang & Lit HLII","dept":"Spanish","block":"E","term":"26-27","teacher":"Restrepo, Manuela","room":"L4","students":5},{"id":"5045.4","num":"5045","course":"IB Spanish A: Lang & Lit HLII","dept":"Spanish","block":"G","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":2},{"id":"5050.1","num":"5050","course":"IB Spanish A: Literature HLI","dept":"Spanish","block":"D","term":"26-27","teacher":"Riveros, Michelle","room":"L3","students":2},{"id":"5154.1","num":"5154","course":"Spanish B Novice","dept":"Languages","block":"B","term":"26-27","teacher":"Castillo, Diego","room":"L5","students":14},{"id":"5156.1","num":"5156","course":"Spanish B Intermediate","dept":"Languages","block":"A","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":12},{"id":"5156.2","num":"5156","course":"Spanish B Intermediate","dept":"Languages","block":"C","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":14},{"id":"5157.1","num":"5157","course":"Spanish B Advanced","dept":"Languages","block":"C","term":"26-27","teacher":"Castillo, Diego","room":"L5","students":14},{"id":"5157.2","num":"5157","course":"Spanish B Advanced","dept":"Languages","block":"F","term":"26-27","teacher":"Castillo, Diego","room":"L5","students":15},{"id":"5158.1","num":"5158","course":"Spanish B Bridge","dept":"Languages","block":"E","term":"26-27","teacher":"Castillo, Diego","room":"L5","students":6},{"id":"5200.1","num":"5200","course":"IB Spanish B HLI","dept":"Languages","block":"B","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":0},{"id":"5200.2","num":"5200","course":"IB Spanish B HLI","dept":"Languages","block":"H","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":4},{"id":"5201.1","num":"5201","course":"IB Spanish B HLII","dept":"Languages","block":"G","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":2},{"id":"5202.1","num":"5202","course":"IB Spanish Ab Initio SLI","dept":"Languages","block":"B","term":"26-27","teacher":"Castillo, Diego","room":"L5","students":3},{"id":"5203.1","num":"5203","course":"IB Spanish Ab Initio SLII","dept":"Languages","block":"A","term":"26-27","teacher":"Castillo, Diego","room":"L5","students":8},{"id":"5205.1","num":"5205","course":"IB Spanish B SLI","dept":"Languages","block":"B","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":12},{"id":"5205.2","num":"5205","course":"IB Spanish B SLI","dept":"Languages","block":"H","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":10},{"id":"5206.1","num":"5206","course":"IB Spanish B SLII","dept":"Languages","block":"G","term":"26-27","teacher":"Nunez, Rodrigo","room":"L6","students":7},{"id":"5295.1","num":"5295","course":"IB SSST: Japanese SLII","dept":"Languages","block":"A","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5297.1","num":"5297","course":"IB SSST: French SLII","dept":"Languages","block":"A","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5298.1","num":"5298","course":"IB Self Taught Lit. SLI","dept":"Languages","block":"F","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5299.1","num":"5299","course":"IB Self Taught Lit. SLII","dept":"Languages","block":"A","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"5312.1","num":"5312","course":"Pamoja - IB French Ab Initio SLI","dept":"Languages","block":"B","term":"26-27","teacher":"Matter, Susan","room":"Library","students":3},{"id":"5312.2","num":"5312","course":"Pamoja - IB French Ab Initio SLI","dept":"Languages","block":"H","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5313.1","num":"5313","course":"Pamoja - IB French Ab Initio SLII","dept":"Languages","block":"F","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5522.1","num":"5522","course":"Pamoja - IB Chinese B SLI","dept":"Languages","block":"D","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5523.1","num":"5523","course":"Pamoja - IB Mandarin Ab Initio SLII","dept":"Languages","block":"B","term":"26-27","teacher":"Matter, Susan","room":"Library","students":1},{"id":"5524.1","num":"5524","course":"Pamoja - IB Mandarin Ab Initio SLI","dept":"Languages","block":"D","term":"26-27","teacher":"Matter, Susan","room":"Library","students":0},{"id":"5524.2","num":"5524","course":"Pamoja - IB Mandarin Ab Initio SLI","dept":"Languages","block":"H","term":"26-27","teacher":"Matter, Susan","room":"Library","students":3},{"id":"6005.1","num":"6005","course":"Foundations of Art","dept":"Fine Arts","block":"H","term":"S2","teacher":"Borodenko, Chris","room":"FA303","students":17},{"id":"6005.2","num":"6005","course":"Foundations of Art","dept":"Fine Arts","block":"F","term":"S1","teacher":"Borodenko, Chris","room":"FA303","students":23},{"id":"6005.3","num":"6005","course":"Foundations of Art","dept":"Fine Arts","block":"H","term":"S1","teacher":"Borodenko, Chris","room":"FA303","students":18},{"id":"6038.1","num":"6038","course":"Visual Arts 2D Lab","dept":"Fine Arts","block":"A","term":"S1","teacher":"Mills, Kathleen","room":"FA304","students":16},{"id":"6038.2","num":"6038","course":"Visual Arts 2D Lab","dept":"Fine Arts","block":"B","term":"S2","teacher":"Mills, Kathleen","room":"FA304","students":16},{"id":"6041.1","num":"6041","course":"IB Visual Arts SLII","dept":"Fine Arts","block":"E","term":"26-27","teacher":"Mills, Kathleen","room":"FA304","students":0},{"id":"6042.1","num":"6042","course":"IB Visual Arts HLII","dept":"Fine Arts","block":"E","term":"26-27","teacher":"Mills, Kathleen","room":"FA304","students":4},{"id":"6043.1","num":"6043","course":"IB Visual Arts SLI","dept":"Fine Arts","block":"F","term":"26-27","teacher":"Mills, Kathleen","room":"FA304","students":5},{"id":"6044.1","num":"6044","course":"IB Visual Arts HLI","dept":"Fine Arts","block":"F","term":"26-27","teacher":"Mills, Kathleen","room":"FA304","students":11},{"id":"6045.1","num":"6045","course":"Visual Arts 3D Lab","dept":"Fine Arts","block":"B","term":"S2","teacher":"Borodenko, Chris","room":"FA303","students":13},{"id":"6045.2","num":"6045","course":"Visual Arts 3D Lab","dept":"Fine Arts","block":"D","term":"S1","teacher":"Borodenko, Chris","room":"FA303","students":8},{"id":"6047.1","num":"6047","course":"Digital Art Lab","dept":"Fine Arts","block":"G","term":"S2","teacher":"Kim, Sofia Sinyung","room":"FA304","students":21},{"id":"6104.1","num":"6104","course":"Improvisation","dept":"Fine Arts","block":"E","term":"S1","teacher":"Eleftherakis, Christa","room":"FA202","students":17},{"id":"6104.2","num":"6104","course":"Improvisation","dept":"Fine Arts","block":"C","term":"S2","teacher":"Eleftherakis, Christa","room":"FA301","students":15},{"id":"6104.3","num":"6104","course":"Improvisation","dept":"Fine Arts","block":"D","term":"S2","teacher":"Eleftherakis, Christa","room":"FA301","students":22},{"id":"6153.1","num":"6153","course":"Stagecraft","dept":"Fine Arts","block":"B","term":"S1","teacher":"Borodenko, Chris","room":"FA303","students":15},{"id":"6153.2","num":"6153","course":"Stagecraft","dept":"Fine Arts","block":"F","term":"S2","teacher":"Borodenko, Chris","room":"FA303","students":7},{"id":"6210.1","num":"6210","course":"IB Music SLI","dept":"Fine Arts","block":"F","term":"26-27","teacher":"Borodenko, Lauren","room":"FA103","students":2},{"id":"6211.1","num":"6211","course":"IB Music HLI","dept":"Fine Arts","block":"F","term":"26-27","teacher":"Borodenko, Lauren","room":"FA103","students":5},{"id":"6212.1","num":"6212","course":"IB Music SLII","dept":"Fine Arts","block":"A","term":"26-27","teacher":"Aguayo, Sebastian","room":"FA204","students":2},{"id":"6213.1","num":"6213","course":"IB Music HLII","dept":"Fine Arts","block":"A","term":"26-27","teacher":"Aguayo, Sebastian","room":"FA204","students":4},{"id":"6219.1","num":"6219","course":"Foundations of Band","dept":"Fine Arts","block":"D","term":"S1","teacher":"Borodenko, Lauren","room":"FA103","students":11},{"id":"6220.1","num":"6220","course":"Concert Band","dept":"Fine Arts","block":"B","term":"26-27","teacher":"Borodenko, Lauren","room":"FA103","students":31},{"id":"6241.1","num":"6241","course":"Guitar","dept":"Fine Arts","block":"G","term":"S1","teacher":"Aguayo, Sebastian","room":"FA204","students":14},{"id":"6241.2","num":"6241","course":"Guitar","dept":"Fine Arts","block":"C","term":"S2","teacher":"Aguayo, Sebastian","room":"FA204","students":20},{"id":"6247.1","num":"6247","course":"Choir","dept":"Fine Arts","block":"E","term":"S2","teacher":"Borodenko, Lauren","room":"FA103","students":16},{"id":"6409.1","num":"6409","course":"Music Composition","dept":"Fine Arts","block":"C","term":"S1","teacher":"Aguayo, Sebastian","room":"FA204","students":13},{"id":"6416.1","num":"6416","course":"Piano","dept":"Fine Arts","block":"E","term":"S1","teacher":"Aguayo, Sebastian","room":"FA204","students":14},{"id":"6416.2","num":"6416","course":"Piano","dept":"Fine Arts","block":"E","term":"S2","teacher":"Aguayo, Sebastian","room":"FA204","students":10},{"id":"6418.1","num":"6418","course":"Percussion","dept":"Fine Arts","block":"G","term":"S2","teacher":"Aguayo, Sebastian","room":"FA204","students":20},{"id":"6503.1","num":"6503","course":"IB Film SLI","dept":"Fine Arts","block":"B","term":"26-27","teacher":"Eleftherakis, Christa","room":"FA301","students":4},{"id":"6506.1","num":"6506","course":"Graphic Design","dept":"DesignTech","block":"E","term":"S1","teacher":"Kim, Sofia Sinyung","room":"ST304","students":22},{"id":"6506.2","num":"6506","course":"Graphic Design","dept":"DesignTech","block":"G","term":"S1","teacher":"Kim, Sofia Sinyung","room":"ST304","students":17},{"id":"6507.1","num":"6507","course":"Foundations of Design Tech","dept":"DesignTech","block":"D","term":"S1","teacher":"Urrutia, Carlos","room":"ST304","students":13},{"id":"6507.2","num":"6507","course":"Foundations of Design Tech","dept":"DesignTech","block":"E","term":"S2","teacher":"Kim, Sofia Sinyung","room":"ST302","students":21},{"id":"6508.1","num":"6508","course":"Design Lab","dept":"DesignTech","block":"C","term":"S1","teacher":"Kim, Sofia Sinyung","room":"ST304","students":15},{"id":"6508.2","num":"6508","course":"Design Lab","dept":"DesignTech","block":"B","term":"S2","teacher":"Kim, Sofia Sinyung","room":"ST103","students":9},{"id":"6512.1","num":"6512","course":"IB Film HLI","dept":"Fine Arts","block":"B","term":"26-27","teacher":"Eleftherakis, Christa","room":"FA301","students":8},{"id":"6513.1","num":"6513","course":"IB Film HLII","dept":"Fine Arts","block":"G","term":"26-27","teacher":"Eleftherakis, Christa","room":"FA301","students":7},{"id":"6514.1","num":"6514","course":"Foundations of Coding","dept":"DesignTech","block":"A","term":"S1","teacher":"Gawura, Scott","room":"ST303","students":12},{"id":"6515.1","num":"6515","course":"Digital Filmmaking","dept":"Fine Arts","block":"D","term":"S1","teacher":"Eleftherakis, Christa","room":"FA301","students":20},{"id":"6515.2","num":"6515","course":"Digital Filmmaking","dept":"Fine Arts","block":"H","term":"S1","teacher":"Eleftherakis, Christa","room":"FA301","students":18},{"id":"6515.3","num":"6515","course":"Digital Filmmaking","dept":"Fine Arts","block":"H","term":"S2","teacher":"Eleftherakis, Christa","room":"FA301","students":14},{"id":"6517.1","num":"6517","course":"Foundations of Design Tech - Modified/Adjusted","dept":"DesignTech","block":"D","term":"S1","teacher":"Urrutia, Carlos","room":"ST304","students":1},{"id":"7004.1","num":"7004","course":"Personal Fitness","dept":"P.E.","block":"C","term":"S1","teacher":"Cope, Robert","room":"PE1","students":19},{"id":"7004.2","num":"7004","course":"Personal Fitness","dept":"P.E.","block":"D","term":"S2","teacher":"Cope, Robert","room":"PE1","students":17},{"id":"7004.3","num":"7004","course":"Personal Fitness","dept":"P.E.","block":"E","term":"S2","teacher":"Cope, Robert","room":"PE1","students":18},{"id":"7040.1","num":"7040","course":"Foundations of PE","dept":"P.E.","block":"E","term":"S2","teacher":"Seavey, Joe","room":"PE2","students":19},{"id":"7040.2","num":"7040","course":"Foundations of PE","dept":"P.E.","block":"E","term":"S1","teacher":"Cope, Robert","room":"PE1","students":22},{"id":"7040.3","num":"7040","course":"Foundations of PE","dept":"P.E.","block":"G","term":"S1","teacher":"Cope, Robert","room":"PE1","students":20},{"id":"7040.4","num":"7040","course":"Foundations of PE","dept":"P.E.","block":"H","term":"S1","teacher":"Cope, Robert","room":"PE1","students":22},{"id":"7040.5","num":"7040","course":"Foundations of PE","dept":"P.E.","block":"F","term":"S2","teacher":"Cope, Robert","room":"PE1","students":20},{"id":"7041.1","num":"7041","course":"Wilderness Adventure","dept":"P.E.","block":"H","term":"S2","teacher":"Cope, Robert","room":"PE2","students":11},{"id":"7041.2","num":"7041","course":"Wilderness Adventure","dept":"P.E.","block":"D","term":"S2","teacher":"Borodenko, Chris","room":"FA303","students":16},{"id":"7045.1","num":"7045","course":"Mind & Body Wellness","dept":"P.E.","block":"B","term":"S1","teacher":"Cope, Robert","room":"Wellness C","students":23},{"id":"7045.2","num":"7045","course":"Mind & Body Wellness","dept":"P.E.","block":"A","term":"S2","teacher":"Cope, Robert","room":"PE1","students":20},{"id":"7049.1","num":"7049","course":"Group Games & Leadership","dept":"P.E.","block":"A","term":"S1","teacher":"Seavey, Joe","room":"PE2","students":25},{"id":"7049.2","num":"7049","course":"Group Games & Leadership","dept":"P.E.","block":"E","term":"S1","teacher":"Seavey, Joe","room":"PE2","students":21},{"id":"7049.3","num":"7049","course":"Group Games & Leadership","dept":"P.E.","block":"G","term":"S1","teacher":"Seavey, Joe","room":"PE2","students":13},{"id":"7049.4","num":"7049","course":"Group Games & Leadership","dept":"P.E.","block":"G","term":"S2","teacher":"Seavey, Joe","room":"PE2","students":25},{"id":"7049.5","num":"7049","course":"Group Games & Leadership","dept":"P.E.","block":"H","term":"S2","teacher":"Seavey, Joe","room":"PE2","students":17},{"id":"8050.1","num":"8050","course":"Robotics","dept":"DesignTech","block":"A","term":"S2","teacher":"Gawura, Scott","room":"ST304","students":11},{"id":"8065.1","num":"8065","course":"First-Year Seminar","dept":"Intdscp","block":"A","term":"26-27","teacher":"Cade, Christiana","room":"ST301","students":15},{"id":"8065.2","num":"8065","course":"First-Year Seminar","dept":"Intdscp","block":"B","term":"26-27","teacher":"Cade, Christiana","room":"ST301","students":17},{"id":"8065.3","num":"8065","course":"First-Year Seminar","dept":"Intdscp","block":"C","term":"26-27","teacher":"Seavey, Joe","room":"PE2","students":12},{"id":"8065.4","num":"8065","course":"First-Year Seminar","dept":"Intdscp","block":"D","term":"26-27","teacher":"Seavey, Joe","room":"PE2","students":22},{"id":"8065.5","num":"8065","course":"First-Year Seminar","dept":"Intdscp","block":"E","term":"26-27","teacher":"Cade, Christiana","room":"ST301","students":15},{"id":"8065.6","num":"8065","course":"First-Year Seminar","dept":"Intdscp","block":"H","term":"26-27","teacher":"Kim, Sofia Sinyung","room":"ST301","students":22},{"id":"8066.1","num":"8066","course":"Changemakers","dept":"Intdscp","block":"C","term":"26-27","teacher":"Cancella, Jason","room":"HS12","students":19},{"id":"8066.2","num":"8066","course":"Changemakers","dept":"Intdscp","block":"H","term":"26-27","teacher":"Cancella, Jason","room":"HS12","students":15},{"id":"8066.3","num":"8066","course":"Changemakers","dept":"Intdscp","block":"B","term":"26-27","teacher":"Murphy, Natalie","room":"ZE1","students":21},{"id":"8066.4","num":"8066","course":"Changemakers","dept":"Intdscp","block":"F","term":"26-27","teacher":"Murphy, Natalie","room":"ZE1","students":21},{"id":"8066.5","num":"8066","course":"Changemakers","dept":"Intdscp","block":"C","term":"26-27","teacher":"Borodenko, Chris","room":"FA303","students":17},{"id":"8066.6","num":"8066","course":"Changemakers","dept":"Intdscp","block":"D","term":"26-27","teacher":"Mills, Kathleen","room":"FA304","students":16},{"id":"8066.7","num":"8066","course":"Changemakers","dept":"Intdscp","block":"H","term":"26-27","teacher":"Mills, Kathleen","room":"FA304","students":15}],"days":[{"date":"2026-11-03","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2026-11-04","cycle":8,"order":"HEFG","second":"E","time":"09:35-10:55","special":null},{"date":"2026-11-05","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2026-11-06","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2026-11-09","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2026-11-10","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2026-11-11","cycle":5,"order":"CDAB","second":"D","time":"09:35-10:55","special":null},{"date":"2026-11-12","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2026-11-13","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2026-11-16","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2026-11-17","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2026-11-18","cycle":2,"order":"EFGH","second":"F","time":"09:35-10:55","special":null},{"date":"2026-11-19","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2026-11-20","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2026-11-23","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2026-11-24","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2026-11-25","cycle":7,"order":"DABC","second":"A","time":"09:35-10:55","special":null},{"date":"2026-11-30","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2026-12-01","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2026-12-02","cycle":2,"order":"EFGH","second":"F","time":"09:35-10:55","special":null},{"date":"2026-12-03","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2026-12-04","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2026-12-07","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2026-12-09","cycle":6,"order":"GHEF","second":"H","time":"09:35-10:55","special":null},{"date":"2026-12-10","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2026-12-11","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2026-12-14","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2026-12-15","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2026-12-16","cycle":3,"order":"BCDA","second":"C","time":"09:35-10:55","special":null},{"date":"2026-12-17","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2026-12-18","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":"Half Day Students / Last day of school before summer break (special schedule - check block times)"},{"date":"2027-02-15","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":"First Day of School / Special Schedule (check block times); rotation restarts at Day 1"},{"date":"2027-02-16","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-02-17","cycle":3,"order":"BCDA","second":"C","time":"09:35-10:55","special":null},{"date":"2027-02-18","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-02-19","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-02-22","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-02-23","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2027-02-24","cycle":8,"order":"HEFG","second":"E","time":"09:35-10:55","special":null},{"date":"2027-02-25","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-02-26","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-03-01","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-03-02","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-03-03","cycle":5,"order":"CDAB","second":"D","time":"09:35-10:55","special":null},{"date":"2027-03-04","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-03-05","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2027-03-15","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-03-16","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-03-17","cycle":2,"order":"EFGH","second":"F","time":"09:35-10:55","special":null},{"date":"2027-03-18","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-03-19","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-03-22","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-03-23","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-03-24","cycle":7,"order":"DABC","second":"A","time":"09:35-10:55","special":null},{"date":"2027-03-29","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-03-30","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-03-31","cycle":2,"order":"EFGH","second":"F","time":"09:35-10:55","special":null},{"date":"2027-04-01","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-04-02","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-04-05","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-04-06","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-04-07","cycle":7,"order":"DABC","second":"A","time":"09:35-10:55","special":null},{"date":"2027-04-08","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-04-09","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-04-12","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-04-13","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-04-14","cycle":4,"order":"FGHE","second":"G","time":"09:35-10:55","special":null},{"date":"2027-04-15","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-04-20","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-04-21","cycle":7,"order":"DABC","second":"A","time":"09:35-10:55","special":null},{"date":"2027-04-22","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-04-23","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-04-26","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-04-27","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-04-28","cycle":4,"order":"FGHE","second":"G","time":"09:35-10:55","special":null},{"date":"2027-04-29","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-04-30","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-05-03","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2027-05-04","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-05-05","cycle":1,"order":"ABCD","second":"B","time":"09:35-10:55","special":null},{"date":"2027-05-06","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-05-07","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-05-10","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-05-11","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-05-12","cycle":6,"order":"GHEF","second":"H","time":"09:35-10:55","special":null},{"date":"2027-05-13","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2027-05-14","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-05-17","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-05-18","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-05-19","cycle":3,"order":"BCDA","second":"C","time":"09:35-10:55","special":null},{"date":"2027-05-20","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-05-24","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-05-25","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-05-26","cycle":7,"order":"DABC","second":"A","time":"09:35-10:55","special":null},{"date":"2027-05-27","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-05-28","cycle":1,"order":"ABCD","second":"B","time":"09:40-11:00","special":null},{"date":"2027-05-31","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-06-01","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-06-02","cycle":4,"order":"FGHE","second":"G","time":"09:35-10:55","special":null},{"date":"2027-06-03","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-06-04","cycle":6,"order":"GHEF","second":"H","time":"09:40-11:00","special":null},{"date":"2027-06-07","cycle":7,"order":"DABC","second":"A","time":"09:40-11:00","special":null},{"date":"2027-06-08","cycle":8,"order":"HEFG","second":"E","time":"09:40-11:00","special":null},{"date":"2027-06-09","cycle":1,"order":"ABCD","second":"B","time":"09:35-10:55","special":null},{"date":"2027-06-10","cycle":2,"order":"EFGH","second":"F","time":"09:40-11:00","special":null},{"date":"2027-06-11","cycle":3,"order":"BCDA","second":"C","time":"09:40-11:00","special":null},{"date":"2027-06-14","cycle":4,"order":"FGHE","second":"G","time":"09:40-11:00","special":null},{"date":"2027-06-15","cycle":5,"order":"CDAB","second":"D","time":"09:40-11:00","special":null},{"date":"2027-06-16","cycle":6,"order":"GHEF","second":"H","time":"09:35-10:55","special":null}],"hosts":{"Aguayo, Sebastian":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Araujo, Mateo":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Benavente Soto, Nicolas":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Biros-Lloyd, Yester":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"ylloyd@nido.cl"},"Borel, Giannina":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"gborel@nido.cl"},"Borodenko, Chris":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Borodenko, Lauren":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Braithwaite, Richard":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Brock, Kristen":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Brookes-Phillips, Alice":{"status":"no","exclude":[],"ambassador":false,"note":"","email":""},"Cade, Christiana":{"status":"yes","exclude":["B"],"ambassador":false,"note":"","email":"ccade@nido.cl"},"Cancella, Eileen":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Cancella, Jason":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Castillo, Diego":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Chaparro, Jose Manuel":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Cokerdem - DePriest, Diane":{"status":"yes","exclude":["C"],"ambassador":false,"note":"","email":"dcokerdem@nido.cl"},"Cokerdem, Shayne":{"status":"yes","exclude":["B"],"ambassador":false,"note":"","email":"scokerdem@nido.cl"},"Cope, Robert":{"status":"yes","exclude":["C","E","G","H"],"ambassador":false,"note":"","email":"rcope@nido.cl"},"Dumay, Colomba":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Duque, Paulina":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Eleftherakis, Christa":{"status":"yes","exclude":["D","E","H"],"ambassador":false,"note":"","email":"celeftherakis@nido.cl"},"Ferreira, Blake":{"status":"yes","exclude":["A","B","C","E"],"ambassador":false,"note":"","email":"bferreira@nido.cl"},"Gawura, Scott":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"sgawura@nido.cl"},"Jasiewicz, Adam":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Johnson, Jaime":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Kelley, James Kendall":{"status":"maybe","exclude":[],"ambassador":false,"note":"","email":"jkelley@nido.cl"},"Killion, Caitlin":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Kim, Sofia Sinyung":{"status":"yes","exclude":["H"],"ambassador":false,"note":"","email":"skim@nido.cl"},"LaJoie, Andrea":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Lawrence, David":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Lee, Hazel":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Lloyd, James":{"status":"yes","exclude":["A","B"],"ambassador":false,"note":"","email":"jlloyd@nido.cl"},"Lovejoy, Howard":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Mallegas, Maria Paz":{"status":"yes","exclude":["B","D","E"],"ambassador":false,"note":"","email":"mmallegas@nido.cl"},"Matter, Susan":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Mills, Kathleen":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Moulton, Geoff":{"status":"yes","exclude":[],"ambassador":false,"note":"Interested in being an ambassador class (repeat visits).","email":"gmoulton@nido.cl"},"Murphy, Jim":{"status":"yes","exclude":["C","F","G","H"],"ambassador":false,"note":"Answered twice (A, B, D, E then C, F, G, H); using the later answer.","email":"jmurphy@nido.cl"},"Murphy, Natalie":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"nmurphy@nido.cl"},"Murray, William":{"status":"yes","exclude":["A"],"ambassador":false,"note":"","email":"bmurray@nido.cl"},"Napear, Emily":{"status":"yes","exclude":["A","B","C","E","G"],"ambassador":false,"note":"","email":"enapear@nido.cl"},"Nunez, Rodrigo":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Olivas, Cristina":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Ortiz, Michael":{"status":"yes","exclude":["B","C","E","F","H"],"ambassador":false,"note":"","email":"mortiz@nido.cl"},"Phillips, Maxwell":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"mphillips@nido.cl"},"Pritchard, Jesse":{"status":"yes","exclude":["B","D","E","G","H"],"ambassador":false,"note":"","email":"jpritchard@nido.cl"},"Quintanilla, Sergio":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Ramirez, Pablo":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"pramirez@nido.cl"},"Restrepo, Manuela":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Riveros, Michelle":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Rodgers, Georgia":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""},"Seavey, Joe":{"status":"yes","exclude":["A","B","E","F","G","H"],"ambassador":false,"note":"","email":"jseavey@nido.cl"},"Stevenson, Peter":{"status":"yes","exclude":["A"],"ambassador":false,"note":"","email":"pstevenson@nido.cl"},"Trewik, Daniela":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"dtrewik@nido.cl"},"Urrutia, Carlos":{"status":"yes","exclude":[],"ambassador":false,"note":"","email":"currutia@nido.cl"},"Vergara, Francisca":{"status":"unknown","exclude":[],"ambassador":false,"note":"","email":""}},"cats":{"28":"IB","136":"Support","137":"Support","138":"Support","145":"Support","146":"Support","147":"Support","996":"IB","997":"IB","1000":"Core","1010":"Core","1018":"Elective","1019":"Elective","1024":"Support","1070":"IB","1071":"IB","1080":"IB","1081":"IB","1090":"IB","1091":"IB","1092":"IB","1093":"IB","2017":"IB","2020":"Other","2023":"IB","2024":"Support","2025":"IB","2026":"IB","2031":"Other","2039":"IB","2040":"IB","2041":"IB","2042":"IB","2049":"IB","2051":"IB","2052":"IB","2053":"IB","2062":"IB","2063":"IB","2111":"Core","2112":"Core","2117":"Other","2118":"Other","2123":"Support","2132":"Other","2133":"Other","2134":"Support","2137":"Elective","2138":"Elective","2144":"Elective","2155":"IB","2157":"IB","2158":"IB","2159":"IB","3011":"Core","3012":"Core","3013":"Support","3014":"Core","3016":"Core","3041":"Other","3042":"Other","3057":"Support","3058":"Support","3076":"IB","3077":"IB","3078":"IB","3079":"IB","3081":"IB","3082":"IB","3083":"IB","3084":"IB","4011":"Core","4012":"Core","4019":"Elective","4026":"Elective","4027":"Elective","4028":"Support","4031":"IB","4041":"IB","4050":"IB","4051":"IB","4068":"Other","4069":"Support","4101":"IB","4103":"IB","4106":"IB","4107":"IB","4202":"IB","4204":"IB","4205":"IB","4206":"IB","4305":"IB","4310":"IB","4311":"IB","4312":"IB","4315":"IB","4316":"IB","4317":"IB","4318":"IB","5000":"Core","5010":"Core","5031":"Other","5032":"Support","5040":"IB","5042":"IB","5043":"IB","5044":"IB","5045":"IB","5050":"IB","5154":"Core","5156":"Core","5157":"Core","5158":"Core","5200":"IB","5201":"IB","5202":"IB","5203":"IB","5205":"IB","5206":"IB","5295":"IB","5296":"IB","5297":"IB","5298":"IB","5299":"IB","5312":"IB","5313":"IB","5522":"IB","5523":"IB","5524":"IB","6005":"Elective","6038":"Elective","6041":"IB","6042":"IB","6043":"IB","6044":"IB","6045":"Elective","6047":"Elective","6104":"Elective","6153":"Elective","6210":"IB","6211":"IB","6212":"IB","6213":"IB","6219":"Elective","6220":"Elective","6241":"Elective","6247":"Elective","6409":"Elective","6416":"Elective","6418":"Elective","6503":"IB","6506":"Elective","6507":"Elective","6508":"Elective","6512":"IB","6513":"IB","6514":"Elective","6515":"Elective","6517":"Support","7004":"Elective","7040":"Elective","7041":"Elective","7045":"Elective","7049":"Elective","8050":"Elective","8065":"Core","8066":"Elective","9990":"Support","9991":"Support","9992":"Support","9993":"Support"},"advisors":[{"id":"christaia","name":"Christaia","room":"309","group":0},{"id":"will","name":"Will","room":"M19B","group":0},{"id":"courtney","name":"Courtney","room":"202","group":1},{"id":"tafari","name":"Tafari","room":"203","group":1},{"id":"gen","name":"Gen","room":"204","group":2},{"id":"zuzu","name":"Zuzu","room":"FA201","group":2},{"id":"bryan","name":"Bryan","room":"M21","group":3},{"id":"caro","name":"Caro V.","room":"M19A","group":3},{"id":"mari","name":"Mari E.","room":"M25","group":3},{"id":"tony","name":"Tony","room":"304","group":4},{"id":"alexis","name":"Alexis","room":"303","group":4}],"groups":[["christaia","will"],["courtney","tafari"],["gen","zuzu"],["bryan","caro","mari"],["tony","alexis"]],"walks":[{"id":"w1","date":"2026-11-09","advisor":"christaia","focus":"Core","students":5,"sectionId":"4011.2","notes":""},{"id":"w2","date":"2026-11-10","advisor":"christaia","focus":"Core","students":5,"sectionId":"4012.2","notes":""},{"id":"w3","date":"2026-11-12","advisor":"will","focus":"Core","students":5,"sectionId":null,"notes":""},{"id":"w4","date":"2026-11-13","advisor":"will","focus":"Core","students":5,"sectionId":null,"notes":""}]};
+const KEY = "g8-learning-walks-v1";
+const CATS = ["Core","Elective","IB","Support","Other"];
+const FOCI = ["Core","Elective","Open"];
+const WALK_WD = [1,2,4,5];
+const clone = o => JSON.parse(JSON.stringify(o));
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- state ---------- */
+function defaults(){
+  return {hosts:clone(D.hosts), advisors:clone(D.advisors), cats:clone(D.cats), walks:clone(D.walks),
+          msStart:"09:46", msEnd:"10:06", hideS2:true, seq:100};
+}
+let S;
+function load(){
+  S = defaults();
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){
+      const o = JSON.parse(raw);
+      S = Object.assign(defaults(), o);
+      S.hosts = Object.assign(clone(D.hosts), o.hosts||{});
+      S.cats = Object.assign(clone(D.cats), o.cats||{});
+    }
+  }catch(e){ toast("Could not read saved plan; starting from the built-in data."); }
+}
+let saveTimer;
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); $("#saved").textContent = "Saved in this browser"; }
+  catch(e){ $("#saved").textContent = "Not saved: browser storage is unavailable"; }
+}
+
+/* ---------- lookups ---------- */
+const secById = Object.fromEntries(D.sections.map(s => [s.id, s]));
+const dayByDate = Object.fromEntries(D.days.map(d => [d.date, d]));
+const wdNum = iso => new Date(iso + "T12:00:00").getDay();
+const walkDays = D.days.filter(d => WALK_WD.includes(wdNum(d.date)));
+const fmtDate = (iso, long) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB",
+  long ? {weekday:"long", day:"numeric", month:"long"} : {weekday:"short", day:"numeric", month:"short"});
+const mins = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
+const adv = id => S.advisors.find(a => a.id === id) || {id, name:id, room:"?", group:-1};
+const advName = id => adv(id).name;
+const catOf = s => S.cats[s.num] || "Other";
+const hostOf = t => S.hosts[t] || (S.hosts[t] = {status:"unknown", exclude:[], ambassador:false, note:"", email:""});
+const walksOn = date => S.walks.filter(w => w.date === date).sort((a,b) => advOrder(a.advisor) - advOrder(b.advisor));
+const advOrder = id => S.advisors.findIndex(a => a.id === id);
+const teacherVisits = (t, exceptId) => S.walks.filter(w => w.sectionId && w.id !== exceptId && secById[w.sectionId] && secById[w.sectionId].teacher === t).length;
+const liveSections = () => D.sections.filter(s => !(S.hideS2 && s.term === "S2"));
+const teachers = [...new Set(D.sections.map(s => s.teacher))].sort((a,b) => a.localeCompare(b));
+function partnersOf(id){
+  const g = D.groups.find(g => g.includes(id)) || [];
+  return g.filter(x => x !== id).map(advName);
+}
+function todayISO(){ const t = new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+
+/* ---------- rules ---------- */
+function evalSection(sec, date, walk){
+  const h = hostOf(sec.teacher), r = [];
+  let lvl = "good";
+  const raise = l => { if(l === "block") lvl = "block"; else if(l === "warn" && lvl === "good") lvl = "warn"; };
+  if(h.status === "no"){ r.push(["block","Not hosting"]); raise("block"); }
+  else if(h.status === "unknown"){ r.push(["block","No survey response"]); raise("block"); }
+  else if(h.status === "maybe"){ r.push(["warn","Maybe: wants more information"]); raise("warn"); }
+  if(h.exclude.includes(sec.block)){ r.push(["block","Block "+sec.block+" not ideal for visitors"]); raise("block"); }
+  const taken = S.walks.find(w => w.date === date && w.sectionId === sec.id && (!walk || w.id !== walk.id));
+  if(taken){ r.push(["block","Already hosting "+advName(taken.advisor)]); raise("block"); }
+  if(walk){
+    const prev = S.walks.filter(w => w.id !== walk.id && w.advisor === walk.advisor && w.sectionId && secById[w.sectionId] && secById[w.sectionId].teacher === sec.teacher);
+    if(prev.length){
+      if(h.ambassador) r.push(["good","Ambassador: return visit"]);
+      else { r.push(["warn", advName(walk.advisor)+"’s group visits on "+fmtDate(prev[0].date)]); raise("warn"); }
+    }
+  }
+  if(h.ambassador && !r.some(x => x[1].startsWith("Ambassador"))) r.push(["good","Ambassador"]);
+  const v = teacherVisits(sec.teacher, walk && walk.id);
+  if(v) r.push(["info", v+" other visit"+(v>1?"s":"")+" planned"]);
+  if(sec.students != null && sec.students < 10) r.push(["info","Small class ("+sec.students+")"]);
+  return {lvl, r, taken};
+}
+const lvlRank = {good:0, warn:1, block:2};
+function score(sec, walk){
+  const e = evalSection(sec, walk.date, walk), c = catOf(sec);
+  if(e.lvl === "block") return -1e9;
+  let sc = 0;
+  if(walk.focus === "Core" && c === "Core") sc += 20;
+  if(walk.focus === "Elective" && c === "Elective") sc += 20;
+  if(walk.focus === "Open" && (c === "Core" || c === "Elective")) sc += 8;
+  if(c === "IB") sc -= 10;
+  if(c === "Support") sc -= 15;
+  if(e.lvl === "warn") sc -= 6;
+  sc -= 4 * teacherVisits(sec.teacher, walk.id);
+  if(sec.students != null && sec.students < 10) sc -= 3;
+  return sc;
+}
+
+/* ---------- UI state ---------- */
+const UI = {tab:"plan", date:null, sel:null, cat:"All", showAll:false, q:"", hostQ:"", hostF:"all", pMode:"date", pFrom:null, pTo:null, wk:null};
+function pickStartDate(){
+  const t = todayISO();
+  const withWalks = walkDays.find(d => d.date >= t && walksOn(d.date).length);
+  const next = walkDays.find(d => d.date >= t);
+  return (withWalks || next || walkDays[0]).date;
+}
+
+/* ---------- render: plan ---------- */
+function renderPlan(){
+  const d = dayByDate[UI.date];
+  const ws = walksOn(d.date);
+  if(UI.sel && !ws.some(w => w.id === UI.sel)) UI.sel = null;
+  const selWalk = ws.find(w => w.id === UI.sel) || null;
+
+  let prevWk = null;
+  const strip = walkDays.map(x => {
+    const n = walksOn(x.date), filled = n.filter(w => w.sectionId).length;
+    const wk = isoWeek(x.date), newWk = prevWk !== null && wk !== prevWk; prevWk = wk;
+    const cls = ["dchip", x.date === UI.date ? "on" : "", newWk ? "wk" : "", n.length ? (filled === n.length ? "full" : "gap") : ""].join(" ");
+    return `<button class="${cls}" data-date="${x.date}" aria-pressed="${x.date===UI.date}">
+      <span class="dd">${esc(fmtDate(x.date))}</span>
+      <span class="row"><span class="blk b-${x.second}" title="Second block">${x.second}</span>
+      <span class="cnt">${n.length ? filled+"/"+n.length+" walks" : ""}</span></span></button>`;
+  }).join("");
+
+  const advOpts = S.advisors.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join("");
+  const walksHtml = ws.length ? ws.map(w => walkCard(w)).join("")
+    : `<div class="empty">No walks on this day yet.<br>Add one above, or plan a full week for an advisor pair.</div>`;
+
+  $("#page-plan").innerHTML = `
+    <div class="strip" id="strip">${strip}</div>
+    <div class="dayhead">
+      <div><h2>${esc(fmtDate(d.date, true))}</h2>
+        <div class="sub">Day ${d.cycle}, blocks ${d.order.split("").join(" ")}. Walks go to block ${d.second} (${d.time.replace("-","–")}).</div></div>
+      <div class="toolbar" style="margin:0">
+        <button class="btn" data-act="prevday" aria-label="Previous walk day">‹</button>
+        <input type="date" id="jump" value="${d.date}" min="${walkDays[0].date}" max="${walkDays[walkDays.length-1].date}" aria-label="Jump to date">
+        <button class="btn" data-act="nextday" aria-label="Next walk day">›</button>
+      </div>
+    </div>
+    ${d.special ? `<div class="special">${esc(d.special)}</div>` : ""}
+    ${timeline(d)}
+    <div class="plan">
+      <div class="panel">
+        <div class="panel-h"><h3>Walks</h3>
+          <select id="add-adv" aria-label="Advisor">${advOpts}</select>
+          <button class="btn" data-act="addwalk">Add walk</button>
+          <button class="btn" data-act="planweek">Plan a week…</button>
+        </div>
+        <div class="panel-b">${walksHtml}
+          ${ws.some(w => !w.sectionId) ? `<button class="btn primary" data-act="suggest">Suggest classes for open walks</button>` : ""}
+        </div>
+      </div>
+      ${candidatePanel(d, selWalk)}
+    </div>`;
+  const on = $("#strip .on"); if(on) on.scrollIntoView({block:"nearest", inline:"center"});
+}
+function isoWeek(iso){ const t = new Date(iso+"T12:00:00"); t.setDate(t.getDate() - ((t.getDay()+6)%7)); return t.toISOString().slice(0,10); }
+
+function timeline(d){
+  const wed = wdNum(d.date) === 3;
+  const L = d.order.split("");
+  const segs = wed
+    ? [[L[0],"08:05","09:25"],[L[1],"09:35","10:55",1],["Break","10:55","11:20"],[L[2],"11:20","12:35"],["Lunch","12:35","13:15"],[L[3],"13:15","14:30"]]
+    : [[L[0],"08:05","09:25"],[L[1],"09:40","11:00",1],["Flex","11:05","11:40"],[L[2],"11:45","13:05"],["Lunch","13:05","13:45"],[L[3],"13:55","15:15"]];
+  const t0 = 470, t1 = 925, pct = m => ((m - t0) / (t1 - t0) * 100).toFixed(2) + "%";
+  const w = (a,b) => ((mins(b) - mins(a)) / (t1 - t0) * 100).toFixed(2) + "%";
+  const segHtml = segs.map(([lab,a,b,hot]) => lab.length === 1
+    ? `<div class="tl-seg b-${lab} ${hot?"hot":""}" style="left:${pct(mins(a))};width:${w(a,b)}" title="Block ${lab}, ${a}–${b}">${lab}</div>`
+    : `<div class="tl-seg x" style="left:${pct(mins(a))};width:${w(a,b)}">${lab}</div>`).join("");
+  const ws = mins(S.msStart), we = mins(S.msEnd);
+  const ticks = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00"].map(t => `<span class="tl-tick" style="left:${pct(mins(t))}">${t.replace(/^0/,"")}</span>`).join("");
+  return `<div class="timeline" role="img" aria-label="High school day: blocks ${L.join(", ")}. The middle school walk window ${S.msStart} to ${S.msEnd} falls in block ${L[1]}.">
+    ${segHtml}
+    <div class="tl-win" style="left:${pct(ws)};width:${((we - ws) / (t1 - t0) * 100).toFixed(2)}%"></div>
+    <span class="tl-winlbl" style="left:${pct((ws+we)/2)}">Walk ${S.msStart.replace(/^0/,"")}–${S.msEnd.replace(/^0/,"")}</span>
+    ${ticks}</div>`;
+}
+
+function flags(r){ return r.length ? `<div class="flags">${r.map(([k,t]) => `<span class="flag ${k}">${esc(t)}</span>`).join("")}</div>` : ""; }
+
+function walkCard(w){
+  const a = adv(w.advisor), sec = w.sectionId && secById[w.sectionId];
+  let slot;
+  if(sec){
+    const e = evalSection(sec, w.date, w);
+    slot = `<div class="assigned" draggable="true" data-drag="walk:${w.id}" title="Drag onto another walk to swap, or back to the class list to remove">
+      <div class="c-title"><b>${esc(sec.course)}</b><span class="cat">${esc(catOf(sec))}</span></div>
+      <div class="c-sub"><span>${esc(sec.teacher)}</span><span>Room ${esc(sec.room || "not listed")}</span><span>${sec.students ?? "?"} HS students</span></div>
+      ${flags(e.r)}
+      <div style="margin-top:6px"><button class="link" data-unassign="${w.id}">Remove class</button></div></div>`;
+  } else {
+    slot = `<div class="empty-slot">${UI.sel === w.id ? "Drag a class here, or press Assign on a class" : "Drag a class here"}</div>`;
+  }
+  const focusOpts = FOCI.map(f => `<option ${f===w.focus?"selected":""}>${f}</option>`).join("");
+  const p = partnersOf(w.advisor);
+  return `<article class="walk ${UI.sel===w.id?"sel":""}">
+    <div class="w-head">
+      <button class="w-name" data-select="${w.id}" aria-pressed="${UI.sel===w.id}" title="Select to assign classes by clicking">${esc(a.name)}</button>
+      <span class="muted small">leaves from ${esc(a.room)}</span>
+      <button class="icon del" data-delwalk="${w.id}" aria-label="Delete ${esc(a.name)}’s walk">×</button>
+    </div>
+    <div class="w-meta">
+      <label>Walk type <select data-wf="focus" data-id="${w.id}">${focusOpts}</select></label>
+      <label><input type="number" min="1" max="15" value="${w.students}" data-wf="students" data-id="${w.id}"> G8 students</label>
+    </div>
+    <div class="slot" data-dropwalk="${w.id}">${slot}</div>
+    <input type="text" class="notes" placeholder="Notes for this walk" value="${esc(w.notes)}" data-wf="notes" data-id="${w.id}">
+    ${p.length ? `<div class="partner">Rest of the advisory stays with ${esc(p.join(" or "))}.</div>` : ""}
+  </article>`;
+}
+
+function candidatePanel(d, selWalk){
+  const ctxWalk = selWalk || null;
+  const all = liveSections().filter(s => s.block === d.second).map(s => ({s, e:evalSection(s, d.date, ctxWalk), c:catOf(s)}));
+  const q = UI.q.trim().toLowerCase();
+  const byCat = all.filter(x => UI.cat === "All" || x.c === UI.cat)
+                   .filter(x => !q || (x.s.course+" "+x.s.teacher+" "+(x.s.room||"")).toLowerCase().includes(q));
+  const shown = byCat.filter(x => UI.showAll || x.e.lvl !== "block")
+    .sort((a,b) => lvlRank[a.e.lvl]-lvlRank[b.e.lvl] || teacherVisits(a.s.teacher)-teacherVisits(b.s.teacher) || CATS.indexOf(a.c)-CATS.indexOf(b.c) || a.s.course.localeCompare(b.s.course));
+  const hidden = byCat.length - shown.length;
+  const pills = ["All", ...CATS].map(c => {
+    const n = c === "All" ? all.filter(x=>x.e.lvl!=="block").length : all.filter(x => x.c === c && x.e.lvl !== "block").length;
+    return `<button class="pill" data-cat="${c}" aria-pressed="${UI.cat===c}">${c} ${n}</button>`;
+  }).join("");
+  const rows = shown.map(({s,e,c}) => `
+    <div class="cand lvl-${e.lvl}" ${e.taken ? "" : `draggable="true" data-drag="sec:${s.id}"`}>
+      <div>
+        <div class="c-title"><b>${esc(s.course)}</b><span class="cat">${esc(c)}</span></div>
+        <div class="c-sub"><span>${esc(s.teacher)}</span><span>Room ${esc(s.room || "not listed")}</span><span>${s.students ?? "?"} students</span></div>
+        ${flags(e.r)}
+      </div>
+      ${e.taken ? "" : `<button class="btn sm" data-assign="${s.id}">Assign</button>`}
+    </div>`).join("");
+  return `<div class="panel" id="cand-panel">
+    <div class="panel-h"><h3>Classes meeting in block <span class="blk b-${d.second}">${d.second}</span></h3>
+      <span class="small muted">${selWalk ? "Checking against "+esc(advName(selWalk.advisor))+"’s walk" : "Select a walk to check repeat visits"}</span></div>
+    <div class="filters">${pills}<input type="search" id="cand-q" placeholder="Search course, teacher, room" value="${esc(UI.q)}" aria-label="Search classes"></div>
+    <div>${rows || `<div class="empty">No classes match. Try another filter or show unavailable classes.</div>`}</div>
+    ${hidden || UI.showAll ? `<div class="hidden-note">${UI.showAll ? "Showing every class, including unavailable ones." : hidden+" unavailable class"+(hidden>1?"es":"")+" hidden (not hosting, block not ideal, or already taken)."}
+       <button class="link" data-act="toggleall">${UI.showAll ? "Hide unavailable" : "Show them"}</button></div>` : ""}
+  </div>`;
+}
+
+/* ---------- actions: plan ---------- */
+function newWalk(date, advisor, focus){
+  return {id:"w"+(S.seq++), date, advisor, focus:focus||"Open", students:5, sectionId:null, notes:""};
+}
+function assign(walkId, secId){
+  const w = S.walks.find(x => x.id === walkId), sec = secById[secId];
+  if(!w || !sec) return;
+  const e = evalSection(sec, w.date, w);
+  if(e.taken){ toast(sec.course+" is already hosting "+advName(e.taken.advisor)+". Drag that walk’s class here to swap."); return; }
+  if(e.lvl === "block" && !confirm(sec.course+" with "+sec.teacher+": "+e.r.filter(x=>x[0]==="block").map(x=>x[1]).join("; ")+".\n\nAssign anyway?")) return;
+  w.sectionId = secId; save(); render();
+  toast(sec.course+" assigned to "+advName(w.advisor));
+}
+function swap(aId, bId){
+  const a = S.walks.find(x => x.id === aId), b = S.walks.find(x => x.id === bId);
+  if(!a || !b || a === b) return;
+  [a.sectionId, b.sectionId] = [b.sectionId, a.sectionId];
+  save(); render(); toast("Swapped classes between "+advName(a.advisor)+" and "+advName(b.advisor));
+}
+function suggest(){
+  const open = walksOn(UI.date).filter(w => !w.sectionId);
+  let n = 0;
+  for(const w of open){
+    const cands = liveSections().filter(s => s.block === dayByDate[w.date].second)
+      .map(s => ({s, sc:score(s, w)})).filter(x => x.sc > -1e8)
+      .sort((a,b) => b.sc - a.sc || a.s.course.localeCompare(b.s.course));
+    if(cands.length){ w.sectionId = cands[0].s.id; n++; }
+  }
+  save(); render();
+  toast(n ? "Suggested "+n+" class"+(n>1?"es":"")+". Drag to swap or remove any you don’t want." : "No available classes left in this block.");
+}
+
+/* ---------- plan-a-week dialog ---------- */
+function openWeek(){
+  UI.wk = {g:0, start:UI.date, focus:"Core", assign:null};
+  const ws = walksOn(UI.date);
+  if(ws.length){ const gi = D.groups.findIndex(g => g.includes(ws[0].advisor)); if(gi >= 0) UI.wk.g = gi; }
+  renderWeek(); $("#dlg-week").showModal();
+}
+function weekDays(){
+  const i = Math.max(0, walkDays.findIndex(d => d.date >= UI.wk.start));
+  return walkDays.slice(i, i + D.groups[UI.wk.g].length * 2);
+}
+function renderWeek(){
+  const g = D.groups[UI.wk.g], days = weekDays();
+  if(!UI.wk.assign || UI.wk.assign.length !== days.length) UI.wk.assign = days.map((_,k) => g[Math.floor(k/2)] || g[g.length-1]);
+  const crosses = days.some((d,k) => k && wdNum(d.date) < wdNum(days[k-1].date));
+  const gapDays = days.some((d,k) => k && (new Date(d.date) - new Date(days[k-1].date)) / 864e5 > 3);
+  const rows = days.map((d,k) => {
+    const opts = g.map(id => `<option value="${id}" ${UI.wk.assign[k]===id?"selected":""}>${esc(advName(id))}</option>`).join("") + `<option value="" ${UI.wk.assign[k]===""?"selected":""}>No walk</option>`;
+    const clash = UI.wk.assign[k] && S.walks.some(w => w.date === d.date && w.advisor === UI.wk.assign[k]);
+    return `<div class="wk-row"><span>${esc(fmtDate(d.date))}</span><span class="blk b-${d.second}">${d.second}</span>
+      <span><select data-wka="${k}" aria-label="Advisor on ${esc(fmtDate(d.date))}">${opts}</select>${clash ? ` <span class="small" style="color:var(--warn)">already has a walk</span>` : ""}</span></div>`;
+  }).join("");
+  const startOpts = walkDays.map(d => `<option value="${d.date}" ${d.date===days[0]?.date?"selected":""}>${esc(fmtDate(d.date))}</option>`).join("");
+  const gOpts = D.groups.map((g,i) => `<option value="${i}" ${i===UI.wk.g?"selected":""}>${esc(g.map(advName).join(" & "))}</option>`).join("");
+  $("#dlg-week").innerHTML = `
+    <div class="dlg-h"><h3 id="wk-title">Plan a week of walks</h3><button class="icon" data-act="closeweek" aria-label="Close">×</button></div>
+    <div class="dlg-b">
+      <div class="grid">
+        <label for="wk-g">Advisors</label><select id="wk-g">${gOpts}</select>
+        <label for="wk-s">Starting</label><select id="wk-s">${startOpts}</select>
+        <label for="wk-f">Walk type</label><select id="wk-f">${FOCI.map(f=>`<option ${f===UI.wk.focus?"selected":""}>${f}</option>`).join("")}</select>
+      </div>
+      ${rows}
+      ${crosses ? `<div class="note">These days run across a weekend.</div>` : ""}
+      ${gapDays ? `<div class="note">There’s a holiday or break inside this stretch.</div>` : ""}
+    </div>
+    <div class="dlg-f"><button class="btn" data-act="closeweek">Cancel</button><button class="btn primary" data-act="createweek">Add these walks</button></div>`;
+}
+function createWeek(){
+  const days = weekDays(); let n = 0;
+  days.forEach((d,k) => {
+    const a = UI.wk.assign[k];
+    if(!a || S.walks.some(w => w.date === d.date && w.advisor === a)) return;
+    S.walks.push(newWalk(d.date, a, UI.wk.focus)); n++;
+  });
+  save(); $("#dlg-week").close(); UI.date = days[0].date; render();
+  toast(n ? "Added "+n+" walk"+(n>1?"s":"") : "No new walks added; those advisors already have walks on these days.");
+}
+
+/* ---------- render: advisors ---------- */
+function renderAdvisors(){
+  const count = f => S.walks.filter(w => w.focus === f).length;
+  const filled = f => S.walks.filter(w => w.focus === f && w.sectionId).length;
+  const target = S.advisors.length * 2;
+  const groups = D.groups.map(g => `<div class="panel"><div class="panel-b">
+    ${g.map(id => {
+      const a = adv(id);
+      const ws = S.walks.filter(w => w.advisor === id).sort((x,y) => x.date.localeCompare(y.date));
+      const pc = f => { const n = ws.filter(w => w.focus === f).length; return `<span class="${n>=2?"done":""}">${f} ${n}/2</span>`; };
+      const list = ws.map(w => { const s = w.sectionId && secById[w.sectionId]; const d = dayByDate[w.date];
+        return `<button data-goto="${w.date}"><span class="blk b-${d.second}">${d.second}</span><span>${esc(fmtDate(w.date))}</span><span class="muted">${w.focus}</span><span>${s ? esc(s.course+", "+s.teacher) : `<span style="color:var(--warn)">No class yet</span>`}</span></button>`; }).join("");
+      return `<div class="adv"><div class="adv-h">
+          <input type="text" value="${esc(a.name)}" data-af="name" data-id="${id}" aria-label="Advisor name">
+          <input type="text" class="room" value="${esc(a.room)}" data-af="room" data-id="${id}" aria-label="Room">
+          <span class="prog">${pc("Core")}${pc("Elective")}</span></div>
+        <div class="wl">${list || `<span class="small muted">No walks planned yet.</span>`}</div></div>`;
+    }).join("")}</div></div>`).join("");
+  $("#page-advisors").innerHTML = `
+    <div class="page-h"><h2>Advisors</h2><span class="small muted">Each advisor walks twice per round, with about half of the advisory each time.</span></div>
+    <div class="stats">
+      <div class="stat"><b>${count("Core")} / ${target}</b><span>Core walks planned (${filled("Core")} with a class)</span></div>
+      <div class="stat"><b>${count("Elective")} / ${target}</b><span>Elective walks planned (${filled("Elective")} with a class)</span></div>
+      <div class="stat"><b>${count("Open")}</b><span>Open walks</span></div>
+      <div class="stat"><b>${new Set(S.walks.filter(w=>w.sectionId).map(w=>secById[w.sectionId]?.teacher)).size}</b><span>Different host teachers so far</span></div>
+    </div>
+    <div class="groups">${groups}</div>`;
+}
+
+/* ---------- render: hosts ---------- */
+function renderHosts(){
+  const live = liveSections();
+  const counts = {yes:0, maybe:0, no:0, unknown:0};
+  teachers.forEach(t => counts[hostOf(t).status]++);
+  const q = UI.hostQ.trim().toLowerCase();
+  const rows = teachers.filter(t => UI.hostF === "all" || hostOf(t).status === UI.hostF)
+    .filter(t => !q || t.toLowerCase().includes(q) || live.some(s => s.teacher === t && s.course.toLowerCase().includes(q)))
+    .map(t => {
+      const h = hostOf(t), mine = live.filter(s => s.teacher === t);
+      const taught = new Set(mine.map(s => s.block));
+      const btns = "ABCDEFGH".split("").map(b => taught.has(b)
+        ? `<button class="bt b-${b} ${h.exclude.includes(b)?"off":""}" data-excl="${b}" data-t="${esc(t)}" aria-pressed="${h.exclude.includes(b)}" title="${h.exclude.includes(b)?"Block "+b+" not ideal (click to allow)":"Block "+b+" open to visitors (click to mark not ideal)"}">${b}</button>`
+        : `<button class="bt none" disabled title="Doesn’t teach in block ${b}">${b}</button>`).join("");
+      const courses = [...new Set(mine.map(s => s.course))];
+      const v = teacherVisits(t);
+      const st = ["yes","maybe","no","unknown"].map(x => `<option value="${x}" ${h.status===x?"selected":""}>${{yes:"Hosting",maybe:"Maybe",no:"Not hosting",unknown:"No response"}[x]}</option>`).join("");
+      return `<tr>
+        <td><b>${esc(t)}</b>${h.email ? `<div class="small muted">${esc(h.email)}</div>` : ""}</td>
+        <td><select class="st-${h.status}" data-hf="status" data-t="${esc(t)}" aria-label="Hosting status">${st}</select></td>
+        <td style="white-space:nowrap">${btns}</td>
+        <td><label class="small"><input type="checkbox" data-hf="ambassador" data-t="${esc(t)}" ${h.ambassador?"checked":""}> Ambassador</label></td>
+        <td>${v || ""}</td>
+        <td class="small">${esc(courses.slice(0,3).join(", "))}${courses.length>3 ? ` and ${courses.length-3} more` : ""}</td>
+        <td><input type="text" value="${esc(h.note)}" data-hf="note" data-t="${esc(t)}" placeholder="Note" aria-label="Note" style="width:100%;min-width:160px"></td></tr>`;
+    }).join("");
+  $("#page-hosts").innerHTML = `
+    <div class="page-h"><h2>Host teachers</h2><span class="small muted">From the October survey. Crossed-out blocks are ones the teacher said aren’t ideal for visitors.</span></div>
+    <div class="stats">
+      <div class="stat"><b class="st-yes">${counts.yes}</b><span>Hosting</span></div>
+      <div class="stat"><b class="st-maybe">${counts.maybe}</b><span>Maybe</span></div>
+      <div class="stat"><b class="st-no">${counts.no}</b><span>Not hosting</span></div>
+      <div class="stat"><b>${counts.unknown}</b><span>No response</span></div>
+    </div>
+    <div class="toolbar">
+      <input type="search" id="host-q" placeholder="Search teacher or course" value="${esc(UI.hostQ)}" aria-label="Search teachers">
+      <select id="host-f" aria-label="Filter by status">
+        ${[["all","Everyone"],["yes","Hosting"],["maybe","Maybe"],["no","Not hosting"],["unknown","No response"]].map(([v,l]) => `<option value="${v}" ${UI.hostF===v?"selected":""}>${l}</option>`).join("")}
+      </select>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Teacher</th><th>Status</th><th>Blocks taught</th><th>Repeat visits</th><th>Visits</th><th>Teaches</th><th>Note</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="7" class="muted">No teachers match.</td></tr>`}</tbody></table></div>`;
+}
+
+/* ---------- render: print ---------- */
+function renderPrint(){
+  const dates = [...new Set(S.walks.map(w => w.date))].sort();
+  if(!UI.pFrom) UI.pFrom = dates[0] || walkDays[0].date;
+  if(!UI.pTo) UI.pTo = dates[dates.length-1] || walkDays[0].date;
+  const ws = S.walks.filter(w => w.date >= UI.pFrom && w.date <= UI.pTo).sort((a,b) => a.date.localeCompare(b.date) || advOrder(a.advisor) - advOrder(b.advisor));
+  const opt = v => walkDays.map(d => `<option value="${d.date}" ${d.date===v?"selected":""}>${esc(fmtDate(d.date))}</option>`).join("");
+  const cell = w => { const s = w.sectionId && secById[w.sectionId]; return s ? [esc(s.course), esc(s.teacher), esc(s.room||"")] : ["<i>Not assigned</i>","",""]; };
+  const time = `${S.msStart}–${S.msEnd}`;
+  let body = "";
+  if(!ws.length) body = `<p class="muted">No walks in this date range.</p>`;
+  else if(UI.pMode === "date"){
+    body = `<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Block</th><th>Advisor</th><th>From</th><th>Students</th><th>Class</th><th>Teacher</th><th>Room</th><th>Notes</th></tr></thead><tbody>
+      ${ws.map(w => { const [c,t,r] = cell(w), a = adv(w.advisor); return `<tr><td>${esc(fmtDate(w.date))}</td><td>${dayByDate[w.date].second}</td><td>${esc(a.name)}</td><td>${esc(a.room)}</td><td>${w.students}</td><td>${c}</td><td>${t}</td><td>${r}</td><td>${esc(w.notes)}</td></tr>`; }).join("")}
+      </tbody></table></div>`;
+  } else if(UI.pMode === "advisor"){
+    const ids = [...new Set(ws.map(w => w.advisor))].sort((a,b) => advOrder(a)-advOrder(b));
+    body = ids.map((id,i) => { const a = adv(id); return `<div class="${i?"pbreak":""}"><h2 class="ptitle">${esc(a.name)}: learning walks</h2>
+      <p class="small">Leave ${esc(a.room)} with your group so you arrive by ${S.msStart}. Back by ${S.msEnd}.</p>
+      <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Walk type</th><th>Students</th><th>Class</th><th>Teacher</th><th>Room</th><th>Notes</th></tr></thead><tbody>
+      ${ws.filter(w => w.advisor === id).map(w => { const [c,t,r] = cell(w); return `<tr><td>${esc(fmtDate(w.date))}</td><td>${w.focus}</td><td>${w.students}</td><td>${c}</td><td>${t}</td><td>${r}</td><td>${esc(w.notes)}</td></tr>`; }).join("")}
+      </tbody></table></div></div>`; }).join("");
+  } else {
+    const ts = [...new Set(ws.filter(w => w.sectionId).map(w => secById[w.sectionId].teacher))].sort();
+    body = ts.length ? ts.map((t,i) => `<div class="${i?"pbreak":""}"><h2 class="ptitle">Visitors for ${esc(t)}</h2>
+      <p class="small">Middle school advisors will bring up to 5 grade 8 students to your class from ${time}.</p>
+      <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Block</th><th>Class</th><th>Room</th><th>Advisor</th><th>Students</th></tr></thead><tbody>
+      ${ws.filter(w => w.sectionId && secById[w.sectionId].teacher === t).map(w => { const s = secById[w.sectionId]; return `<tr><td>${esc(fmtDate(w.date))}</td><td>${s.block}</td><td>${esc(s.course)}</td><td>${esc(s.room||"")}</td><td>${esc(advName(w.advisor))}</td><td>${w.students}</td></tr>`; }).join("")}
+      </tbody></table></div></div>`).join("") : `<p class="muted">No classes assigned in this range yet.</p>`;
+  }
+  $("#page-print").innerHTML = `
+    <div class="page-h no-print"><h2>Print</h2></div>
+    <div class="toolbar no-print">
+      <select id="p-mode" aria-label="Layout">
+        <option value="date" ${UI.pMode==="date"?"selected":""}>Full schedule by date</option>
+        <option value="advisor" ${UI.pMode==="advisor"?"selected":""}>One page per advisor</option>
+        <option value="host" ${UI.pMode==="host"?"selected":""}>One page per host teacher</option>
+      </select>
+      <label class="small">From <select id="p-from">${opt(UI.pFrom)}</select></label>
+      <label class="small">to <select id="p-to">${opt(UI.pTo)}</select></label>
+      <button class="btn primary" data-act="print">Print</button>
+    </div>
+    ${UI.pMode === "date" ? `<h2 class="ptitle print-only">G8 learning walks, ${esc(fmtDate(UI.pFrom))} to ${esc(fmtDate(UI.pTo))} (${time})</h2>` : ""}
+    ${body}`;
+}
+
+/* ---------- render: settings ---------- */
+function renderData(){
+  const courses = [...new Map(D.sections.map(s => [s.num, s])).values()].sort((a,b) => a.course.localeCompare(b.course));
+  const rows = courses.map(s => `<tr><td>${esc(s.course)}</td><td class="small muted">${esc(s.dept||"")}</td>
+    <td><select data-catnum="${esc(s.num)}" aria-label="Walk type for ${esc(s.course)}">${CATS.map(c => `<option ${catOf(s)===c?"selected":""}>${c}</option>`).join("")}</select></td></tr>`).join("");
+  $("#page-data").innerHTML = `
+    <div class="page-h"><h2>Settings</h2></div>
+    <div class="settings">
+      <div class="panel"><div class="panel-h"><h3>Walk window</h3></div><div class="panel-b">
+        <label>Middle school leaves at <input type="time" data-set="msStart" value="${S.msStart}"></label>
+        <label>and is back by <input type="time" data-set="msEnd" value="${S.msEnd}"></label>
+        <label><input type="checkbox" data-set="hideS2" ${S.hideS2?"checked":""}> Hide semester 2 classes</label>
+      </div></div>
+      <div class="panel"><div class="panel-h"><h3>Backup</h3></div><div class="panel-b">
+        <p class="small muted" style="margin-top:0">Your plan is saved in this browser only. Export a copy to move it to another computer or share it with a colleague.</p>
+        <div class="toolbar"><button class="btn" data-act="export">Export plan</button>
+        <label class="btn">Import plan<input type="file" id="imp" accept="application/json,.json" hidden></label>
+        <button class="btn" data-act="reset" style="color:var(--bad)">Reset to original data</button></div>
+      </div></div>
+    </div>
+    <h3>Course types</h3>
+    <p class="small muted" style="margin-top:0">Used for the filters and for suggestions. Core and elective are a first guess; change any course.</p>
+    <div class="tbl-wrap" style="max-height:520px;overflow:auto"><table><thead><tr><th>Course</th><th>Department</th><th>Type</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="small muted">Data: PowerSchool master schedule and the HS Timetable Google Calendar (pulled 3 November 2026), host survey from 21–22 October 2026.</p>`;
+}
+
+/* ---------- top-level render ---------- */
+function render(){
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === UI.tab));
+  document.querySelectorAll("[data-page]").forEach(p => p.hidden = p.id !== "page-"+UI.tab);
+  ({plan:renderPlan, advisors:renderAdvisors, hosts:renderHosts, print:renderPrint, data:renderData})[UI.tab]();
+}
+let toastT;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button,[data-tab]"); if(!t) return;
+  const ds = t.dataset;
+  if(ds.tab){ UI.tab = ds.tab; render(); return; }
+  if(ds.date){ UI.date = ds.date; UI.sel = null; render(); return; }
+  if(ds.goto){ UI.date = ds.goto; UI.tab = "plan"; UI.sel = null; render(); return; }
+  if(ds.select){ UI.sel = UI.sel === ds.select ? null : ds.select; render(); return; }
+  if(ds.delwalk){ const w = S.walks.find(x => x.id === ds.delwalk); if(w && confirm("Delete "+advName(w.advisor)+"’s walk on "+fmtDate(w.date)+"?")){ S.walks = S.walks.filter(x => x !== w); save(); render(); } return; }
+  if(ds.unassign){ const w = S.walks.find(x => x.id === ds.unassign); if(w){ w.sectionId = null; save(); render(); } return; }
+  if(ds.assign){
+    const ws = walksOn(UI.date); let target = UI.sel;
+    if(!target){ const open = ws.filter(w => !w.sectionId); if(open.length === 1) target = open[0].id; }
+    if(!target){ toast(ws.length ? "Select a walk first by clicking the advisor’s name." : "Add a walk for this day first."); return; }
+    assign(target, ds.assign); return;
+  }
+  if(ds.cat){ UI.cat = ds.cat; render(); return; }
+  if(ds.excl){ const h = hostOf(ds.t), b = ds.excl; h.exclude = h.exclude.includes(b) ? h.exclude.filter(x => x !== b) : [...h.exclude, b].sort(); save(); render(); return; }
+  switch(ds.act){
+    case "addwalk": { const a = $("#add-adv").value; if(S.walks.some(w => w.date === UI.date && w.advisor === a)){ toast(advName(a)+" already has a walk on this day."); return; } const w = newWalk(UI.date, a, "Open"); S.walks.push(w); UI.sel = w.id; save(); render(); break; }
+    case "suggest": suggest(); break;
+    case "planweek": openWeek(); break;
+    case "closeweek": $("#dlg-week").close(); break;
+    case "createweek": createWeek(); break;
+    case "toggleall": UI.showAll = !UI.showAll; render(); break;
+    case "prevday": case "nextday": { const i = walkDays.findIndex(d => d.date === UI.date) + (ds.act === "nextday" ? 1 : -1); if(walkDays[i]){ UI.date = walkDays[i].date; UI.sel = null; render(); } break; }
+    case "print": window.print(); break;
+    case "export": {
+      const blob = new Blob([JSON.stringify(S, null, 2)], {type:"application/json"});
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "g8-learning-walks-"+todayISO()+".json"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast("Exported plan"); break; }
+    case "reset": if(confirm("Replace your whole plan, host settings and course types with the original data? Export a backup first if you want to keep anything.")){ localStorage.removeItem(KEY); load(); UI.date = pickStartDate(); render(); toast("Reset to original data"); } break;
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target, ds = t.dataset;
+  if(t.id === "jump"){ const d = walkDays.find(x => x.date >= t.value); if(d){ UI.date = d.date; UI.sel = null; render(); if(d.date !== t.value) toast("No walks that day; showing "+fmtDate(d.date)); } return; }
+  if(ds.wf){ const w = S.walks.find(x => x.id === ds.id); if(!w) return; w[ds.wf] = ds.wf === "students" ? Math.max(1, +t.value || 5) : t.value; save(); if(ds.wf !== "notes") render(); return; }
+  if(ds.af){ const a = adv(ds.id); a[ds.af] = t.value.trim() || a[ds.af]; save(); return; }
+  if(ds.hf){ const h = hostOf(ds.t); h[ds.hf] = ds.hf === "ambassador" ? t.checked : t.value; save(); if(ds.hf !== "note") render(); return; }
+  if(ds.catnum){ S.cats[ds.catnum] = t.value; save(); return; }
+  if(ds.set){ S[ds.set] = t.type === "checkbox" ? t.checked : t.value; save(); return; }
+  if(ds.wka !== undefined){ UI.wk.assign[+ds.wka] = t.value; renderWeek(); return; }
+  if(t.id === "wk-g"){ UI.wk.g = +t.value; UI.wk.assign = null; renderWeek(); return; }
+  if(t.id === "wk-s"){ UI.wk.start = t.value; UI.wk.assign = null; renderWeek(); return; }
+  if(t.id === "wk-f"){ UI.wk.focus = t.value; return; }
+  if(t.id === "host-f"){ UI.hostF = t.value; render(); return; }
+  if(t.id === "p-mode"){ UI.pMode = t.value; render(); return; }
+  if(t.id === "p-from"){ UI.pFrom = t.value; render(); return; }
+  if(t.id === "p-to"){ UI.pTo = t.value; render(); return; }
+  if(t.id === "imp" && t.files[0]){
+    const r = new FileReader();
+    r.onload = () => { try{ const o = JSON.parse(r.result); if(!Array.isArray(o.walks)) throw 0; localStorage.setItem(KEY, JSON.stringify(o)); load(); UI.date = pickStartDate(); render(); toast("Imported plan with "+S.walks.length+" walks"); }
+      catch(err){ toast("That file isn’t a plan exported from this tool."); } };
+    r.readAsText(t.files[0]);
+  }
+});
+let inputT;
+document.addEventListener("input", e => {
+  const t = e.target;
+  if(t.id === "cand-q" || t.id === "host-q"){
+    clearTimeout(inputT);
+    inputT = setTimeout(() => {
+      if(t.id === "cand-q") UI.q = t.value; else UI.hostQ = t.value;
+      const pos = t.selectionStart; render(); const n = $("#"+t.id); if(n){ n.focus(); n.setSelectionRange(pos,pos); }
+    }, 180);
+  }
+  if(t.dataset.wf === "notes" || t.dataset.hf === "note"){
+    if(t.dataset.wf){ const w = S.walks.find(x => x.id === t.dataset.id); if(w) w.notes = t.value; }
+    else hostOf(t.dataset.t).note = t.value;
+    clearTimeout(saveTimer); saveTimer = setTimeout(save, 300);
+  }
+});
+
+/* drag and drop */
+let dragPayload = null;
+document.addEventListener("dragstart", e => {
+  const t = e.target.closest && e.target.closest("[data-drag]"); if(!t) return;
+  dragPayload = t.dataset.drag;
+  e.dataTransfer.setData("text/plain", dragPayload); e.dataTransfer.effectAllowed = "move";
+  document.body.classList.add("dragging");
+});
+function clearOver(){ document.querySelectorAll(".over").forEach(n => n.classList.remove("over")); }
+document.addEventListener("dragend", () => { document.body.classList.remove("dragging"); clearOver(); dragPayload = null; });
+function dropZone(el){
+  if(!el || !el.closest) return null;
+  const s = el.closest("[data-dropwalk]"); if(s) return s;
+  if(dragPayload && dragPayload.startsWith("walk:")) return el.closest("#cand-panel");
+  return null;
+}
+document.addEventListener("dragover", e => { const z = dropZone(e.target); if(z){ e.preventDefault(); if(!z.classList.contains("over")){ clearOver(); z.classList.add("over"); } } });
+document.addEventListener("dragleave", e => { const z = dropZone(e.target); if(z && !z.contains(e.relatedTarget)) z.classList.remove("over"); });
+document.addEventListener("drop", e => {
+  const z = dropZone(e.target); if(!z) return; e.preventDefault(); clearOver();
+  const p = e.dataTransfer.getData("text/plain") || dragPayload; if(!p) return;
+  const [kind, id] = [p.slice(0, p.indexOf(":")), p.slice(p.indexOf(":")+1)];
+  if(z.id === "cand-panel" && kind === "walk"){ const w = S.walks.find(x => x.id === id); if(w){ w.sectionId = null; save(); render(); toast("Removed class from "+advName(w.advisor)+"’s walk"); } return; }
+  const target = z.dataset.dropwalk;
+  if(kind === "sec") assign(target, id);
+  else if(kind === "walk" && id !== target) swap(id, target);
+});
+document.addEventListener("keydown", e => {
+  if(UI.tab !== "plan" || /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) || $("#dlg-week").open) return;
+  if(e.key === "ArrowRight" || e.key === "ArrowLeft"){ const i = walkDays.findIndex(d => d.date === UI.date) + (e.key === "ArrowRight" ? 1 : -1); if(walkDays[i]){ UI.date = walkDays[i].date; UI.sel = null; render(); } }
+});
+
+load();
+UI.date = pickStartDate();
+render();
+</script>
+</body>
+</html>
