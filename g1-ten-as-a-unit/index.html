@@ -1,1360 +1,449 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IM Grade 1 Math | UDL Lesson Design Studio: Lesson 8 - Ten as a Unit</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Ten Frames</title>
+<style>
+  :root {
+    --ink: #000;
+    --paper: #fff;
+    --muted: #9a9a9a;
+    --a: #e8452c;   /* first number */
+    --b: #1f5fd6;   /* second number */
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; background: var(--paper); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body { display: flex; flex-direction: column; }
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#f0fdfa',
-              100: '#ccfbf1',
-              500: '#14b8a6',
-              600: '#0d9488',
-              700: '#0f766e',
-              900: '#134e4a',
-            },
-            udlEngage: '#d97706',
-            udlRep: '#0d9488',
-            udlAction: '#4f46e5',
-          }
-        }
-      }
-    }
-  </script>
+  /* ---------- top bar ---------- */
+  #bar {
+    flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 10px 16px; border-bottom: 4px solid var(--ink);
+  }
+  .grp { display: flex; gap: 10px; align-items: center; }
+  button {
+    font: inherit; font-weight: 800; font-size: 22px; color: var(--ink); background: var(--paper);
+    border: 4px solid var(--ink); border-radius: 12px; min-width: 56px; height: 56px; padding: 0 14px;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  button:active { background: var(--ink); color: var(--paper); }
+  button.on { background: var(--ink); color: var(--paper); }
+  button svg { width: 30px; height: 30px; display: block; }
 
-  <style>
-    /* Custom Animations & Styles */
-    .cube-snap {
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .active-tab {
-      border-bottom: 3px solid #0d9488;
-      color: #0d9488;
-      font-weight: 700;
-    }
-    /* Printable Stylesheet */
-    @media print {
-      body { background: white; color: black; }
-      .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      .print-card { break-inside: avoid; border: 1px solid #ccc !important; box-shadow: none !important; }
-    }
-    .print-only { display: none; }
-  </style>
+  /* ---------- stage ---------- */
+  #stage {
+    flex: 1 1 auto; position: relative; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end; min-height: 0; padding-bottom: 8px;
+  }
+  .row { display: flex; align-items: flex-start; }
+  .slot { display: flex; flex-direction: column; align-items: center; }
+  .frame {
+    display: grid; background: var(--ink);
+  }
+  .cell { background: var(--paper); display: grid; place-items: center; }
+  .sep {
+    align-self: stretch; display: flex; align-items: flex-start; justify-content: center;
+    font-weight: 900; line-height: 1; color: var(--ink);
+  }
+  .count {
+    font-weight: 900; line-height: 1; visibility: hidden; color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .show .count { visibility: visible; }
+  #total { font-weight: 900; line-height: 1; font-size: 64px; display: none; }
+  .show #total { display: block; }
+  .show #hint { display: none; }
+
+  /* ---------- counters ---------- */
+  .dot { border-radius: 50%; cursor: grab; touch-action: none; }
+  .dot.a { background: var(--a); }
+  .dot.b { background: var(--b); }
+  .mono .dot.b { background: var(--a); }
+  .dot.lift { opacity: 0; }
+  #colors i { display: inline-block; width: 18px; height: 18px; border-radius: 50%; margin: 0 2px; }
+  #colors i:first-child { background: var(--a); }
+  #colors i:last-child { background: var(--b); }
+  .mono #colors i:last-child { background: var(--a); }
+  .ghost {
+    position: fixed; z-index: 50; pointer-events: none; cursor: grabbing;
+    box-shadow: 0 10px 22px rgba(0,0,0,.28); transform: scale(1.08);
+  }
+
+  /* ---------- tray ---------- */
+  #tray {
+    flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 28px; border-top: 4px solid var(--ink); min-height: 110px;
+  }
+  .pile { position: relative; width: 150px; height: 88px; cursor: grab; }
+  .pile .dot { position: absolute; width: 72px; height: 72px; top: 8px; pointer-events: none; }
+  .pile .dot:nth-child(1) { left: 0; }
+  .pile .dot:nth-child(2) { left: 36px; }
+  .pile .dot:nth-child(3) { left: 72px; }
+  #hint {
+    color: var(--muted); font-size: 18px; font-weight: 600; text-align: center;
+    display: flex; gap: 28px; align-items: center;
+  }
+  #hint span { display: inline-flex; align-items: center; gap: 8px; }
+  #hint i { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); }
+  #hint b { display: inline-block; width: 22px; height: 22px; border: 3px solid var(--muted); }
+
+  @media (max-width: 760px) {
+    #hint { display: none; }
+    button { min-width: 48px; height: 48px; padding: 0 8px; }
+    .pile { width: 110px; }
+    .pile .dot { width: 56px; height: 56px; }
+    .pile .dot:nth-child(2) { left: 26px; } .pile .dot:nth-child(3) { left: 52px; }
+  }
+</style>
 </head>
-<body class="h-full font-sans text-slate-800 flex flex-col min-h-screen">
-
-  <!-- TOP HEADER BANNER -->
-  <header class="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white shadow-lg sticky top-0 z-50 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
-      <div class="flex items-center space-x-3">
-        <div class="bg-teal-500 text-slate-900 font-extrabold px-3 py-1.5 rounded-lg text-sm tracking-wider uppercase shadow">
-          IM Math Grade 1
-        </div>
-        <div>
-          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            UDL Lesson Design Studio
-            <span class="text-xs bg-teal-500/20 text-teal-300 border border-teal-500/30 px-2 py-0.5 rounded-full">Unit 3 • Lesson 8</span>
-          </h1>
-          <p class="text-xs text-slate-300">Topic: "Ten as a Unit" (Understanding 10 Ones = 1 Ten & Teen Numbers)</p>
-        </div>
-      </div>
-
-      <!-- Quick Action Controls -->
-      <div class="flex items-center gap-2">
-        <button onclick="switchTab('tab-manipulative')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold text-xs px-3 py-2 rounded-lg flex items-center gap-1.5 transition shadow">
-          <i class="fa-solid fa-cubes">="</i> Launch Manipulative Lab
-        </button>
-        <button onclick="switchTab('tab-checklist')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition shadow">
-          <i class="fa-solid fa-clipboard-list"></i> Saved Plan (<span id="plan-count-badge">0</span>)
-        </button>
-        <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded-lg flex items-center gap-1 transition">
-          <i class="fa-solid fa-print"></i> Print
-        </button>
-      </div>
-    </div>
-
-    <!-- MAIN NAVIGATION TABS -->
-    <nav class="bg-slate-900/90 border-t border-slate-800 text-slate-300 px-4 sm:px-6 lg:px-8 overflow-x-auto">
-      <div class="max-w-7xl mx-auto flex space-x-6 text-sm font-medium whitespace-nowrap">
-        <button onclick="switchTab('tab-overview')" id="nav-tab-overview" class="py-3 px-1 border-b-2 border-transparent hover:text-teal-400 transition flex items-center gap-2 active-tab">
-          <i class="fa-solid fa-compass text-xs"></i> 1. Lesson Overview & Goals
-        </button>
-        <button onclick="switchTab('tab-udl-matrix')" id="nav-tab-udl-matrix" class="py-3 px-1 border-b-2 border-transparent hover:text-teal-400 transition flex items-center gap-2">
-          <i class="fa-solid fa-shapes text-xs"></i> 2. UDL Strategy Matrix
-        </button>
-        <button onclick="switchTab('tab-lesson-flow')" id="nav-tab-lesson-flow" class="py-3 px-1 border-b-2 border-transparent hover:text-teal-400 transition flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-xs"></i> 3. Interactive Lesson Flow
-        </button>
-        <button onclick="switchTab('tab-manipulative')" id="nav-tab-manipulative" class="py-3 px-1 border-b-2 border-transparent hover:text-teal-400 transition flex items-center gap-2 text-amber-400 font-semibold">
-          <i class="fa-solid fa-cubes-stacked text-xs"></i> 4. Virtual Manipulative Lab
-        </button>
-        <button onclick="switchTab('tab-checklist')" id="nav-tab-checklist" class="py-3 px-1 border-b-2 border-transparent hover:text-teal-400 transition flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-xs"></i> 5. Accommodations & Exporter
-        </button>
-      </div>
-    </nav>
-  </header>
-
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
-
-    <!-- ========================================== -->
-    <!-- TAB 1: LESSON OVERVIEW & GOALS -->
-    <!-- ========================================== -->
-    <section id="tab-overview" class="tab-content space-y-6">
-      
-      <!-- Key Focus & Standard Banner -->
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-        <div class="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
-          <div class="space-y-3 max-w-3xl">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-md">Illustrative Math Grade 1</span>
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-md">Unit 3: Adding, Subtracting, & Teen Numbers</span>
-              <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-md">Lesson 8: Ten as a Unit</span>
-            </div>
-            <h2 class="text-2xl font-bold text-slate-900">The Conceptual Shift: From 10 Ones to "1 Ten"</h2>
-            <p class="text-slate-600 leading-relaxed text-sm">
-              In this pivotal lesson, 1st graders transition from thinking of 10 as simply ten individual counted objects ($1, 2, 3... 10$) to understanding **"10" as a single bundled unit** ("1 ten"). This foundational concept forms the bedrock for place value understanding, multi-digit addition, and composition of teen numbers as $10 + n = 1n$.
-            </p>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2 text-xs min-w-[260px]">
-            <h3 class="font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-bullseye text-teal-600"></i> Target Standards
-            </h3>
-            <ul class="space-y-1.5 text-slate-600">
-              <li class="flex items-start gap-1.5">
-                <span class="font-bold text-teal-700">1.NBT.B.2:</span> Understand that the two digits of a two-digit number represent amounts of tens and ones.
-              </li>
-              <li class="flex items-start gap-1.5">
-                <span class="font-bold text-teal-700">1.NBT.B.2.a:</span> 10 can be thought of as a bundle of ten ones — called a "ten."
-              </li>
-              <li class="flex items-start gap-1.5">
-                <span class="font-bold text-teal-700">1.NBT.B.2.b:</span> The numbers 11 to 19 are composed of a ten and 1, 2, 3, 4, 5, 6, 7, 8, or 9 ones.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Essential Focus Questions & Learning Progression -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 space-y-3 shadow-sm">
-          <div class="w-10 h-10 bg-amber-500 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow">
-            <i class="fa-solid fa-lightbulb"></i>
-          </div>
-          <h3 class="font-bold text-slate-900 text-base">Essential Focus Question</h3>
-          <p class="text-xs text-slate-700 italic leading-relaxed">
-            "How does grouping 10 single items into '1 ten' make it easier to build, count, and explain numbers from 11 to 19?"
-          </p>
-          <div class="pt-2 text-xs font-semibold text-amber-800 flex items-center gap-1">
-            <i class="fa-solid fa-arrow-right"></i> Target Shift: Counting by ones $\rightarrow$ Grouping by tens
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-200 rounded-xl p-5 space-y-3 shadow-sm">
-          <div class="w-10 h-10 bg-teal-600 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow">
-            <i class="fa-solid fa-route"></i>
-          </div>
-          <h3 class="font-bold text-slate-900 text-base">Learning Progression</h3>
-          <div class="space-y-2 text-xs text-slate-600">
-            <div class="p-2 bg-white rounded border border-teal-100">
-              <span class="font-bold text-teal-800">Prior:</span> Counting to 20, filling 10-frames with single dots.
-            </div>
-            <div class="p-2 bg-teal-600 text-white rounded font-medium shadow-sm">
-              <span class="font-bold">Current (L8):</span> Grouping 10 cubes into 1 stick. $10 + 4 = 14$.
-            </div>
-            <div class="p-2 bg-white rounded border border-teal-100">
-              <span class="font-bold text-teal-800">Next:</span> Adding within 20 by making a ten ($8 + 5 = 8 + 2 + 3$).
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5 space-y-3 shadow-sm">
-          <div class="w-10 h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow">
-            <i class="fa-solid fa-universal-access"></i>
-          </div>
-          <h3 class="font-bold text-slate-900 text-base">UDL Mindset for L8</h3>
-          <ul class="text-xs text-slate-600 space-y-2">
-            <li class="flex items-start gap-1.5">
-              <i class="fa-solid fa-check text-indigo-600 mt-0.5"></i>
-              <span><strong>Multiple Models:</strong> Tower of 10, Double 10-frame, Rekenrek, Egg carton.</span>
-            </li>
-            <li class="flex items-start gap-1.5">
-              <i class="fa-solid fa-check text-indigo-600 mt-0.5"></i>
-              <span><strong>Multi-sensory Auditory:</strong> Rhythmic chants ("1 Ten and 3 ones... THIRTEEN!").</span>
-            </li>
-            <li class="flex items-start gap-1.5">
-              <i class="fa-solid fa-check text-indigo-600 mt-0.5"></i>
-              <span><strong>Flexible Expressive Options:</strong> Build, point, draw, clap, or speak.</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Interactive Vocabulary & Representation Cards -->
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-book-bookmark text-teal-600"></i> Interactive Math Vocabulary & Visual Cards
-          </h3>
-          <span class="text-xs text-slate-500">Click audio icon for classroom chant simulation</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          <!-- Vocab Card 1 -->
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 hover:bg-teal-50/50 transition group cursor-pointer" onclick="speakText('Unit of Ten: Ten individual ones snapped together into one single solid stick or group.')">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-xs font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded">Core Term</span>
-              <button class="text-slate-400 group-hover:text-teal-600"><i class="fa-solid fa-volume-high"></i></button>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm mb-1">Unit of Ten ("A Ten")</h4>
-            <p class="text-xs text-slate-600 mb-3">10 single objects combined to make 1 single new unit.</p>
-            <div class="flex items-center gap-1 bg-white p-2 rounded border border-slate-200 justify-center">
-              <div class="w-4 h-4 bg-teal-600 rounded-sm"></div>
-              <div class="w-4 h-4 bg-teal-600 rounded-sm"></div>
-              <div class="w-4 h-4 bg-teal-600 rounded-sm"></div>
-              <span class="text-xs font-bold text-slate-400">... (10 locked)</span>
-            </div>
-          </div>
-
-          <!-- Vocab Card 2 -->
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 hover:bg-amber-50/50 transition group cursor-pointer" onclick="speakText('Ones: Single individual objects that are extra and not bundled into a ten.')">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Core Term</span>
-              <button class="text-slate-400 group-hover:text-amber-600"><i class="fa-solid fa-volume-high"></i></button>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm mb-1">Ones / Extra Ones</h4>
-            <p class="text-xs text-slate-600 mb-3">Loose individual items that do not yet complete a full ten.</p>
-            <div class="flex items-center gap-2 bg-white p-2 rounded border border-slate-200 justify-center">
-              <div class="w-4 h-4 bg-amber-500 rounded-sm shadow-sm"></div>
-              <div class="w-4 h-4 bg-amber-500 rounded-sm shadow-sm"></div>
-              <div class="w-4 h-4 bg-amber-500 rounded-sm shadow-sm"></div>
-            </div>
-          </div>
-
-          <!-- Vocab Card 3 -->
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 hover:bg-indigo-50/50 transition group cursor-pointer" onclick="speakText('Teen Numbers: Numbers from eleven to nineteen made of one ten and extra ones.')">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Structure</span>
-              <button class="text-slate-400 group-hover:text-indigo-600"><i class="fa-solid fa-volume-high"></i></button>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm mb-1">Teen Numbers (11–19)</h4>
-            <p class="text-xs text-slate-600 mb-3">Always composed of <strong>1 Ten</strong> plus <strong>n Ones</strong> ($10 + n$).</p>
-            <div class="bg-white p-2 rounded border border-slate-200 text-center font-mono text-xs font-bold text-indigo-700">
-              14 = 1 Ten + 4 Ones
-            </div>
-          </div>
-
-          <!-- Vocab Card 4 -->
-          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 hover:bg-purple-50/50 transition group cursor-pointer" onclick="speakText('Double Ten Frame: Two ten frames stacked to show a full ten on top and extra ones on bottom.')">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-xs font-bold bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Visual Anchor</span>
-              <button class="text-slate-400 group-hover:text-purple-600"><i class="fa-solid fa-volume-high"></i></button>
-            </div>
-            <h4 class="font-bold text-slate-900 text-sm mb-1">Double Ten-Frame</h4>
-            <p class="text-xs text-slate-600 mb-3">One completely filled 10-frame on top, partial filled frame below.</p>
-            <div class="bg-white p-2 rounded border border-slate-200 flex flex-col gap-1 items-center">
-              <div class="flex gap-1"><div class="w-2.5 h-2.5 rounded-full bg-teal-600"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-600"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-600"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-600"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-600"></div></div>
-              <div class="flex gap-1"><div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div><div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div><div class="w-2.5 h-2.5 border border-slate-300 rounded-full"></div><div class="w-2.5 h-2.5 border border-slate-300 rounded-full"></div><div class="w-2.5 h-2.5 border border-slate-300 rounded-full"></div></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 2: UDL STRATEGY MATRIX -->
-    <!-- ========================================== -->
-    <section id="tab-udl-matrix" class="tab-content hidden space-y-6">
-      
-      <!-- Filter Bar -->
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">UDL Strategy Matrix (IM Lesson 8 Customized)</h2>
-            <p class="text-xs text-slate-500">Filter strategies based on UDL Guidelines and targeted learner needs.</p>
-          </div>
-          
-          <!-- Quick Filter Counters -->
-          <div class="flex items-center gap-2 text-xs">
-            <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-semibold">Engagement: <span id="count-engage">4</span></span>
-            <span class="px-2.5 py-1 bg-teal-100 text-teal-800 rounded-full font-semibold">Representation: <span id="count-rep">4</span></span>
-            <span class="px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-full font-semibold">Action & Expression: <span id="count-action">4</span></span>
-          </div>
-        </div>
-
-        <!-- Filter Controls -->
-        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-          <span class="text-xs font-semibold text-slate-400 flex items-center mr-2"><i class="fa-solid fa-filter mr-1"></i> Filter by Pillar:</span>
-          <button onclick="filterUDL('all')" class="udl-btn-filter active bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg transition" data-pillar="all">All Pillars</button>
-          <button onclick="filterUDL('engagement')" class="udl-btn-filter bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs px-3 py-1.5 rounded-lg border border-amber-200 transition" data-pillar="engagement">
-            <i class="fa-solid fa-heart text-amber-600 mr-1"></i> Engagement (WHY)
-          </button>
-          <button onclick="filterUDL('representation')" class="udl-btn-filter bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs px-3 py-1.5 rounded-lg border border-teal-200 transition" data-pillar="representation">
-            <i class="fa-solid fa-eye text-teal-600 mr-1"></i> Representation (WHAT)
-          </button>
-          <button onclick="filterUDL('action')" class="udl-btn-filter bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs px-3 py-1.5 rounded-lg border border-indigo-200 transition" data-pillar="action">
-            <i class="fa-solid fa-hands text-indigo-600 mr-1"></i> Action & Expression (HOW)
-          </button>
-
-          <span class="text-xs font-semibold text-slate-400 flex items-center ml-auto mr-2">Focus Need:</span>
-          <select id="need-select" onchange="filterNeed()" class="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-slate-50 font-medium">
-            <option value="all">All Learner Supports</option>
-            <option value="mll">Multilingual Learners (MLL/ELL)</option>
-            <option value="motor">Fine Motor & Physical Tactile</option>
-            <option value="challenge">Extension & Conceptual Challenge</option>
-            <option value="exec">Executive Functioning & Attention</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Strategy Grid -->
-      <div id="udl-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-
-        <!-- Card 1: Engagement - Context Choice -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="engagement" data-needs="mll exec">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-heart"></i> Engagement (7.1)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Autonomy & Relevance</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">Real-World Story Context Choices</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Allow students to choose their favorite "packaging" theme for bundling 10 objects into 1 full unit:
-            </p>
-            <ul class="text-xs text-slate-600 space-y-1 pl-4 list-disc">
-              <li><strong>Bakery Theme:</strong> 1 Box of 10 donuts + extra single donuts.</li>
-              <li><strong>Toy Factory Theme:</strong> 1 Tower stick of 10 blocks + extra loose blocks.</li>
-              <li><strong>Panda Sanctuary Theme:</strong> 1 Bundle of 10 bamboo sticks + extra single shoots.</li>
-            </ul>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: MLL, Executive Function</span>
-            <button onclick="toggleSaveStrategy(this, 'Real-World Story Context Choices')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 2: Engagement - Peer Collaboration Roles -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="engagement" data-needs="mll exec">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-users"></i> Engagement (8.3)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Collaborative Learning</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">Structured Partner Roles</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              When working in pairs to build numbers 11-19, assign clear rotating micro-roles to ensure equal active participation:
-            </p>
-            <ul class="text-xs text-slate-600 space-y-1 pl-4 list-disc">
-              <li><strong>Partner A ("The Ten Builder"):</strong> Snaps 10 loose cubes into 1 solid stick of 10.</li>
-              <li><strong>Partner B ("The Ones Collector"):</strong> Counts and places the extra 1-9 ones.</li>
-              <li><strong>Both ("The Reporters"):</strong> Chant together: <em>"1 Ten and [X] Ones makes [Number]!"</em></li>
-            </ul>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: Peer Collaboration</span>
-            <button onclick="toggleSaveStrategy(this, 'Structured Partner Roles')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 3: Representation - Multi-Sensory CRA Bridge -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="representation" data-needs="motor mll">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-cubes"></i> Representation (2.5)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">CRA Progression</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">Dual-Color Tactile & Visual Bridge</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Use strict color consistency across all physical and visual models to highlight the distinction between 10 and ones:
-            </p>
-            <ul class="text-xs text-slate-600 space-y-1 pl-4 list-disc">
-              <li><strong>Blue Stick:</strong> Always represents the unified 1 Ten tower.</li>
-              <li><strong>Yellow Loose Cubes:</strong> Always represent individual Ones.</li>
-              <li><strong>Color-Coded Equations:</strong> Write <span class="text-teal-600 font-bold">10</span> + <span class="text-amber-600 font-bold">4</span> = <span class="text-indigo-600 font-bold">14</span>.</li>
-            </ul>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: Fine Motor, Visual</span>
-            <button onclick="toggleSaveStrategy(this, 'Dual-Color Tactile & Visual Bridge')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 4: Representation - Auditory Choral Chant -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="representation" data-needs="mll">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-music"></i> Representation (3.1)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Auditory Processing</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">Rhythmic "1 Ten & Extra Ones" Auditory Chant</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Reinforce language patterns for MLLs and auditory learners with rhythmic call-and-response during cube building:
-            </p>
-            <div class="p-2.5 bg-teal-50 rounded-lg text-xs border border-teal-200 italic text-teal-900">
-              Teacher: "What do we have?"<br>
-              Class (stamping feet for 10): <strong>"1 TEN!"</strong><br>
-              Teacher: "And how many extra?"<br>
-              Class (clapping ones): <strong>"And 5 ONES... FIFTEEN!"</strong>
-            </div>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: MLL / Language Support</span>
-            <button onclick="toggleSaveStrategy(this, 'Rhythmic Auditory Chant')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 5: Action & Expression - Physical Movement & Kinesthetic -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="action" data-needs="exec motor">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-child-reaching"></i> Action & Expression (4.1)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Physical Response</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">"Ten-Clap & Finger-Flash" Movement Response</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Provide kinesthetic alternatives to written or spoken answers during whole-group checks:
-            </p>
-            <ul class="text-xs text-slate-600 space-y-1 pl-4 list-disc">
-              <li><strong>Show 1 Ten:</strong> Raise both hands overhead in an Overhead Circle ("1 Ten Dome").</li>
-              <li><strong>Show Ones:</strong> Flash individual fingers in front of chest for the ones.</li>
-              <li>Allows non-verbal expression & active sensory input.</li>
-            </ul>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: Motor, Kinesthetic</span>
-            <button onclick="toggleSaveStrategy(this, 'Ten-Clap & Finger-Flash Movement')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 6: Action & Expression - Multi-Modal Exit Options -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="action" data-needs="mll challenge exec">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-pen-ruler"></i> Action & Expression (5.1)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Flexible Expression</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">3-Option Tiered Assessment Menu</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Give students autonomy to demonstrate their understanding of "Ten as a Unit" using their preferred modality:
-            </p>
-            <ul class="text-xs text-slate-600 space-y-1 pl-4 list-disc">
-              <li><strong>Option A (Tactile/Verbal):</strong> Build number with cubes and explain to teacher/peer.</li>
-              <li><strong>Option B (Visual/Draw):</strong> Circle 10 dots on paper and color remaining ones.</li>
-              <li><strong>Option C (Symbolic/Equation):</strong> Complete missing addend equations ($10 + ? = 17$).</li>
-            </ul>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: Differentiated Assessment</span>
-            <button onclick="toggleSaveStrategy(this, '3-Option Tiered Assessment Menu')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 7: Engagement - Mystery Box Challenge -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="engagement" data-needs="challenge exec">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-box-open"></i> Engagement (7.2)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Curiosity & Play</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">"Teen Number Mystery Sack" Game</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Place pre-made sticks of 10 and loose cubes inside a paper bag. Students reach in, feel 1 stick of 10 and loose cubes without looking, and predict the total teen number!
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: Tactile Mystery</span>
-            <button onclick="toggleSaveStrategy(this, 'Teen Number Mystery Sack Game')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 8: Representation - Subitizing Double Ten Frames -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="representation" data-needs="exec mll">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-bolt"></i> Representation (3.2)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Pattern Recognition</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">Quick-Flash Double 10-Frame Subitizing</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Flash a full 10-frame + loose dots for 3 seconds. Train students to immediately say "10 and..." rather than recounting the top frame dot by dot.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: Subitizing Skill</span>
-            <button onclick="toggleSaveStrategy(this, 'Quick-Flash Double 10-Frame Subitizing')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 9: Action & Expression - Sentence Stems & Language Cards -->
-        <div class="udl-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3 flex flex-col justify-between" data-pillar="action" data-needs="mll">
-          <div class="space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <i class="fa-solid fa-comment-dots"></i> Action & Expression (6.1)
-              </span>
-              <span class="text-xs text-slate-400 font-mono">Scaffolded Discourse</span>
-            </div>
-            <h3 class="font-bold text-slate-900 text-base">Bilingual & Picture Sentence Stems</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              Provide desktop reference cards with visual icon prompts:
-            </p>
-            <div class="p-2 bg-indigo-50 border border-indigo-200 rounded text-xs font-medium text-indigo-900">
-              "I have <strong>1 ten</strong> and <strong>[ __ ] ones</strong>. My number is <strong>[ __ ]</strong>."
-            </div>
-          </div>
-          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">Tag: MLL Scaffold</span>
-            <button onclick="toggleSaveStrategy(this, 'Bilingual Sentence Stems')" class="save-strat-btn text-xs bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
-              <i class="fa-solid fa-plus mr-1"></i> Add to Plan
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 3: STEP-BY-STEP INTERACTIVE LESSON FLOW -->
-    <!-- ========================================== -->
-    <section id="tab-lesson-flow" class="tab-content hidden space-y-6">
-      
-      <!-- Lesson Timeline Steps Header -->
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">IM Lesson 8 Adaptation Workflow</h2>
-          <p class="text-xs text-slate-500">Step-by-step interactive lesson components embedded with UDL talk moves & scaffolds.</p>
-        </div>
-        <div class="flex gap-2">
-          <span class="text-xs font-semibold px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg flex items-center gap-1">
-            <i class="fa-regular fa-clock text-teal-600"></i> Total Time: ~60 mins
-          </span>
-        </div>
-      </div>
-
-      <!-- WARM-UP SECTION: WODB -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="w-7 h-7 rounded-full bg-teal-500 text-slate-950 font-bold text-xs flex items-center justify-center">1</span>
-            <h3 class="font-bold text-base">Warm-Up: Which One Doesn't Belong? (10 Mins)</h3>
-          </div>
-          <span class="text-xs bg-teal-500/20 text-teal-300 px-2.5 py-1 rounded-full">UDL Focus: Multiple Interpretations & Math Talk</span>
-        </div>
-
-        <div class="p-6 space-y-6">
-          <p class="text-xs text-slate-600">
-            Click on any of the 4 representations below to test student responses, UDL talk prompts, and mathematical justifications for why that box doesn't belong!
-          </p>
-
-          <!-- Interactive WODB 4-Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            
-            <!-- Box A -->
-            <button onclick="selectWODB('A')" id="wodb-btn-A" class="wodb-box border-2 border-slate-200 hover:border-teal-500 p-4 rounded-xl bg-slate-50 hover:bg-white text-center space-y-3 transition flex flex-col items-center justify-center h-44 group shadow-sm">
-              <span class="text-xs font-extrabold text-slate-400 group-hover:text-teal-600">BOX A</span>
-              <div class="grid grid-cols-4 gap-1.5 w-16 h-16 p-2 bg-amber-50 rounded-lg border border-amber-200 items-center justify-center">
-                <div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div><div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div><div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div><div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div><div class="w-2.5 h-2.5 rounded-full bg-amber-600"></div>
-              </div>
-              <span class="text-xs font-semibold text-slate-800">10 Scattered Dots</span>
-            </button>
-
-            <!-- Box B -->
-            <button onclick="selectWODB('B')" id="wodb-btn-B" class="wodb-box border-2 border-slate-200 hover:border-teal-500 p-4 rounded-xl bg-slate-50 hover:bg-white text-center space-y-3 transition flex flex-col items-center justify-center h-44 group shadow-sm">
-              <span class="text-xs font-extrabold text-slate-400 group-hover:text-teal-600">BOX B</span>
-              <div class="w-20 h-10 border-2 border-teal-600 bg-teal-50 rounded p-1 grid grid-cols-5 gap-1">
-                <div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div>
-                <div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div>
-              </div>
-              <span class="text-xs font-semibold text-slate-800">1 Full 10-Frame</span>
-            </button>
-
-            <!-- Box C -->
-            <button onclick="selectWODB('C')" id="wodb-btn-C" class="wodb-box border-2 border-slate-200 hover:border-teal-500 p-4 rounded-xl bg-slate-50 hover:bg-white text-center space-y-3 transition flex flex-col items-center justify-center h-44 group shadow-sm">
-              <span class="text-xs font-extrabold text-slate-400 group-hover:text-teal-600">BOX C</span>
-              <div class="flex gap-0.5 bg-indigo-100 p-1 rounded border border-indigo-300">
-                <div class="w-3 h-5 bg-indigo-600 rounded-sm"></div>
-                <div class="w-3 h-5 bg-indigo-600 rounded-sm"></div>
-                <div class="w-3 h-5 bg-indigo-600 rounded-sm"></div>
-                <div class="w-3 h-5 bg-indigo-600 rounded-sm"></div>
-                <div class="w-3 h-5 bg-indigo-600 rounded-sm"></div>
-                <span class="text-[10px] font-bold text-indigo-900 self-center">... (1 Stick)</span>
-              </div>
-              <span class="text-xs font-semibold text-slate-800">1 Tower Stick of 10</span>
-            </button>
-
-            <!-- Box D -->
-            <button onclick="selectWODB('D')" id="wodb-btn-D" class="wodb-box border-2 border-slate-200 hover:border-teal-500 p-4 rounded-xl bg-slate-50 hover:bg-white text-center space-y-3 transition flex flex-col items-center justify-center h-44 group shadow-sm">
-              <span class="text-xs font-extrabold text-slate-400 group-hover:text-teal-600">BOX D</span>
-              <div class="w-12 h-12 rounded-full bg-amber-200 border-2 border-amber-500 flex items-center justify-center font-bold text-amber-900 text-sm shadow">
-                10¢
-              </div>
-              <span class="text-xs font-semibold text-slate-800">1 Dime (or 10 Pennies)</span>
-            </button>
-
-          </div>
-
-          <!-- WODB Teacher Talk Moves Box -->
-          <div id="wodb-detail-panel" class="bg-teal-50 border border-teal-200 p-4 rounded-xl space-y-2">
-            <h4 class="font-bold text-teal-900 text-sm flex items-center gap-2">
-              <i class="fa-solid fa-comments"></i> Select a box above to view student justifications & teacher talk stems!
-            </h4>
-            <p class="text-xs text-teal-800">Every box is mathematically correct! The goal is for students to notice structure and organization.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ACTIVITY 1: CLARE'S CUBES -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center">2</span>
-            <h3 class="font-bold text-base">Activity 1: Clare's Cubes - Structuring Teen Numbers (20 Mins)</h3>
-          </div>
-          <span class="text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded-full">UDL Focus: Choice Station Menu</span>
-        </div>
-
-        <div class="p-6 space-y-4">
-          <p class="text-xs text-slate-600 leading-relaxed">
-            In Clare's Cubes, students look at collections of cubes (e.g., 14 cubes) arranged either as 14 loose ones or 1 stick of 10 plus 4 loose ones. Adapt this task using 3 differentiated station options:
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded">Station 1: Concrete</span>
-                <i class="fa-solid fa-hand text-teal-600"></i>
-              </div>
-              <h4 class="font-bold text-slate-900 text-sm">Tactile Cube Snap Station</h4>
-              <p class="text-xs text-slate-600">Students take 14 loose unifix cubes. Teacher prompts: <em>"Can you snap 10 together to make a single stick?"</em> Compare how fast it is to count 1 stick + 4 ones vs. 14 loose cubes.</p>
-            </div>
-
-            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Station 2: Visual</span>
-                <i class="fa-solid fa-image text-indigo-600"></i>
-              </div>
-              <h4 class="font-bold text-slate-900 text-sm">Double 10-Frame Stamp Station</h4>
-              <p class="text-xs text-slate-600">Students use stampers or dot markers on printed double ten-frames. They completely fill top 10-frame first, then stamp the remaining ones in the bottom frame.</p>
-            </div>
-
-            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Station 3: Story Context</span>
-                <i class="fa-solid fa-store text-amber-600"></i>
-              </div>
-              <h4 class="font-bold text-slate-900 text-sm">Donut Box Packaging Station</h4>
-              <p class="text-xs text-slate-600">Students act as bakers packing 10 donuts into 1 box container (egg carton cut to 10) and keeping extra donuts on a serving plate.</p>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- ACTIVITY 2: BUILD & MATCH TEEN NUMBERS -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="w-7 h-7 rounded-full bg-indigo-500 text-white font-bold text-xs flex items-center justify-center">3</span>
-            <h3 class="font-bold text-base">Activity 2: Build & Match Teen Numbers (15 Mins)</h3>
-          </div>
-          <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full">UDL Focus: Differentiated Scaffold Generator</span>
-        </div>
-
-        <div class="p-6 space-y-6">
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-            <div>
-              <h4 class="font-bold text-slate-900 text-sm">Interactive Target Number Generator</h4>
-              <p class="text-xs text-slate-500">Spin to generate a random teen number for class practice or small group tasks.</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <div id="target-number-display" class="w-16 h-12 bg-indigo-600 text-white font-extrabold text-2xl rounded-lg flex items-center justify-center shadow">
-                16
-              </div>
-              <button onclick="generateRandomTeenNumber()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition shadow">
-                <i class="fa-solid fa-dice mr-1"></i> Spin Teen Number
-              </button>
-            </div>
-          </div>
-
-          <!-- Differentiated Scaffolds Tiers -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <div class="border-2 border-emerald-200 bg-emerald-50/50 rounded-xl p-4 space-y-2">
-              <span class="text-xs font-bold bg-emerald-600 text-white px-2 py-0.5 rounded">Tier 1: Scaffolded Support</span>
-              <h5 class="font-bold text-slate-900 text-sm">Pre-Assembled 10 Tower</h5>
-              <p class="text-xs text-slate-600">Student is given 1 pre-built stick of 10. They only need to count and add the extra single cubes to build <span class="target-num-text font-bold">16</span> ($10 + 6$).</p>
-            </div>
-
-            <div class="border-2 border-amber-200 bg-amber-50/50 rounded-xl p-4 space-y-2">
-              <span class="text-xs font-bold bg-amber-600 text-white px-2 py-0.5 rounded">Tier 2: Standard Core Task</span>
-              <h5 class="font-bold text-slate-900 text-sm">Build & Group from Loose Ones</h5>
-              <p class="text-xs text-slate-600">Student starts with loose cubes, counts 10 to snap into 1 ten stick, adds remaining ones, and writes $10 + \underline{\quad} = \text{target}$.</p>
-            </div>
-
-            <div class="border-2 border-purple-200 bg-purple-50/50 rounded-xl p-4 space-y-2">
-              <span class="text-xs font-bold bg-purple-600 text-white px-2 py-0.5 rounded">Tier 3: Conceptual Extension</span>
-              <h5 class="font-bold text-slate-900 text-sm">Missing Addend & Comparison</h5>
-              <p class="text-xs text-slate-600">"I have 1 ten stick and some ones. Total is <span class="target-num-text font-bold">16</span>. How many ones are hidden under the cup?"</p>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 4: VIRTUAL MANIPULATIVE LAB -->
-    <!-- ========================================== -->
-    <section id="tab-manipulative" class="tab-content hidden space-y-6">
-      
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between md:items-center gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-cubes-stacked text-amber-500"></i> Interactive "Ten as a Unit" Workbench
-          </h2>
-          <p class="text-xs text-slate-500">Add single cubes, click "Bundle into 1 Ten" when you reach 10 ones, and observe the place value equation dynamic update!</p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button onclick="resetWorkbench()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-3 py-2 rounded-lg font-semibold transition">
-            <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Reset
-          </button>
-          <button onclick="startPracticeChallenge()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs px-3 py-2 rounded-lg font-bold transition shadow">
-            <i class="fa-solid fa-bullseye mr-1"></i> Practice Challenge Mode
-          </button>
-        </div>
-      </div>
-
-      <!-- Workbench Area -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Left: Control Panel & Cube Addition -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-5">
-          <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-            <i class="fa-solid fa-hand-pointer text-teal-600"></i> Builder Controls
-          </h3>
-
-          <!-- Challenge Banner (hidden by default) -->
-          <div id="challenge-banner" class="hidden p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs space-y-1">
-            <div class="font-bold text-amber-900 flex justify-between">
-              <span>CHALLENGE PROMPT:</span>
-              <span id="challenge-target" class="text-amber-700 font-extrabold text-sm">Build 15</span>
-            </div>
-            <p class="text-amber-800">Add 10 cubes $\rightarrow$ Bundle into 1 Ten $\rightarrow$ Add extra ones!</p>
-          </div>
-
-          <div class="space-y-3">
-            <button onclick="addSingleCube()" id="btn-add-cube" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2 shadow">
-              <i class="fa-solid fa-plus-circle"></i> Add 1 Single Cube (<span id="single-count-badge">0</span>/10)
-            </button>
-
-            <button onclick="bundleTen()" id="btn-bundle-ten" disabled class="w-full bg-slate-300 text-slate-500 font-extrabold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-not-allowed">
-              <i class="fa-solid fa-lock"></i> Bundle 10 Ones into "1 Ten" Tower
-            </button>
-          </div>
-
-          <div class="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
-            <div class="flex justify-between">
-              <span>Loose Single Cubes:</span>
-              <span id="stat-loose" class="font-bold text-slate-900">0</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Bundled Tens Towers:</span>
-              <span id="stat-tens" class="font-bold text-teal-700">0</span>
-            </div>
-            <div class="flex justify-between text-sm font-bold pt-2 border-t border-slate-100">
-              <span>Total Value:</span>
-              <span id="stat-total" class="text-indigo-700 font-extrabold text-lg">0</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Center: Dynamic Workbench Canvas -->
-        <div class="lg:col-span-2 bg-slate-900 rounded-xl p-6 shadow-inner flex flex-col justify-between min-h-[380px] border border-slate-800 text-white">
-          
-          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Visual Workbench Canvas</span>
-            <div class="flex items-center gap-3 text-xs">
-              <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-teal-500 rounded-sm"></span> 1 Ten Stick</span>
-              <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-amber-400 rounded-sm"></span> Single Ones</span>
-            </div>
-          </div>
-
-          <!-- Manipulative Display Zones -->
-          <div class="grid grid-cols-2 gap-6 my-6">
-            
-            <!-- Tens Dock Zone -->
-            <div class="bg-slate-800/60 border border-teal-500/30 rounded-xl p-4 space-y-2 min-h-[200px] flex flex-col justify-start">
-              <div class="text-xs font-bold text-teal-400 uppercase tracking-wider flex justify-between">
-                <span>Tens Zone</span>
-                <span id="tens-count-text">0 Tens</span>
-              </div>
-              <div id="tens-container" class="flex flex-wrap gap-4 items-end pt-2 min-h-[140px]">
-                <!-- Bundled sticks render here -->
-                <p class="text-xs text-slate-500 italic m-auto" id="tens-empty-msg">No 10-stick yet. Add 10 cubes to bundle!</p>
-              </div>
-            </div>
-
-            <!-- Ones Loose Zone -->
-            <div class="bg-slate-800/60 border border-amber-500/30 rounded-xl p-4 space-y-2 min-h-[200px] flex flex-col justify-start">
-              <div class="text-xs font-bold text-amber-400 uppercase tracking-wider flex justify-between">
-                <span>Loose Ones Zone</span>
-                <span id="ones-count-text">0 Ones</span>
-              </div>
-              <div id="ones-container" class="flex flex-wrap gap-2 items-start pt-2 min-h-[140px]">
-                <!-- Loose cubes render here -->
-                <p class="text-xs text-slate-500 italic m-auto" id="ones-empty-msg">Click "+ Add 1 Single Cube"</p>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Live Place Value Equation Bar -->
-          <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-wrap items-center justify-between gap-4">
-            <div class="text-xs text-slate-400">Live Mathematical Model:</div>
-            <div id="equation-display" class="text-xl sm:text-2xl font-mono font-extrabold text-teal-300 flex items-center gap-2">
-              <span id="eq-tens" class="text-teal-400">0</span>
-              <span class="text-slate-500">+</span>
-              <span id="eq-ones" class="text-amber-400">0</span>
-              <span class="text-slate-500">=</span>
-              <span id="eq-total" class="text-white bg-indigo-600 px-3 py-1 rounded-lg">0</span>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 5: ACCOMMODATIONS & PLAN EXPORTER -->
-    <!-- ========================================== -->
-    <section id="tab-checklist" class="tab-content hidden space-y-6">
-      
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">Teacher Accommodation Checklist & Plan Builder</h2>
-          <p class="text-xs text-slate-500">Select applicable accommodations and generate your custom UDL lesson plan for IM Grade 1 Lesson 8.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="copyLessonPlan()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3.5 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow">
-            <i class="fa-solid fa-copy"></i> Copy Plan to Clipboard
-          </button>
-          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3.5 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow">
-            <i class="fa-solid fa-print"></i> Print Lesson Summary
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Accommodation Checklist Selectors -->
-        <div class="lg:col-span-2 space-y-5">
-          
-          <!-- Category 1 -->
-          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
-              <i class="fa-solid fa-hands-holding text-teal-600"></i> Tactile & Physical Support Accommodations
-            </h3>
-            <div class="space-y-2 text-xs text-slate-700">
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Provide oversized interlocking cubes for fine-motor needs.">
-                <span>Provide oversized / textured interlocking cubes for fine-motor assistance.</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Use rubberized non-slip mats for holding 10-frame cards.">
-                <span>Use non-slip rubberized desk mats for 10-frame visual cards.</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Provide pre-bundled sticks of 10 to reduce assembly fatigue.">
-                <span>Pre-bundle 10-sticks for students with physical fatigue.</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Category 2 -->
-          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
-              <i class="fa-solid fa-language text-indigo-600"></i> Language & MLL Support Accommodations
-            </h3>
-            <div class="space-y-2 text-xs text-slate-700">
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Bilingual sentence stems displayed on desk (English / Spanish / Target Lang).">
-                <span>Display bilingual sentence cards: <em>"1 ten and __ ones is __"</em>.</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Use choral repetition and hand gestures for 'Ten' vs 'Ones'.">
-                <span>Use choral repetition with hand gestures for "Ten" vs "Ones".</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Pair MLL students with strong peer language models during partner tasks.">
-                <span>Pair MLL students with supportive language partners.</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Category 3 -->
-          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
-              <i class="fa-solid fa-brain text-amber-600"></i> Cognitive & Executive Function Accommodations
-            </h3>
-            <div class="space-y-2 text-xs text-slate-700">
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Visual step-by-step checklist card (1. Count 10 -> 2. Snap stick -> 3. Add ones).">
-                <span>Provide a 3-step visual checklist card for activity execution.</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded cursor-pointer">
-                <input type="checkbox" onchange="updateCustomPlan()" class="acc-check rounded text-teal-600 focus:ring-teal-500 w-4 h-4" data-label="Provide high-contrast color-coded place value workspace mat.">
-                <span>Provide high-contrast color-coded mat (Tens zone vs Ones zone).</span>
-              </label>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Custom Saved Plan Preview Summary -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 print-card">
-          <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
-            <i class="fa-solid fa-file-invoice text-teal-600"></i> My Saved UDL Lesson Summary
-          </h3>
-
-          <div class="space-y-3 text-xs">
-            <div>
-              <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider">Lesson Context:</span>
-              <p class="font-semibold text-slate-800">IM Grade 1 • Unit 3 Lesson 8 ("Ten as a Unit")</p>
-            </div>
-
-            <div>
-              <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider">Selected UDL Matrix Strategies:</span>
-              <ul id="saved-strats-list" class="mt-1 space-y-1 text-slate-700 pl-4 list-disc">
-                <li class="italic text-slate-400 list-none">No strategies selected yet. Click "+ Add to Plan" in Tab 2!</li>
-              </ul>
-            </div>
-
-            <div class="pt-2 border-t border-slate-100">
-              <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider">Checked Accommodations:</span>
-              <ul id="saved-accs-list" class="mt-1 space-y-1 text-slate-700 pl-4 list-disc">
-                <li class="italic text-slate-400 list-none">No accommodations checked.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="bg-slate-900 text-slate-400 text-xs py-6 mt-auto border-t border-slate-800 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <p>Designed for Grade 1 Math Teachers • Grounded in UDL & Illustrative Mathematics (IM) Curriculum Guidelines.</p>
-      <div class="flex gap-4">
-        <span class="hover:text-slate-200 cursor-pointer" onclick="switchTab('tab-overview')">Overview</span>
-        <span class="hover:text-slate-200 cursor-pointer" onclick="switchTab('tab-udl-matrix')">UDL Matrix</span>
-        <span class="hover:text-slate-200 cursor-pointer" onclick="switchTab('tab-manipulative')">Virtual Lab</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- SCRIPT LOGIC -->
-  <script>
-    // --- STATE MANAGEMENT ---
-    let savedStrategies = [];
-    let currentLooseCount = 0;
-    let currentTensCount = 0;
-    let challengeTargetNumber = 0;
-    let audioCtx = null;
-
-    // Web Audio Synthesizer for Interactive Sound Effects
-    function playAudioTone(type) {
-      try {
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        if (type === 'pop') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.08);
-          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.08);
-        } else if (type === 'bundle') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(261.63, audioCtx.currentTime); // C4
-          osc.frequency.setValueAtTime(329.63, audioCtx.currentTime + 0.1); // E4
-          osc.frequency.setValueAtTime(392.00, audioCtx.currentTime + 0.2); // G4
-          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime + 0.3); // C5
-          gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.45);
-        }
-      } catch (e) {
-        console.log("Audio play blocked or unsupported");
+<body>
+
+<div id="bar">
+  <div class="grp">
+    <button id="less" title="Remove a frame" aria-label="Remove a frame">
+      <svg viewBox="0 0 40 30"><rect x="3" y="7" width="22" height="16" fill="none" stroke="currentColor" stroke-width="3"/><line x1="14" y1="7" x2="14" y2="23" stroke="currentColor" stroke-width="2"/><line x1="3" y1="15" x2="25" y2="15" stroke="currentColor" stroke-width="2"/><line x1="29" y1="15" x2="39" y2="15" stroke="currentColor" stroke-width="4"/></svg>
+    </button>
+    <button id="more" title="Add a frame" aria-label="Add a frame">
+      <svg viewBox="0 0 40 30"><rect x="3" y="7" width="22" height="16" fill="none" stroke="currentColor" stroke-width="3"/><line x1="14" y1="7" x2="14" y2="23" stroke="currentColor" stroke-width="2"/><line x1="3" y1="15" x2="25" y2="15" stroke="currentColor" stroke-width="2"/><line x1="29" y1="15" x2="39" y2="15" stroke="currentColor" stroke-width="4"/><line x1="34" y1="10" x2="34" y2="20" stroke="currentColor" stroke-width="4"/></svg>
+    </button>
+  </div>
+  <div class="grp">
+    <button id="colors" title="One color / two colors" aria-label="Switch between one and two colors"><i></i><i></i></button>
+    <button id="nums"title="Show / hide numbers" aria-label="Show or hide numbers">123</button>
+    <button id="undo" title="Undo" aria-label="Undo">
+      <svg viewBox="0 0 30 30"><path d="M9 7 L3 13 L9 19" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 13 H18 a8 8 0 0 1 0 16 H12" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+    </button>
+    <button id="clear" title="Empty the frames" aria-label="Empty the frames">
+      <svg viewBox="0 0 30 30"><rect x="3" y="8" width="24" height="15" fill="none" stroke="currentColor" stroke-width="3"/><line x1="7" y1="4" x2="23" y2="27" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+    </button>
+    <button id="full" title="Full screen" aria-label="Full screen">
+      <svg viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M3 10V3h7M20 3h7v7M27 20v7h-7M10 27H3v-7"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="stage"></div>
+
+<div id="tray">
+  <div class="pile" data-c="a" aria-label="Red counters"><div class="dot a"></div><div class="dot a"></div><div class="dot a"></div></div>
+  <div id="hint">
+    <span><i></i> → <b></b></span>
+    <span><b></b><i></i> → ✕ &nbsp;drag out to remove</span>
+  </div>
+  <div id="total"></div>
+  <div class="pile" data-c="b" aria-label="Blue counters"><div class="dot b"></div><div class="dot b"></div><div class="dot b"></div></div>
+</div>
+
+<script>
+(() => {
+  const KEY = 'tenframes.v1';
+  const stage = document.getElementById('stage');
+
+  // ---------- state ----------
+  let S = load() || { frames: [], show: false, nid: 1 };
+  const hist = [];
+  let cellPx = 100;
+  const dragging = new Set();   // ids currently lifted
+
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.frames)) return s; } catch (e) {}
+    return null;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function remember() {
+    hist.push(JSON.stringify(S.frames));
+    if (hist.length > 80) hist.shift();
+  }
+  const blank = () => Array(10).fill(null);
+  function findId(id) {
+    for (let f = 0; f < S.frames.length; f++) {
+      const i = S.frames[f].cells.findIndex(x => x && x.id === id);
+      if (i >= 0) return { f, i };
+    }
+    return null;
+  }
+  if (!S.frames.length) S.frames = [{ cells: blank() }, { cells: blank() }];
+
+  // ---------- layout ----------
+  // frames stand upright: 2 squares across, 5 down
+  const LW = 0.085, SEP = 0.9, LAB = 0.75, VG = 0.35;
+  function layout() {
+    const W = stage.clientWidth - 24, H = stage.clientHeight - 16, n = S.frames.length;
+    let best = { c: 0, per: n };
+    // always one row, side by side, so every frame stays within reach
+    for (let r = 1; r <= 1; r++) {
+      const per = Math.ceil(n / r), rows = Math.ceil(n / per);
+      // rows after the first may start with a "+", so leave room for one extra gap
+      const cw = W / (per * (2 + 3 * LW) + (per - 1 + (rows > 1 ? 1 : 0)) * SEP);
+      const ch = H / (rows * (5 + 6 * LW + LAB) + (rows - 1) * VG);
+      const c = Math.min(cw, ch, 170);
+      if (c > best.c + 0.5) best = { c, per };
+    }
+    return best;
+  }
+
+  function render(prev, popNew) {
+    const { c: raw, per } = layout();
+    const c = Math.max(24, Math.floor(raw));
+    const L = Math.max(5, Math.round(c * LW));
+    cellPx = c;
+    stage.innerHTML = '';
+    document.body.classList.toggle('show', S.show);
+    document.body.classList.toggle('mono', S.mono !== false);
+    document.getElementById('nums').classList.toggle('on', S.show);
+    let row;
+    S.frames.forEach((fr, f) => {
+      if (f % per === 0) {
+        row = document.createElement('div'); row.className = 'row';
+        if (f) row.style.marginTop = Math.round(c * VG) + 'px';
+        stage.appendChild(row);
+      } else {
+        const sep = document.createElement('div');
+        sep.className = 'sep';
+        sep.style.width = Math.round(c * SEP) + 'px';
+        row.appendChild(sep);
       }
-    }
-
-    // Voice Speech Synthesis Simulation for Vocab
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-
-    // --- NAVIGATION LOGIC ---
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(tabId).classList.remove('hidden');
-
-      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
-      const activeBtn = document.getElementById('nav-' + tabId);
-      if (activeBtn) activeBtn.classList.add('active-tab');
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // --- UDL FILTER MATRIX LOGIC ---
-    function filterUDL(pillar) {
-      document.querySelectorAll('.udl-btn-filter').forEach(btn => {
-        btn.classList.remove('bg-slate-800', 'text-white');
+      const slot = document.createElement('div'); slot.className = 'slot';
+      const el = document.createElement('div'); el.className = 'frame'; el.dataset.f = f;
+      // fill order: left column top to bottom, then right column
+      el.style.gridTemplateColumns = `repeat(2, ${c}px)`;
+      el.style.gridTemplateRows = `repeat(5, ${c}px)`;
+      el.style.gridAutoFlow = 'column';
+      el.style.gap = el.style.padding = L + 'px';
+      fr.cells.forEach((x, i) => {
+        const cell = document.createElement('div'); cell.className = 'cell';
+        cell.dataset.f = f; cell.dataset.i = i;
+        if (x) cell.appendChild(makeDot(x));
+        el.appendChild(cell);
       });
-      event.currentTarget.classList.add('bg-slate-800', 'text-white');
+      const cnt = document.createElement('div'); cnt.className = 'count';
+      cnt.style.height = Math.round(c * LAB) + 'px';
+      cnt.style.fontSize = Math.round(c * 0.5) + 'px';
+      cnt.textContent = fr.cells.filter(Boolean).length;
+      slot.append(el, cnt); row.appendChild(slot);
+    });
+    document.getElementById('total').textContent =
+      S.frames.reduce((s, fr) => s + fr.cells.filter(Boolean).length, 0);
+    save();
+    if (prev) flip(prev, popNew);
+  }
 
-      const selectedNeed = document.getElementById('need-select').value;
-      applyUDLFilters(pillar, selectedNeed);
+  function makeDot(x) {
+    const d = document.createElement('div');
+    d.className = 'dot ' + x.c; d.dataset.id = x.id;
+    const s = Math.round(cellPx * 0.78) + 'px';
+    d.style.width = d.style.height = s;
+    if (dragging.has(x.id)) d.classList.add('lift');
+    return d;
+  }
+
+  // ---------- smooth motion (FLIP) ----------
+  function snap() {
+    const m = {};
+    stage.querySelectorAll('.dot[data-id]').forEach(e => m[e.dataset.id] = e.getBoundingClientRect());
+    return m;
+  }
+  function flip(prev, popNew) {
+    let k = 0;
+    stage.querySelectorAll('.dot[data-id]').forEach(e => {
+      const p = prev[e.dataset.id], r = e.getBoundingClientRect();
+      if (p) {
+        const dx = p.left + p.width / 2 - (r.left + r.width / 2);
+        const dy = p.top + p.height / 2 - (r.top + r.height / 2);
+        const s = p.width / r.width;
+        if (Math.abs(dx) + Math.abs(dy) > 1 || Math.abs(s - 1) > .01)
+          e.animate([{ transform: `translate(${dx}px,${dy}px) scale(${s})` }, { transform: 'none' }],
+                    { duration: 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      } else if (popNew) {
+        e.animate([{ transform: 'scale(0)' }, { transform: 'scale(1.12)' }, { transform: 'none' }],
+                  { duration: 260, delay: (k++) * 28, easing: 'ease-out', fill: 'backwards' });
+      }
+    });
+  }
+  function change(fn, popNew) {
+    const prev = snap(); remember(); fn(); render(prev, popNew);
+  }
+
+  // ---------- toolbar ----------
+  document.getElementById('more').onclick = () => {
+    if (S.frames.length >= 8) return;
+    change(() => S.frames.push({ cells: blank() }));
+  };
+  document.getElementById('less').onclick = () => {
+    if (S.frames.length <= 1) return;
+    change(() => S.frames.pop());
+  };
+  document.getElementById('clear').onclick = () => change(() => S.frames.forEach(f => f.cells = blank()));
+  document.getElementById('undo').onclick = undo;
+  document.getElementById('colors').onclick = () => { S.mono = S.mono === false; render(); };
+  document.getElementById('nums').onclick =() => { S.show = !S.show; render(); };
+  document.getElementById('full').onclick = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {});
+  };
+  function undo() {
+    if (!hist.length) return;
+    const prev = snap();
+    S.frames = JSON.parse(hist.pop());
+    render(prev, true);
+  }
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+  });
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => render(), 60); });
+
+  // ---------- dragging (multi-touch friendly) ----------
+  const drags = new Map();
+  const taps = new Map();
+  let lastColor = 'a';   // color used when tapping an empty square
+
+  document.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const dot = e.target.closest('#stage .dot[data-id]');
+    const pile = e.target.closest('.pile');
+    if (!dot && !pile) {
+      // tapping an empty square puts a counter right there
+      const cell = e.target.closest('#stage .cell');
+      if (cell && !cell.querySelector('.dot')) {
+        e.preventDefault();
+        taps.set(e.pointerId, { f: +cell.dataset.f, i: +cell.dataset.i, x: e.clientX, y: e.clientY });
+      }
+      return;
     }
-
-    function filterNeed() {
-      const activePillarBtn = document.querySelector('.udl-btn-filter.bg-slate-800');
-      const activePillar = activePillarBtn ? activePillarBtn.dataset.pillar : 'all';
-      const selectedNeed = document.getElementById('need-select').value;
-      applyUDLFilters(activePillar, selectedNeed);
+    e.preventDefault();
+    const size = Math.round(cellPx * 0.78);
+    let id, c, x0, y0;
+    if (dot) {
+      id = +dot.dataset.id; c = S.frames.flatMap(f => f.cells).find(x => x && x.id === id).c;
+      const r = dot.getBoundingClientRect(); x0 = r.left; y0 = r.top;
+      dot.classList.add('lift'); dragging.add(id);
+    } else {
+      c = pile.dataset.c; id = null; lastColor = c;
+      x0 = e.clientX - size / 2; y0 = e.clientY - size / 2;
     }
+    const g = document.createElement('div');
+    g.className = 'dot ghost ' + c;
+    g.style.width = g.style.height = size + 'px';
+    g.style.left = x0 + 'px'; g.style.top = y0 + 'px';
+    document.body.appendChild(g);
+    drags.set(e.pointerId, { g, id, c, ox: e.clientX - x0, oy: e.clientY - y0, sx: e.clientX, sy: e.clientY, moved: false, pile });
+  });
 
-    function applyUDLFilters(pillar, need) {
-      document.querySelectorAll('.udl-card').forEach(card => {
-        const cardPillar = card.dataset.pillar;
-        const cardNeeds = card.dataset.needs.split(' ');
+  document.addEventListener('pointermove', e => {
+    const d = drags.get(e.pointerId); if (!d) return;
+    if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 6) d.moved = true;
+    d.g.style.left = (e.clientX - d.ox) + 'px';
+    d.g.style.top = (e.clientY - d.oy) + 'px';
+  });
 
-        const pillarMatch = (pillar === 'all' || cardPillar === pillar);
-        const needMatch = (need === 'all' || cardNeeds.includes(need));
+  function endDrag(e, cancel) {
+    const d = drags.get(e.pointerId); if (!d) return;
+    drags.delete(e.pointerId);
+    if (d.id != null) dragging.delete(d.id);
+    const ghostRect = d.g.getBoundingClientRect();
 
-        if (pillarMatch && needMatch) {
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
-        }
+    // a quick tap on a pile drops one counter into the next empty square
+    if (!d.moved && d.pile) {
+      d.g.remove();
+      const t = nextEmpty(d.c);
+      if (t) change(() => S.frames[t.f].cells[t.i] = { id: S.nid++, c: d.c }, true);
+      return;
+    }
+    // a tap on a counter: just put it back
+    if (!d.moved || cancel) { d.g.remove(); render(snapWith(d, ghostRect)); return; }
+
+    const from = d.id != null ? findId(d.id) : null;
+    let to = targetAt(e.clientX, e.clientY);
+
+    if (!to) {
+      // dropped outside the frames: remove it
+      if (from) { remember(); S.frames[from.f].cells[from.i] = null; render(); }
+      vanish(d.g); return;
+    }
+    const here = S.frames[to.f].cells[to.i];
+    if (here && from && here.id === d.id) { d.g.remove(); render(snapWith(d, ghostRect)); return; }
+
+    if (here && !from) {
+      to = nearestEmpty(to.f, e.clientX, e.clientY);
+      if (!to) { vanish(d.g); return; }
+    }
+    const prev = snapWith(d, ghostRect);
+    remember();
+    if (from) {
+      const item = S.frames[from.f].cells[from.i];
+      S.frames[from.f].cells[from.i] = S.frames[to.f].cells[to.i] || null; // swap if occupied
+      S.frames[to.f].cells[to.i] = item;
+    } else {
+      const item = { id: S.nid++, c: d.c };
+      S.frames[to.f].cells[to.i] = item;
+      prev[item.id] = ghostRect;
+    }
+    d.g.remove();
+    render(prev);
+  }
+  document.addEventListener('pointerup', e => {
+    const t = taps.get(e.pointerId);
+    if (t) {
+      taps.delete(e.pointerId);
+      if (Math.hypot(e.clientX - t.x, e.clientY - t.y) < 12 && S.frames[t.f] && !S.frames[t.f].cells[t.i])
+        change(() => S.frames[t.f].cells[t.i] = { id: S.nid++, c: lastColor }, true);
+      return;
+    }
+    endDrag(e, false);
+  });
+  document.addEventListener('pointercancel', e => { taps.delete(e.pointerId); endDrag(e, true); });
+
+  function snapWith(d, rect) { const m = snap(); if (d.id != null) m[d.id] = rect; return m; }
+  function vanish(g) {
+    g.animate([{ transform: 'scale(1.08)', opacity: 1 }, { transform: 'scale(0)', opacity: 0 }],
+              { duration: 200, easing: 'ease-in' }).onfinish = () => g.remove();
+  }
+
+  function targetAt(x, y) {
+    const pad = cellPx * 0.3;
+    for (const fr of stage.querySelectorAll('.frame')) {
+      const r = fr.getBoundingClientRect();
+      if (x < r.left - pad || x > r.right + pad || y < r.top - pad || y > r.bottom + pad) continue;
+      let best = null, bd = Infinity;
+      fr.querySelectorAll('.cell').forEach(cell => {
+        const q = cell.getBoundingClientRect();
+        const dd = Math.hypot(x - (q.left + q.width / 2), y - (q.top + q.height / 2));
+        if (dd < bd) { bd = dd; best = cell; }
       });
+      return { f: +best.dataset.f, i: +best.dataset.i };
     }
-
-    // --- SAVE STRATEGY TO PLAN ---
-    function toggleSaveStrategy(btn, title) {
-      const index = savedStrategies.indexOf(title);
-      if (index === -1) {
-        savedStrategies.push(title);
-        btn.classList.remove('bg-slate-100', 'text-slate-700');
-        btn.classList.add('bg-teal-600', 'text-white');
-        btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Added';
-      } else {
-        savedStrategies.splice(index, 1);
-        btn.classList.remove('bg-teal-600', 'text-white');
-        btn.classList.add('bg-slate-100', 'text-slate-700');
-        btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Add to Plan';
-      }
-
-      document.getElementById('plan-count-badge').textContent = savedStrategies.length;
-      updateCustomPlan();
+    return null;
+  }
+  function nearestEmpty(f, x, y) {
+    let best = null, bd = Infinity;
+    stage.querySelectorAll(`.frame[data-f="${f}"] .cell`).forEach(cell => {
+      const i = +cell.dataset.i; if (S.frames[f].cells[i]) return;
+      const q = cell.getBoundingClientRect();
+      const dd = Math.hypot(x - (q.left + q.width / 2), y - (q.top + q.height / 2));
+      if (dd < bd) { bd = dd; best = { f, i }; }
+    });
+    return best;
+  }
+  function nextEmpty(c) {
+    // left pile fills from the leftmost frame, right pile from the rightmost frame
+    const fs = S.frames, n = fs.length;
+    for (let k = 0; k < n; k++) {
+      const f = c === 'b' ? n - 1 - k : k;
+      const i = fs[f].cells.indexOf(null);
+      if (i >= 0) return { f, i };
     }
+    return null;
+  }
 
-    // --- WODB INTERACTIVE TALK MOVES ---
-    const wodbData = {
-      'A': {
-        title: "Box A: 10 Scattered Dots",
-        reason: "Does not belong because the dots are loose and unorganized, making them harder to count at a glance without grouping.",
-        talkStem: "Teacher Stem: 'How does scatter vs. structure change how fast we can see 10?'",
-        udlNote: "Supports spatial organization awareness."
-      },
-      'B': {
-        title: "Box B: 1 Full 10-Frame",
-        reason: "Does not belong because it uses a 2x5 grid arrangement rather than a linear stack or loose objects.",
-        talkStem: "Student Stem: 'Box B doesn't belong because it is in a frame with 5 on top and 5 on bottom.'",
-        udlNote: "Visual subitizing pattern anchor."
-      },
-      'C': {
-        title: "Box C: 1 Tower Stick of 10",
-        reason: "Does not belong because all 10 individual cubes are physically locked together into 1 single solid object ('a Ten').",
-        talkStem: "Teacher Stem: 'Is Box C 10 things or 1 thing? How can it be both?'",
-        udlNote: "Core lesson concept bridge!"
-      },
-      'D': {
-        title: "Box D: 1 Dime (10¢)",
-        reason: "Does not belong because it is a single coin rather than a group of physical cubes or dots, though it represents a value of 10.",
-        talkStem: "Student Stem: 'Box D doesn't belong because it is money!'",
-        udlNote: "Abstract monetary representation."
-      }
-    };
-
-    function selectWODB(boxKey) {
-      document.querySelectorAll('.wodb-box').forEach(b => b.classList.remove('border-teal-600', 'bg-teal-50'));
-      document.getElementById('wodb-btn-' + boxKey).classList.add('border-teal-600', 'bg-teal-50');
-
-      const data = wodbData[boxKey];
-      const panel = document.getElementById('wodb-detail-panel');
-      panel.innerHTML = `
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-teal-900 text-sm">${data.title}</h4>
-            <span class="text-xs font-semibold bg-teal-200 text-teal-900 px-2 py-0.5 rounded">Selected</span>
-          </div>
-          <p class="text-xs text-slate-700"><strong>Why it doesn't belong:</strong> ${data.reason}</p>
-          <div class="p-2.5 bg-white rounded-lg border border-teal-200 text-xs font-medium text-teal-800">
-            <i class="fa-solid fa-comment-dots text-teal-600 mr-1"></i> ${data.talkStem}
-          </div>
-          <p class="text-[11px] text-teal-700 italic">UDL Teacher Insight: ${data.udlNote}</p>
-        </div>
-      `;
-    }
-
-    // --- TEEN NUMBER SPINNER LOGIC ---
-    function generateRandomTeenNumber() {
-      const rand = Math.floor(Math.random() * 9) + 11; // 11 to 19
-      document.getElementById('target-number-display').textContent = rand;
-      document.querySelectorAll('.target-num-text').forEach(el => el.textContent = rand);
-    }
-
-    // --- VIRTUAL MANIPULATIVE WORKBENCH LOGIC ---
-    function addSingleCube() {
-      if (currentLooseCount >= 10) return;
-
-      currentLooseCount++;
-      playAudioTone('pop');
-      renderWorkbench();
-    }
-
-    function bundleTen() {
-      if (currentLooseCount < 10) return;
-
-      currentLooseCount -= 10;
-      currentTensCount++;
-      playAudioTone('bundle');
-      renderWorkbench();
-
-      // Check if challenge met
-      if (challengeTargetNumber > 0) {
-        checkChallengeStatus();
-      }
-    }
-
-    function resetWorkbench() {
-      currentLooseCount = 0;
-      currentTensCount = 0;
-      challengeTargetNumber = 0;
-      document.getElementById('challenge-banner').classList.add('hidden');
-      renderWorkbench();
-    }
-
-    function startPracticeChallenge() {
-      resetWorkbench();
-      challengeTargetNumber = Math.floor(Math.random() * 9) + 11; // 11 to 19
-      document.getElementById('challenge-target').textContent = "Build " + challengeTargetNumber;
-      document.getElementById('challenge-banner').classList.remove('hidden');
-    }
-
-    function checkChallengeStatus() {
-      const total = (currentTensCount * 10) + currentLooseCount;
-      if (total === challengeTargetNumber && currentTensCount >= 1) {
-        setTimeout(() => {
-          alert(`🎉 Outstanding! You built ${challengeTargetNumber} as 1 Ten and ${currentLooseCount} Ones!`);
-        }, 200);
-      }
-    }
-
-    function renderWorkbench() {
-      const onesContainer = document.getElementById('ones-container');
-      const tensContainer = document.getElementById('tens-container');
-      const bundleBtn = document.getElementById('btn-bundle-ten');
-
-      // Render Ones
-      onesContainer.innerHTML = '';
-      if (currentLooseCount === 0) {
-        onesContainer.innerHTML = '<p class="text-xs text-slate-500 italic m-auto" id="ones-empty-msg">Click "+ Add 1 Single Cube"</p>';
-      } else {
-        for (let i = 0; i < currentLooseCount; i++) {
-          const cube = document.createElement('div');
-          cube.className = 'w-7 h-7 bg-amber-400 border-2 border-amber-600 rounded-md shadow flex items-center justify-center text-[10px] font-bold text-amber-950 cube-snap animate-bounce';
-          cube.textContent = '1';
-          onesContainer.appendChild(cube);
-        }
-      }
-
-      // Render Tens Sticks
-      tensContainer.innerHTML = '';
-      if (currentTensCount === 0) {
-        tensContainer.innerHTML = '<p class="text-xs text-slate-500 italic m-auto" id="tens-empty-msg">No 10-stick yet. Add 10 cubes to bundle!</p>';
-      } else {
-        for (let t = 0; t < currentTensCount; t++) {
-          const stick = document.createElement('div');
-          stick.className = 'flex flex-col gap-0.5 bg-teal-900 p-1 rounded-lg border-2 border-teal-400 shadow-lg';
-          for (let c = 0; c < 10; c++) {
-            const seg = document.createElement('div');
-            seg.className = 'w-6 h-3.5 bg-teal-500 border border-teal-300 rounded-sm flex items-center justify-center text-[8px] text-teal-950 font-bold';
-            seg.textContent = '1';
-            stick.appendChild(seg);
-          }
-          const label = document.createElement('span');
-          label.className = 'text-[10px] font-extrabold text-teal-300 text-center mt-1';
-          label.textContent = '1 TEN';
-          stick.appendChild(label);
-          tensContainer.appendChild(stick);
-        }
-      }
-
-      // Enable/Disable Bundle Button
-      if (currentLooseCount >= 10) {
-        bundleBtn.disabled = false;
-        bundleBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg animate-pulse cursor-pointer";
-        bundleBtn.innerHTML = '<i class="fa-solid fa-lock"></i> BUNDLE 10 ONES INTO 1 TEN!';
-      } else {
-        bundleBtn.disabled = true;
-        bundleBtn.className = "w-full bg-slate-800 text-slate-600 font-extrabold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-not-allowed";
-        bundleBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Bundle 10 Ones into "1 Ten" Tower';
-      }
-
-      // Update Badges & Counters
-      document.getElementById('single-count-badge').textContent = currentLooseCount;
-      document.getElementById('stat-loose').textContent = currentLooseCount;
-      document.getElementById('stat-tens').textContent = currentTensCount;
-
-      const totalVal = (currentTensCount * 10) + currentLooseCount;
-      document.getElementById('stat-total').textContent = totalVal;
-
-      document.getElementById('ones-count-text').textContent = currentLooseCount + ' Ones';
-      document.getElementById('tens-count-text').textContent = currentTensCount + ' Ten(s)';
-
-      // Equation Bar
-      document.getElementById('eq-tens').textContent = currentTensCount * 10;
-      document.getElementById('eq-ones').textContent = currentLooseCount;
-      document.getElementById('eq-total').textContent = totalVal;
-
-      if (challengeTargetNumber > 0) {
-        checkChallengeStatus();
-      }
-    }
-
-    // --- UPDATE CUSTOM SAVED PLAN SUMMARY ---
-    function updateCustomPlan() {
-      const stratsList = document.getElementById('saved-strats-list');
-      if (savedStrategies.length === 0) {
-        stratsList.innerHTML = '<li class="italic text-slate-400 list-none">No strategies selected yet. Click "+ Add to Plan" in Tab 2!</li>';
-      } else {
-        stratsList.innerHTML = savedStrategies.map(s => `<li class="font-medium text-slate-800">${s}</li>`).join('');
-      }
-
-      const accsList = document.getElementById('saved-accs-list');
-      const checkedBoxes = document.querySelectorAll('.acc-check:checked');
-      if (checkedBoxes.length === 0) {
-        accsList.innerHTML = '<li class="italic text-slate-400 list-none">No accommodations checked.</li>';
-      } else {
-        accsList.innerHTML = Array.from(checkedBoxes).map(cb => `<li class="font-medium text-slate-800">${cb.dataset.label}</li>`).join('');
-      }
-    }
-
-    // Clipboard Copy Helper
-    function copyLessonPlan() {
-      const checkedBoxes = Array.from(document.querySelectorAll('.acc-check:checked')).map(cb => "• " + cb.dataset.label).join('\n');
-      const strats = savedStrategies.map(s => "• " + s).join('\n');
-
-      const textToCopy = `=== IM GRADE 1 MATH: LESSON 8 UDL PLAN ===\nLesson: Ten as a Unit (1.NBT.B.2)\n\nSELECTED UDL STRATEGIES:\n${strats || 'None selected'}\n\nCHECKED ACCOMMODATIONS:\n${checkedBoxes || 'None checked'}\n`;
-
-      const tempTextArea = document.createElement("textarea");
-      tempTextArea.value = textToCopy;
-      document.body.appendChild(tempTextArea);
-      tempTextArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempTextArea);
-
-      alert("✨ Lesson Plan Summary copied to clipboard successfully!");
-    }
-
-    // Initialize Default State
-    window.onload = function() {
-      selectWODB('C');
-      renderWorkbench();
-    };
-  </script>
-
+  render(null);
+  requestAnimationFrame(() => render(null));
+})();
+</script>
 </body>
 </html>
