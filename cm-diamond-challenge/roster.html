@@ -74,6 +74,10 @@
       </div>
     </section>
 
+    <!-- Warns the coordinator when the Sheet's header row no longer matches the
+         columns the Apps Script writes, which silently shifts Attendance. -->
+    <div id="header-warning" class="hidden mb-4 p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs sm:text-sm"></div>
+
     <!-- ROSTER TABLE PANEL -->
     <section class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
       
@@ -279,7 +283,11 @@ function doPost(e) {
     let combinedBookings = [];
 
     function getScriptUrl() {
-      return localStorage.getItem(SCRIPT_STORAGE_KEY) || DEFAULT_GAS_URL;
+      try {
+        return localStorage.getItem(SCRIPT_STORAGE_KEY) || DEFAULT_GAS_URL;
+      } catch (e) {
+        return DEFAULT_GAS_URL;
+      }
     }
 
     function getLocalBookings() {
@@ -291,7 +299,11 @@ function doPost(e) {
     }
 
     function saveLocalBookings(list) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      } catch (e) {
+        console.warn("Could not save roster locally:", e);
+      }
     }
 
     function fetchJsonp(url) {
@@ -346,7 +358,12 @@ function doPost(e) {
           block: item["Block"] || item.block || "-",
           teacher: item["Teacher"] || item.teacher || "-",
           course: item["Course"] || item.course || "-",
-          attendance: item["Attendance"] || item.attendance || "In Person",
+          phase: item["Phase"] || item.phase || "",
+          topic: item["Topic"] || item.topic || "",
+          submittedAt: item["Submitted At"] || item.submittedAt || "",
+          // No fallback: a blank here means the Sheet never supplied one, and
+          // guessing "In Person" is what hid the column misalignment before.
+          attendance: item["Attendance"] || item.attendance || "",
           mentorName: item["Mentor Name"] || item.mentorName || "-",
           mentorEmail: item["Mentor Email"] || item.mentorEmail || "-",
           mentorOrg: item["Organization"] || item.mentorOrg || "",
@@ -356,10 +373,64 @@ function doPost(e) {
         combinedBookings = localData;
       }
 
+      checkSheetHeaders(sheetData);
       renderRosterTable(combinedBookings);
       updateStats();
 
       if (icon) icon.classList.remove("animate-spin");
+    }
+
+    const EXPECTED_HEADERS = [
+      "Booking ID", "Block ID", "Date", "Time", "Block", "Teacher", "Course",
+      "Phase", "Topic", "Attendance", "Mentor Name", "Mentor Email",
+      "Organization", "Notes", "Submitted At"
+    ];
+
+    // The Apps Script writes 15 values per row. If the Sheet's header row is
+    // missing one, every value after the gap lands under the wrong heading.
+    function checkSheetHeaders(sheetData) {
+      const box = document.getElementById("header-warning");
+      if (!Array.isArray(sheetData) || sheetData.length === 0) {
+        box.classList.add("hidden");
+        return;
+      }
+      const keys = Object.keys(sheetData[0]);
+      const missing = EXPECTED_HEADERS.filter(h => keys.indexOf(h) === -1);
+      const blank = keys.indexOf("") !== -1;
+      if (missing.length === 0 && !blank) {
+        box.classList.add("hidden");
+        return;
+      }
+      box.innerHTML = `
+        <div class="font-bold mb-1">⚠️ The Google Sheet header row is out of sync</div>
+        <p class="mb-2">
+          ${missing.length ? `Missing column heading(s): <strong>${missing.map(escapeHtml).join(", ")}</strong>. ` : ""}
+          ${blank ? "There is also an unlabeled column holding data. " : ""}
+          Values after the gap are being filed under the wrong heading, so Attendance
+          may look blank while a mentor's name reads &ldquo;Virtual&rdquo;.
+        </p>
+        <p class="font-semibold">Fix: paste this into cell A1 of the Sheet (it fills 15 columns), then refresh.</p>
+        <pre class="mt-1 bg-white p-2 rounded border border-amber-300 text-[11px] font-mono select-all overflow-x-auto whitespace-pre">${EXPECTED_HEADERS.join("\t")}</pre>
+      `;
+      box.classList.remove("hidden");
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? "" : str).replace(/[&<>"']/g, c => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+      ));
+    }
+
+    // The Sheet returns real Date cells as ISO strings; show the school-local day.
+    function formatSheetDate(value) {
+      if (!value) return "-";
+      const str = String(value);
+      if (!/^\d{4}-\d{2}-\d{2}T/.test(str)) return str;
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return str;
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Santiago", weekday: "short", month: "short", day: "numeric"
+      }).format(d);
     }
 
     function renderRosterTable(list) {
@@ -377,14 +448,19 @@ function doPost(e) {
       }
 
       tbody.innerHTML = list.map(b => {
-        const isVirtual = b.attendance && b.attendance.toLowerCase().includes("virtual");
-        const attBadge = isVirtual
-          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">💻 Virtual</span>`
-          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">🏫 In Person</span>`;
+        const mode = (b.attendance || "").toLowerCase();
+        let attBadge;
+        if (mode.includes("virtual")) {
+          attBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">💻 Virtual</span>`;
+        } else if (mode.includes("person")) {
+          attBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">🏫 In Person</span>`;
+        } else {
+          attBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200" title="No attendance mode recorded for this row">— Not recorded</span>`;
+        }
 
         return `
           <tr class="hover:bg-slate-50 transition">
-            <td class="py-2.5 px-3 font-semibold text-slate-900">${b.date}</td>
+            <td class="py-2.5 px-3 font-semibold text-slate-900">${formatSheetDate(b.date)}</td>
             <td class="py-2.5 px-3 whitespace-nowrap">${b.time}</td>
             <td class="py-2.5 px-3 font-mono font-medium text-slate-700">${b.block}</td>
             <td class="py-2.5 px-3 text-slate-700">${b.teacher}</td>
@@ -436,20 +512,21 @@ function doPost(e) {
       const claimedSlots = new Set(combinedBookings.map(b => b.slotId).filter(id => id && id !== "-"));
       document.getElementById("stat-claimed-blocks").innerText = claimedSlots.size;
 
-      // Count In Person vs Virtual
+      // Count In Person vs Virtual, keeping unrecorded rows visible
       let inPerson = 0;
       let virtual = 0;
+      let unknown = 0;
       combinedBookings.forEach(b => {
-        if (b.attendance && b.attendance.toLowerCase().includes("virtual")) {
-          virtual++;
-        } else {
-          inPerson++;
-        }
+        const mode = (b.attendance || "").toLowerCase();
+        if (mode.includes("virtual")) virtual++;
+        else if (mode.includes("person")) inPerson++;
+        else unknown++;
       });
       document.getElementById("stat-attendance-breakdown").innerHTML = `
         <span class="text-emerald-700 font-bold">🏫 ${inPerson} In-Person</span>
         <span>&bull;</span>
         <span class="text-sky-700 font-bold">💻 ${virtual} Virtual</span>
+        ${unknown ? `<span>&bull;</span><span class="text-slate-400 font-bold" title="Rows with no attendance mode recorded">— ${unknown}</span>` : ""}
       `;
     }
 
@@ -461,7 +538,7 @@ function doPost(e) {
 
       let csv = "Booking ID,Block ID,Date,Time,Block,Teacher,Course,Phase,Topic,Attendance,Mentor Name,Mentor Email,Organization,Notes,Submitted At\n";
       combinedBookings.forEach(b => {
-        csv += `"${b.bookingId}","${b.slotId || ''}","${b.date}","${b.time}","${b.block || ''}","${b.teacher || ''}","${b.course || ''}","${b.phase || ''}","${b.topic || ''}","${b.attendance || 'In Person'}","${b.mentorName}","${b.mentorEmail}","${b.mentorOrg || ''}","${(b.mentorNotes || '').replace(/"/g, '""')}","${new Date().toISOString()}"\n`;
+        csv += `"${b.bookingId}","${b.slotId || ''}","${b.date}","${b.time}","${b.block || ''}","${b.teacher || ''}","${b.course || ''}","${b.phase || ''}","${b.topic || ''}","${b.attendance || ''}","${b.mentorName}","${b.mentorEmail}","${b.mentorOrg || ''}","${(b.mentorNotes || '').replace(/"/g, '""')}","${b.submittedAt || ''}"\n`;
       });
 
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
