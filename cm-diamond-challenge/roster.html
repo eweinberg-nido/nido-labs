@@ -78,6 +78,9 @@
          columns the Apps Script writes, which silently shifts Attendance. -->
     <div id="header-warning" class="hidden mb-4 p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs sm:text-sm"></div>
 
+    <!-- Shown when the Sheet returned the public, non-identifying projection. -->
+    <div id="token-warning" class="hidden mb-4 p-4 rounded-xl border border-sky-300 bg-sky-50 text-sky-900 text-xs sm:text-sm"></div>
+
     <!-- ROSTER TABLE PANEL -->
     <section class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
       
@@ -161,6 +164,17 @@
               </div>
               <p id="test-connection-msg" class="text-xs mt-2 font-medium"></p>
             </div>
+
+            <div class="pt-3 border-t border-slate-200">
+              <label class="block font-semibold text-slate-700 text-xs">Roster Access Token</label>
+              <p class="text-[11px] text-slate-500 mt-0.5 mb-1.5">
+                Required to load mentor names, emails and notes. Without it the Sheet
+                returns only which blocks are taken. Run <code class="bg-slate-200 px-1 rounded">generateRosterToken()</code>
+                once in Apps Script and paste the result here. Stored only in this browser.
+              </p>
+              <input type="password" id="cfg-roster-token" placeholder="Paste roster access token"
+                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
+            </div>
           </div>
 
           <!-- Row 1 Headers Guide -->
@@ -169,96 +183,19 @@
             <pre class="bg-white p-2 rounded border border-indigo-200 text-[11px] font-mono text-slate-700 select-all overflow-x-auto whitespace-pre">Booking ID	Block ID	Date	Time	Block	Teacher	Course	Phase	Topic	Attendance	Mentor Name	Mentor Email	Organization	Notes	Submitted At</pre>
           </div>
 
-          <!-- Code.gs -->
-          <div class="border border-slate-200 rounded-xl overflow-hidden text-xs">
-            <div class="bg-slate-100 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between">
-              <span class="font-bold text-slate-700">Google Apps Script (Code.gs)</span>
-              <button type="button" onclick="copyGasCode()" id="copy-gas-btn" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 bg-white px-2 py-1 rounded border border-slate-200">
-                <i data-lucide="copy" class="w-3 h-3"></i> <span>Copy Script</span>
-              </button>
-            </div>
-            <pre id="gas-code-box" class="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] leading-relaxed max-h-40 overflow-y-auto select-all">function doGet(e) {
-  var lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-  try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = sheet.getDataRange().getValues();
-    var rows = [];
-    if (data.length > 1) {
-      var headers = data[0];
-      for (var i = 1; i < data.length; i++) {
-        var row = {};
-        for (var j = 0; j < headers.length; j++) {
-          row[headers[j]] = data[i][j];
-        }
-        rows.push(row);
-      }
-    }
-    var json = JSON.stringify(rows);
-    var callback = e && e.parameter ? e.parameter.callback : null;
-    if (callback) {
-      return ContentService.createTextOutput(callback + '(' + json + ')')
-        .setMimeType(ContentService.MimeType.JAVASCRIPT);
-    }
-    return ContentService.createTextOutput(json)
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    var errObj = JSON.stringify({ error: err.toString() });
-    var callback = e && e.parameter ? e.parameter.callback : null;
-    if (callback) {
-      return ContentService.createTextOutput(callback + '(' + errObj + ')')
-        .setMimeType(ContentService.MimeType.JAVASCRIPT);
-    }
-    return ContentService.createTextOutput(errObj)
-      .setMimeType(ContentService.MimeType.JSON);
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-function doPost(e) {
-  var lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-  try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        "Booking ID", "Block ID", "Date", "Time", "Block", "Teacher", 
-        "Course", "Phase", "Topic", "Attendance", "Mentor Name", "Mentor Email", 
-        "Organization", "Notes", "Submitted At"
-      ]);
-    }
-    var body = e.postData ? e.postData.contents : "";
-    var entries = JSON.parse(body);
-    if (!Array.isArray(entries)) entries = [entries];
-    entries.forEach(function(item) {
-      sheet.appendRow([
-        item.bookingId || "",
-        item.slotId || item.blockId || "",
-        item.date || "",
-        item.time || "",
-        item.block || "",
-        item.teacher || "",
-        item.course || "",
-        item.phase || "",
-        item.topic || "",
-        item.attendance || "In Person",
-        item.mentorName || "",
-        item.mentorEmail || "",
-        item.mentorOrg || "",
-        item.mentorNotes || "",
-        item.createdAt || new Date().toISOString()
-      ]);
-    });
-    return ContentService.createTextOutput(JSON.stringify({ success: true }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } finally {
-    lock.releaseLock();
-  }
-}</pre>
+          <!-- Code.gs pointer -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5">
+            <span class="font-bold text-slate-700">Google Apps Script (Code.gs)</span>
+            <p class="text-slate-600 leading-relaxed">
+              The backend script lives in the repository as
+              <code class="bg-white px-1 py-0.5 rounded border border-slate-300">Code.gs</code>.
+              Copy it from there into <strong>Extensions &rsaquo; Apps Script</strong>, then redeploy with
+              <strong>Manage deployments &rsaquo; Edit &rsaquo; New version</strong> to keep this same URL.
+            </p>
+            <p class="text-slate-500">
+              It is not duplicated here on purpose — a stale copy in this panel previously
+              wrote rows by fixed column position, which is what shifted the Attendance column.
+            </p>
           </div>
         </div>
 
@@ -281,6 +218,32 @@ function doPost(e) {
     const STORAGE_KEY = "nido_diamond_mentors_sheets_v2";
 
     let combinedBookings = [];
+
+    const TOKEN_STORAGE_KEY = "nido_roster_access_token";
+
+    function getRosterToken() {
+      try {
+        return localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function saveRosterToken(token) {
+      try {
+        if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        else localStorage.removeItem(TOKEN_STORAGE_KEY);
+      } catch (e) {
+        console.warn("Could not store roster token:", e);
+      }
+    }
+
+    // Appends the access token so the Sheet returns full rows.
+    function withToken(url) {
+      const token = getRosterToken();
+      if (!token) return url;
+      return url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token);
+    }
 
     function getScriptUrl() {
       try {
@@ -335,12 +298,13 @@ function doPost(e) {
       let sheetData = [];
 
       if (scriptUrl) {
+        const authedUrl = withToken(scriptUrl);
         try {
-          const res = await fetch(scriptUrl);
+          const res = await fetch(authedUrl);
           if (res.ok) sheetData = await res.json();
         } catch (fetchErr) {
           try {
-            sheetData = await fetchJsonp(scriptUrl);
+            sheetData = await fetchJsonp(authedUrl);
           } catch (jsonpErr) {
             console.warn("Could not load live sheet:", jsonpErr);
           }
@@ -374,10 +338,44 @@ function doPost(e) {
       }
 
       checkSheetHeaders(sheetData);
+      checkRosterAccess(sheetData);
       renderRosterTable(combinedBookings);
       updateStats();
 
       if (icon) icon.classList.remove("animate-spin");
+    }
+
+    // A row without "Mentor Email" means the endpoint withheld identifying
+    // fields because no valid token was supplied.
+    function isLimitedView(sheetData) {
+      return Array.isArray(sheetData) && sheetData.length > 0 &&
+        !Object.keys(sheetData[0]).some(k => k === "Mentor Email");
+    }
+
+    function checkRosterAccess(sheetData) {
+      const box = document.getElementById("token-warning");
+      if (!Array.isArray(sheetData) || sheetData.length === 0) {
+        box.classList.add("hidden");
+        return;
+      }
+      if (!isLimitedView(sheetData)) {
+        box.classList.add("hidden");
+        return;
+      }
+      box.innerHTML = `
+        <div class="font-bold mb-1">\u{1F512} Mentor details are hidden</div>
+        <p class="mb-2">
+          The Sheet returned only which blocks are taken \u2014 names, emails, organizations
+          and notes were withheld because this browser has no valid access token.
+          ${getRosterToken() ? "The saved token was not accepted." : ""}
+        </p>
+        <p>
+          Run <code class="bg-white px-1 rounded border border-sky-200">generateRosterToken()</code>
+          once in Apps Script, then paste the value into
+          <strong>Webhook Settings \u2192 Roster Access Token</strong>.
+        </p>
+      `;
+      box.classList.remove("hidden");
     }
 
     const EXPECTED_HEADERS = [
@@ -391,6 +389,12 @@ function doPost(e) {
     function checkSheetHeaders(sheetData) {
       const box = document.getElementById("header-warning");
       if (!Array.isArray(sheetData) || sheetData.length === 0) {
+        box.classList.add("hidden");
+        return;
+      }
+      // The token-gated view omits most columns on purpose; judging the Sheet's
+      // header row from it would raise a false alarm.
+      if (isLimitedView(sheetData)) {
         box.classList.add("hidden");
         return;
       }
@@ -564,6 +568,7 @@ function doPost(e) {
     // Modal & Script setup
     function openScriptModal() {
       document.getElementById("cfg-script-url").value = getScriptUrl();
+      document.getElementById("cfg-roster-token").value = getRosterToken();
       document.getElementById("test-connection-msg").innerText = "";
       document.getElementById("script-modal").classList.remove("hidden");
       lucide.createIcons();
@@ -575,29 +580,25 @@ function doPost(e) {
 
     function saveScriptConfig() {
       const url = document.getElementById("cfg-script-url").value.trim();
-      localStorage.setItem(SCRIPT_STORAGE_KEY, url);
+      try {
+        localStorage.setItem(SCRIPT_STORAGE_KEY, url);
+      } catch (e) {
+        console.warn("Could not store webhook URL:", e);
+      }
+      saveRosterToken(document.getElementById("cfg-roster-token").value.trim());
       closeScriptModal();
       syncFromGoogleSheet();
     }
 
     function clearScriptConfig() {
       if (!confirm("Clear custom webhook URL and reset to default?")) return;
-      localStorage.removeItem(SCRIPT_STORAGE_KEY);
+      try {
+        localStorage.removeItem(SCRIPT_STORAGE_KEY);
+      } catch (e) {
+        console.warn("Could not clear webhook URL:", e);
+      }
       closeScriptModal();
       syncFromGoogleSheet();
-    }
-
-    function copyGasCode() {
-      const code = document.getElementById("gas-code-box").innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        const btn = document.getElementById("copy-gas-btn");
-        btn.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> <span class="text-emerald-700">Copied!</span>`;
-        lucide.createIcons();
-        setTimeout(() => {
-          btn.innerHTML = `<i data-lucide="copy" class="w-3 h-3"></i> <span>Copy Script</span>`;
-          lucide.createIcons();
-        }, 3000);
-      });
     }
 
     async function testConnection() {
@@ -613,15 +614,23 @@ function doPost(e) {
 
       try {
         let rows = null;
+        // Test with the token currently typed into the form, not the saved one.
+        const typedToken = document.getElementById("cfg-roster-token").value.trim();
+        const testUrl = typedToken
+          ? url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(typedToken)
+          : url;
         try {
-          const res = await fetch(url);
+          const res = await fetch(testUrl);
           if (res.ok) rows = await res.json();
         } catch (fetchErr) {
-          rows = await fetchJsonp(url);
+          rows = await fetchJsonp(testUrl);
         }
 
         if (Array.isArray(rows)) {
-          msg.innerHTML = `<span class="text-emerald-700 font-bold">✓ Connected!</span> (${rows.length} rows read)`;
+          const full = rows.length === 0 || Object.keys(rows[0]).some(k => k === "Mentor Email");
+          msg.innerHTML = full
+            ? `<span class="text-emerald-700 font-bold">✓ Connected!</span> (${rows.length} rows, full access)`
+            : `<span class="text-amber-700 font-bold">✓ Connected,</span> but mentor details are hidden — the token was not accepted. (${rows.length} rows)`;
         } else {
           msg.innerHTML = `<span class="text-amber-700 font-semibold">✓ Webhook reachable!</span>`;
         }

@@ -22,15 +22,17 @@ This platform enables community entrepreneurs, alumni, and industry leaders to b
 ### 1. Public Mentor Portal (`index.html`)
 * **Live Availability Scanner:** Slots synchronize with Google Sheets in real time.
 * **Automatic Past-Block Hiding:** Whether a block has already happened is computed from the current date and time in `America/Santiago` — a block disappears from the default view once its end time passes. No date flags to maintain by hand.
-* **Capacity-Aware Classroom Blocks:** Most class periods take a single mentor and lock once claimed. **Blocks C and H each run two concurrent sections of Changemakers, so they seat two mentors** and show a `1 of 2 spots filled` badge until both are taken.
+* **Capacity-Aware Classroom Blocks:** Most class periods take a single mentor and lock once claimed. Two cases differ:
+  * **Blocks C and H** each run two concurrent sections of Changemakers, so a single listing **seats two mentors** and shows a `1 of 2 spots filled` badge until both are taken.
+  * **Block F** runs a Changemakers class *and* an Intro to Entrepreneurship class at the same time. These are different courses with different teachers, so they appear as **two separate listings** on the same date and time — each taking one mentor — rather than one listing with two seats.
 * **Multi-Judge Demo Day (Dec 14):** Official pitch evaluation panels support unlimited mentor registrations with live counter badges (e.g., `👥 3 Signed Up`).
 * **Attendance Preference:** Mentors choose between **🏫 In Person (Campus Innovation Lab)** and **💻 Virtual (Zoom / Google Meet)**.
 * **Timezone-Aware Calendar Sync:** One-click links pre-populate event times, course details, topics, and virtual/physical locations. Times are stamped with `ctz=America/Santiago`, so Google converts each block into the mentor's own calendar timezone automatically — an overseas mentor sees their local hour, not Santiago's.
 * **Draft Email Confirmation:** Generates a pre-formatted email draft addressed to the coordinator (`jcancella@nido.cl`, set via `ORGANIZER_EMAIL` in `index.html`).
 
 ### 2. Coordinator Dashboard (`roster.html`)
-* **Protected Roster View:** Keeps mentor emails, notes, and attendance preferences hidden from public visitors.
-* **Live Google Sheet Sync:** Fetches registrations directly from your connected spreadsheet via standard Fetch with automatic **JSONP fallback** to bypass browser CORS restrictions.
+* **Token-Gated Roster View:** Mentor emails, notes, organizations and full names are withheld by the Apps Script unless a valid access token is supplied. The dashboard page itself is served publicly like any GitHub Pages file — the data behind it is what is protected, not the URL.
+* **Live Google Sheet Sync:** Fetches registrations directly from your connected spreadsheet via standard Fetch with automatic **JSONP fallback** to bypass browser CORS restrictions. Requests carry the access token stored in this browser.
 * **Real-Time KPI Cards:** Displays total sign-ups, unique mentors, claimed class blocks, and In-Person vs. Virtual attendance counts. Rows with no attendance mode recorded are counted separately rather than silently folded into In-Person.
 * **Header Drift Warning:** If the Sheet's header row stops matching the columns the script writes, the dashboard shows a banner naming the missing heading and the exact row to paste back.
 * **Search & Filter:** Instant keyword search across mentor names, emails, courses, schedule blocks, and attendance modes.
@@ -133,6 +135,47 @@ If you ever deploy a new Google Sheet or need to switch to a testing sheet:
 2. Click **Webhook Settings** in the top navigation.
 3. Paste the new `/exec` URL and click **Test URL** to verify the connection.
 4. Click **Save Connection** (saved to `localStorage` under `nido_gas_webhook_url`).
+
+---
+
+## 🔒 Security Model
+
+This is a static site with a public Apps Script endpoint, so **the `/exec` URL cannot be kept secret** — it is visible in the page source of the public sign-up page, and a new deployment URL would be equally visible. Access is therefore controlled at the endpoint, not by hiding it.
+
+### What an anonymous request can see
+
+`doGet` returns only the fields the public sign-up page needs to grey out claimed blocks:
+
+| Returned anonymously | Withheld without a token |
+|---|---|
+| Block ID, Date, Time | Mentor full name |
+| Mentor **first name** only | Mentor email |
+| | Organization |
+| | Notes |
+
+### Setting the access token
+
+1. In Apps Script, run **`generateRosterToken()`** once. It writes a random token to Script Properties and logs it.
+2. Copy the logged value into `roster.html` → **Webhook Settings** → **Roster Access Token**.
+3. Click **Test URL** — it reports whether the token was accepted.
+
+The token is stored in Script Properties and in the coordinator's browser `localStorage`. **It is never written to `Code.gs`, the HTML files, or this repository.** To revoke it, run `generateRosterToken()` again and redistribute.
+
+> Until a token is set, the Apps Script **fails closed**: every request receives the restricted view, including the roster's.
+
+### Writes
+
+`doPost` stays open, since mentors sign up without credentials. It is validated rather than authenticated:
+
+* Rejects entries with no mentor name, no block, or a malformed email.
+* Caps requests at 25 entries and each field at 500 characters.
+* Prefixes values starting with `=`, `+`, `-` or `@` with an apostrophe, so a submitted `=IMPORTRANGE(...)` is stored as text instead of executing when the Sheet or the exported CSV is opened.
+
+Someone reading the public page source can still post a plausible-looking fake sign-up. Treat the roster as volunteer-supplied data, not verified identity.
+
+### If mentor data may already have been exposed
+
+The `/exec` URL has been public since the repo's first commit. Anyone who viewed source on the sign-up page could have read the full roster before token gating was added. Rotating the URL does not undo that; deploying the current `Code.gs` and setting a token stops it continuing.
 
 ---
 

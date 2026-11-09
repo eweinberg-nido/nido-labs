@@ -36,6 +36,102 @@ var FIELD_FOR_HEADER = {
   "Submitted At": function (it) { return it.createdAt || new Date().toISOString(); }
 };
 
+// ---------------------------------------------------------------------------
+// ACCESS CONTROL
+//
+// This file is committed to a PUBLIC repository and the /exec URL is visible in
+// the public sign-up page, so the token is NOT stored here. It lives in Script
+// Properties: run generateRosterToken() once and paste the result into
+// roster.html > Webhook Settings on the coordinator's machine.
+//
+// Without a valid token, doGet returns only what the public page needs to grey
+// out claimed blocks: block id, date, time and a first name. Mentor emails,
+// organizations, notes and full names never leave the Sheet.
+// ---------------------------------------------------------------------------
+
+var TOKEN_PROPERTY = "ROSTER_TOKEN";
+
+function safeEquals(a, b) {
+  if (a.length !== b.length) return false;
+  var diff = 0;
+  for (var i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function isAuthorized(e) {
+  var expected = PropertiesService.getScriptProperties().getProperty(TOKEN_PROPERTY);
+  if (!expected) return false; // fail closed: no token configured => public view
+  var supplied = (e && e.parameter) ? e.parameter.token : null;
+  if (!supplied) return false;
+  return safeEquals(String(supplied), String(expected));
+}
+
+/** Reduces a full row to the non-identifying fields the public page uses. */
+function toPublicRow(row) {
+  var name = String(row["Mentor Name"] || "").trim();
+  return {
+    "Block ID": row["Block ID"] || "",
+    "Date": row["Date"] || "",
+    "Time": row["Time"] || "",
+    "First Name": name ? name.split(/\s+/)[0] : "Volunteer"
+  };
+}
+
+/**
+ * Run once from the Apps Script editor. Generates a token, stores it in Script
+ * Properties, and logs it. Paste the logged value into roster.html >
+ * Webhook Settings. It is never written to this file or to the repository.
+ */
+function generateRosterToken() {
+  var bytes = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
+  PropertiesService.getScriptProperties().setProperty(TOKEN_PROPERTY, bytes);
+  Logger.log("Roster token (paste into roster.html > Webhook Settings):\n\n" + bytes);
+  return bytes;
+}
+
+// ---------------------------------------------------------------------------
+// WRITE HARDENING
+//
+// doPost must stay open so mentors can sign up without credentials, so it
+// validates instead of authenticating.
+// ---------------------------------------------------------------------------
+
+var MAX_ENTRIES_PER_REQUEST = 25;
+var MAX_FIELD_LENGTH = 500;
+
+/**
+ * Neutralizes spreadsheet formula injection. A mentor could otherwise submit
+ * "=IMPORTRANGE(...)" or "=HYPERLINK(...)" in a free-text field, which Sheets
+ * would execute when the coordinator opens the roster, and which Excel would
+ * execute from the exported CSV.
+ */
+function neutralizeFormula(value) {
+  if (typeof value !== "string") return value;
+  return /^[=+\-@\t\r]/.test(value) ? "'" + value : value;
+}
+
+function sanitizeEntry(item) {
+  var clean = {};
+  Object.keys(item || {}).forEach(function (key) {
+    var v = item[key];
+    if (typeof v === "string") {
+      if (v.length > MAX_FIELD_LENGTH) v = v.slice(0, MAX_FIELD_LENGTH);
+      v = neutralizeFormula(v);
+    }
+    clean[key] = v;
+  });
+  return clean;
+}
+
+function isValidEntry(item) {
+  var name = String(item.mentorName || "").trim();
+  var email = String(item.mentorEmail || "").trim();
+  if (!name || !email) return false;
+  if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) return false;
+  if (!String(item.slotId || item.blockId || "").trim()) return false;
+  return true;
+}
+
 function output(payload, callback) {
   var json = JSON.stringify(payload);
   if (callback) {
@@ -122,6 +218,9 @@ function doGet(e) {
         if (hasValue) rows.push(row);
       }
     }
+    // Strip identifying fields unless a valid roster token was supplied.
+    if (!isAuthorized(e)) rows = rows.map(toPublicRow);
+
     return output(rows, callback);
   } catch (err) {
     return output({ error: err.toString() }, callback);
@@ -140,6 +239,14 @@ function doPost(e) {
     var body = (e && e.postData) ? e.postData.contents : "";
     var entries = JSON.parse(body);
     if (!Array.isArray(entries)) entries = [entries];
+
+    if (entries.length > MAX_ENTRIES_PER_REQUEST) {
+      return output({ success: false, error: "Too many entries in one request" });
+    }
+    entries = entries.map(sanitizeEntry);
+    if (!entries.length || !entries.every(isValidEntry)) {
+      return output({ success: false, error: "Invalid or incomplete sign-up" });
+    }
 
     var rows = entries.map(function (item) {
       return headers.map(function (header) {
