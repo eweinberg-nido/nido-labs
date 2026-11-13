@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workshop Choice Optimizer — 1st &amp; 2nd Choice Maximizer</title>
+  <!-- Inline SVG Favicon so local dev servers do not 404 on /favicon.ico -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12.5l2.5 2.5 5.5-5.5' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <!-- Tailwind CSS via CDN for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Fallback & utility refinements so the app remains clean even if opened completely offline */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.65);
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .print-break-inside-avoid {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-200">
+  <!-- Toast Notification Banner (replaces alert/confirm) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm font-bold text-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+            Workshop Choice Optimizer
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+            Global preference matching · Maximizes 1st &amp; 2nd choice placements
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Privacy / Offline LocalStorage Indicator -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/70 text-emerald-700 dark:text-emerald-300 text-xs font-medium" title="All data stays strictly inside your browser's localStorage. Zero network requests are ever made with your data.">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>100% Local · Saved in Browser</span>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <button id="themeToggleBtn" type="button" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Toggle Dark Mode">
+          <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg>
+          <svg id="moonIcon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+          </svg>
+        </button>
+
+        <!-- Reset Storage Confirmation Inline Control -->
+        <div id="resetControls" class="flex items-center">
+          <button id="resetRequestBtn" type="button" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/50 dark:hover:text-rose-400 transition">
+            Clear Saved Data
+          </button>
+          <div id="resetConfirmGroup" class="hidden items-center gap-1.5">
+            <button id="resetConfirmBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition">
+              Confirm Wipe
+            </button>
+            <button id="resetCancelBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-300 transition">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+    <!-- Top Grid: Step 1 (Paste Survey Data) & Step 2 (Capacities & Optimization Controls) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+
+      <!-- STEP 1: PASTE SURVEY DATA -->
+      <section class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+        <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center justify-center">1</span>
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Paste Survey Data</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="loadSampleBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300 text-xs font-medium text-slate-700 dark:text-slate-300 transition">
+              Load Sample Data
+            </button>
+            <button id="clearInputBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <div class="p-5 flex-1 flex flex-col gap-3">
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            Copy columns directly from <strong>Google Sheets</strong> or <strong>Excel</strong> (including your <strong>Email</strong> column and workshop headers) and paste below.
+          </p>
+
+          <textarea
+            id="rawDataInput"
+            rows="10"
+            spellcheck="false"
+            placeholder="Paste spreadsheet cells here (Ctrl+V / Cmd+V)...&#10;&#10;Supports:&#10;• 'Email' or 'Name' column alongside workshop columns&#10;• Workshop headers (with or without [brackets])&#10;• Values like '1st choice', '2nd choice', '3rd choice' (or 1, 2, 3)"
+            class="w-full flex-1 min-h-[210px] p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition resize-y"
+          ></textarea>
+
+          <!-- Parse Status Bar -->
+          <div id="parseStatusBar" class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/70 text-xs">
+            <span id="parseSummaryText" class="font-medium text-slate-600 dark:text-slate-300">
+              Waiting for data...
+            </span>
+            <span id="nameModeBadge" class="hidden px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+              Email Column Detected
+            </span>
+          </div>
+
+          <!-- Parse Warnings (if any) -->
+          <div id="parseWarningsBox" class="hidden p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 space-y-1"></div>
+        </div>
+      </section>
+
+      <!-- STEP 2: WORKSHOP CAPACITIES & OPTIMIZER SETTINGS -->
+      <section class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+        <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center justify-center">2</span>
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Workshop Seat Capacities &amp; Demand</h2>
+          </div>
+
+          <!-- Bulk Capacity Controls -->
+          <div id="bulkCapacityControls" class="hidden flex items-center gap-2">
+            <button id="autoBalanceCapBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition" title="Set each workshop capacity to evenly fit all participants">
+              Even Split (<span id="evenSplitHint">0</span>/room)
+            </button>
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <input id="bulkCapInput" type="number" min="1" max="999" value="8" class="w-12 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-center font-semibold tabular-nums focus:outline-none" />
+              <button id="applyBulkCapBtn" type="button" class="px-2 py-0.5 rounded text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 transition">
+                Set All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workshops List -->
+        <div class="p-5 flex-1 flex flex-col justify-between gap-4">
+          <div id="workshopsEmptyState" class="py-12 text-center space-y-2">
+            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-300">No workshops detected yet</p>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">
+              Paste your survey results on the left (or click <strong>Load Sample Data</strong>) to configure room capacities and run the optimizer.
+            </p>
+          </div>
+
+          <div id="workshopsListContainer" class="hidden space-y-2.5 max-h-[340px] overflow-y-auto pr-1"></div>
+
+          <!-- Capacity Total & Optimization Action Footer -->
+          <div id="optimizerFooter" class="hidden pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-4">
+                <span class="text-slate-500 dark:text-slate-400">
+                  Total Seats: <strong id="totalSeatsLabel" class="text-slate-900 dark:text-white tabular-nums">0</strong>
+                </span>
+                <span class="text-slate-500 dark:text-slate-400">
+                  Participants: <strong id="totalParticipantsLabel" class="text-slate-900 dark:text-white tabular-nums">0</strong>
+                </span>
+                <span id="capacityWarningBadge" class="hidden px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-medium">
+                  Fewer seats than participants!
+                </span>
+              </div>
+
+              <!-- Strategy Selector -->
+              <div class="flex flex-wrap items-center gap-3">
+                <label class="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 cursor-pointer">
+                  <input id="allowFallbackCheckbox" type="checkbox" checked class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                  <span>Allow unranked fallback if 1st–3rd full</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <label for="objectiveSelect" class="text-xs font-medium text-slate-600 dark:text-slate-400">Goal:</label>
+                <select id="objectiveSelect" class="px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                  <option value="top2" selected>Maximize 1st or 2nd Choice (Avoid 3rd)</option>
+                  <option value="top1">Maximize Total 1st Choices</option>
+                  <option value="balanced">Balanced Satisfaction</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button id="shuffleOptimizeBtn" type="button" class="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5" title="Re-solve with randomized tie-breaking among equally optimal placements">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  Shuffle Ties
+                </button>
+                <button id="runOptimizeBtn" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold shadow-sm shadow-indigo-600/20 transition flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                  </svg>
+                  Optimize Assignments
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- STEP 3: OPTIMIZATION RESULTS & ROSTERS -->
+    <section id="resultsSection" class="hidden space-y-6">
+      <!-- KPI Summary Row -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Primary Metric: 1st or 2nd Choice -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-indigo-200 dark:border-indigo-900/70 p-5 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">1st or 2nd Choice</span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">Target</span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiTop2Pct" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">0%</span>
+            <span id="kpiTop2Count" class="text-xs font-medium text-slate-500 dark:text-slate-400 tabular-nums">(0 / 0)</span>
+          </div>
+          <div class="mt-3 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div id="kpiTop2Bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- 1st Choice -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">1st Choice</span>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiFirstCount" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">0</span>
+            <span id="kpiFirstPct" class="text-xs font-medium text-slate-500 dark:text-slate-400 tabular-nums">0%</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Placed in top preference</p>
+        </div>
+
+        <!-- 2nd Choice -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+          <span class="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">2nd Choice</span>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiSecondCount" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">0</span>
+            <span id="kpiSecondPct" class="text-xs font-medium text-slate-500 dark:text-slate-400 tabular-nums">0%</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Placed in runner-up choice</p>
+        </div>
+
+        <!-- 3rd Choice / Other -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+          <span class="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">3rd Choice / Other</span>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiOtherCount" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">0</span>
+            <span id="kpiOtherDetail" class="text-xs font-medium text-slate-500 dark:text-slate-400 tabular-nums">0 3rd · 0 unranked</span>
+          </div>
+          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Minimized by global solver</p>
+        </div>
+      </div>
+
+      <!-- Roster Container Card -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <!-- Toolbar: View Tabs + Export Actions -->
+        <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 no-print">
+          <!-- View Switcher Tabs -->
+          <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+            <button type="button" data-view="workshops" class="view-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm transition">
+              By Workshop (Rosters)
+            </button>
+            <button type="button" data-view="participants" class="view-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+              By Participant (Master List)
+            </button>
+          </div>
+
+          <!-- Export & Unlock Actions -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="unlockAllBtn" type="button" class="hidden px-3 py-2 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 text-xs font-semibold hover:bg-amber-100 transition">
+              Unlock All (<span id="lockedCountBadge">0</span>)
+            </button>
+            <button id="copyTsvBtn" type="button" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+              </svg>
+              Copy for Sheets / Excel
+            </button>
+            <button id="downloadCsvBtn" type="button" class="px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Download CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 1: BY WORKSHOP (ROOM ROSTERS) -->
+        <div id="viewWorkshops" class="p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+
+        <!-- VIEW 2: BY PARTICIPANT (MASTER TABLE) -->
+        <div id="viewParticipants" class="hidden">
+          <!-- Search & Filter Bar -->
+          <div class="px-5 py-3.5 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 no-print">
+            <div class="relative w-full sm:w-64">
+              <input id="participantSearchInput" type="text" placeholder="Search email or workshop..." class="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+              <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <button type="button" data-filter="all" class="rank-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-indigo-600 text-white">All</button>
+              <button type="button" data-filter="1" class="rank-filter-btn px-2.5 py-1 rounded-lg font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">1st Choice</button>
+              <button type="button" data-filter="2" class="rank-filter-btn px-2.5 py-1 rounded-lg font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">2nd Choice</button>
+              <button type="button" data-filter="3" class="rank-filter-btn px-2.5 py-1 rounded-lg font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">3rd Choice</button>
+              <button type="button" data-filter="other" class="rank-filter-btn px-2.5 py-1 rounded-lg font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">Unranked / Unassigned</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th class="py-3 px-4">#</th>
+                  <th class="py-3 px-4">Email</th>
+                  <th class="py-3 px-4">Assigned Workshop</th>
+                  <th class="py-3 px-4">Result</th>
+                  <th class="py-3 px-4">1st Choice</th>
+                  <th class="py-3 px-4">2nd Choice</th>
+                  <th class="py-3 px-4">3rd Choice</th>
+                  <th class="py-3 px-4 text-right no-print">Lock</th>
+                </tr>
+              </thead>
+              <tbody id="participantsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Hidden textarea for reliable offline/iFrame clipboard copying -->
+  <textarea id="clipboardStaging" class="sr-only" aria-hidden="true"></textarea>
+
+  <script>
+    /**
+     * ============================================================================
+     * WORKSHOP CHOICE OPTIMIZER — 100% LOCAL & OFFLINE
+     * ============================================================================
+     * Architecture:
+     * 1. State & LocalStorage Persistence: All survey text, edited workshop titles,
+     *    seat capacities, solver preferences, and manual locks are saved locally.
+     * 2. Smart Survey Parser: Handles Google Sheets / Excel TSV, CSV, Email/Name
+     *    columns, anonymous rows, and Google Forms `[Workshop Name]` headers.
+     * 3. Global Minimum-Cost Maximum-Flow (MCMF) Solver: Guarantees optimal assignment
+     *    maximizing 1st and 2nd choice placements across all participants.
+     */
+
+    const STORAGE_KEY = 'workshop_choice_optimizer_v1';
+
+    // Application State
+    let appState = {
+      rawText: '',
+      workshops: [], // [{ id, originalHeader, title, capacity }]
+      participants: [], // [{ id, name, ranks: { [workshopIdx]: rankNumber } }]
+      assignments: [], // [{ participantIdx, workshopIdx, rankAchieved }]
+      lockedAssignments: {}, // { [participantIdx]: workshopIdx }
+      settings: {
+        objective: 'top2', // 'top2' | 'top1' | 'balanced'
+        allowFallback: true,
+        darkMode: false,
+      },
+      ui: {
+        activeView: 'workshops', // 'workshops' | 'participants'
+        rankFilter: 'all',
+        searchQuery: '',
+      },
+      parseWarnings: [],
+      hasNameColumn: false,
+      identifierLabel: 'Participant',
+    };
+
+    // ============================================================================
+    // SAMPLE DATA (Email column + 6 Workshop Headers)
+    // ============================================================================
+    const SAMPLE_SURVEY_TSV = [
+      [
+        'Email',
+        'Mental Health First Response (Andrea L. and Sarah G.)',
+        'Sticks and Stones May Break My Bones… But Data is Just Numbers (Max)',
+        'Notebook LM Strategies for Designing Classroom Resources (Adam)',
+        'The Science of Motivating Young People Book Club (Jim)',
+        'Using New Numworks Calculators (Peter S.)',
+        'Deepening Analysis: Moving Students from “Surface” to “Substance” (Manu Restrepo)',
+      ].join('\t'),
+      'andrea.m@school.edu\t1st choice\t2nd choice\t3rd choice\t\t\t',
+      'b.carter@school.edu\t1st choice\t\t3rd choice\t\t2nd choice\t',
+      'c.diaz@school.edu\t1st choice\t2nd choice\t\t\t\t3rd choice',
+      'd.evans@school.edu\t1st choice\t\t2nd choice\t3rd choice\t\t',
+      'e.foster@school.edu\t1st choice\t3rd choice\t2nd choice\t\t\t',
+      'f.gomez@school.edu\t2nd choice\t1st choice\t3rd choice\t\t\t',
+      'g.harris@school.edu\t2nd choice\t3rd choice\t1st choice\t\t\t',
+      'h.ibarra@school.edu\t2nd choice\t\t1st choice\t\t3rd choice\t',
+      'i.jones@school.edu\t2nd choice\t\t1st choice\t\t\t3rd choice',
+      'j.kim@school.edu\t2nd choice\t1st choice\t\t3rd choice\t\t',
+      'k.lopez@school.edu\t1st choice\t3rd choice\t\t2nd choice\t\t',
+      'l.martin@school.edu\t1st choice\t\t3rd choice\t\t\t2nd choice',
+      'm.nguyen@school.edu\t1st choice\t2nd choice\t3rd choice\t\t\t',
+      'n.ortiz@school.edu\t1st choice\t\t2nd choice\t\t3rd choice\t',
+      'o.patel@school.edu\t1st choice\t2nd choice\t\t\t3rd choice\t',
+      'p.quinn@school.edu\t2nd choice\t1st choice\t3rd choice\t\t\t',
+      'q.reyes@school.edu\t1st choice\t2nd choice\t3rd choice\t\t\t',
+      'r.silva@school.edu\t1st choice\t\t2nd choice\t\t\t3rd choice',
+      's.torres@school.edu\t2nd choice\t1st choice\t\t\t\t3rd choice',
+      't.upton@school.edu\t1st choice\t2nd choice\t3rd choice\t\t\t',
+      'u.vega@school.edu\t3rd choice\t1st choice\t2nd choice\t\t\t',
+      'v.wang@school.edu\t1st choice\t\t2nd choice\t3rd choice\t\t',
+      'w.xu@school.edu\t3rd choice\t2nd choice\t1st choice\t\t\t',
+      'x.young@school.edu\t2nd choice\t\t1st choice\t3rd choice\t\t',
+      'y.zimmer@school.edu\t3rd choice\t1st choice\t2nd choice\t\t\t',
+      'z.alvarez@school.edu\t3rd choice\t\t2nd choice\t1st choice\t\t',
+      'a.bennett@school.edu\t1st choice\t2nd choice\t\t\t3rd choice\t',
+      'b.collins@school.edu\t1st choice\t3rd choice\t2nd choice\t\t\t',
+      'c.dawson@school.edu\t1st choice\t3rd choice\t\t2nd choice\t\t',
+      'd.ellis@school.edu\t2nd choice\t\t3rd choice\t1st choice\t\t',
+      'e.fleming@school.edu\t1st choice\t2nd choice\t3rd choice\t\t\t',
+      'f.grant@school.edu\t3rd choice\t1st choice\t\t\t2nd choice\t',
+      'g.hayes@school.edu\t1st choice\t2nd choice\t3rd choice\t\t\t',
+      'h.ingram@school.edu\t1st choice\t3rd choice\t2nd choice\t\t\t',
+      'i.jenkins@school.edu\t2nd choice\t1st choice\t3rd choice\t\t\t',
+      'j.keller@school.edu\t3rd choice\t1st choice\t2nd choice\t\t\t',
+    ].join('\n');
+
+    // ============================================================================
+    // TOAST & CLIPBOARD HELPERS
+    // ============================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = {
+        info: 'bg-slate-900 dark:bg-slate-800 text-white border-slate-700',
+        success: 'bg-emerald-600 text-white border-emerald-500',
+        warning: 'bg-amber-600 text-white border-amber-500',
+      };
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border shadow-lg text-xs font-medium transition-all duration-200 transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 220);
+      }, 2800);
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function copyTextToClipboard(text) {
+      const staging = document.getElementById('clipboardStaging');
+      staging.value = text;
+      staging.classList.remove('sr-only');
+      staging.select();
+      staging.setSelectionRange(0, 999999);
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (err) {
+        ok = false;
+      }
+      staging.classList.add('sr-only');
+      window.getSelection()?.removeAllRanges();
+      return ok;
+    }
+
+    // ============================================================================
+    // LOCALSTORAGE PERSISTENCE
+    // ============================================================================
+    function saveStateToLocalStorage() {
+      try {
+        const payload = {
+          rawText: appState.rawText,
+          workshops: appState.workshops,
+          participants: appState.participants,
+          assignments: appState.assignments,
+          lockedAssignments: appState.lockedAssignments,
+          settings: appState.settings,
+          hasNameColumn: appState.hasNameColumn,
+          identifierLabel: appState.identifierLabel,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.warn('Could not save state to localStorage:', e);
+      }
+    }
+
+    function loadStateFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          appState.rawText = parsed.rawText || '';
+          appState.workshops = Array.isArray(parsed.workshops) ? parsed.workshops : [];
+          appState.participants = Array.isArray(parsed.participants) ? parsed.participants : [];
+          appState.assignments = Array.isArray(parsed.assignments) ? parsed.assignments : [];
+          appState.lockedAssignments = parsed.lockedAssignments || {};
+          appState.settings = { ...appState.settings, ...(parsed.settings || {}) };
+          appState.hasNameColumn = Boolean(parsed.hasNameColumn);
+          appState.identifierLabel = parsed.identifierLabel || (appState.hasNameColumn ? 'Email' : 'Participant');
+          return true;
+        }
+      } catch (e) {
+        console.warn('Could not load state from localStorage:', e);
+      }
+      return false;
+    }
+
+    function clearLocalStorageState() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.warn('Could not clear localStorage:', e);
+      }
+    }
+
+    // ============================================================================
+    // SMART SURVEY DATA PARSER
+    // ============================================================================
+    /**
+     * Converts text like "1st choice", "2nd choice", "3rd choice", "1", "2", "3",
+     * or "1st Choice - I read the book..." into an integer rank (1, 2, 3, ...).
+     * Returns null if cell does not represent a rank.
+     */
+    function parseChoiceRank(cellValue) {
+      if (cellValue === null || cellValue === undefined) return null;
+      const cleaned = String(cellValue).trim().toLowerCase();
+      if (!cleaned) return null;
+
+      // Match leading ordinal or integer (e.g., "1st choice", "2nd", "3", "1st choice - ...")
+      const match = cleaned.match(/^(?:choice\s*)?([1-9][0-9]?)(?:st|nd|rd|th)?(?:\b|\s|-|:|$)/i);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num >= 1 && num <= 20) return num;
+      }
+
+      // Word equivalents
+      if (/^first\b/.test(cleaned)) return 1;
+      if (/^second\b/.test(cleaned)) return 2;
+      if (/^third\b/.test(cleaned)) return 3;
+      if (/^fourth\b/.test(cleaned)) return 4;
+      if (/^fifth\b/.test(cleaned)) return 5;
+
+      return null;
+    }
+
+    /**
+     * Extracts clean workshop title from Google Forms matrix column header
+     * e.g. "On Wednesday... [Mental Health First Response (Andrea L.)]" -> "Mental Health First Response (Andrea L.)"
+     */
+    function cleanWorkshopHeader(header, fallbackIndex) {
+      const trimmed = (header || '').trim();
+      if (!trimmed) return `Workshop ${fallbackIndex + 1}`;
+
+      const bracketMatch = trimmed.match(/\[([^\]]+)\]/);
+      if (bracketMatch && bracketMatch[1]) {
+        let inner = bracketMatch[1].trim();
+        const longNoteIdx = inner.indexOf('Book Club participation:');
+        if (longNoteIdx > 10) {
+          inner = inner.slice(0, longNoteIdx).trim();
+        }
+        return inner;
+      }
+      // Strip any stray leading or trailing square brackets
+      return trimmed.replace(/^\[+|\]+$/g, '').trim() || `Workshop ${fallbackIndex + 1}`;
+    }
+
+    /**
+     * Splits a CSV line respecting double quotes.
+     */
+    function splitCsvLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current);
+      return result;
+    }
+
+    /**
+     * Fallback parser for single-line text where tabs and newlines were stripped
+     * during copy-paste.
+     */
+    function tryParseConcatenatedFallback(rawText) {
+      const bracketMatches = [...rawText.matchAll(/\[([^\]]+)\]/g)];
+      const emailMatches = [...rawText.matchAll(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g)];
+      if (bracketMatches.length < 2 && emailMatches.length === 0) return null;
+
+      const workshopTitles =
+        bracketMatches.length >= 2
+          ? bracketMatches.map((m, idx) => cleanWorkshopHeader(m[0], idx))
+          : [];
+      const lastBracketEnd =
+        bracketMatches.length >= 2
+          ? bracketMatches[bracketMatches.length - 1].index + bracketMatches[bracketMatches.length - 1][0].length
+          : 0;
+      const tail = rawText.slice(lastBracketEnd);
+
+      // If emails are present in stripped text, group each email with its subsequent choices
+      if (emailMatches.length > 0) {
+        const participants = [];
+        for (let i = 0; i < emailMatches.length; i++) {
+          const email = emailMatches[i][0];
+          const start = emailMatches[i].index + email.length;
+          const end = i + 1 < emailMatches.length ? emailMatches[i + 1].index : rawText.length;
+          const segment = rawText.slice(start, end);
+          const choices = [...segment.matchAll(/(1st|2nd|3rd|4th|5th)\s*choice/gi)];
+          const ranks = {};
+          choices.forEach((cMatch, idx) => {
+            const rank = parseChoiceRank(cMatch[0]);
+            if (rank) ranks[idx] = rank;
+          });
+          participants.push({ id: i, name: email, ranks });
+        }
+
+        const inferredWorkshopCount =
+          workshopTitles.length || Math.max(3, ...participants.map((p) => Object.keys(p.ranks).length));
+        const finalTitles =
+          workshopTitles.length > 0
+            ? workshopTitles
+            : Array.from({ length: inferredWorkshopCount }, (_, idx) => `Workshop ${idx + 1}`);
+
+        return {
+          workshopHeaders: finalTitles,
+          workshopTitles: finalTitles,
+          participants,
+          hasNameColumn: true,
+          identifierLabel: 'Email',
+          warnings: [
+            'Detected single-line text without tab/newline separators. For exact column-to-workshop alignment, copy cells directly from Google Sheets or Excel.',
+          ],
+        };
+      }
+
+      const choiceMatches = [...tail.matchAll(/(1st|2nd|3rd|4th|5th)\s*choice/gi)];
+      if (choiceMatches.length === 0 || workshopTitles.length === 0) return null;
+
+      const participants = [];
+      let currentRanks = {};
+      let seenRanks = new Set();
+
+      choiceMatches.forEach((m) => {
+        const rank = parseChoiceRank(m[0]);
+        if (!rank) return;
+        if (seenRanks.has(rank) || seenRanks.size >= Math.min(3, workshopTitles.length)) {
+          participants.push(currentRanks);
+          currentRanks = {};
+          seenRanks = new Set();
+        }
+        const targetCol = seenRanks.size % workshopTitles.length;
+        currentRanks[targetCol] = rank;
+        seenRanks.add(rank);
+      });
+
+      if (seenRanks.size > 0) {
+        participants.push(currentRanks);
+      }
+
+      return {
+        workshopHeaders: bracketMatches.map((m) => m[0]),
+        workshopTitles,
+        participants: participants.map((ranks, i) => ({
+          id: i,
+          name: `Participant ${i + 1}`,
+          ranks,
+        })),
+        hasNameColumn: false,
+        identifierLabel: 'Participant',
+        warnings: [
+          'Detected single-line text without tab/newline separators. For exact column-to-workshop alignment, copy cells directly from Google Sheets or Excel.',
+        ],
+      };
+    }
+
+    /**
+     * Main parser for pasted survey data (TSV, CSV, or fallback).
+     */
+    function parseSurveyText(rawText) {
+      const trimmed = (rawText || '').trim();
+      if (!trimmed) {
+        return {
+          workshopHeaders: [],
+          workshopTitles: [],
+          participants: [],
+          hasNameColumn: false,
+          identifierLabel: 'Participant',
+          warnings: [],
+        };
+      }
+
+      const lines = trimmed.split(/\r?\n/).filter((line) => line.trim().length > 0);
+
+      // Check for single-line stripped paste
+      if (lines.length === 1 && !lines[0].includes('\t')) {
+        const fallback = tryParseConcatenatedFallback(lines[0]);
+        if (fallback) return fallback;
+      }
+
+      // Determine delimiter: prefer Tab (\t) from spreadsheet copy-paste, else CSV
+      const hasTabs = lines.some((l) => l.includes('\t'));
+      const grid = lines.map((line) => (hasTabs ? line.split('\t') : splitCsvLine(line)));
+
+      const maxCols = Math.max(...grid.map((row) => row.length));
+      if (maxCols < 2) {
+        return {
+          workshopHeaders: [],
+          workshopTitles: [],
+          participants: [],
+          hasNameColumn: false,
+          identifierLabel: 'Participant',
+          warnings: ['Could not detect multiple columns. Please paste at least 2 columns from your spreadsheet.'],
+        };
+      }
+
+      // Normalize row lengths
+      const normalizedGrid = grid.map((row) => {
+        const padded = row.slice();
+        while (padded.length < maxCols) padded.push('');
+        return padded;
+      });
+
+      // Detect if Row 0 is a Header Row or already Participant Data
+      const row0ChoiceCount = normalizedGrid[0].reduce((acc, cell) => acc + (parseChoiceRank(cell) !== null ? 1 : 0), 0);
+      const hasHeaderRow = row0ChoiceCount === 0 && normalizedGrid.length > 1;
+      const dataStartRow = hasHeaderRow ? 1 : 0;
+      const dataRows = normalizedGrid.slice(dataStartRow);
+
+      // Analyze each column across dataRows to classify as Workshop Column vs Email/Name/Metadata Column
+      const colChoiceCounts = new Array(maxCols).fill(0);
+      const colNonEmptyCounts = new Array(maxCols).fill(0);
+      const colEmailCounts = new Array(maxCols).fill(0);
+      const colOtherTextCounts = new Array(maxCols).fill(0);
+
+      for (let r = 0; r < dataRows.length; r++) {
+        for (let c = 0; c < maxCols; c++) {
+          const val = (dataRows[r][c] || '').trim();
+          if (!val) continue;
+          colNonEmptyCounts[c]++;
+          if (parseChoiceRank(val) !== null) {
+            colChoiceCounts[c]++;
+          } else {
+            colOtherTextCounts[c]++;
+            if (/@/.test(val)) {
+              colEmailCounts[c]++;
+            }
+          }
+        }
+      }
+
+      const workshopColIndices = [];
+      const metadataColIndices = [];
+
+      for (let c = 0; c < maxCols; c++) {
+        const headerVal = hasHeaderRow ? (normalizedGrid[0][c] || '').trim() : '';
+        const isExplicitMetaHeader =
+          /^(email|e-mail|email address|teacher email|name|full name|participant|teacher|staff|student|respondent|person|id|timestamp)$/i.test(
+            headerVal
+          );
+        const hasMostlyNonChoiceText = colOtherTextCounts[c] > 0 && colChoiceCounts[c] === 0;
+
+        if (isExplicitMetaHeader || hasMostlyNonChoiceText || colEmailCounts[c] > 0) {
+          metadataColIndices.push(c);
+        } else {
+          // Keep as a workshop column even if 0 participants ranked it yet
+          workshopColIndices.push(c);
+        }
+      }
+
+      // Fallback if every column was categorized as metadata
+      if (workshopColIndices.length === 0) {
+        for (let c = 0; c < maxCols; c++) {
+          if (colEmailCounts[c] === 0) workshopColIndices.push(c);
+        }
+      }
+
+      // Identify best Email / Name column if any metadata column exists
+      let nameColIdx = -1;
+      let identifierLabel = 'Participant';
+
+      if (metadataColIndices.length > 0) {
+        const emailCol = metadataColIndices.find((c) => {
+          const h = hasHeaderRow ? normalizedGrid[0][c] || '' : '';
+          return /\b(email|e-mail)\b/i.test(h) || colEmailCounts[c] > 0;
+        });
+
+        if (emailCol !== undefined) {
+          nameColIdx = emailCol;
+          identifierLabel = 'Email';
+        } else {
+          let namedCol;
+          if (hasHeaderRow) {
+            namedCol = metadataColIndices.find((c) =>
+              /\b(name|participant|teacher|staff|student|person|id)\b/i.test(normalizedGrid[0][c] || '')
+            );
+          }
+          if (namedCol === undefined) {
+            namedCol = metadataColIndices.find((c) => {
+              const h = hasHeaderRow ? normalizedGrid[0][c] || '' : '';
+              return colNonEmptyCounts[c] > 0 && !/timestamp/i.test(h);
+            });
+          }
+          if (namedCol === undefined) {
+            namedCol = metadataColIndices.find((c) => colNonEmptyCounts[c] > 0);
+          }
+          if (namedCol !== undefined) {
+            nameColIdx = namedCol;
+            const rawHeader = hasHeaderRow ? (normalizedGrid[0][nameColIdx] || '').trim() : '';
+            identifierLabel = rawHeader || 'Participant';
+          }
+        }
+      }
+
+      const workshopHeaders = workshopColIndices.map((c, idx) =>
+        hasHeaderRow ? normalizedGrid[0][c] || `Workshop ${idx + 1}` : `Workshop ${idx + 1}`
+      );
+      const workshopTitles = workshopHeaders.map((h, idx) => cleanWorkshopHeader(h, idx));
+
+      const warnings = [];
+      const participants = [];
+      let duplicateRankRows = 0;
+      let emptyChoiceRows = 0;
+
+      dataRows.forEach((row, rIdx) => {
+        const rawName = nameColIdx !== -1 ? (row[nameColIdx] || '').trim() : '';
+        const displayName = rawName || `Participant ${rIdx + 1}`;
+        const ranks = {};
+        const seenRanksInRow = new Set();
+        let hasDuplicateInRow = false;
+
+        workshopColIndices.forEach((colIdx, wIdx) => {
+          const rank = parseChoiceRank(row[colIdx]);
+          if (rank !== null) {
+            if (seenRanksInRow.has(rank)) {
+              hasDuplicateInRow = true;
+            }
+            seenRanksInRow.add(rank);
+            ranks[wIdx] = rank;
+          }
+        });
+
+        if (hasDuplicateInRow) duplicateRankRows++;
+        if (Object.keys(ranks).length === 0) {
+          emptyChoiceRows++;
+        }
+
+        participants.push({
+          id: rIdx,
+          name: displayName,
+          ranks,
+        });
+      });
+
+      if (duplicateRankRows > 0) {
+        warnings.push(
+          `${duplicateRankRows} respondent(s) selected the same rank (e.g., two "1st choices") for multiple workshops. Both were respected as equal weight.`
+        );
+      }
+      if (emptyChoiceRows > 0) {
+        warnings.push(`${emptyChoiceRows} row(s) had no ranked choices detected.`);
+      }
+
+      return {
+        workshopHeaders,
+        workshopTitles,
+        participants,
+        hasNameColumn: nameColIdx !== -1,
+        identifierLabel,
+        warnings,
+      };
+    }
+
+    // ============================================================================
+    // GLOBAL MINIMUM-COST MAXIMUM-FLOW (MCMF) OPTIMIZER
+    // ============================================================================
+    /**
+     * Solves global assignment using Minimum-Cost Maximum-Flow (Successive Shortest
+     * Path via SPFA).
+     *
+     * Why MCMF is ideal here:
+     * Rather than greedy first-come-first-served (which strands later participants
+     * in their 3rd choice), MCMF finds augmenting chains across all participants
+     * simultaneously—for example, moving Person A from their 1st choice to their
+     * 2nd choice if doing so frees a seat that rescues Person B from a 3rd choice
+     * into their 1st or 2nd choice!
+     */
+    function solveOptimalAssignments({ workshops, participants, lockedAssignments, settings, shuffle = false }) {
+      const P = participants.length;
+      const W = workshops.length;
+      if (P === 0 || W === 0) return [];
+
+      // Track remaining capacities after honoring manually locked participants
+      const remainingCap = workshops.map((w) => Math.max(0, Number(w.capacity) || 0));
+      const finalWorkshopByParticipant = new Array(P).fill(-1);
+
+      const unlockedIndices = [];
+      for (let p = 0; p < P; p++) {
+        if (Object.prototype.hasOwnProperty.call(lockedAssignments, p)) {
+          const lockedW = lockedAssignments[p];
+          if (lockedW >= 0 && lockedW < W) {
+            finalWorkshopByParticipant[p] = lockedW;
+            if (remainingCap[lockedW] > 0) {
+              remainingCap[lockedW]--;
+            }
+          } else {
+            unlockedIndices.push(p);
+          }
+        } else {
+          unlockedIndices.push(p);
+        }
+      }
+
+      const U = unlockedIndices.length;
+      if (U > 0) {
+        // Build Flow Network:
+        // Node 0: Source
+        // Nodes 1..U: Unlocked Participants
+        // Nodes U+1..U+W: Workshops
+        // Node U+W+1: Sink
+        const SOURCE = 0;
+        const SINK = U + W + 1;
+        const N = SINK + 1;
+
+        const adj = Array.from({ length: N }, () => []);
+        function addEdge(u, v, cap, cost) {
+          adj[u].push({ to: v, rev: adj[v].length, cap, cost });
+          adj[v].push({ to: u, rev: adj[u].length - 1, cap: 0, cost: -cost });
+        }
+
+        // Source -> Unlocked Participants
+        for (let i = 0; i < U; i++) {
+          addEdge(SOURCE, 1 + i, 1, 0);
+        }
+
+        // Workshops -> Sink
+        for (let w = 0; w < W; w++) {
+          if (remainingCap[w] > 0) {
+            addEdge(1 + U + w, SINK, remainingCap[w], 0);
+          }
+        }
+
+        // Cost schedule tailored to selected optimization goal
+        function getEdgeCost(rank, pIdx, wIdx) {
+          const tieBreak = shuffle ? Math.random() * 2.0 : pIdx * 0.0001 + wIdx * 0.00001;
+          if (rank === undefined || rank === null) {
+            return 5000 + tieBreak;
+          }
+          if (settings.objective === 'top2') {
+            // 1st (10) and 2nd (18) are tightly grouped, while 3rd (500) is heavily penalized.
+            // Trading one 1st->2nd (+8) to rescue someone from 3rd->2nd (-482) is strongly favored!
+            if (rank === 1) return 10 + tieBreak;
+            if (rank === 2) return 18 + tieBreak;
+            if (rank === 3) return 500 + tieBreak;
+            return 1200 + (rank - 4) * 300 + tieBreak;
+          } else if (settings.objective === 'top1') {
+            if (rank === 1) return 10 + tieBreak;
+            if (rank === 2) return 200 + tieBreak;
+            if (rank === 3) return 600 + tieBreak;
+            return 1500 + (rank - 4) * 300 + tieBreak;
+          } else {
+            // Balanced satisfaction
+            if (rank === 1) return 10 + tieBreak;
+            if (rank === 2) return 60 + tieBreak;
+            if (rank === 3) return 250 + tieBreak;
+            return 1000 + (rank - 4) * 300 + tieBreak;
+          }
+        }
+
+        // Unlocked Participants -> Workshops
+        const participantOrder = Array.from({ length: U }, (_, i) => i);
+        if (shuffle) {
+          for (let i = participantOrder.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [participantOrder[i], participantOrder[j]] = [participantOrder[j], participantOrder[i]];
+          }
+        }
+
+        for (const i of participantOrder) {
+          const pIdx = unlockedIndices[i];
+          const pRanks = participants[pIdx].ranks || {};
+          for (let w = 0; w < W; w++) {
+            const rank = pRanks[w];
+            if (rank !== undefined || settings.allowFallback) {
+              addEdge(1 + i, 1 + U + w, 1, getEdgeCost(rank, pIdx, w));
+            }
+          }
+        }
+
+        // Successive Shortest Path Algorithm (SPFA)
+        const INF = 1e15;
+        while (true) {
+          const dist = new Array(N).fill(INF);
+          const parentNode = new Array(N).fill(-1);
+          const parentEdge = new Array(N).fill(-1);
+          const inQueue = new Array(N).fill(false);
+
+          dist[SOURCE] = 0;
+          const queue = [SOURCE];
+          inQueue[SOURCE] = true;
+          let head = 0;
+
+          while (head < queue.length) {
+            const u = queue[head++];
+            inQueue[u] = false;
+
+            for (let eIdx = 0; eIdx < adj[u].length; eIdx++) {
+              const edge = adj[u][eIdx];
+              if (edge.cap > 0 && dist[u] + edge.cost < dist[edge.to] - 1e-9) {
+                dist[edge.to] = dist[u] + edge.cost;
+                parentNode[edge.to] = u;
+                parentEdge[edge.to] = eIdx;
+                if (!inQueue[edge.to]) {
+                  queue.push(edge.to);
+                  inQueue[edge.to] = true;
+                }
+              }
+            }
+          }
+
+          if (dist[SINK] >= INF / 2) break;
+
+          // Augment 1 unit of flow along shortest path
+          let curr = SINK;
+          while (curr !== SOURCE) {
+            const pNode = parentNode[curr];
+            const eIdx = parentEdge[curr];
+            const forward = adj[pNode][eIdx];
+            forward.cap -= 1;
+            adj[curr][forward.rev].cap += 1;
+            curr = pNode;
+          }
+        }
+
+        // Extract resulting matches from residual edges
+        for (let i = 0; i < U; i++) {
+          const pNode = 1 + i;
+          const pIdx = unlockedIndices[i];
+          for (const edge of adj[pNode]) {
+            if (edge.to >= 1 + U && edge.to < 1 + U + W && edge.cap === 0) {
+              finalWorkshopByParticipant[pIdx] = edge.to - (1 + U);
+              break;
+            }
+          }
+        }
+      }
+
+      // Build structured assignment objects
+      return participants.map((participant, pIdx) => {
+        const wIdx = finalWorkshopByParticipant[pIdx];
+        const rankAchieved = wIdx >= 0 ? participant.ranks[wIdx] ?? null : null;
+        return {
+          participantIdx: pIdx,
+          workshopIdx: wIdx,
+          rankAchieved,
+        };
+      });
+    }
+
+    // ============================================================================
+    // UI RENDERING & STATE SYNCHRONIZATION
+    // ============================================================================
+    function handleRawTextChange(newText, preserveExistingCapacities = false) {
+      appState.rawText = newText;
+      const parsed = parseSurveyText(newText);
+      appState.parseWarnings = parsed.warnings;
+      appState.hasNameColumn = parsed.hasNameColumn;
+      appState.identifierLabel = parsed.identifierLabel || 'Participant';
+
+      const prevWorkshops = appState.workshops;
+      const numParticipants = parsed.participants.length;
+      const numWorkshops = parsed.workshopTitles.length;
+      const defaultCap = numWorkshops > 0 ? Math.max(1, Math.ceil(numParticipants / numWorkshops)) : 8;
+
+      appState.workshops = parsed.workshopTitles.map((title, idx) => {
+        const existing = preserveExistingCapacities
+          ? prevWorkshops.find((w) => w.originalHeader === parsed.workshopHeaders[idx]) || prevWorkshops[idx]
+          : null;
+        return {
+          id: idx,
+          originalHeader: parsed.workshopHeaders[idx],
+          title: existing ? existing.title : title,
+          capacity: existing ? existing.capacity : defaultCap,
+        };
+      });
+
+      appState.participants = parsed.participants;
+      appState.lockedAssignments = {};
+
+      // Update Parse Status UI
+      const parseSummaryText = document.getElementById('parseSummaryText');
+      const nameModeBadge = document.getElementById('nameModeBadge');
+      const warningsBox = document.getElementById('parseWarningsBox');
+
+      if (!appState.rawText.trim()) {
+        parseSummaryText.textContent = 'Waiting for survey data...';
+        nameModeBadge.classList.add('hidden');
+      } else {
+        const totalChoices = appState.participants.reduce((acc, p) => acc + Object.keys(p.ranks).length, 0);
+        parseSummaryText.innerHTML = `Detected <strong class="text-indigo-600 dark:text-indigo-400">${appState.workshops.length} workshops</strong> · <strong>${appState.participants.length} participants</strong> · ${totalChoices} ranked choices`;
+        nameModeBadge.classList.remove('hidden');
+        nameModeBadge.textContent = appState.hasNameColumn ? `${appState.identifierLabel} Column Detected` : 'Anonymous IDs';
+      }
+
+      if (appState.parseWarnings.length > 0) {
+        warningsBox.classList.remove('hidden');
+        warningsBox.innerHTML = appState.parseWarnings.map((w) => `<div>• ${escapeHtml(w)}</div>`).join('');
+      } else {
+        warningsBox.classList.add('hidden');
+        warningsBox.innerHTML = '';
+      }
+
+      renderWorkshopsList();
+
+      if (appState.workshops.length > 0 && appState.participants.length > 0) {
+        runOptimization(false);
+      } else {
+        appState.assignments = [];
+        document.getElementById('resultsSection').classList.add('hidden');
+        saveStateToLocalStorage();
+      }
+    }
+
+    function renderWorkshopsList() {
+      const emptyState = document.getElementById('workshopsEmptyState');
+      const listContainer = document.getElementById('workshopsListContainer');
+      const footer = document.getElementById('optimizerFooter');
+      const bulkControls = document.getElementById('bulkCapacityControls');
+
+      if (appState.workshops.length === 0) {
+        emptyState.classList.remove('hidden');
+        listContainer.classList.add('hidden');
+        footer.classList.add('hidden');
+        bulkControls.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      listContainer.classList.remove('hidden');
+      footer.classList.remove('hidden');
+      bulkControls.classList.remove('hidden');
+
+      // Compute demand stats per workshop
+      const demand = appState.workshops.map(() => ({ first: 0, second: 0, third: 0 }));
+      appState.participants.forEach((p) => {
+        Object.entries(p.ranks).forEach(([wIdxStr, rank]) => {
+          const wIdx = Number(wIdxStr);
+          if (demand[wIdx]) {
+            if (rank === 1) demand[wIdx].first++;
+            else if (rank === 2) demand[wIdx].second++;
+            else if (rank === 3) demand[wIdx].third++;
+          }
+        });
+      });
+
+      const evenSplit = Math.max(1, Math.ceil(appState.participants.length / appState.workshops.length));
+      document.getElementById('evenSplitHint').textContent = evenSplit;
+
+      listContainer.innerHTML = appState.workshops
+        .map((w, idx) => {
+          const d = demand[idx];
+          const isOversubscribed = d.first > w.capacity;
+          return `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 hover:border-indigo-300 dark:hover:border-indigo-800 transition">
+              <div class="flex-1 min-w-0">
+                <input
+                  type="text"
+                  data-workshop-title-idx="${idx}"
+                  value="${escapeHtml(w.title)}"
+                  class="workshop-title-input w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:px-2 focus:py-0.5 rounded transition truncate"
+                  title="Click to rename workshop title"
+                />
+                <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
+                  <span class="inline-flex items-center gap-1 ${isOversubscribed ? 'text-amber-600 dark:text-amber-400 font-semibold' : ''}">
+                    1st: <strong>${d.first}</strong>
+                  </span>
+                  <span>·</span>
+                  <span>2nd: <strong>${d.second}</strong></span>
+                  <span>·</span>
+                  <span>3rd: <strong>${d.third}</strong></span>
+                  ${isOversubscribed ? '<span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px]">High 1st-choice demand</span>' : ''}
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                <label class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Seats:</label>
+                <div class="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+                  <button type="button" data-cap-delta="-1" data-workshop-idx="${idx}" class="cap-step-btn px-2 py-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold">−</button>
+                  <input
+                    type="number"
+                    min="0"
+                    max="999"
+                    data-workshop-cap-idx="${idx}"
+                    value="${w.capacity}"
+                    class="workshop-cap-input w-12 py-1 text-center text-xs font-bold text-slate-900 dark:text-white bg-transparent tabular-nums focus:outline-none"
+                  />
+                  <button type="button" data-cap-delta="1" data-workshop-idx="${idx}" class="cap-step-btn px-2 py-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold">+</button>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      updateCapacitySummaryLabels();
+    }
+
+    function updateCapacitySummaryLabels() {
+      const totalSeats = appState.workshops.reduce((sum, w) => sum + (Number(w.capacity) || 0), 0);
+      const totalParticipants = appState.participants.length;
+      document.getElementById('totalSeatsLabel').textContent = totalSeats;
+      document.getElementById('totalParticipantsLabel').textContent = totalParticipants;
+
+      const warnBadge = document.getElementById('capacityWarningBadge');
+      if (totalSeats < totalParticipants) {
+        warnBadge.classList.remove('hidden');
+      } else {
+        warnBadge.classList.add('hidden');
+      }
+    }
+
+    function runOptimization(shuffle = false) {
+      if (appState.workshops.length === 0 || appState.participants.length === 0) return;
+
+      appState.assignments = solveOptimalAssignments({
+        workshops: appState.workshops,
+        participants: appState.participants,
+        lockedAssignments: appState.lockedAssignments,
+        settings: appState.settings,
+        shuffle,
+      });
+
+      saveStateToLocalStorage();
+      renderResultsSection();
+    }
+
+    function renderResultsSection() {
+      const resultsSection = document.getElementById('resultsSection');
+      if (appState.assignments.length === 0) {
+        resultsSection.classList.add('hidden');
+        return;
+      }
+      resultsSection.classList.remove('hidden');
+
+      const total = appState.assignments.length;
+      let firstCount = 0;
+      let secondCount = 0;
+      let thirdCount = 0;
+      let otherCount = 0;
+
+      appState.assignments.forEach((a) => {
+        if (a.rankAchieved === 1) firstCount++;
+        else if (a.rankAchieved === 2) secondCount++;
+        else if (a.rankAchieved === 3) thirdCount++;
+        else otherCount++;
+      });
+
+      const top2Count = firstCount + secondCount;
+      const top2Pct = total > 0 ? Math.round((top2Count / total) * 100) : 0;
+      const firstPct = total > 0 ? Math.round((firstCount / total) * 100) : 0;
+      const secondPct = total > 0 ? Math.round((secondCount / total) * 100) : 0;
+
+      document.getElementById('kpiTop2Pct').textContent = `${top2Pct}%`;
+      document.getElementById('kpiTop2Count').textContent = `(${top2Count} / ${total})`;
+      document.getElementById('kpiTop2Bar').style.width = `${top2Pct}%`;
+
+      document.getElementById('kpiFirstCount').textContent = firstCount;
+      document.getElementById('kpiFirstPct').textContent = `${firstPct}%`;
+
+      document.getElementById('kpiSecondCount').textContent = secondCount;
+      document.getElementById('kpiSecondPct').textContent = `${secondPct}%`;
+
+      document.getElementById('kpiOtherCount').textContent = thirdCount + otherCount;
+      document.getElementById('kpiOtherDetail').textContent = `${thirdCount} 3rd · ${otherCount} unranked`;
+
+      // Update Lock badge
+      const lockedKeys = Object.keys(appState.lockedAssignments);
+      const unlockAllBtn = document.getElementById('unlockAllBtn');
+      if (lockedKeys.length > 0) {
+        unlockAllBtn.classList.remove('hidden');
+        document.getElementById('lockedCountBadge').textContent = lockedKeys.length;
+      } else {
+        unlockAllBtn.classList.add('hidden');
+      }
+
+      renderWorkshopRostersView();
+      renderParticipantsTableView();
+    }
+
+    function getRankBadgeHtml(rank, isUnassigned = false) {
+      if (isUnassigned) {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">Unassigned</span>`;
+      }
+      if (rank === 1) {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-300">1st Choice</span>`;
+      }
+      if (rank === 2) {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-sky-100 text-sky-800 dark:bg-sky-950/90 dark:text-sky-300">2nd Choice</span>`;
+      }
+      if (rank === 3) {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/90 dark:text-amber-300">3rd Choice</span>`;
+      }
+      if (rank !== null && rank !== undefined) {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">#${rank} Choice</span>`;
+      }
+      return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Fallback</span>`;
+    }
+
+    function renderWorkshopRostersView() {
+      const container = document.getElementById('viewWorkshops');
+
+      // Group assignments by workshop
+      const byWorkshop = appState.workshops.map(() => []);
+      const unassigned = [];
+
+      appState.assignments.forEach((a) => {
+        const participant = appState.participants[a.participantIdx];
+        if (!participant) return;
+        if (a.workshopIdx >= 0 && a.workshopIdx < byWorkshop.length) {
+          byWorkshop[a.workshopIdx].push({ ...a, participant });
+        } else {
+          unassigned.push({ ...a, participant });
+        }
+      });
+
+      const cardsHtml = appState.workshops
+        .map((w, wIdx) => {
+          const members = byWorkshop[wIdx];
+          const fillRatio = w.capacity > 0 ? Math.min(100, Math.round((members.length / w.capacity) * 100)) : 0;
+          const hasEmails = members.some((m) => /@/.test(m.participant.name));
+
+          const membersHtml =
+            members.length === 0
+              ? `<div class="py-6 text-center text-xs text-slate-400">No participants assigned</div>`
+              : members
+                  .map((m) => {
+                    const isLocked = Object.prototype.hasOwnProperty.call(appState.lockedAssignments, m.participantIdx);
+                    return `
+                      <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800/80 text-xs">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <button type="button" data-toggle-lock="${m.participantIdx}" class="lock-toggle-btn no-print text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0" title="${isLocked ? 'Locked (click to unlock)' : 'Click to lock into this workshop'}">
+                            ${
+                              isLocked
+                                ? `<svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg>`
+                                : `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>`
+                            }
+                          </button>
+                          <span class="font-medium text-slate-800 dark:text-slate-200 truncate" title="${escapeHtml(m.participant.name)}">${escapeHtml(m.participant.name)}</span>
+                        </div>
+                        <div class="shrink-0">
+                          ${getRankBadgeHtml(m.rankAchieved, false)}
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join('');
+
+          return `
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between print-break-inside-avoid">
+              <div class="p-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-sm font-bold text-slate-900 dark:text-white leading-snug">${escapeHtml(w.title)}</h3>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    ${
+                      hasEmails && members.length > 0
+                        ? `<button type="button" data-copy-workshop-emails="${wIdx}" class="copy-workshop-emails-btn no-print px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300 text-[11px] font-semibold text-slate-600 dark:text-slate-300 transition" title="Copy assigned teacher emails for this workshop">Copy Emails</button>`
+                        : ''
+                    }
+                    <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 tabular-nums">
+                      ${members.length} / ${w.capacity}
+                    </span>
+                  </div>
+                </div>
+                <div class="mt-2.5 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-indigo-500 h-full rounded-full" style="width: ${fillRatio}%"></div>
+                </div>
+              </div>
+              <div class="p-3.5 space-y-2 flex-1">
+                ${membersHtml}
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      const unassignedCardHtml =
+        unassigned.length === 0
+          ? ''
+          : `
+            <div class="rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col justify-between">
+              <div class="p-4 border-b border-rose-200/70 dark:border-rose-900/70 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-rose-800 dark:text-rose-300">Unassigned (Needs More Seats)</h3>
+                <span class="px-2.5 py-1 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-xs font-bold text-rose-700 dark:text-rose-200 tabular-nums">${unassigned.length}</span>
+              </div>
+              <div class="p-3.5 space-y-2">
+                ${unassigned
+                  .map(
+                    (m) => `
+                    <div class="flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900/50 text-xs">
+                      <span class="font-medium text-slate-800 dark:text-slate-200 truncate">${escapeHtml(m.participant.name)}</span>
+                      ${getRankBadgeHtml(null, true)}
+                    </div>
+                  `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `;
+
+      container.innerHTML = cardsHtml + unassignedCardHtml;
+    }
+
+    function renderParticipantsTableView() {
+      const tbody = document.getElementById('participantsTableBody');
+      const idHeaderEl = document.querySelector('#viewParticipants thead th:nth-child(2)');
+      if (idHeaderEl) {
+        idHeaderEl.textContent = appState.hasNameColumn ? appState.identifierLabel : 'Participant';
+      }
+
+      const query = appState.ui.searchQuery.trim().toLowerCase();
+      const filter = appState.ui.rankFilter;
+
+      const rowsHtml = appState.assignments
+        .map((a) => {
+          const p = appState.participants[a.participantIdx];
+          if (!p) return '';
+
+          // Rank filter
+          if (filter === '1' && a.rankAchieved !== 1) return '';
+          if (filter === '2' && a.rankAchieved !== 2) return '';
+          if (filter === '3' && a.rankAchieved !== 3) return '';
+          if (filter === 'other' && (a.rankAchieved === 1 || a.rankAchieved === 2 || a.rankAchieved === 3)) return '';
+
+          // Find 1st, 2nd, 3rd choice titles for display
+          const choiceByRank = {};
+          Object.entries(p.ranks).forEach(([wIdxStr, r]) => {
+            if (!choiceByRank[r]) choiceByRank[r] = [];
+            choiceByRank[r].push(appState.workshops[Number(wIdxStr)]?.title || '');
+          });
+
+          const c1 = (choiceByRank[1] || []).join(', ') || '—';
+          const c2 = (choiceByRank[2] || []).join(', ') || '—';
+          const c3 = (choiceByRank[3] || []).join(', ') || '—';
+          const assignedTitle = a.workshopIdx >= 0 ? appState.workshops[a.workshopIdx]?.title || '' : 'Unassigned';
+
+          // Search filter
+          if (query) {
+            const haystack = `${p.name} ${assignedTitle} ${c1} ${c2} ${c3}`.toLowerCase();
+            if (!haystack.includes(query)) return '';
+          }
+
+          const isLocked = Object.prototype.hasOwnProperty.call(appState.lockedAssignments, a.participantIdx);
+
+          const workshopOptionsHtml = [
+            `<option value="-1" ${a.workshopIdx === -1 ? 'selected' : ''}>-- Unassigned --</option>`,
+            ...appState.workshops.map(
+              (w, wIdx) => `<option value="${wIdx}" ${a.workshopIdx === wIdx ? 'selected' : ''}>${escapeHtml(w.title)}</option>`
+            ),
+          ].join('');
+
+          return `
+            <tr class="hover:bg-slate-50/90 dark:hover:bg-slate-800/40 transition">
+              <td class="py-2.5 px-4 text-slate-400 tabular-nums">${a.participantIdx + 1}</td>
+              <td class="py-2.5 px-4 font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">${escapeHtml(p.name)}</td>
+              <td class="py-2.5 px-4 min-w-[220px]">
+                <select
+                  data-manual-assign-p="${a.participantIdx}"
+                  class="manual-assign-select w-full max-w-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                >
+                  ${workshopOptionsHtml}
+                </select>
+              </td>
+              <td class="py-2.5 px-4 whitespace-nowrap">${getRankBadgeHtml(a.rankAchieved, a.workshopIdx === -1)}</td>
+              <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300 max-w-[180px] truncate" title="${escapeHtml(c1)}">${escapeHtml(c1)}</td>
+              <td class="py-2.5 px-4 text-slate-600 dark:text-slate-300 max-w-[180px] truncate" title="${escapeHtml(c2)}">${escapeHtml(c2)}</td>
+              <td class="py-2.5 px-4 text-slate-500 dark:text-slate-400 max-w-[180px] truncate" title="${escapeHtml(c3)}">${escapeHtml(c3)}</td>
+              <td class="py-2.5 px-4 text-right no-print">
+                <button
+                  type="button"
+                  data-toggle-lock="${a.participantIdx}"
+                  class="lock-toggle-btn p-1.5 rounded-lg border ${
+                    isLocked
+                      ? 'border-amber-300 bg-amber-50 text-amber-600 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-400'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  } transition"
+                  title="${isLocked ? 'Locked (click to unlock)' : 'Lock assignment'}"
+                >
+                  ${
+                    isLocked
+                      ? `<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg>`
+                      : `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>`
+                  }
+                </button>
+              </td>
+            </tr>
+          `;
+        })
+        .join('');
+
+      tbody.innerHTML =
+        rowsHtml ||
+        `<tr><td colspan="8" class="py-8 text-center text-xs text-slate-400">No participants match your current filter.</td></tr>`;
+    }
+
+    // ============================================================================
+    // EXPORT HELPERS (TSV Clipboard & CSV File Download)
+    // ============================================================================
+    function buildExportRows() {
+      const firstColHeader = appState.hasNameColumn ? appState.identifierLabel : 'Participant';
+      const header = [firstColHeader, 'Assigned Workshop', 'Choice Achieved', '1st Choice', '2nd Choice', '3rd Choice'];
+      const rows = appState.assignments.map((a) => {
+        const p = appState.participants[a.participantIdx];
+        const assignedTitle = a.workshopIdx >= 0 ? appState.workshops[a.workshopIdx]?.title || '' : 'Unassigned';
+        const rankLabel =
+          a.workshopIdx === -1
+            ? 'Unassigned'
+            : a.rankAchieved === 1
+            ? '1st Choice'
+            : a.rankAchieved === 2
+            ? '2nd Choice'
+            : a.rankAchieved === 3
+            ? '3rd Choice'
+            : a.rankAchieved
+            ? `#${a.rankAchieved} Choice`
+            : 'Fallback';
+
+        const choiceByRank = {};
+        Object.entries(p.ranks).forEach(([wIdxStr, r]) => {
+          if (!choiceByRank[r]) choiceByRank[r] = [];
+          choiceByRank[r].push(appState.workshops[Number(wIdxStr)]?.title || '');
+        });
+
+        return [
+          p.name,
+          assignedTitle,
+          rankLabel,
+          (choiceByRank[1] || []).join('; '),
+          (choiceByRank[2] || []).join('; '),
+          (choiceByRank[3] || []).join('; '),
+        ];
+      });
+      return [header, ...rows];
+    }
+
+    function exportAsTsv() {
+      const matrix = buildExportRows();
+      const tsv = matrix.map((row) => row.map((cell) => String(cell ?? '').replace(/\t|\r|\n/g, ' ')).join('\t')).join('\n');
+      if (copyTextToClipboard(tsv)) {
+        showToast('Copied table to clipboard! Paste directly into Google Sheets or Excel.', 'success');
+      } else {
+        showToast('Unable to copy automatically. Try Download CSV instead.', 'warning');
+      }
+    }
+
+    function exportAsCsv() {
+      const matrix = buildExportRows();
+      const csv = matrix
+        .map((row) =>
+          row
+            .map((cell) => {
+              const s = String(cell ?? '');
+              return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+            })
+            .join(',')
+        )
+        .join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `workshop-assignments-${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded CSV file.', 'success');
+    }
+
+    // ============================================================================
+    // THEME & EVENT WIRING
+    // ============================================================================
+    function applyTheme(dark) {
+      appState.settings.darkMode = Boolean(dark);
+      if (appState.settings.darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load saved state from localStorage if available
+      const restored = loadStateFromLocalStorage();
+      if (!restored && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        appState.settings.darkMode = true;
+      }
+      applyTheme(appState.settings.darkMode);
+
+      const rawDataInput = document.getElementById('rawDataInput');
+      const objectiveSelect = document.getElementById('objectiveSelect');
+      const allowFallbackCheckbox = document.getElementById('allowFallbackCheckbox');
+
+      objectiveSelect.value = appState.settings.objective;
+      allowFallbackCheckbox.checked = appState.settings.allowFallback;
+
+      if (restored && appState.rawText) {
+        rawDataInput.value = appState.rawText;
+        // Re-parse while preserving saved workshop titles & capacities
+        const savedWorkshops = appState.workshops;
+        const savedLocks = appState.lockedAssignments;
+        handleRawTextChange(appState.rawText, true);
+        appState.workshops = appState.workshops.map((w, idx) =>
+          savedWorkshops[idx] ? { ...w, title: savedWorkshops[idx].title, capacity: savedWorkshops[idx].capacity } : w
+        );
+        appState.lockedAssignments = savedLocks;
+        renderWorkshopsList();
+        runOptimization(false);
+      }
+
+      // Raw data textarea input
+      rawDataInput.addEventListener('input', (e) => {
+        handleRawTextChange(e.target.value, true);
+      });
+
+      // Load Sample Data button
+      document.getElementById('loadSampleBtn').addEventListener('click', () => {
+        rawDataInput.value = SAMPLE_SURVEY_TSV;
+        handleRawTextChange(SAMPLE_SURVEY_TSV, false);
+        showToast('Loaded sample data with 36 teachers & 6 workshops.', 'info');
+      });
+
+      // Clear Input button
+      document.getElementById('clearInputBtn').addEventListener('click', () => {
+        rawDataInput.value = '';
+        handleRawTextChange('', false);
+      });
+
+      // Theme Toggle
+      document.getElementById('themeToggleBtn').addEventListener('click', () => {
+        applyTheme(!appState.settings.darkMode);
+        saveStateToLocalStorage();
+      });
+
+      // Clear Saved LocalStorage Data (Two-Step Inline Confirmation)
+      const resetRequestBtn = document.getElementById('resetRequestBtn');
+      const resetConfirmGroup = document.getElementById('resetConfirmGroup');
+      resetRequestBtn.addEventListener('click', () => {
+        resetRequestBtn.classList.add('hidden');
+        resetConfirmGroup.classList.remove('hidden');
+        resetConfirmGroup.classList.add('flex');
+      });
+      document.getElementById('resetCancelBtn').addEventListener('click', () => {
+        resetConfirmGroup.classList.add('hidden');
+        resetConfirmGroup.classList.remove('flex');
+        resetRequestBtn.classList.remove('hidden');
+      });
+      document.getElementById('resetConfirmBtn').addEventListener('click', () => {
+        clearLocalStorageState();
+        rawDataInput.value = '';
+        appState.workshops = [];
+        appState.participants = [];
+        appState.assignments = [];
+        appState.lockedAssignments = {};
+        handleRawTextChange('', false);
+        resetConfirmGroup.classList.add('hidden');
+        resetConfirmGroup.classList.remove('flex');
+        resetRequestBtn.classList.remove('hidden');
+        showToast('All local browser data cleared.', 'info');
+      });
+
+      // Workshop Title & Seat Capacity Delegation
+      const workshopsListContainer = document.getElementById('workshopsListContainer');
+      workshopsListContainer.addEventListener('input', (e) => {
+        if (e.target.classList.contains('workshop-title-input')) {
+          const idx = Number(e.target.dataset.workshopTitleIdx);
+          if (appState.workshops[idx]) {
+            appState.workshops[idx].title = e.target.value;
+            saveStateToLocalStorage();
+            renderResultsSection();
+          }
+        } else if (e.target.classList.contains('workshop-cap-input')) {
+          const idx = Number(e.target.dataset.workshopCapIdx);
+          const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+          if (appState.workshops[idx]) {
+            appState.workshops[idx].capacity = val;
+            updateCapacitySummaryLabels();
+            runOptimization(false);
+          }
+        }
+      });
+
+      workshopsListContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('.cap-step-btn');
+        if (!btn) return;
+        const idx = Number(btn.dataset.workshopIdx);
+        const delta = Number(btn.dataset.capDelta);
+        if (appState.workshops[idx]) {
+          appState.workshops[idx].capacity = Math.max(0, (Number(appState.workshops[idx].capacity) || 0) + delta);
+          renderWorkshopsList();
+          runOptimization(false);
+        }
+      });
+
+      // Bulk Capacity Controls
+      document.getElementById('autoBalanceCapBtn').addEventListener('click', () => {
+        if (appState.workshops.length === 0) return;
+        const evenCap = Math.max(1, Math.ceil(appState.participants.length / appState.workshops.length));
+        appState.workshops.forEach((w) => {
+          w.capacity = evenCap;
+        });
+        renderWorkshopsList();
+        runOptimization(false);
+        showToast(`Set all ${appState.workshops.length} workshops to ${evenCap} seats.`, 'info');
+      });
+
+      document.getElementById('applyBulkCapBtn').addEventListener('click', () => {
+        const val = Math.max(0, parseInt(document.getElementById('bulkCapInput').value, 10) || 0);
+        appState.workshops.forEach((w) => {
+          w.capacity = val;
+        });
+        renderWorkshopsList();
+        runOptimization(false);
+        showToast(`Set all workshops to ${val} seats.`, 'info');
+      });
+
+      // Strategy & Optimize Buttons
+      objectiveSelect.addEventListener('change', (e) => {
+        appState.settings.objective = e.target.value;
+        runOptimization(false);
+      });
+
+      allowFallbackCheckbox.addEventListener('change', (e) => {
+        appState.settings.allowFallback = e.target.checked;
+        runOptimization(false);
+      });
+
+      document.getElementById('runOptimizeBtn').addEventListener('click', () => {
+        runOptimization(false);
+        showToast('Optimized assignments for maximum 1st & 2nd choice placement.', 'success');
+      });
+
+      document.getElementById('shuffleOptimizeBtn').addEventListener('click', () => {
+        runOptimization(true);
+        showToast('Re-solved with randomized tie-breaking.', 'info');
+      });
+
+      // View Tabs (By Workshop vs By Participant)
+      document.querySelectorAll('.view-tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const view = btn.dataset.view;
+          appState.ui.activeView = view;
+
+          document.querySelectorAll('.view-tab-btn').forEach((b) => {
+            if (b.dataset.view === view) {
+              b.className =
+                'view-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm transition';
+            } else {
+              b.className =
+                'view-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
+            }
+          });
+
+          if (view === 'workshops') {
+            document.getElementById('viewWorkshops').classList.remove('hidden');
+            document.getElementById('viewParticipants').classList.add('hidden');
+          } else {
+            document.getElementById('viewWorkshops').classList.add('hidden');
+            document.getElementById('viewParticipants').classList.remove('hidden');
+          }
+        });
+      });
+
+      // Participant Search & Rank Filter
+      document.getElementById('participantSearchInput').addEventListener('input', (e) => {
+        appState.ui.searchQuery = e.target.value;
+        renderParticipantsTableView();
+      });
+
+      document.querySelectorAll('.rank-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          appState.ui.rankFilter = btn.dataset.filter;
+          document.querySelectorAll('.rank-filter-btn').forEach((b) => {
+            if (b.dataset.filter === appState.ui.rankFilter) {
+              b.className = 'rank-filter-btn px-2.5 py-1 rounded-lg font-semibold bg-indigo-600 text-white';
+            } else {
+              b.className =
+                'rank-filter-btn px-2.5 py-1 rounded-lg font-medium bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300';
+            }
+          });
+          renderParticipantsTableView();
+        });
+      });
+
+      // Manual Reassignment, Copy Emails & Lock Toggling in Results Views
+      document.getElementById('resultsSection').addEventListener('click', (e) => {
+        const copyEmailsBtn = e.target.closest('.copy-workshop-emails-btn');
+        if (copyEmailsBtn) {
+          const wIdx = Number(copyEmailsBtn.dataset.copyWorkshopEmails);
+          const emails = appState.assignments
+            .filter((a) => a.workshopIdx === wIdx)
+            .map((a) => appState.participants[a.participantIdx]?.name || '')
+            .filter((val) => /@/.test(val));
+          if (emails.length > 0 && copyTextToClipboard(emails.join(', '))) {
+            showToast(`Copied ${emails.length} email(s) for "${appState.workshops[wIdx]?.title}".`, 'success');
+          } else {
+            showToast('No emails found in this workshop to copy.', 'warning');
+          }
+          return;
+        }
+
+        const lockBtn = e.target.closest('.lock-toggle-btn');
+        if (lockBtn) {
+          const pIdx = Number(lockBtn.dataset.toggleLock);
+          if (Object.prototype.hasOwnProperty.call(appState.lockedAssignments, pIdx)) {
+            delete appState.lockedAssignments[pIdx];
+            showToast(`Unlocked ${appState.participants[pIdx]?.name || 'participant'}.`, 'info');
+          } else {
+            const currentW = appState.assignments[pIdx]?.workshopIdx ?? -1;
+            if (currentW >= 0) {
+              appState.lockedAssignments[pIdx] = currentW;
+              showToast(`Locked ${appState.participants[pIdx]?.name || 'participant'} into workshop.`, 'info');
+            }
+          }
+          saveStateToLocalStorage();
+          renderResultsSection();
+        }
+      });
+
+      document.getElementById('resultsSection').addEventListener('change', (e) => {
+        if (e.target.classList.contains('manual-assign-select')) {
+          const pIdx = Number(e.target.dataset.manualAssignP);
+          const newWIdx = Number(e.target.value);
+          if (newWIdx === -1) {
+            delete appState.lockedAssignments[pIdx];
+          } else {
+            appState.lockedAssignments[pIdx] = newWIdx;
+          }
+          // Re-solve remaining unlocked participants around this manual placement
+          appState.assignments = solveOptimalAssignments({
+            workshops: appState.workshops,
+            participants: appState.participants,
+            lockedAssignments: appState.lockedAssignments,
+            settings: appState.settings,
+            shuffle: false,
+          });
+          saveStateToLocalStorage();
+          renderResultsSection();
+          showToast('Updated placement & re-balanced remaining seats.', 'success');
+        }
+      });
+
+      // Unlock All button
+      document.getElementById('unlockAllBtn').addEventListener('click', () => {
+        appState.lockedAssignments = {};
+        runOptimization(false);
+      });
+
+      // Export Buttons
+      document.getElementById('copyTsvBtn').addEventListener('click', exportAsTsv);
+      document.getElementById('downloadCsvBtn').addEventListener('click', exportAsCsv);
+    });
+  </script>
+</body>
+</html>
