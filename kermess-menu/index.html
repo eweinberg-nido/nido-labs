@@ -1,0 +1,721 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kermess Menus</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+<style>
+/* Layout: blue top bar, quiet white page, sticky filter strip, square cards in a grid; a running "my plate" tally pinned to the bottom. Single light theme, as the Nido brand defines only one. */
+:root {
+  --nido-blue: #002365;
+  --nido-blue-deep: #00184a;
+  --nido-red: #b21e28;
+  --ink: #333333;
+  --ink-muted: #5c5c5c;
+  --surface: #ffffff;
+  --surface-muted: #e6e6e6;
+  --surface-soft: #f3f4f7;
+  --on-brand: #ffffff;
+  --line: #d9d9d9;
+  --line-strong: #767676;
+  --sans: Gotham, "Open Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --gutter: var(--space-16);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 150px; }
+body { background: var(--surface); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 26px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
+@media (max-width: 760px) { :root { --gutter: var(--space-4); } }
+
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--nido-blue); outline-offset: 2px; }
+
+/* Header bar */
+.bar { background: var(--nido-blue); color: var(--on-brand); }
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-4); }
+.wordmark { font-size: 22px; line-height: 28px; font-weight: 700; letter-spacing: 0.02em; color: var(--on-brand); }
+.wordmark span { font-weight: 300; }
+.bar-right { display: flex; align-items: center; gap: var(--space-6); }
+.bar-eyebrow { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+.lang { display: flex; border: 1px solid rgba(255,255,255,.6); }
+.lang button { background: transparent; border: 0; color: var(--on-brand); padding: 4px 10px; font-size: 13px; font-weight: 700; letter-spacing: .06em; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--on-brand); color: var(--nido-blue); }
+@media (max-width: 560px) { .bar-eyebrow { display: none; } .wordmark { font-size: 19px; } }
+
+/* Intro */
+.intro { padding-block: var(--space-12) var(--space-8); }
+.eyebrow { font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--nido-red); margin: 0 0 var(--space-2); }
+h1 { font-size: 48px; line-height: 56px; font-weight: 300; letter-spacing: -0.01em; color: var(--nido-blue); margin: 0; text-wrap: balance; }
+.lede { max-width: 62ch; margin: var(--space-4) 0 0; }
+.stats { display: flex; flex-wrap: wrap; gap: var(--space-8); margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--line); }
+.stat b { display: block; font-size: 28px; line-height: 36px; font-weight: 300; color: var(--nido-blue); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; line-height: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); }
+@media (max-width: 560px) { h1 { font-size: 34px; line-height: 42px; } .intro { padding-block: var(--space-8) var(--space-6); } .stats { gap: var(--space-6); } }
+
+/* Sticky filters */
+.filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.filters .wrap { display: grid; gap: var(--space-3); padding-block: var(--space-3); }
+.row1 { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.search { flex: 1 1 260px; min-width: 0; position: relative; }
+.search input { width: 100%; border: 1px solid var(--line-strong); border-radius: 2px; padding: 10px 12px 10px 38px; background: var(--surface); font-size: 16px; }
+.search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--ink-muted); fill: none; stroke-width: 2; }
+.select { display: flex; align-items: center; gap: var(--space-2); font-size: 14px; color: var(--ink-muted); }
+.select select { border: 1px solid var(--line-strong); border-radius: 2px; padding: 9px 10px; background: var(--surface); color: var(--ink); font-size: 14px; }
+.views { display: flex; border: 1px solid var(--nido-blue); }
+.views button { border: 0; background: var(--surface); color: var(--nido-blue); padding: 9px 14px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
+.views button[aria-pressed="true"] { background: var(--nido-blue); color: var(--on-brand); }
+.chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); padding: 5px 12px; font-size: 14px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.chip .n { font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--nido-blue); border-color: var(--nido-blue); color: var(--on-brand); }
+.chip[aria-pressed="true"] .n { color: rgba(255,255,255,.75); }
+@media (max-width: 560px) { .search { flex-basis: 100%; } .select span { display: none; } .select select { padding: 8px; } .views button { padding: 8px 10px; font-size: 12px; } .row1 { gap: var(--space-2); justify-content: space-between; } html { scroll-padding-top: 200px; } }
+.chip .dot { width: 8px; height: 8px; display: inline-block; }
+
+/* Country index */
+.index { display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; }
+.index::-webkit-scrollbar { display: none; }
+.index a { flex: none; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--nido-blue); text-decoration: none; padding: 3px 8px; border: 1px solid transparent; white-space: nowrap; }
+.index a:hover { border-color: var(--line); }
+.index a.off { color: var(--line-strong); pointer-events: none; }
+
+main { padding-block: var(--space-8) 140px; }
+.result-line { font-size: 14px; color: var(--ink-muted); margin: 0 0 var(--space-6); display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: baseline; }
+.result-line button { background: none; border: 0; padding: 0; color: var(--nido-red); text-decoration: underline; cursor: pointer; font-size: 14px; }
+
+/* Country cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-8); align-items: start; }
+@media (max-width: 400px) { .grid { grid-template-columns: 1fr; } }
+.stand { border: 1px solid var(--line); min-width: 0; }
+.stand-head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-bottom: 3px solid var(--nido-blue); }
+.code { flex: none; width: 40px; height: 40px; display: grid; place-items: center; background: var(--nido-blue); color: var(--on-brand); font-size: 13px; font-weight: 700; letter-spacing: .06em; }
+.stand-head h2 { font-size: 20px; line-height: 28px; font-weight: 600; color: var(--nido-blue); margin: 0; }
+.stand-head .meta { font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+.stand-body { padding: var(--space-2) var(--space-6) var(--space-4); }
+.group-label { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--nido-red); margin: var(--space-4) 0 var(--space-1); }
+.empty-stand { padding: var(--space-4) 0; color: var(--ink-muted); font-size: 14px; }
+
+.item { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-3); align-items: start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.item:last-child { border-bottom: 0; }
+.item .name { font-size: 15px; line-height: 22px; min-width: 0; }
+.item .note { display: block; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.item .price { font-size: 15px; line-height: 22px; font-weight: 600; color: var(--nido-blue); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.item .price.tbd { font-weight: 400; color: var(--ink-muted); font-size: 13px; }
+.tag18 { display: inline-block; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .06em; border: 1px solid var(--nido-red); color: var(--nido-red); padding: 0 4px; margin-left: 6px; vertical-align: 2px; }
+.tag-chef { display: inline-block; font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--surface-muted); color: var(--ink); padding: 0 5px; margin-left: 6px; vertical-align: 2px; }
+.add { width: 28px; height: 28px; border: 1px solid var(--nido-blue); background: var(--surface); color: var(--nido-blue); cursor: pointer; display: grid; place-items: center; font-size: 18px; line-height: 1; padding: 0; position: relative; }
+.add:hover { background: var(--nido-blue); color: var(--on-brand); }
+.add[disabled] { visibility: hidden; }
+.add .q { position: absolute; top: -8px; right: -8px; min-width: 16px; height: 16px; padding: 0 3px; background: var(--nido-red); color: var(--on-brand); font-size: 10px; line-height: 16px; font-weight: 700; text-align: center; }
+mark { background: #fde7a9; color: inherit; padding: 0 1px; }
+
+/* All items table */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; }
+th { background: var(--surface-muted); text-align: left; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink); padding: 10px 12px; white-space: nowrap; }
+th button { background: none; border: 0; padding: 0; font: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; color: inherit; }
+td { padding: 9px 12px; border-top: 1px solid var(--line); font-size: 15px; line-height: 22px; vertical-align: top; }
+td.p { text-align: right; font-weight: 600; color: var(--nido-blue); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th.p { text-align: right; }
+td.c { white-space: nowrap; color: var(--ink-muted); font-size: 14px; }
+td.c a { color: var(--nido-blue); text-decoration: none; }
+td.k { font-size: 13px; color: var(--ink-muted); white-space: nowrap; }
+
+.none { padding: var(--space-12) 0; text-align: center; color: var(--ink-muted); }
+
+footer { border-top: 1px solid var(--line); font-size: 12px; line-height: 18px; color: var(--ink-muted); }
+footer .wrap { padding-block: var(--space-6); }
+
+/* Plate tray */
+.tray { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--nido-blue); color: var(--on-brand); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tray .wrap { padding-block: var(--space-3); }
+.tray-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.tray-sum { display: flex; align-items: baseline; gap: var(--space-4); flex-wrap: wrap; min-width: 0; }
+.tray-sum .lbl { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+.tray-sum .tot { font-size: 24px; line-height: 30px; font-weight: 300; font-variant-numeric: tabular-nums; }
+.tray-sum .cnt { font-size: 13px; opacity: .85; }
+.tray-actions { display: flex; gap: var(--space-2); }
+.tbtn { background: transparent; border: 1px solid rgba(255,255,255,.7); color: var(--on-brand); padding: 7px 12px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
+.tbtn.solid { background: var(--on-brand); color: var(--nido-blue); border-color: var(--on-brand); }
+.tray-list { max-height: 42vh; overflow-y: auto; margin-top: var(--space-3); border-top: 1px solid rgba(255,255,255,.3); }
+.tray-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-3); align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.18); font-size: 14px; line-height: 20px; }
+.tray-row small { display: block; opacity: .75; font-size: 12px; }
+.tray-row .pp { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.qty { display: flex; align-items: center; border: 1px solid rgba(255,255,255,.6); }
+.qty button { background: transparent; border: 0; color: var(--on-brand); width: 28px; height: 28px; cursor: pointer; font-size: 16px; }
+.qty span { min-width: 22px; text-align: center; font-variant-numeric: tabular-nums; }
+.tray-hint { font-size: 13px; opacity: .85; }
+@media (max-width: 560px) { .tray-sum .cnt { display: none; } }
+@media (prefers-reduced-motion: no-preference) { .add, .chip, .views button { transition: background-color .12s, color .12s; } }
+</style>
+
+<header class="bar">
+  <div class="wrap">
+    <span class="wordmark">Kermess <span>Menus</span></span>
+    <div class="bar-right">
+      
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" id="lang-es" data-lang="es" aria-pressed="false">ES</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="wrap">
+    <p class="eyebrow" data-i18n="eyebrow">Kermess · Country stands</p>
+    <h1 data-i18n="title">Unofficial Kermess Menu App</h1>
+    <p class="lede" data-i18n="lede">Browse every country stand, search for a dish and add things to your plate to see what your afternoon will cost. All prices are in Chilean pesos.</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</section>
+
+<div class="filters">
+  <div class="wrap">
+    <div class="row1">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+        <input id="q" type="search" autocomplete="off" placeholder="Search dishes or countries: empanadas, Japan, tea…" aria-label="Search">
+      </label>
+      <label class="select"><span data-i18n="upTo">Up to</span>
+        <select id="max">
+          <option value="0">—</option>
+          <option value="1000">$1.000</option>
+          <option value="2000">$2.000</option>
+          <option value="3000">$3.000</option>
+          <option value="5000">$5.000</option>
+        </select>
+      </label>
+      <div class="views" role="group" aria-label="View">
+        <button type="button" id="view-stands" data-view="stands" aria-pressed="true" data-i18n="byStand">By country</button>
+        <button type="button" id="view-items" data-view="items" aria-pressed="false" data-i18n="allItems">All items</button>
+      </div>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Category"></div>
+    <nav class="index" id="index" aria-label="Countries"></nav>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <p class="result-line" id="resultLine"></p>
+    <div id="out"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap" data-i18n="footer">Unofficial guide, not a school publication. Menus as submitted by each country stand to the Kermess menu sheet. Prices and availability can change on the day; the stand has the final word. Bar items are for adults 18+ only.</div>
+</footer>
+
+<div class="tray" id="tray" hidden>
+  <div class="wrap">
+    <div class="tray-top">
+      <div class="tray-sum">
+        <span class="lbl" data-i18n="myPlate">My plate</span>
+        <span class="tot" id="trayTotal">$0</span>
+        <span class="cnt" id="trayCount"></span>
+      </div>
+      <div class="tray-actions">
+        <button type="button" class="tbtn" id="trayClear" data-i18n="clear">Clear</button>
+        <button type="button" class="tbtn solid" id="trayToggle" aria-expanded="false" data-i18n="show">Show</button>
+      </div>
+    </div>
+    <div class="tray-list" id="trayList" hidden></div>
+  </div>
+</div>
+
+<script>
+// Categories: f food, d sweets, b drinks, a bar (alcohol), x games & gifts
+// Item: [name, price (CLP, null = ask at stand), cat, note?, max price for ranges?]
+const STANDS = [
+ {id:"afro-caribbean", code:"AC", en:"Afro-Caribbean", es:"Afro-Caribe", items:[
+  ["Nigerian Jollof Rice, Beef Suya & Dodo",7000,"f"],
+  ["Jamaican Jerk Chicken & Plantain Fritters",5000,"f"],
+  ["Honduran Fried Tacos",5000,"f"],
+  ["Dominican Empanadas",3000,"f"],
+  ["South African Koeksister",3000,"d"],
+  ["Nigerian Puff-Puff (3)",3000,"d"],
+  ["Dominican Deditos de Novia",1000,"d"],
+  ["Suriname Coconut Cookies (3)",1000,"d"],
+  ["Caribbean Sorrel Cookies (3)",1000,"d"],
+  ["Soursop / Chirimoya Ice Pops",1000,"d"],
+  ["Antiguan Coffee",2000,"b"],
+  ["Zobo Spiced Sorrel Punch",2000,"b"],
+  ["Blue Waters (Antiguan mocktail)",2000,"b"],
+  ["Caribbean Sunset (mocktail)",2000,"b"],
+  ["Morir Soñando",2000,"b"],
+  ["Bottled water",1000,"b"],
+  ["Amarula",2000,"a"]]},
+ {id:"argentina", code:"AR", en:"Argentina", es:"Argentina", items:[
+  ["Choripán",4000,"f"],
+  ["Sándwich de lomo",5000,"f"],
+  ["Empanadas",3000,"f"],
+  ["Chocotorta",2000,"d"],
+  ["Conitos Cachafaz",2000,"d"],
+  ["Agua",1000,"b"],
+  ["Copa de Malbec",3000,"a"],
+  ["Cerveza",3000,"a"],
+  ["Chimichurri (jar)",2000,"x","Three sizes",4000]]},
+ {id:"bolivia", code:"BO", en:"Bolivia", es:"Bolivia", items:[
+  ["Salteña",3000,"f"],
+  ["Helado de canela",2000,"d"],
+  ["Limonada de linaza",2000,"b"],
+  ["Bebidas",2000,"b","Coca-Cola, Sprite, agua, agua con gas"],
+  ["Cóctel de maracuyá",2000,"a"]]},
+ {id:"brazil", code:"BR", en:"Brazil", es:"Brasil", items:[
+  ["Feijoada",5000,"f"],
+  ["Coxinha (6)",6000,"f"],
+  ["Pão de queijo (5)",4000,"f"],
+  ["Açaí",6000,"d","With 2 toppings"],
+  ["Brigadeiro (5)",4000,"d"],
+  ["Guaraná",2000,"b"],
+  ["Café coado",2000,"b"],
+  ["Water bottle",1000,"b"],
+  ["Caipirinha",5000,"a"],
+  ["Chopp (draft beer)",4000,"a"],
+  ["Bonfim bracelets (2)",1000,"x"]]},
+ {id:"canada", code:"CA", en:"Canada", es:"Canadá", items:[
+  ["Poutine",5000,"f"],
+  ["Strawberry Shortcake",5000,"d"],
+  ["Nanaimo Bars",3000,"d"],
+  ["Maple Cookies",1000,"d"],
+  ["Chocolate Toonies",1000,"d"],
+  ["Ginger Ale",2000,"b"],
+  ["Water",2000,"b"],
+  ["Caesar",4000,"a"],
+  ["Rye & Ginger",4000,"a"]]},
+ {id:"chile", code:"CL", en:"Chile", es:"Chile", items:[]},
+ {id:"china", code:"CN", en:"China", es:"China", items:[
+  ["Scallion Beef Stir-fry",6000,"f"],
+  ["Sweet & Sour Chicken",6000,"f"],
+  ["Fried Dumplings",5000,"f"],
+  ["Fried Noodles with Chicken",5000,"f"],
+  ["Fried Shrimp Dumplings & Spring Rolls",5000,"f"],
+  ["Egg Fried Rice",3000,"f"],
+  ["Cotton Candy",5000,"d"],
+  ["Shaved Ice",2000,"d"],
+  ["Bubble Tea",4000,"b"],
+  ["Iced Black Tea",2000,"b"],
+  ["Jasmine Tea",2000,"b"]]},
+ {id:"colombia", code:"CO", en:"Colombia", es:"Colombia", items:[
+  ["Empanadas",3000,"f"],
+  ["Buñuelos rellenos",4000,"f"],
+  ["Café",5000,"b"],
+  ["Bebidas",3000,"b","Gaseosas, limonada de coco, patillazo"],
+  ["Agua con o sin gas",2000,"b"],
+  ["Aguardiente",2000,"a"]]},
+ {id:"czech-republic", code:"CZ", en:"Czech Republic", es:"República Checa", items:[
+  ["Salty Sticks (3)",1000,"f"],
+  ["Apple Strudel",3000,"d"],
+  ["Blueberry Pie",2000,"d"],
+  ["Puff Pastry Cream Roll",1000,"d"],
+  ["Christmas Gingerbread Cookies (4)",1000,"d"],
+  ["Water (0.3 l)",1000,"b"],
+  ["Bohemian Lager, draft (0.3 l)",3000,"a"],
+  ["Grapefruit Radler, draft (0.3 l)",3000,"a"],
+  ["Becherovka herbal liqueur",1000,"a"]]},
+ {id:"ecuador", code:"EC", en:"Ecuador", es:"Ecuador", items:[
+  ["Empanada de verde con queso",3000,"f","Per piece"],
+  ["Empanada de verde con camarón ecuatoriano",4000,"f","Per piece"],
+  ["Ceviche de camarón ecuatoriano",5000,"f"],
+  ["Chulpi (50 g)",3000,"f"],
+  ["Chifles (50 g)",3000,"f"],
+  ["Guaguas de pan",3000,"d"],
+  ["Cerveza",3000,"a"]]},
+ {id:"france", code:"FR", en:"France", es:"Francia", items:[
+  ["Mini quiches",1000,"f"],
+  ["Crêpes",2000,"d"],
+  ["Macarons",2000,"d"],
+  ["Mini canelés",2000,"d"],
+  ["Perrier (glass)",2000,"b"],
+  ["Sirop (glass)",1000,"b"],
+  ["Champagne (glass)",3000,"a"]]},
+ {id:"india", code:"IN", en:"India", es:"India", items:[
+  ["Butter Chicken with Basmati Rice",6000,"f"],
+  ["Basmati Rice with Chole Masala",5000,"f"],
+  ["Samosa",3000,"f"],
+  ["Chicken 65",3000,"f"],
+  ["Gulab Jamun",3000,"d"],
+  ["Lassi",2000,"b"],
+  ["Henna drawing",4000,"x"]]},
+ {id:"israel", code:"IL", en:"Israel", es:"Israel", items:[
+  ["Pack 1",8000,"f","Shawarma or falafel, water and dessert"],
+  ["Pack 2",7000,"f","Shawarma or falafel and water"],
+  ["Pack 3",7000,"f","Shawarma or falafel and dessert"],
+  ["Shawarma XL",6000,"f"],
+  ["Falafel",6000,"f"],
+  ["Mini jalá",2000,"f"],
+  ["Snack israelí",3000,"f"],
+  ["Mini jalá con Nutella",2000,"d"],
+  ["Postre dulce",2000,"d"],
+  ["Helados",3000,"d"],
+  ["Bazooka",1000,"d"],
+  ["Agua",1000,"b"],
+  ["Arak (1 vaso)",1000,"a"],
+  ["Pulsera",1000,"x"],
+  ["Gancho / llavero",1000,"x"],
+  ["Pins",1000,"x"],
+  ["Imán de cerámica",2000,"x"]]},
+ {id:"italy", code:"IT", en:"Italy", es:"Italia", items:[
+  ["Pizza (slice)",4000,"f","2 slices for $7.000"],
+  ["Focaccia",4000,"f"],
+  ["Focaccia ripiena",5000,"f"],
+  ["Gelato, 1 flavor",3000,"d"],
+  ["Gelato, 2 flavors",4000,"d"],
+  ["Tiramisù",4000,"d"],
+  ["Caffè espresso",2000,"b"],
+  ["Agua mineral",2000,"b"],
+  ["Aperol Spritz",5000,"a","2 for $9.000"],
+  ["Cerveza",4000,"a"]]},
+ {id:"japan", code:"JP", en:"Japan", es:"Japón", items:[
+  ["Yakitori",4000,"f"],
+  ["Nigiri sushi",6000,"f"],
+  ["Temaki sushi",6000,"f"],
+  ["Japanese beer",3000,"a"],
+  ["Sake, large (can)",6000,"a"],
+  ["Sake, medium (cup)",4000,"a"],
+  ["Sake, shot",2000,"a"],
+  ["Pokémon cards",4000,"x"],
+  ["Japanese fans",3000,"x","Two sizes",4000],
+  ["Bouncy ball scooping game",3000,"x"]]},
+ {id:"malaysia", code:"MY", en:"Malaysia", es:"Malasia", items:[
+  ["Nasi Lemak",3000,"f"],
+  ["Fried Vermicelli",3000,"f"],
+  ["Chicken Satay",2000,"f","1 stick with peanut sauce"],
+  ["Fried Chicken",1000,"f"],
+  ["Sago Gula Melaka",3000,"d"],
+  ["Fried Banana Balls",3000,"d"],
+  ["Batik Cake",2000,"d"],
+  ["Malaysian Ice Cream",2000,"d"],
+  ["Honeycomb Cake",1000,"d"],
+  ["Layer Cake",1000,"d"],
+  ["Iced Teh Tarik",3000,"b"],
+  ["Hot Teh Tarik",2000,"b"],
+  ["Iced Lime & Rose Syrup",3000,"b"]]},
+ {id:"mexico", code:"MX", en:"Mexico", es:"México", items:[
+  ["Tacos al pastor",7000,"f"],
+  ["Nachos con guacamole",3000,"f"],
+  ["Takis / chips",1000,"f"],
+  ["Agua de jamaica en vaso Viva México",4000,"b"],
+  ["Agua de jamaica",1000,"b","Paper cup or refill"],
+  ["Coca-Cola",2000,"b"],
+  ["Coca-Cola Zero",2000,"b"],
+  ["Agua sin gas",1000,"b"],
+  ["Margarita",6000,"a"],
+  ["Shot de tequila",5000,"a"],
+  ["Michelada",4000,"a"],
+  ["Cerveza Sol",3000,"a"],
+  ["Vaso Viva México",3000,"x"]]},
+ {id:"palestine", code:"PS", en:"Palestine", es:"Palestina", items:[
+  ["Shawarma",5000,"f"],
+  ["Hojitas de parra",4000,"f"],
+  ["Hummus con pita",3000,"f"],
+  ["Kubbe relleno",3000,"f"],
+  ["Dulce árabe",1000,"d"],
+  ["Café",1000,"b"],
+  ["Bebidas / agua",1000,"b"],
+  ["Cervezas",3000,"a"],
+  ["Arak sour",3000,"a"],
+  ["Espumante",2000,"a"]]},
+ {id:"peru", code:"PE", en:"Peru", es:"Perú", items:[
+  ["Ceviche",7000,"f"],
+  ["Causa de atún o pollo",5000,"f"],
+  ["Tiradito",8000,"f","Guest chef: La Mar","chef"],
+  ["Pan con chicharrón",7000,"f","Guest chef: Panchita","chef"],
+  ["Maki acevichado",5000,"f","Guest chef: Nikkei","chef"],
+  ["Postre",4000,"d"],
+  ["Manzana dulce",3000,"d"],
+  ["Chicha morada",1000,"b"],
+  ["Inca Kola",1000,"b"],
+  ["Agua",1000,"b"],
+  ["Pisco Sour",7000,"a"],
+  ["Tómbola peruana",1000,"x","Per ticket"],
+  ["Accesorios y maquillaje típicos para niños",4000,"x",null,5000]]},
+ {id:"south-korea", code:"KR", en:"South Korea", es:"Corea del Sur", items:[
+  ["Spicy Fried Chicken",7000,"f"],
+  ["Tteokbokki",6000,"f"],
+  ["Kimbap",5000,"f"],
+  ["Corn Dogs",5000,"f"],
+  ["Fried Mandu",5000,"f"],
+  ["Snacks",4000,"f"],
+  ["Cup Ramen",3000,"f"],
+  ["Ice Cream",4000,"d"],
+  ["Drinks",4000,"b"],
+  ["Soju (bottle)",6000,"a"],
+  ["Makgeolli",5000,"a"],
+  ["Korean Beer",3000,"a"]]},
+ {id:"spain", code:"ES", en:"Spain", es:"España", items:[
+  ["Paella",8000,"f"],
+  ["Croquetas",6000,"f"],
+  ["Pincho de tortilla",4000,"f"],
+  ["Tapa de jamón",4000,"f"],
+  ["Gazpacho",4000,"f"],
+  ["Agua",2000,"b"],
+  ["Sangría",4000,"a"],
+  ["Cerveza",4000,"a"]]},
+ {id:"uk", code:"UK", en:"United Kingdom", es:"Reino Unido", items:[
+  ["Sausage Rolls & Brown Sauce",2000,"f"],
+  ["Sticky Toffee Pudding",3000,"d","Add chilled vanilla custard for $1.000"],
+  ["Scones & Jam",2000,"d"],
+  ["Scottish Tablet",1000,"d"],
+  ["Traditional Lemonade",2000,"b"],
+  ["Selection of English Teas",1000,"b"],
+  ["Alcohol-free Beer",4000,"b"],
+  ["Draught Beer (schop)",4000,"a"],
+  ["Bottled Beers",4000,"a",null,5000],
+  ["G&T",4000,"a"],
+  ["Pimm's",4000,"a"],
+  ["Cider",3000,"a"],
+  ["Jar of Chutney",null,"x"]]},
+ {id:"united-states", code:"US", en:"United States", es:"Estados Unidos", items:[
+  ["Pulled Pork",4000,"f"],
+  ["Ribs",4000,"f"],
+  ["Corn Dogs",3000,"f"],
+  ["Mac & Cheese",3000,"f"],
+  ["Pizza",2000,"f"],
+  ["Cookies",2000,"d"],
+  ["Candy",2000,"d"],
+  ["Iced Tea",2000,"b"],
+  ["Lemonade",2000,"b"],
+  ["Coca-Cola",2000,"b"],
+  ["Sprite",2000,"b"],
+  ["Water",1000,"b"],
+  ["Spiked Iced Tea",3000,"a"],
+  ["Spiked Lemonade",3000,"a"],
+  ["Beer",3000,"a"]]},
+ {id:"venezuela", code:"VE", en:"Venezuela", es:"Venezuela", items:[
+  ["Arepas",6000,"f","Cheese, carne mechada (shredded beef) or reina pepiada (chicken & avocado)"],
+  ["Tequeños",4000,"f","Venezuelan cheese sticks"],
+  ["Dulces y chucherías",1000,"d","Venezuelan sweets & candies"],
+  ["Papelón con limón",2000,"b","Sugarcane & lime"],
+  ["Frescolita",2000,"b"],
+  ["Cerveza Polar",2000,"a"]]}
+];
+
+const CATS = [
+  {k:"all", en:"Everything", es:"Todo"},
+  {k:"f", en:"Food", es:"Comida", color:"#002365"},
+  {k:"d", en:"Sweets", es:"Dulces", color:"#b21e28"},
+  {k:"b", en:"Drinks", es:"Bebidas", color:"#5c7fb8"},
+  {k:"a", en:"Bar 18+", es:"Bar 18+", color:"#767676"},
+  {k:"x", en:"Games & gifts", es:"Juegos y regalos", color:"#d9a400"}
+];
+const ORDER = ["f","d","b","a","x"];
+
+const T = {
+  en: {barEyebrow:"Kermess", eyebrow:"Kermess · Country stands", title:"What's cooking at the Kermess",
+   lede:"Browse every country stand, search for a dish and add things to your plate to see what your afternoon will cost. All prices are in Chilean pesos.",
+   upTo:"Up to", byStand:"By country", allItems:"All items", myPlate:"My plate", clear:"Clear", show:"Show", hide:"Hide",
+   footer:"Unofficial guide, not a school publication. Menus as submitted by each country stand to the Kermess menu sheet. Prices and availability can change on the day; the stand has the final word. Bar items are for adults 18+ only.",
+   search:"Search dishes or countries: empanadas, Japan, tea…",
+   stands:"country stands", items:"menu items", under:"items at $2.000 or less", cheapest:"lowest price",
+   showing:(n,s)=>`Showing ${n} ${n===1?"item":"items"} from ${s} ${s===1?"stand":"stands"}`,
+   reset:"Clear filters", soon:"Menu coming soon.", noMatch:"Nothing matches these filters.",
+   ask:"Ask at stand", nItems:n=>`${n} ${n===1?"item":"items"}`, add:"Add to my plate",
+   colItem:"Item", colStand:"Country", colType:"Type", colPrice:"Price",
+   trayHint:"Tap + on any item to start your plate.", count:n=>`${n} ${n===1?"item":"items"}`, any:"Any price"},
+  es: {barEyebrow:"Kermesse", eyebrow:"Kermesse · Stands por país", title:"Qué se cocina en la Kermesse",
+   lede:"Recorre cada stand, busca un plato y agrégalo a tu plato para ver cuánto vas a gastar en la tarde. Todos los precios están en pesos chilenos.",
+   upTo:"Hasta", byStand:"Por país", allItems:"Todo el menú", myPlate:"Mi plato", clear:"Vaciar", show:"Ver", hide:"Ocultar",
+   footer:"Guía no oficial; no es una publicación del colegio. Menús tal como cada stand los envió a la planilla de la Kermesse. Los precios y la disponibilidad pueden cambiar el día del evento; el stand tiene la última palabra. Los productos del bar son solo para mayores de 18 años.",
+   search:"Busca platos o países: empanadas, Japón, té…",
+   stands:"stands por país", items:"productos", under:"productos a $2.000 o menos", cheapest:"precio más bajo",
+   showing:(n,s)=>`Mostrando ${n} ${n===1?"producto":"productos"} de ${s} ${s===1?"stand":"stands"}`,
+   reset:"Quitar filtros", soon:"Menú pronto.", noMatch:"No hay resultados con estos filtros.",
+   ask:"Consultar en el stand", nItems:n=>`${n} ${n===1?"producto":"productos"}`, add:"Agregar a mi plato",
+   colItem:"Producto", colStand:"País", colType:"Tipo", colPrice:"Precio",
+   trayHint:"Toca + en cualquier producto para armar tu plato.", count:n=>`${n} ${n===1?"producto":"productos"}`, any:"Cualquier precio"}
+};
+
+// Flatten
+const ALL = [];
+STANDS.forEach(s => s.items.forEach((it, i) => {
+  const [name, price, cat, note, maxOrChef, chef] = it;
+  const p = price == null ? null : Number(price);
+  ALL.push({ uid: s.id + ":" + i, stand: s, name, price: p, cat, note: note || "",
+    max: typeof maxOrChef === "number" ? maxOrChef : null, chef: maxOrChef === "chef" || chef === "chef" });
+}));
+const BY_UID = Object.fromEntries(ALL.map(x => [x.uid, x]));
+
+const fmt = n => "$" + n.toLocaleString("es-CL");
+const fold = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("kermess:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("kermess:" + k, JSON.stringify(v)); } catch {} }
+};
+
+const state = {
+  lang: store.get("lang", "en"), q: "", cat: "all", max: 0, view: "stands",
+  sort: {k: "price", dir: 1}, plate: store.get("plate", {}), trayOpen: false
+};
+Object.keys(state.plate).forEach(k => { if (!BY_UID[k]) delete state.plate[k]; });
+
+const $ = id => document.getElementById(id);
+const t = k => T[state.lang][k];
+const standName = s => s[state.lang];
+const catName = k => CATS.find(c => c.k === k)[state.lang];
+
+function hl(text) {
+  const q = state.q.trim();
+  if (!q) return esc(text);
+  const f = fold(text), fq = fold(q);
+  const i = f.indexOf(fq);
+  if (i < 0) return esc(text);
+  return esc(text.slice(0, i)) + "<mark>" + esc(text.slice(i, i + q.length)) + "</mark>" + esc(text.slice(i + q.length));
+}
+
+function matches(x, ignoreCat) {
+  if (!ignoreCat && state.cat !== "all" && x.cat !== state.cat) return false;
+  if (state.max && (x.price == null || x.price > state.max)) return false;
+  const q = fold(state.q.trim());
+  if (q) {
+    const hay = fold([x.name, x.note, x.stand.en, x.stand.es, catName(x.cat)].join(" "));
+    if (!q.split(/\s+/).every(w => hay.includes(w))) return false;
+  }
+  return true;
+}
+
+function priceHTML(x) {
+  if (x.price == null) return `<span class="price tbd">${t("ask")}</span>`;
+  return `<span class="price">${fmt(x.price)}${x.max ? "–" + fmt(x.max).slice(1) : ""}</span>`;
+}
+function addBtn(x) {
+  const q = state.plate[x.uid] || 0;
+  return `<button type="button" class="add" data-add="${x.uid}" aria-label="${esc(t("add"))}: ${esc(x.name)}" ${x.price == null ? "disabled" : ""}>+${q ? `<span class="q">${q}</span>` : ""}</button>`;
+}
+function itemName(x) {
+  return `<span class="name">${hl(x.name)}${x.cat === "a" ? '<span class="tag18">18+</span>' : ""}${x.chef ? `<span class="tag-chef">Chef</span>` : ""}${x.note ? `<span class="note">${hl(x.note)}</span>` : ""}</span>`;
+}
+
+function renderStatic() {
+  document.documentElement.lang = state.lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $("q").placeholder = t("search");
+  $("max").options[0].textContent = t("any");
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === state.lang));
+  const priced = ALL.filter(x => x.price != null);
+  $("stats").innerHTML = [
+    [STANDS.length, t("stands")],
+    [ALL.length, t("items")],
+    [priced.filter(x => x.price <= 2000).length, t("under")],
+    [fmt(Math.min(...priced.map(x => x.price))), t("cheapest")]
+  ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
+  $("trayToggle").textContent = state.trayOpen ? t("hide") : t("show");
+}
+
+function renderChips() {
+  $("chips").innerHTML = CATS.map(c => {
+    const n = ALL.filter(x => (c.k === "all" || x.cat === c.k) && matches(x, true)).length;
+    return `<button type="button" class="chip" data-cat="${c.k}" aria-pressed="${state.cat === c.k}">${c.color ? `<span class="dot" style="background:${c.color}"></span>` : ""}${c[state.lang]} <span class="n">${n}</span></button>`;
+  }).join("");
+}
+
+function render() {
+  renderChips();
+  const hits = ALL.filter(x => matches(x));
+  const filtering = state.q.trim() || state.cat !== "all" || state.max;
+  const standsHit = new Set(hits.map(x => x.stand.id));
+
+  // country index
+  $("index").innerHTML = STANDS.map(s => `<a href="#${s.id}" class="${state.view === "stands" && filtering && !standsHit.has(s.id) ? "off" : ""}">${esc(standName(s))}</a>`).join("");
+  $("index").hidden = state.view !== "stands";
+
+  $("resultLine").innerHTML = filtering
+    ? `<span>${t("showing")(hits.length, standsHit.size)}</span><button type="button" id="reset">${t("reset")}</button>`
+    : "";
+
+  if (!hits.length && filtering) { $("out").innerHTML = `<p class="none">${t("noMatch")}</p>`; return; }
+
+  if (state.view === "stands") {
+    const cards = STANDS.filter(s => !filtering || standsHit.has(s.id)).map(s => {
+      const items = hits.filter(x => x.stand === s);
+      let body;
+      if (!s.items.length) body = `<p class="empty-stand">${t("soon")}</p>`;
+      else body = ORDER.map(k => {
+        const g = items.filter(x => x.cat === k);
+        if (!g.length) return "";
+        return `<p class="group-label">${catName(k)}</p>` + g.map(x => `<div class="item">${itemName(x)}${priceHTML(x)}${addBtn(x)}</div>`).join("");
+      }).join("");
+      const prices = s.items.filter(i => i[1] != null).map(i => Number(i[1]));
+      const meta = s.items.length ? `${t("nItems")(s.items.length)} · ${fmt(Math.min(...prices))}–${fmt(Math.max(...prices)).slice(1)}` : "";
+      return `<article class="stand" id="${s.id}"><div class="stand-head"><span class="code" aria-hidden="true">${s.code}</span><div><h2>${esc(standName(s))}</h2><div class="meta">${meta}</div></div></div><div class="stand-body">${body}</div></article>`;
+    });
+    $("out").innerHTML = `<div class="grid">${cards.join("")}</div>`;
+  } else {
+    const {k, dir} = state.sort;
+    const rows = hits.slice().sort((a, b) => {
+      let v;
+      if (k === "price") v = (a.price ?? 1e9) - (b.price ?? 1e9);
+      else if (k === "name") v = a.name.localeCompare(b.name, "es");
+      else if (k === "stand") v = standName(a.stand).localeCompare(standName(b.stand), "es");
+      else v = ORDER.indexOf(a.cat) - ORDER.indexOf(b.cat);
+      return (v || a.name.localeCompare(b.name, "es")) * dir;
+    });
+    const th = (key, label, cls = "") => `<th class="${cls}" aria-sort="${k === key ? (dir > 0 ? "ascending" : "descending") : "none"}"><button type="button" data-sort="${key}">${label}${k === key ? (dir > 0 ? " ↑" : " ↓") : ""}</button></th>`;
+    $("out").innerHTML = `<div class="table-wrap"><table><thead><tr>${th("name", t("colItem"))}${th("stand", t("colStand"))}${th("cat", t("colType"))}${th("price", t("colPrice"), "p")}<th></th></tr></thead><tbody>${
+      rows.map(x => `<tr><td>${itemName(x)}</td><td class="c">${hl(standName(x.stand))}</td><td class="k">${catName(x.cat)}</td><td class="p">${x.price == null ? `<span class="price tbd">${t("ask")}</span>` : fmt(x.price) + (x.max ? "–" + fmt(x.max).slice(1) : "")}</td><td>${addBtn(x)}</td></tr>`).join("")
+    }</tbody></table></div>`;
+  }
+}
+
+function renderTray() {
+  const entries = Object.entries(state.plate).filter(([u, q]) => q > 0 && BY_UID[u]);
+  const total = entries.reduce((s, [u, q]) => s + BY_UID[u].price * q, 0);
+  const count = entries.reduce((s, [, q]) => s + q, 0);
+  $("tray").hidden = count === 0;
+  $("trayTotal").textContent = fmt(total);
+  $("trayCount").textContent = t("count")(count);
+  $("trayToggle").textContent = state.trayOpen ? t("hide") : t("show");
+  $("trayToggle").setAttribute("aria-expanded", state.trayOpen);
+  $("trayList").hidden = !state.trayOpen;
+  $("trayList").innerHTML = entries.map(([u, q]) => {
+    const x = BY_UID[u];
+    return `<div class="tray-row"><div>${esc(x.name)}<small>${esc(standName(x.stand))} · ${fmt(x.price)}</small></div><div class="qty"><button type="button" data-dec="${u}" aria-label="−">−</button><span>${q}</span><button type="button" data-inc="${u}" aria-label="+">+</button></div><span class="pp">${fmt(x.price * q)}</span></div>`;
+  }).join("");
+  document.querySelector("main").style.paddingBottom = count ? "" : "64px";
+}
+
+function bump(uid, d) {
+  const q = (state.plate[uid] || 0) + d;
+  if (q <= 0) delete state.plate[uid]; else state.plate[uid] = q;
+  store.set("plate", state.plate);
+  renderTray();
+  document.querySelectorAll(`[data-add="${CSS.escape(uid)}"]`).forEach(b => {
+    b.innerHTML = "+" + (state.plate[uid] ? `<span class="q">${state.plate[uid]}</span>` : "");
+  });
+}
+
+// Events
+$("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+$("max").addEventListener("change", e => { state.max = Number(e.target.value); render(); });
+$("chips").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (b) { state.cat = b.dataset.cat; render(); } });
+document.querySelectorAll(".views button").forEach(b => b.addEventListener("click", () => {
+  state.view = b.dataset.view;
+  document.querySelectorAll(".views button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+}));
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+  state.lang = b.dataset.lang; store.set("lang", state.lang); renderStatic(); render(); renderTray();
+}));
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-add]"); if (a) { bump(a.dataset.add, 1); return; }
+  const s = e.target.closest("[data-sort]");
+  if (s) { const k = s.dataset.sort; state.sort = {k, dir: state.sort.k === k ? -state.sort.dir : 1}; render(); return; }
+  if (e.target.id === "reset") { state.q = ""; state.cat = "all"; state.max = 0; $("q").value = ""; $("max").value = "0"; render(); return; }
+  const inc = e.target.closest("[data-inc]"); if (inc) { bump(inc.dataset.inc, 1); return; }
+  const dec = e.target.closest("[data-dec]"); if (dec) { bump(dec.dataset.dec, -1); return; }
+});
+$("trayToggle").addEventListener("click", () => { state.trayOpen = !state.trayOpen; renderTray(); });
+$("trayClear").addEventListener("click", () => { state.plate = {}; store.set("plate", {}); state.trayOpen = false; renderTray(); render(); });
+
+renderStatic(); render(); renderTray();
+</script>
+
+</body></html>
